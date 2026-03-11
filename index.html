@@ -2648,7 +2648,9 @@ function debugStorage() {
   out.style.display = 'block';
   const keys = Object.keys(localStorage);
   if (!keys.length) { out.textContent = 'localStorage is empty'; return; }
+  const sensitive = ['gh_token'];
   const lines = keys.map(k => {
+    if (sensitive.includes(k)) return `${k}: ••••••••••••`;
     let val = localStorage.getItem(k);
     try {
       const parsed = JSON.parse(val);
