@@ -174,7 +174,7 @@ body{display:flex;flex-direction:column}
 /* ── HOLE HEADER ── */
 .hole-hdr{flex-shrink:0;background:var(--ink2);border-bottom:1px solid var(--border)}
 .hole-top{display:flex;align-items:center;justify-content:space-between;padding:10px 18px 6px}
-.hole-num-wrap{text-align:left;min-width:80px}
+.hole-num-wrap{text-align:left;min-width:80px;flex:1}
 .hole-num-eye{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);opacity:.65}
 .hole-num-val{font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk);line-height:1}
 .hdr-live-val{font-family:'DM Serif Display',serif;font-size:42px;color:var(--chalk);line-height:1}
@@ -183,7 +183,7 @@ body{display:flex;flex-direction:column}
 .par-circle{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(200,168,75,.08)}
 .par-circle-num{font-family:'DM Serif Display',serif;font-size:22px;color:var(--gold);line-height:1}
 .par-circle-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6}
-.hole-right{text-align:right}
+.hole-right{text-align:right;flex:1}
 .thru-lbl{font-size:10px;color:var(--chalk3)}
 .thru-val{font-family:'DM Serif Display',serif;font-size:24px;color:var(--chalk);line-height:1}
 .thru-rel{font-size:12px;margin-top:1px}
@@ -526,6 +526,10 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 <!-- ═══════════════ SCORING ═══════════════ -->
 <div class="view" id="view-scoring">
   <div class="hole-hdr">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 18px 0">
+      <button onclick="confirmHomeFromRound()" style="background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;opacity:.8">⌂ Home</button>
+      <div style="font-size:10px;letter-spacing:2px;color:var(--chalk3);opacity:.5" id="sc-round-label"></div>
+    </div>
     <div class="hole-top">
       <div class="hole-num-wrap">
         <div class="hole-num-eye">Hole <span id="sc-hole-num">1</span></div>
@@ -811,16 +815,46 @@ function roundRowHTML(r) {
   const relCls = rel<0?'c-under':rel>0?'c-over':'c-even';
   const date = new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   const incomplete = played < r.holes ? ` · ${played} holes` : '';
-  return `<div class="round-row" onclick="showDetail('${r.id}')">
-    <div class="rr-info">
-      <div class="rr-course">${r.courseName}</div>
-      <div class="rr-meta">${date} · ${r.teeName}${incomplete}</div>
+  const locked = r.locked ? '🔒' : '🔓';
+  const lockedStyle = r.locked ? 'opacity:.5' : '';
+  return `<div class="round-row" style="position:relative">
+    <div style="display:flex;align-items:center;flex:1;${lockedStyle}" onclick="${r.locked?'':` showDetail('${r.id}')`}">
+      <div class="rr-info" style="flex:1">
+        <div class="rr-course">${r.courseName}</div>
+        <div class="rr-meta">${date} · ${r.teeName}${incomplete}</div>
+      </div>
+      <div class="rr-score">
+        <div class="rr-num">${total}</div>
+        <div class="rr-rel ${relCls}">${relStr}</div>
+      </div>
     </div>
-    <div class="rr-score">
-      <div class="rr-num">${total}</div>
-      <div class="rr-rel ${relCls}">${relStr}</div>
+    <div style="display:flex;flex-direction:column;gap:4px;margin-left:10px;flex-shrink:0">
+      <button onclick="toggleLockRound('${r.id}')" style="background:none;border:none;font-size:16px;cursor:pointer;padding:2px" title="${r.locked?'Unlock':'Lock'} round">${locked}</button>
+      ${!r.locked?`<button onclick="deleteRound('${r.id}')" style="background:none;border:none;font-size:14px;cursor:pointer;padding:2px;color:#e07070;opacity:.6" title="Delete round">🗑</button>`:''}
     </div>
   </div>`;
+}
+
+function toggleLockRound(id) {
+  const rounds = getRounds();
+  const r = rounds.find(r=>r.id===id);
+  if(!r) return;
+  r.locked = !r.locked;
+  saveRounds(rounds);
+  renderHome();
+  syncWithGitHub(true);
+}
+
+function deleteRound(id) {
+  const rounds = getRounds();
+  const r = rounds.find(r=>r.id===id);
+  if(!r || r.locked) return;
+  const date = new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  if(!confirm(`Delete ${r.courseName} on ${date}? This cannot be undone.`)) return;
+  const updated = rounds.filter(r=>r.id!==id);
+  saveRounds(updated);
+  renderHome();
+  syncWithGitHub(true);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1169,6 +1203,8 @@ function loadHole(i) {
   document.getElementById('sc-par').textContent=round.pars[i];
   const yds=round.yds[i];
   document.getElementById('sc-yardage').textContent=yds?`${yds} yards`:'';
+  const rl=document.getElementById('sc-round-label');
+  if(rl) rl.textContent=round.courseName||'';
 
   // Live strokes/putts in header
   document.getElementById('sc-live-strokes').textContent=score.strokes;
@@ -1445,7 +1481,8 @@ function renderShotBlocks(i) {
         <div class="shot-block-hdr">
           <div class="shot-block-num">${idx+1}</div>
           <div class="shot-block-club${clubCls}">${shot.club}</div>
-          <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:2px">${ratingBtns}</div>
+          <div style="display:flex;align-items:center;gap:2px;margin-left:6px">${ratingBtns}</div>
+          <div style="flex:1"></div>
           <button class="shot-block-remove" onclick="removeShot(${i},${idx})">✕</button>
         </div>
         <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;margin-top:6px">
@@ -1460,7 +1497,7 @@ function renderShotBlocks(i) {
     const showShape=!['Chip','Pitch','Putt','Sand','Recovery','Flub'].includes(shot.type);
     const showContact=!['Putt','Sand','Recovery'].includes(shot.type);
     const showResult=!isApproachShot&&!isSand&&!isChip&&!isRecovery;
-    const showLie=!isPT&&!isTW&&!isPutt&&!isSand;
+    const showLie=!isPT&&!isTW&&!isPutt&&!isSand&&!isChip;
     const resultOpts=isPutt?['-','O','+']:RESULT_OPTIONS;
 
     const resultPills=resultOpts.map(v=>{
@@ -1482,7 +1519,7 @@ function renderShotBlocks(i) {
     }).join(''):'';
 
     // SHORT NAMES: LR / HR
-    const LIE_GROUPS=[['Fairway','LR','HR'],['Fringe','Green'],['Sand','Trees'],['Penalty']];
+    const LIE_GROUPS=[['Fairway','LR','HR'],['Fringe','Green'],['Sand','Trees']];
     const liePills=showLie?LIE_GROUPS.map(group=>
       `<span style="display:inline-flex;gap:4px;margin-right:6px">${group.map(v=>{
         const on=shot.lie===v?' on':'';
@@ -1526,13 +1563,9 @@ function renderShotBlocks(i) {
     // CHIP ROLL: Chip — proximity + result quality
     const CHIP_PROX=['Tap-in','Close','Medium','Far'];
     const chipBlock=isChip?`<div style="margin-top:10px">
-      <div class="attr-row" style="margin-bottom:8px">
+      <div class="attr-row" style="margin-bottom:0">
         <div class="attr-label">Proximity</div>
         <div class="attr-pills">${CHIP_PROX.map(v=>{const on=shot.chipProx===v?' on':'';return `<button class="attr-pill pill-generic${on}" onclick="setShotAttr(${i},${idx},'chipProx','${v}')">${v}</button>`;}).join('')}</div>
-      </div>
-      <div class="attr-row" style="margin-bottom:0">
-        <div class="attr-label">Quality</div>
-        <div class="attr-pills">${['-','O','+'].map(v=>{const cls=resultPillClass(v);const on=shot.result===v?' on':'';return `<button class="attr-pill ${cls}${on}" onclick="setShotAttr(${i},${idx},'result','${v}')">${v}</button>`;}).join('')}</div>
       </div>
     </div>`:'';
 
@@ -1554,7 +1587,8 @@ function renderShotBlocks(i) {
       <div class="shot-block-hdr">
         <div class="shot-block-num">${idx+1}</div>
         <div class="shot-block-club${clubCls}">${shot.club}</div>
-        <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:2px">${ratingBtns}</div>
+        <div style="display:flex;align-items:center;gap:2px;margin-left:6px">${ratingBtns}</div>
+        <div style="flex:1"></div>
         <button class="shot-block-remove" onclick="removeShot(${i},${idx})">✕</button>
       </div>
       ${GROUP(`<div class="attr-row" style="margin-bottom:0">
@@ -1640,6 +1674,10 @@ function sumTab(tab,el){
   });
   document.querySelectorAll('#view-summary .tab').forEach(t=>t.classList.remove('on'));
   el.classList.add('on');
+}
+
+function confirmHomeFromRound() {
+  if(confirm('Go home? Your progress is auto-saved and you can resume this round later.')) showView('home');
 }
 
 function saveRound() {
@@ -1892,7 +1930,7 @@ function showDetail(id) {
   const totalPar=round.scores.reduce((a,s)=>a+s.par,0);
   const rel=total-totalPar;
   const relStr=rel===0?'Even':rel>0?`+${rel}`:`${rel}`;
-  document.getElementById('det-eyebrow').textContent=round.courseName;
+  document.getElementById('det-eyebrow').textContent=round.courseName+(round.locked?' 🔒':'');
   document.getElementById('det-title').textContent=`${total} (${relStr})`;
   document.getElementById('det-overview').innerHTML=overviewHTML(round);
   document.getElementById('det-scorecard').innerHTML=scorecardHTML(round);
@@ -2557,7 +2595,28 @@ async function syncWithGitHub(silent) {
 }
 
 async function manualSync() {
-  await syncWithGitHub(false);
+  const statusEl = document.getElementById('settings-status');
+  if (statusEl) { statusEl.style.color = 'var(--gold)'; statusEl.textContent = '↺ Syncing…'; }
+  if (!ghConfigured()) {
+    if (statusEl) { statusEl.style.color = 'var(--red)'; statusEl.textContent = 'No GitHub settings saved yet.'; }
+    return;
+  }
+  if (!navigator.onLine) {
+    if (statusEl) { statusEl.style.color = 'var(--red)'; statusEl.textContent = 'Offline — cannot sync.'; }
+    return;
+  }
+  try {
+    const { rounds: remote, sha } = await ghGetFile();
+    const local = getRounds();
+    const merged = mergeRounds(local, remote);
+    localStorage.setItem('caddie_rounds', JSON.stringify(merged));
+    await ghPutFile(merged, sha);
+    if (statusEl) { statusEl.style.color = '#5ec85e'; statusEl.textContent = `✓ Synced · ${merged.length} round${merged.length!==1?'s':''}${merged.length===0?' — no rounds found on any device':''}`; }
+    renderHome();
+  } catch(e) {
+    if (statusEl) { statusEl.style.color = 'var(--red)'; statusEl.textContent = `Sync failed: ${e.message}`; }
+    console.error('GitHub sync error:', e);
+  }
 }
 
 function saveGHSettings() {
