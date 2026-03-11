@@ -731,7 +731,7 @@ const RESULT_OPTIONS = ['---','--','-','O','+','++','+++','?'];
 const SHAPE_OPTIONS = ['---','--','-','O','+','++','+++','?'];
 const APPROACH_RESULTS = ['Short','Long','On Green','Out of Position'];
 
-const LIE_OPTIONS = ['Fairway','L Rough','H Rough','Fringe','Green','Sand','Trees','Penalty'];
+const LIE_OPTIONS = ['Fairway','LR','HR','Fringe','Green','Sand','Trees','Penalty'];
 
 // ═══════════════════════════════════════════════════════════════
 let S = {
@@ -1292,9 +1292,9 @@ function addShot(i, club) {
   if(!s.shots) s.shots=[];
   // Default type based on club
   let defaultType = null;
-  if(club==='PT') defaultType='Putt';
+  if(club==='PT' || club==='TW') defaultType='Putt';
   else if(s.shots.length===0) defaultType='Tee';
-  s.shots.push({club, type:defaultType, result:null, contact:null, shape:null, lie:null, approachAim:null, approachFinish:null, mapPos:null});
+  s.shots.push({club, type:defaultType, result:null, contact:null, shape:null, lie:null, approachAim:null, approachFinish:null, mapPos:null, rating:null, gotOut:null, chipProx:null});
   renderShotBlocks(i);
   calcScore(i);
   saveWIP(round);
@@ -1320,6 +1320,17 @@ function removeShot(i, idx) {
   saveWIP(round);
 }
 
+function buildTypePills(shot,i,idx) {
+  const TYPE_GROUPS=[['Tee','Approach'],['Pitch','Chip','Sand'],['Layup','Recovery'],['Putt'],['Flub','?']];
+  return TYPE_GROUPS.map(group=>
+    `<span style="display:inline-flex;gap:4px;margin-right:6px">${group.map(v=>{
+      const cls=typePillClass(v);
+      const on=shot.type===v?' on':'';
+      return `<button class="attr-pill ${cls}${on}" onclick="setShotAttr(${i},${idx},'type','${v}')">${v}</button>`;
+    }).join('')}</span>`
+  ).join('');
+}
+
 function setShotAttr(i, idx, attr, value) {
   const round=S.currentRound;
   if(!round.scores[i]) return;
@@ -1331,6 +1342,8 @@ function setShotAttr(i, idx, attr, value) {
     if(!['Approach','Sand','Chip','Pitch'].includes(shot.type)){
       shot.approachAim=null; shot.approachFinish=null;
     }
+    if(!['Sand','Recovery'].includes(shot.type)) shot.gotOut=null;
+    if(shot.type!=='Chip') shot.chipProx=null;
   } else if(attr==='result') {
     shot.result = shot.result===value ? null : value;
   } else if(attr==='contact') {
@@ -1343,6 +1356,12 @@ function setShotAttr(i, idx, attr, value) {
     shot.approachFinish = shot.approachFinish===value ? null : value;
   } else if(attr==='lie') {
     shot.lie = shot.lie===value ? null : value;
+  } else if(attr==='gotOut') {
+    shot.gotOut = shot.gotOut===value ? null : value;
+  } else if(attr==='chipProx') {
+    shot.chipProx = shot.chipProx===value ? null : value;
+  } else if(attr==='rating') {
+    shot.rating = shot.rating===value ? null : value;
   }
 
   renderShotBlocks(i);
@@ -1383,8 +1402,25 @@ function renderShotBlocks(i) {
   el.innerHTML=shots.map((shot,idx)=>{
     const isPenalty=shot.type==='Penalty';
     const isPT=shot.club==='PT';
-    const isApproachShot = ['Approach','Sand','Chip','Pitch'].includes(shot.type);
+    const isTW=shot.club==='TW';
+    const isQ=shot.type==='?';
+    const isSand=shot.type==='Sand';
+    const isChip=shot.type==='Chip';
+    const isRecovery=shot.type==='Recovery';
+    const isPutt=shot.type==='Putt';
+    const isFlub=shot.type==='Flub';
     const isApproach=shot.type==='Approach';
+    const isPitch=shot.type==='Pitch';
+    const isApproachShot=['Approach','Pitch'].includes(shot.type);
+    const isLandmark=shot.club==='7i'||shot.club==='GW';
+    const clubCls=isPT?' pt':isTW?' pt':isLandmark?' landmark':'';
+
+    // Rating emoji row (all shots except Penalty and ?)
+    const RATINGS=[{v:'👎',label:'👎'},{v:'😐',label:'😐'},{v:'👍',label:'👍'}];
+    const ratingBtns=RATINGS.map(r=>{
+      const on=shot.rating===r.v;
+      return `<button onclick="setShotAttr(${i},${idx},'rating','${r.v}')" style="font-size:18px;padding:2px 8px;background:${on?'rgba(255,255,255,.15)':'transparent'};border:${on?'1px solid rgba(255,255,255,.3)':'1px solid transparent'};border-radius:8px;cursor:pointer;line-height:1.4">${r.label}</button>`;
+    }).join('');
 
     if(isPenalty) {
       return `<div class="shot-block shot-block-penalty">
@@ -1399,49 +1435,50 @@ function renderShotBlocks(i) {
       </div>`;
     }
 
-    const isPutt = shot.type==='Putt';
-    const isLandmark = shot.club==='7i' || shot.club==='GW';
-    const clubCls = isPT ? ' pt' : isLandmark ? ' landmark' : '';
-    const isChipPitch = ['Chip','Pitch'].includes(shot.type);
-    const showShape = !['Chip','Pitch','Putt'].includes(shot.type);
-    const showContact = shot.type !== 'Putt';
-    const showResult = !isApproachShot; // DROP APPROACH RESULT
-    const showLie = shot.club !== 'PT';
-    const resultOpts = (isPutt || isChipPitch) ? ['-','O','+'] : RESULT_OPTIONS;
+    // ? type — club + rating only
+    if(isQ) {
+      return `<div class="shot-block">
+        <div class="shot-block-hdr">
+          <div class="shot-block-num">${idx+1}</div>
+          <div class="shot-block-club${clubCls}">${shot.club}</div>
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:2px">${ratingBtns}</div>
+          <button class="shot-block-remove" onclick="removeShot(${i},${idx})">✕</button>
+        </div>
+        <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;margin-top:6px">
+          <div class="attr-row" style="margin-bottom:0">
+            <div class="attr-label">Type</div>
+            <div class="attr-pills">${buildTypePills(shot,i,idx)}</div>
+          </div>
+        </div>
+      </div>`;
+    }
 
-    // Result pills
+    const showShape=!['Chip','Pitch','Putt','Sand','Recovery','Flub'].includes(shot.type);
+    const showContact=!['Putt','Sand','Recovery'].includes(shot.type);
+    const showResult=!isApproachShot&&!isSand&&!isChip&&!isRecovery;
+    const showLie=!isPT&&!isTW&&!isPutt;
+    const resultOpts=isPutt?['-','O','+']:RESULT_OPTIONS;
+
     const resultPills=resultOpts.map(v=>{
       const cls=resultPillClass(v);
       const on=shot.result===v?' on':'';
       return `<button class="attr-pill ${cls}${on}" onclick="setShotAttr(${i},${idx},'result','${v}')">${v}</button>`;
     }).join('');
 
-    // Type pills — grouped
-    const TYPE_GROUPS = [['Tee','Approach'],['Pitch','Chip','Sand'],['Layup','Recovery'],['Putt'],['Flub','?']];
-    const typePills=TYPE_GROUPS.map(group=>
-      `<span style="display:inline-flex;gap:4px;margin-right:6px">${group.map(v=>{
-        const cls=typePillClass(v);
-        const on=shot.type===v?' on':'';
-        return `<button class="attr-pill ${cls}${on}" onclick="setShotAttr(${i},${idx},'type','${v}')">${v}</button>`;
-      }).join('')}</span>`
-    ).join('');
-
-    // Contact pills (Thin/Fat only — default = Good)
     const contactPills=showContact?['Thin','Fat'].map(v=>{
       const on=shot.contact===v?' on':'';
       return `<button class="attr-pill pill-contact-bad${on}" onclick="setShotAttr(${i},${idx},'contact','${v}')">${v}</button>`;
     }).join(''):'';
-    const contactGoodNote = showContact && !shot.contact ? '<span style="font-size:11px;color:#5ec85e;opacity:.7;padding:6px 2px">Good (default)</span>' : '';
+    const contactGoodNote=showContact&&!shot.contact?'<span style="font-size:11px;color:#5ec85e;opacity:.7;padding:6px 2px">Good (default)</span>':'';
 
-    // Shape pills
     const shapePills=showShape?SHAPE_OPTIONS.map(v=>{
       const cls=shapePillClass(v);
       const on=shot.shape===v?' on':'';
       return `<button class="attr-pill ${cls}${on}" onclick="setShotAttr(${i},${idx},'shape','${v}')">${v}</button>`;
     }).join(''):'';
 
-    // Lie pills
-    const LIE_GROUPS = [['Fairway','L Rough','H Rough'],['Fringe','Green'],['Sand','Trees'],['Penalty']];
+    // SHORT NAMES: LR / HR
+    const LIE_GROUPS=[['Fairway','LR','HR'],['Fringe','Green'],['Sand','Trees'],['Penalty']];
     const liePills=showLie?LIE_GROUPS.map(group=>
       `<span style="display:inline-flex;gap:4px;margin-right:6px">${group.map(v=>{
         const on=shot.lie===v?' on':'';
@@ -1449,7 +1486,7 @@ function renderShotBlocks(i) {
       }).join('')}</span>`
     ).join(''):'';
 
-    // Approach dual grid (Approach, Sand, Chip, Pitch)
+    // Approach dual grid
     const AIM_ZONES=[
       {id:'back-left',label:'BL'},{id:'back-center',label:'B'},{id:'back-right',label:'BR'},
       {id:'left',label:'L'},{id:'green',label:'🟢'},{id:'right',label:'R'},
@@ -1462,60 +1499,86 @@ function renderShotBlocks(i) {
       {id:'front-left',label:'FL'},{id:'front-center',label:'F'},{id:'front-right',label:'FR'},
       {id:'short-left',label:'SL'},{id:'short-center',label:'SH'},{id:'short-right',label:'SR'}
     ];
-    const apprPills=isApproachShot?`<div class="approach-grids">
-        <div class="approach-grid-wrap">
-          <div class="approach-grid-lbl">Aim</div>
-          <div class="green-grid">
-            ${AIM_ZONES.map(z=>{
-              const on=shot.approachAim===z.id;
-              const cls=on?(z.id==='green'?'on-green-zone':'on-miss'):'';
-              return `<button class="green-btn ${cls}" onclick="setShotAttr(${i},${idx},'approachAim','${z.id}')">${z.label}</button>`;
-            }).join('')}
-          </div>
-        </div>
-        <div class="approach-grid-wrap">
-          <div class="approach-grid-lbl">Finish</div>
-          <div style="display:flex;flex-direction:column;gap:3px">
-            <div style="background:rgba(144,96,176,.12);border:1px solid rgba(144,96,176,.3);border-radius:6px;padding:3px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
-              ${FINISH_ZONES.slice(0,3).map(z=>{
-                const on=shot.approachFinish===z.id;
-                const cls=on?'on-miss':'';
-                return `<button class="green-btn ${cls}" style="font-size:12px;padding:5px 2px;color:#b07de0" onclick="setShotAttr(${i},${idx},'approachFinish','${z.id}')">${z.label}</button>`;
-              }).join('')}
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
-              ${FINISH_ZONES.slice(3,12).map(z=>{
-                const on=shot.approachFinish===z.id;
-                const isGreen=z.id==='green';
-                const cls=on?(isGreen?'on-green-zone':'on-miss'):'';
-                return `<button class="green-btn ${cls}" onclick="setShotAttr(${i},${idx},'approachFinish','${z.id}')">${z.label}</button>`;
-              }).join('')}
-            </div>
-            <div style="background:rgba(80,144,192,.12);border:1px solid rgba(80,144,192,.3);border-radius:6px;padding:3px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
-              ${FINISH_ZONES.slice(12).map(z=>{
-                const on=shot.approachFinish===z.id;
-                const cls=on?'on-miss':'';
-                return `<button class="green-btn ${cls}" style="font-size:12px;padding:5px 2px;color:#70a8d8" onclick="setShotAttr(${i},${idx},'approachFinish','${z.id}')">${z.label}</button>`;
-              }).join('')}
-            </div>
-          </div>
-        </div>
-      </div>`:'';
 
-    const GROUP = (content) => `<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;margin-bottom:8px">${content}</div>`;
+    const finishGrid=`<div style="display:flex;flex-direction:column;gap:3px">
+      <div style="background:rgba(144,96,176,.12);border:1px solid rgba(144,96,176,.3);border-radius:6px;padding:3px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
+        ${FINISH_ZONES.slice(0,3).map(z=>{const on=shot.approachFinish===z.id;return `<button class="green-btn ${on?'on-miss':''}" style="font-size:12px;padding:5px 2px;color:#b07de0" onclick="setShotAttr(${i},${idx},'approachFinish','${z.id}')">${z.label}</button>`;}).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
+        ${FINISH_ZONES.slice(3,12).map(z=>{const on=shot.approachFinish===z.id;const isGreen=z.id==='green';return `<button class="green-btn ${on?(isGreen?'on-green-zone':'on-miss'):''}" onclick="setShotAttr(${i},${idx},'approachFinish','${z.id}')">${z.label}</button>`;}).join('')}
+      </div>
+      <div style="background:rgba(80,144,192,.12);border:1px solid rgba(80,144,192,.3);border-radius:6px;padding:3px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
+        ${FINISH_ZONES.slice(12).map(z=>{const on=shot.approachFinish===z.id;return `<button class="green-btn ${on?'on-miss':''}" style="font-size:12px;padding:5px 2px;color:#70a8d8" onclick="setShotAttr(${i},${idx},'approachFinish','${z.id}')">${z.label}</button>`;}).join('')}
+      </div>
+    </div>`;
+
+    const apprPills=isApproachShot?`<div class="approach-grids">
+      <div class="approach-grid-wrap">
+        <div class="approach-grid-lbl">Aim</div>
+        <div class="green-grid">
+          ${AIM_ZONES.map(z=>{const on=shot.approachAim===z.id;return `<button class="green-btn ${on?(z.id==='green'?'on-green-zone':'on-miss'):''}" onclick="setShotAttr(${i},${idx},'approachAim','${z.id}')">${z.label}</button>`;}).join('')}
+        </div>
+      </div>
+      <div class="approach-grid-wrap">
+        <div class="approach-grid-lbl">Finish</div>
+        ${finishGrid}
+      </div>
+    </div>`:'';
+
+    // DUNE ESCAPE: Sand — got out + finish grid only
+    const sandBlock=isSand?`<div style="margin-top:10px">
+      <div class="attr-row" style="margin-bottom:8px">
+        <div class="attr-label">Got out?</div>
+        <div class="attr-pills">
+          ${['Yes','No'].map(v=>{const on=shot.gotOut===v;return `<button class="attr-pill ${on?(v==='Yes'?'pill-close-plus on':'pill-far-minus on'):(v==='Yes'?'pill-close-plus':'pill-far-minus')}" onclick="setShotAttr(${i},${idx},'gotOut','${v}')">${v}</button>`;}).join('')}
+        </div>
+      </div>
+      <div class="approach-grid-wrap">
+        <div class="approach-grid-lbl">Finish</div>
+        ${finishGrid}
+      </div>
+    </div>`:'';
+
+    // CHIP ROLL: Chip — proximity + result quality
+    const CHIP_PROX=['Tap-in','Close','Medium','Far'];
+    const chipBlock=isChip?`<div style="margin-top:10px">
+      <div class="attr-row" style="margin-bottom:8px">
+        <div class="attr-label">Proximity</div>
+        <div class="attr-pills">${CHIP_PROX.map(v=>{const on=shot.chipProx===v?' on':'';return `<button class="attr-pill pill-generic${on}" onclick="setShotAttr(${i},${idx},'chipProx','${v}')">${v}</button>`;}).join('')}</div>
+      </div>
+      <div class="attr-row" style="margin-bottom:0">
+        <div class="attr-label">Quality</div>
+        <div class="attr-pills">${['-','O','+'].map(v=>{const cls=resultPillClass(v);const on=shot.result===v?' on':'';return `<button class="attr-pill ${cls}${on}" onclick="setShotAttr(${i},${idx},'result','${v}')">${v}</button>`;}).join('')}</div>
+      </div>
+    </div>`:'';
+
+    // PINE OUT: Recovery — got out + lie result
+    const recoveryBlock=isRecovery?`<div style="margin-top:10px">
+      <div class="attr-row" style="margin-bottom:0">
+        <div class="attr-label">Got out?</div>
+        <div class="attr-pills">
+          ${['Yes','No'].map(v=>{const on=shot.gotOut===v;return `<button class="attr-pill ${on?(v==='Yes'?'pill-close-plus on':'pill-far-minus on'):(v==='Yes'?'pill-close-plus':'pill-far-minus')}" onclick="setShotAttr(${i},${idx},'gotOut','${v}')">${v}</button>`;}).join('')}
+        </div>
+      </div>
+    </div>`:'';
+
+    const GROUP=(content)=>`<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px;margin-bottom:8px">${content}</div>`;
+
+    const hasApproachExtra=isApproachShot||isSand||isChip||isRecovery;
 
     return `<div class="shot-block">
       <div class="shot-block-hdr">
         <div class="shot-block-num">${idx+1}</div>
         <div class="shot-block-club${clubCls}">${shot.club}</div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:2px">${ratingBtns}</div>
         <button class="shot-block-remove" onclick="removeShot(${i},${idx})">✕</button>
       </div>
       ${GROUP(`<div class="attr-row" style="margin-bottom:0">
         <div class="attr-label">Type</div>
-        <div class="attr-pills">${typePills}</div>
+        <div class="attr-pills">${buildTypePills(shot,i,idx)}</div>
       </div>
-      ${isApproachShot ? `<div style="margin-top:10px">${apprPills}</div>` : ''}`)}
-      ${showResult||showContact||showShape ? GROUP(`
+      ${hasApproachExtra?`<div style="margin-top:10px">${isApproachShot?apprPills:isSand?sandBlock:isChip?chipBlock:recoveryBlock}</div>`:''}`)}
+      ${showResult||showContact||showShape?GROUP(`
         ${showResult?`<div class="attr-row">
           <div class="attr-label">Result · vs intended line</div>
           <div class="attr-pills">${resultPills}</div>
@@ -1528,12 +1591,11 @@ function renderShotBlocks(i) {
           <div class="attr-label">Shape</div>
           <div class="attr-pills">${shapePills}</div>
         </div>`:''}
-      `) : ''}
-      ${showLie ? GROUP(`<div class="attr-row" style="margin-bottom:0">
+      `):''}
+      ${showLie?GROUP(`<div class="attr-row" style="margin-bottom:0">
         <div class="attr-label">Lie Result</div>
         <div class="attr-pills">${liePills}</div>
-      </div>`) : ''}
-      ${!isApproachShot ? apprPills : ''}
+      </div>`):''}
     </div>`;
   }).join('');
 }
@@ -1796,7 +1858,7 @@ function tendenciesHTML(round) {
   </div>`:''}
   ${totalLies?`<div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:12px">Lie Results (${totalLies})</div>
-    ${LIE_OPTIONS.map(l=>lieCounts[l]?barRow(l,lieCounts[l],totalLies,l==='Fairway'?'#5ec85e':l==='Green'?'#b48ef0':l==='Fringe'?'#8ed88e':l==='L Rough'?'#e0a870':l==='H Rough'?'#c07050':l==='Trees'?'#4a7a4a':l==='Penalty'?'#e0c030':'var(--red)'):'').join('')}
+    ${LIE_OPTIONS.map(l=>lieCounts[l]?barRow(l,lieCounts[l],totalLies,l==='Fairway'?'#5ec85e':l==='Green'?'#b48ef0':l==='Fringe'?'#8ed88e':l==='LR'?'#e0a870':l==='HR'?'#c07050':l==='Trees'?'#4a7a4a':l==='Penalty'?'#e0c030':'var(--red)'):'').join('')}
   </div>`:''}
   ${totalApprFinish?`<div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:12px">Approach Finish Zones · ${girCount}/${scores.length} GIR</div>
