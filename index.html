@@ -1294,7 +1294,7 @@ function addShot(i, club) {
   let defaultType = null;
   if(club==='PT' || club==='TW') defaultType='Putt';
   else if(s.shots.length===0) defaultType='Tee';
-  s.shots.push({club, type:defaultType, result:null, contact:null, shape:null, lie:null, approachAim:null, approachFinish:null, mapPos:null, rating:null, gotOut:null, chipProx:null});
+  s.shots.push({club, type:defaultType, result:null, contact:null, shape:null, lie:null, approachAim:null, approachFinish:null, approachFinishDist:null, approachFinishDir:null, mapPos:null, rating:null, gotOut:null, chipProx:null});
   renderShotBlocks(i);
   calcScore(i);
   saveWIP(round);
@@ -1354,6 +1354,10 @@ function setShotAttr(i, idx, attr, value) {
     shot.approachAim = shot.approachAim===value ? null : value;
   } else if(attr==='approachFinish') {
     shot.approachFinish = shot.approachFinish===value ? null : value;
+  } else if(attr==='approachFinish_dist') {
+    shot.approachFinishDist = shot.approachFinishDist===value ? null : value;
+  } else if(attr==='approachFinish_dir') {
+    shot.approachFinishDir = shot.approachFinishDir===value ? null : value;
   } else if(attr==='lie') {
     shot.lie = shot.lie===value ? null : value;
   } else if(attr==='gotOut') {
@@ -1456,7 +1460,7 @@ function renderShotBlocks(i) {
     const showShape=!['Chip','Pitch','Putt','Sand','Recovery','Flub'].includes(shot.type);
     const showContact=!['Putt','Sand','Recovery'].includes(shot.type);
     const showResult=!isApproachShot&&!isSand&&!isChip&&!isRecovery;
-    const showLie=!isPT&&!isTW&&!isPutt;
+    const showLie=!isPT&&!isTW&&!isPutt&&!isSand;
     const resultOpts=isPutt?['-','O','+']:RESULT_OPTIONS;
 
     const resultPills=resultOpts.map(v=>{
@@ -1486,56 +1490,36 @@ function renderShotBlocks(i) {
       }).join('')}</span>`
     ).join(''):'';
 
-    // Approach dual grid
-    const AIM_ZONES=[
-      {id:'back-left',label:'BL'},{id:'back-center',label:'B'},{id:'back-right',label:'BR'},
-      {id:'left',label:'L'},{id:'green',label:'🟢'},{id:'right',label:'R'},
-      {id:'front-left',label:'FL'},{id:'front-center',label:'F'},{id:'front-right',label:'FR'}
-    ];
-    const FINISH_ZONES=[
-      {id:'long-left',label:'LL'},{id:'long-center',label:'LG'},{id:'long-right',label:'LR'},
-      {id:'back-left',label:'BL'},{id:'back-center',label:'B'},{id:'back-right',label:'BR'},
-      {id:'left',label:'L'},{id:'green',label:'🟢'},{id:'right',label:'R'},
-      {id:'front-left',label:'FL'},{id:'front-center',label:'F'},{id:'front-right',label:'FR'},
-      {id:'short-left',label:'SL'},{id:'short-center',label:'SH'},{id:'short-right',label:'SR'}
-    ];
+    // TWO ROW: Aim = Left/Center/Right, Finish = Distance + Direction pills
+    const AIM_DIRS=['Left','Center','Right'];
+    const FINISH_DISTS=['Short','On','Long'];
+    const FINISH_DIRS=['Left','Center','Right'];
 
-    const finishGrid=`<div style="display:flex;flex-direction:column;gap:3px">
-      <div style="background:rgba(144,96,176,.12);border:1px solid rgba(144,96,176,.3);border-radius:6px;padding:3px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
-        ${FINISH_ZONES.slice(0,3).map(z=>{const on=shot.approachFinish===z.id;return `<button class="green-btn ${on?'on-miss':''}" style="font-size:12px;padding:5px 2px;color:#b07de0" onclick="setShotAttr(${i},${idx},'approachFinish','${z.id}')">${z.label}</button>`;}).join('')}
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
-        ${FINISH_ZONES.slice(3,12).map(z=>{const on=shot.approachFinish===z.id;const isGreen=z.id==='green';return `<button class="green-btn ${on?(isGreen?'on-green-zone':'on-miss'):''}" onclick="setShotAttr(${i},${idx},'approachFinish','${z.id}')">${z.label}</button>`;}).join('')}
-      </div>
-      <div style="background:rgba(80,144,192,.12);border:1px solid rgba(80,144,192,.3);border-radius:6px;padding:3px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px">
-        ${FINISH_ZONES.slice(12).map(z=>{const on=shot.approachFinish===z.id;return `<button class="green-btn ${on?'on-miss':''}" style="font-size:12px;padding:5px 2px;color:#70a8d8" onclick="setShotAttr(${i},${idx},'approachFinish','${z.id}')">${z.label}</button>`;}).join('')}
-      </div>
+    const pillRow=(label, opts, attr, getter, colorFn)=>`<div class="attr-row" style="margin-bottom:6px">
+      <div class="attr-label">${label}</div>
+      <div class="attr-pills">${opts.map(v=>{
+        const on=getter(v);
+        const base=colorFn?colorFn(v):'pill-generic';
+        return `<button class="attr-pill ${base}${on?' on':''}" onclick="setShotAttr(${i},${idx},'${attr}','${v}')">${v}</button>`;
+      }).join('')}</div>
     </div>`;
 
-    const apprPills=isApproachShot?`<div class="approach-grids">
-      <div class="approach-grid-wrap">
-        <div class="approach-grid-lbl">Aim</div>
-        <div class="green-grid">
-          ${AIM_ZONES.map(z=>{const on=shot.approachAim===z.id;return `<button class="green-btn ${on?(z.id==='green'?'on-green-zone':'on-miss'):''}" onclick="setShotAttr(${i},${idx},'approachAim','${z.id}')">${z.label}</button>`;}).join('')}
-        </div>
-      </div>
-      <div class="approach-grid-wrap">
-        <div class="approach-grid-lbl">Finish</div>
-        ${finishGrid}
-      </div>
+    const finishDistColor=v=>v==='On'?'pill-close-plus':v==='Short'?'pill-mid-minus':'pill-mid-minus';
+
+    const apprPills=isApproachShot?`<div style="margin-top:8px">
+      ${pillRow('Aim', AIM_DIRS, 'approachAim', v=>shot.approachAim===v, ()=>'pill-generic')}
+      <div style="height:4px;border-top:1px solid rgba(255,255,255,.06);margin:4px 0"></div>
+      ${pillRow('Distance', FINISH_DISTS, 'approachFinish_dist', v=>shot.approachFinishDist===v, finishDistColor)}
+      ${pillRow('Direction', FINISH_DIRS, 'approachFinish_dir', v=>shot.approachFinishDir===v, ()=>'pill-generic')}
     </div>`:'';
 
     // DUNE ESCAPE: Sand — got out + finish grid only
     const sandBlock=isSand?`<div style="margin-top:10px">
-      <div class="attr-row" style="margin-bottom:8px">
+      <div class="attr-row" style="margin-bottom:0">
         <div class="attr-label">Got out?</div>
         <div class="attr-pills">
           ${['Yes','No'].map(v=>{const on=shot.gotOut===v;return `<button class="attr-pill ${on?(v==='Yes'?'pill-close-plus on':'pill-far-minus on'):(v==='Yes'?'pill-close-plus':'pill-far-minus')}" onclick="setShotAttr(${i},${idx},'gotOut','${v}')">${v}</button>`;}).join('')}
         </div>
-      </div>
-      <div class="approach-grid-wrap">
-        <div class="approach-grid-lbl">Finish</div>
-        ${finishGrid}
       </div>
     </div>`:'';
 
