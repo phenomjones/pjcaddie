@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +7,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Caddie">
+<meta name="theme-color" content="#1a2e1a">
 <title>Caddie</title>
+<link rel="manifest" href='data:application/manifest+json,{"name":"Caddie","short_name":"Caddie","start_url":"/pjcaddie/","scope":"/pjcaddie/","display":"standalone","orientation":"portrait","background_color":"%230f1a0f","theme_color":"%231a2e1a","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=\u0027http://www.w3.org/2000/svg\u0027 viewBox=\u00270 0 100 100\u0027%3E%3Ccircle cx=\u002750\u0027 cy=\u002750\u0027 r=\u002750\u0027 fill=\u0027%231a2e1a\u0027/%3E%3Ctext y=\u0027.9em\u0027 font-size=\u002770\u0027 x=\u002750\u0027 text-anchor=\u0027middle\u0027%3E⛳%3C/text%3E%3C/svg%3E","sizes":"any","type":"image/svg+xml"}]}'>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231a2e1a'/><text y='.9em' font-size='70' x='50' text-anchor='middle'>⛳</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -386,6 +390,24 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     </div>
     <div class="eyebrow" style="margin:18px 0 10px">Recent Rounds</div>
     <div id="home-rounds"></div>
+    <div style="display:flex;gap:8px;margin-top:20px">
+      <button onclick="exportRounds()" style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:10px;font-size:12px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif">↑ Export Rounds</button>
+      <button onclick="showImport()" style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:10px;font-size:12px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif">↓ Import Rounds</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ IMPORT OVERLAY ═══════════════ -->
+<div id="import-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:none;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--ink2);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:360px">
+    <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk);margin-bottom:6px">Import Rounds</div>
+    <div style="font-size:12px;color:var(--chalk3);margin-bottom:16px">Paste exported JSON below. Existing rounds with matching IDs will be skipped — no data will be overwritten.</div>
+    <textarea id="import-text" style="width:100%;height:120px;background:var(--ink3);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:11px;color:var(--chalk2);font-family:monospace;resize:none;box-sizing:border-box" placeholder='Paste JSON here...'></textarea>
+    <div id="import-status" style="font-size:12px;min-height:18px;margin:8px 0;color:var(--chalk3)"></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button onclick="closeImport()" style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:10px;font-size:13px;color:var(--chalk2);cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
+      <button onclick="doImport()" style="flex:1;background:rgba(200,168,75,.15);border:1px solid var(--gold);border-radius:100px;padding:10px;font-size:13px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif">Import</button>
+    </div>
   </div>
 </div>
 
@@ -1815,6 +1837,18 @@ function doDelete(){
 // ═══════════════════════════════════════════════════════════════
 function openCoach(round) {
   if(!round) return;
+  if(!navigator.onLine) {
+    document.getElementById('coach-overlay').classList.add('open');
+    document.getElementById('coach-loading').style.display='none';
+    document.getElementById('coach-content').style.display='block';
+    document.getElementById('coach-content').innerHTML=`
+      <div style="text-align:center;padding:40px 20px">
+        <div style="font-size:36px;margin-bottom:16px">📡</div>
+        <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk);margin-bottom:8px">You're Offline</div>
+        <div style="font-size:14px;color:var(--chalk3);line-height:1.6">Coach Analysis needs an internet connection. Your round data is saved — come back to this when you have signal.</div>
+      </div>`;
+    return;
+  }
   document.getElementById('coach-overlay').classList.add('open');
   document.getElementById('coach-loading').style.display='flex';
   document.getElementById('coach-content').style.display='none';
@@ -2346,6 +2380,64 @@ function shotMapClear() {
 function shotMapSave() {
   // Already auto-saved on each tap — just nav back
   closeShotMap();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SERVICE WORKER REGISTRATION
+// ═══════════════════════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/pjcaddie/sw.js')
+      .then(reg => console.log('Caddie SW registered:', reg.scope))
+      .catch(err => console.log('SW registration failed:', err));
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════════════════════════════
+function exportRounds() {
+  const rounds = getRounds();
+  if (!rounds.length) { alert('No rounds to export yet.'); return; }
+  const json = JSON.stringify({caddie_export: true, version: 1, exported: new Date().toISOString(), rounds}, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `caddie-rounds-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function showImport() {
+  const el = document.getElementById('import-overlay');
+  el.style.display = 'flex';
+  document.getElementById('import-text').value = '';
+  document.getElementById('import-status').textContent = '';
+}
+
+function closeImport() {
+  document.getElementById('import-overlay').style.display = 'none';
+}
+
+function doImport() {
+  const text = document.getElementById('import-text').value.trim();
+  const statusEl = document.getElementById('import-status');
+  if (!text) { statusEl.style.color='var(--red)'; statusEl.textContent = 'Nothing to import.'; return; }
+  let parsed;
+  try { parsed = JSON.parse(text); } catch(e) { statusEl.style.color='var(--red)'; statusEl.textContent = 'Invalid JSON — check your paste.'; return; }
+  const incoming = parsed.rounds || (Array.isArray(parsed) ? parsed : null);
+  if (!incoming) { statusEl.style.color='var(--red)'; statusEl.textContent = 'No rounds found in this data.'; return; }
+  const existing = getRounds();
+  const existingIds = new Set(existing.map(r=>r.id));
+  const newRounds = incoming.filter(r => r.id && !existingIds.has(r.id));
+  const skipped = incoming.length - newRounds.length;
+  const merged = [...existing, ...newRounds];
+  localStorage.setItem('caddieRounds', JSON.stringify(merged));
+  statusEl.style.color = '#5ec85e';
+  statusEl.textContent = `✓ Imported ${newRounds.length} round${newRounds.length!==1?'s':''}${skipped?' · '+skipped+' skipped (already exist)':''}`;
+  renderHome();
+  setTimeout(closeImport, 1800);
 }
 
 // ═══════════════════════════════════════════════════════════════
