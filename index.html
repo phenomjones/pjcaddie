@@ -414,7 +414,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.19 · Mar 12, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.19.1 · Mar 12, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -600,7 +600,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 <div class="view" id="view-scoring">
   <div class="hole-hdr">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 18px 0">
-      <button onclick="confirmHomeFromRound()" style="background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;opacity:.8">⌂ Home</button>
+      <button onclick="S._editingRoundId ? cancelEditRound() : confirmHomeFromRound()" style="background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;opacity:.8" id="sc-home-btn">⌂ Home</button>
       <div style="font-size:10px;letter-spacing:2px;color:var(--chalk3);opacity:.5" id="sc-round-label"></div>
     </div>
     <div class="hole-top">
@@ -696,18 +696,17 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="tab on" onclick="detTab('overview',this)">Overview</div>
     <div class="tab" onclick="detTab('scorecard',this)">Scorecard</div>
     <div class="tab" onclick="detTab('tendencies',this)">Tendencies</div>
-    <div class="tab" id="det-edit-tab" onclick="detTab('edit',this)" style="display:none">Edit</div>
   </div>
   <div class="scroll-body pad" style="padding-bottom:100px">
     <div id="det-overview" style="padding-top:16px"></div>
     <div id="det-scorecard" style="padding-top:16px;display:none"></div>
     <div id="det-tendencies" style="padding-top:16px;display:none"></div>
-    <div id="det-edit" style="padding-top:16px;display:none"></div>
   </div>
   <div class="sticky-bot">
     <div style="display:flex;flex-direction:column;gap:8px">
       <button class="btn-coach" onclick="openCoach(getRounds().find(r=>r.id===S.viewingId))">🎓 Coach Analysis</button>
       <button class="btn btn-gold" onclick="openShotMap(S.viewingId,'detail')" style="background:rgba(200,168,75,.1);border:1px solid var(--gold);color:var(--gold)">🗺 Shot Maps</button>
+      <button id="det-edit-btn" class="btn" onclick="editRound()" style="background:rgba(200,168,75,.08);border:1px solid var(--border);color:var(--chalk2)">✏️ Edit Round</button>
       <button class="btn btn-danger" onclick="confirmDelete()">Delete Round</button>
     </div>
   </div>
@@ -1160,6 +1159,9 @@ function confirmBag() {
   showView('scoring');
   buildScoringView();
   loadHole(0);
+  // Update home button to show back arrow
+  const homeBtn = document.getElementById('sc-home-btn');
+  if (homeBtn) homeBtn.textContent = '← Back';
 }
 
 function editBag() {
@@ -2269,10 +2271,17 @@ function saveRound() {
   if(ei>=0) rounds[ei]=round; else rounds.push(round);
   saveRounds(rounds);
   saveWIP(null);
-  showView('home');
   syncWithGitHub(true);
   // Clear remote WIP since round is now complete
   if (ghConfigured() && navigator.onLine) ghClearWIP(null).catch(()=>{});
+  // REWIND MODE: return to detail view if editing, else go home
+  if (S._editingRoundId) {
+    S.viewingId = S._editingRoundId;
+    S._editingRoundId = null;
+    showDetail(S.viewingId);
+  } else {
+    showView('home');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2508,84 +2517,25 @@ function renderHistory() {
 
 
 // ═══════════════════════════════════════════════════════════════
-// EDIT MODE — Edit shots on completed rounds
+// REWIND MODE — Edit completed round in scoring screen
 // ═══════════════════════════════════════════════════════════════
-function renderEditTab() {
-  const round = getRounds().find(r=>r.id===S.viewingId);
-  if (!round || round.locked) return;
-  const CLUBS = ['Driver','3W','5W','2H','3H','4H','5H','5i','6i','7i','8i','9i','PW','GW','56','58','PT','TW','?'];
-  const TYPES = ['Tee','Approach','Pitch','Chip','Sand','Layup','Recovery','Putt','Flub','Penalty'];
-  const CONTACTS = ['','Thin','Fat','Good'];
-  const RATINGS = ['','thumbsDown','neutral','thumbsUp'];
-  const RATING_LABEL = {'':'—','thumbsDown':'👎','neutral':'😐','thumbsUp':'👍'};
-  const LIES = ['','Fairway','LR','HR','Fringe','Green','Sand','Trees'];
-  const RESULTS = ['','---','--','-','O','+','++','+++'];
 
-  const el = document.getElementById('det-edit');
-  el.innerHTML = `<div style="font-size:12px;color:var(--chalk3);margin-bottom:14px">Tap a field to edit. Changes save immediately.</div>` +
-    round.scores.map((s, si) => {
-      const shots = s.shots || [];
-      if (!shots.length) return '';
-      return `<div style="margin-bottom:16px">
-        <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:8px">
-          Hole ${s.hole} · Par ${s.par} · ${s.strokes} strokes
-        </div>
-        ${shots.map((sh, shi) => `
-          <div style="background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px">
-            <div style="font-size:12px;color:var(--chalk3);margin-bottom:8px;font-weight:600">Shot ${shi+1}</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              <label style="display:flex;flex-direction:column;gap:4px">
-                <span style="font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:1px">Club</span>
-                <select onchange="editShotField(${si},${shi},'club',this.value)" style="background:var(--ink);border:1px solid var(--border);border-radius:6px;padding:6px;color:var(--chalk);font-size:14px">
-                  ${CLUBS.map(c=>`<option value="${c}" ${sh.club===c?'selected':''}>${c}</option>`).join('')}
-                </select>
-              </label>
-              <label style="display:flex;flex-direction:column;gap:4px">
-                <span style="font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:1px">Type</span>
-                <select onchange="editShotField(${si},${shi},'type',this.value)" style="background:var(--ink);border:1px solid var(--border);border-radius:6px;padding:6px;color:var(--chalk);font-size:14px">
-                  ${TYPES.map(t=>`<option value="${t}" ${sh.type===t?'selected':''}>${t}</option>`).join('')}
-                </select>
-              </label>
-              <label style="display:flex;flex-direction:column;gap:4px">
-                <span style="font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:1px">Rating</span>
-                <select onchange="editShotField(${si},${shi},'rating',this.value)" style="background:var(--ink);border:1px solid var(--border);border-radius:6px;padding:6px;color:var(--chalk);font-size:14px">
-                  ${RATINGS.map(r=>`<option value="${r}" ${sh.rating===r?'selected':''}>${RATING_LABEL[r]}</option>`).join('')}
-                </select>
-              </label>
-              <label style="display:flex;flex-direction:column;gap:4px">
-                <span style="font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:1px">Contact</span>
-                <select onchange="editShotField(${si},${shi},'contact',this.value)" style="background:var(--ink);border:1px solid var(--border);border-radius:6px;padding:6px;color:var(--chalk);font-size:14px">
-                  ${CONTACTS.map(c=>`<option value="${c}" ${sh.contact===c?'selected':''}>${c||'—'}</option>`).join('')}
-                </select>
-              </label>
-              <label style="display:flex;flex-direction:column;gap:4px">
-                <span style="font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:1px">Result</span>
-                <select onchange="editShotField(${si},${shi},'result',this.value)" style="background:var(--ink);border:1px solid var(--border);border-radius:6px;padding:6px;color:var(--chalk);font-size:14px">
-                  ${RESULTS.map(r=>`<option value="${r}" ${sh.result===r?'selected':''}>${r||'—'}</option>`).join('')}
-                </select>
-              </label>
-              <label style="display:flex;flex-direction:column;gap:4px">
-                <span style="font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:1px">Ball Landed In</span>
-                <select onchange="editShotField(${si},${shi},'lie',this.value)" style="background:var(--ink);border:1px solid var(--border);border-radius:6px;padding:6px;color:var(--chalk);font-size:14px">
-                  ${LIES.map(l=>`<option value="${l}" ${sh.lie===l?'selected':''}>${l||'—'}</option>`).join('')}
-                </select>
-              </label>
-            </div>
-          </div>`).join('')}
-      </div>`;
-    }).join('');
+function cancelEditRound() {
+  if (!confirm('Discard edits and return to round detail?')) return;
+  S._editingRoundId = null;
+  showDetail(S.viewingId);
 }
-
-function editShotField(scoreIdx, shotIdx, field, value) {
-  const rounds = getRounds();
-  const r = rounds.find(r=>r.id===S.viewingId);
-  if (!r || r.locked) return;
-  if (!r.scores[scoreIdx] || !r.scores[scoreIdx].shots[shotIdx]) return;
-  r.scores[scoreIdx].shots[shotIdx][field] = value || null;
-  saveRounds(rounds);
-  syncWithGitHub(true);
-  // Flash saved
-  const sp = document.getElementById('course-notes-saved');
+function editRound() {
+  const round = getRounds().find(r => r.id === S.viewingId);
+  if (!round || round.locked) return;
+  // Clone the round into currentRound for editing
+  S.currentRound = JSON.parse(JSON.stringify(round));
+  S.currentHole = 0;
+  S._editingRoundId = round.id; // flag: we are editing an existing round
+  if (!S.activeBag || !S.activeBag.length) S.activeBag = [...CLUBS];
+  showView('scoring');
+  buildScoringView();
+  loadHole(0);
 }
 
 function showDetail(id) {
@@ -2601,19 +2551,18 @@ function showDetail(id) {
   document.getElementById('det-overview').innerHTML=overviewHTML(round);
   document.getElementById('det-scorecard').innerHTML=scorecardHTML(round);
   document.getElementById('det-tendencies').innerHTML=tendenciesHTML(round);
-  // EDIT MODE: show/hide edit tab based on lock status
-  const editTab = document.getElementById('det-edit-tab');
-  if (editTab) editTab.style.display = round.locked ? 'none' : 'flex';
+  // EDIT MODE: show/hide edit button based on lock status
+  const editBtn = document.getElementById('det-edit-btn');
+  if (editBtn) editBtn.style.display = round.locked ? 'none' : 'block';
   showView('detail');
 }
 
 function detTab(tab,el){
-  ['overview','scorecard','tendencies','edit'].forEach(t=>{
+  ['overview','scorecard','tendencies'].forEach(t=>{
     document.getElementById('det-'+t).style.display=t===tab?'block':'none';
   });
   document.querySelectorAll('#view-detail .tab').forEach(t=>t.classList.remove('on'));
   el.classList.add('on');
-  if(tab==='edit') renderEditTab();
 }
 
 function confirmDelete(){document.getElementById('del-sheet').classList.add('open');}
