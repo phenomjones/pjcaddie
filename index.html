@@ -267,11 +267,12 @@ body{display:flex;flex-direction:column}
 .sheet p{font-size:14px;color:var(--chalk2);margin-bottom:20px}
 
 /* ── COACH OVERLAY ── */
-.coach-overlay{position:fixed;inset:0;background:var(--ink);z-index:200;display:none;flex-direction:column;overflow:hidden}
+.coach-overlay{position:fixed;inset:0;background:rgba(14,26,14,.96);z-index:200;display:none;flex-direction:column;overflow:hidden}
 .coach-overlay.open{display:flex}
 .coach-hdr{flex-shrink:0;padding:16px 18px 12px;background:var(--ink2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .coach-hdr-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk)}
 .coach-close{background:none;border:none;color:var(--chalk3);font-size:22px;cursor:pointer;padding:4px 8px;line-height:1}
+.coach-inner{width:100%;max-width:700px;margin:0 auto;display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
 .coach-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 18px 40px}
 .coach-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;color:var(--chalk2)}
 .coach-spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
@@ -413,7 +414,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.18.1 · Mar 12, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.18.2 · Mar 12, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -756,32 +757,34 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
       <button class="coach-close" onclick="closeCoach()">✕</button>
     </div>
   </div>
-  <!-- Tab bar (hidden until analysis loads) -->
-  <div id="coach-tab-bar" style="display:none;flex-shrink:0;background:var(--ink2);border-bottom:1px solid var(--border)">
-    <div style="display:flex">
-      <div class="coach-tab on" onclick="coachTab('round',this)">Round</div>
-      <div class="coach-tab" onclick="coachTab('patterns',this)">Patterns</div>
-      <div class="coach-tab" onclick="coachTab('holes',this)">Holes</div>
+  <div class="coach-inner">
+    <!-- Tab bar (hidden until analysis loads) -->
+    <div id="coach-tab-bar" style="display:none;flex-shrink:0;background:var(--ink2);border-bottom:1px solid var(--border)">
+      <div style="display:flex">
+        <div class="coach-tab on" onclick="coachTab('round',this)">Round</div>
+        <div class="coach-tab" onclick="coachTab('patterns',this)">Patterns</div>
+        <div class="coach-tab" onclick="coachTab('holes',this)">Holes</div>
+      </div>
     </div>
-  </div>
-  <div class="coach-body" id="coach-body">
-    <div class="coach-loading" id="coach-loading">
-      <div class="coach-spinner"></div>
-      <div style="font-size:14px">Analyzing your round…</div>
-      <div style="font-size:12px;opacity:.5">This takes about 20 seconds</div>
+    <div class="coach-body" id="coach-body">
+      <div class="coach-loading" id="coach-loading">
+        <div class="coach-spinner"></div>
+        <div style="font-size:14px">Analyzing your round…</div>
+        <div style="font-size:12px;opacity:.5">This takes about 20 seconds</div>
+      </div>
+      <div id="coach-content" style="display:none">
+        <div id="coach-tab-round"></div>
+        <div id="coach-tab-patterns" style="display:none"></div>
+        <div id="coach-tab-holes" style="display:none"></div>
+      </div>
     </div>
-    <div id="coach-content" style="display:none">
-      <div id="coach-tab-round"></div>
-      <div id="coach-tab-patterns" style="display:none"></div>
-      <div id="coach-tab-holes" style="display:none"></div>
-    </div>
-  </div>
-  <!-- COACH CHAT -->
-  <div id="coach-chat-area" style="display:none;flex-shrink:0;border-top:1px solid var(--border);background:var(--ink2)">
-    <div id="coach-chat-thread" style="max-height:220px;overflow-y:auto;padding:10px 14px 4px;display:flex;flex-direction:column;gap:8px"></div>
-    <div style="display:flex;align-items:flex-end;gap:8px;padding:8px 14px 12px">
-      <textarea id="coach-chat-input" placeholder="Ask your coach anything…" rows="1" style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:20px;padding:9px 14px;font-size:13px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:none;outline:none;line-height:1.4;max-height:80px;overflow-y:auto" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCoachChat();}"></textarea>
-      <button onclick="sendCoachChat()" style="background:var(--gold);border:none;border-radius:50%;width:36px;height:36px;flex-shrink:0;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">➤</button>
+    <!-- COACH CHAT -->
+    <div id="coach-chat-area" style="display:none;flex-shrink:0;border-top:1px solid var(--border);background:var(--ink2)">
+      <div id="coach-chat-thread" style="max-height:220px;overflow-y:auto;padding:10px 14px 4px;display:flex;flex-direction:column;gap:8px"></div>
+      <div style="display:flex;align-items:flex-end;gap:8px;padding:8px 14px 12px">
+        <textarea id="coach-chat-input" placeholder="Ask your coach anything…" rows="1" style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:20px;padding:9px 14px;font-size:13px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:none;outline:none;line-height:1.4;max-height:80px;overflow-y:auto" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCoachChat();}"></textarea>
+        <button onclick="sendCoachChat()" style="background:var(--gold);border:none;border-radius:50%;width:36px;height:36px;flex-shrink:0;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">➤</button>
+      </div>
     </div>
   </div>
 </div>
