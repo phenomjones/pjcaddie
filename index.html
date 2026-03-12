@@ -3580,7 +3580,24 @@ async function ghPutFile(rounds, sha) {
 
 function mergeRounds(local, remote) {
   const map = {};
-  [...remote, ...local].forEach(r => { if (r && r.id) map[r.id] = r; });
+  // Start with remote as base
+  [...remote, ...local].forEach(r => {
+    if (!r || !r.id) return;
+    const existing = map[r.id];
+    if (!existing) { map[r.id] = r; return; }
+    // SMART MERGE: prefer whichever copy has analysis
+    const existingHasAnalysis = !!existing.analysis?.savedAt;
+    const incomingHasAnalysis = !!r.analysis?.savedAt;
+    if (incomingHasAnalysis && !existingHasAnalysis) {
+      map[r.id] = r; // incoming has analysis, existing doesn't — take incoming
+    } else if (existingHasAnalysis && incomingHasAnalysis) {
+      // Both have analysis — take the newer savedAt
+      const existingTs = new Date(existing.analysis.savedAt).getTime();
+      const incomingTs = new Date(r.analysis.savedAt).getTime();
+      if (incomingTs > existingTs) map[r.id] = r;
+    }
+    // existing has analysis, incoming doesn't — keep existing (do nothing)
+  });
   return Object.values(map).sort((a,b) => (b.date||'').localeCompare(a.date||''));
 }
 
