@@ -413,7 +413,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.18 · Mar 12, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.18.1 · Mar 12, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -2794,6 +2794,7 @@ Respond ONLY with a valid JSON object, no markdown, no backticks:
       rounds[ri].analysis = {data: analysis, savedAt: new Date().toISOString()};
       saveRounds(rounds);
       round.analysis = rounds[ri].analysis;
+      syncWithGitHub(true); // push analysis to all devices
     }
 
     renderCoachAnalysis(analysis, round);
