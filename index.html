@@ -414,7 +414,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.19.9 · Mar 12, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.19.10 · Mar 12, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -1270,24 +1270,6 @@ function holePageHTML(i) {
       <div class="shots-empty">Tap a club above to log your first shot</div>
     </div>
 
-    <!-- PIN LOCATION -->
-    <div class="card" style="margin:10px 0" id="pin-card-${i}">
-      <div class="eyebrow" style="margin-bottom:8px">Pin Location</div>
-      <div class="pin-label-top">← Back →</div>
-      <div class="pin-grid" id="pin-grid-${i}">
-        <button class="pin-btn" data-pin="back-left"     onclick="setPin(${i},'back-left')">Back<br>Left</button>
-        <button class="pin-btn" data-pin="back-center"   onclick="setPin(${i},'back-center')">Back<br>Center</button>
-        <button class="pin-btn" data-pin="back-right"    onclick="setPin(${i},'back-right')">Back<br>Right</button>
-        <button class="pin-btn" data-pin="middle-left"   onclick="setPin(${i},'middle-left')">Middle<br>Left</button>
-        <button class="pin-btn" data-pin="middle-center" onclick="setPin(${i},'middle-center')">Middle<br>Center</button>
-        <button class="pin-btn" data-pin="middle-right"  onclick="setPin(${i},'middle-right')">Middle<br>Right</button>
-        <button class="pin-btn" data-pin="front-left"    onclick="setPin(${i},'front-left')">Front<br>Left</button>
-        <button class="pin-btn" data-pin="front-center"  onclick="setPin(${i},'front-center')">Front<br>Center</button>
-        <button class="pin-btn" data-pin="front-right"   onclick="setPin(${i},'front-right')">Front<br>Right</button>
-      </div>
-      <div class="pin-label-bot">← Front →</div>
-    </div>
-
     <!-- NOTES -->
     <div class="card" style="margin:10px 0 10px">
       <div class="ctr-label" style="margin-bottom:6px">Hole Notes</div>
@@ -2073,7 +2055,35 @@ function renderShotBlocks(i) {
     </div>`;
   }).join('');
 
-  // Pin card visibility: show/hide only — no auto-scroll
+  // Inject pin card inline after last approach/pitch/par3-tee shot
+  const pinIdx = shots.reduce((last, sh, idx) => {
+    const needsPin = ['Approach','Pitch'].includes(sh.type) || (sh.type==='Tee' && holePar===3);
+    return needsPin ? idx : last;
+  }, -1);
+
+  if (pinIdx >= 0) {
+    const pinLoc = s.pinLocation || null;
+    const PINS = [
+      ['back-left','Back<br>Left'],['back-center','Back<br>Center'],['back-right','Back<br>Right'],
+      ['middle-left','Middle<br>Left'],['middle-center','Middle<br>Center'],['middle-right','Middle<br>Right'],
+      ['front-left','Front<br>Left'],['front-center','Front<br>Center'],['front-right','Front<br>Right']
+    ];
+    const pinBtns = PINS.map(([pos,lbl]) =>
+      `<button class="pin-btn\${pinLoc===pos?' on':''}" data-pin="${pos}" onclick="setPin(${i},'${pos}')">${lbl}</button>`
+    ).join('');
+    const pinCard = `<div class="card" style="margin:8px 0" id="pin-card-${i}">
+      <div class="eyebrow" style="margin-bottom:8px">Pin Location</div>
+      <div class="pin-label-top">← Back →</div>
+      <div class="pin-grid" id="pin-grid-${i}">${pinBtns}</div>
+      <div class="pin-label-bot">← Front →</div>
+    </div>`;
+    const blocks = el.querySelectorAll('.shot-block');
+    if (blocks[pinIdx]) {
+      blocks[pinIdx].insertAdjacentHTML('afterend', pinCard);
+    } else {
+      el.insertAdjacentHTML('beforeend', pinCard);
+    }
+  }
 }
 
 // ── GENERIC SEQUENCES (legacy — kept for migration only) ──
