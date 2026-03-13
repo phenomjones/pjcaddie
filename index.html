@@ -414,7 +414,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.0 · Mar 13, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.1 · Mar 13, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -515,7 +515,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Tell Byron about your game — club gapping, tendencies, physical limitations, goals. This is included in every Byron Analysis.</div>
     <textarea id="player-notes" style="width:100%;min-height:160px;background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="e.g. Club gapping: Driver 220, 3W 195, 5W 180, 4H 165, 5i 158, 6i 150, 7i 140, 8i 130, 9i 118, PW 105, GW 90&#10;&#10;Tendencies: slice with driver under pressure, tend to chunk chips when nervous&#10;&#10;Goals: break 90, improve course management" oninput="savePlayerNotes()"></textarea>
     <div style="height:1px;background:var(--border);margin:24px 0"></div>
-    <div style="font-size:12px;color:var(--chalk3);line-height:1.6">Course notes are now accessed via the 📝 icon on each course in New Round.</div>
+    <div style="font-size:12px;color:var(--chalk3);line-height:1.6">Course notes and hole-by-hole strategy are managed in the 🏌️ Course Hub.</div>
   </div>
 </div>
 
@@ -812,7 +812,6 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
         <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:6px">Overall Course Notes</div>
         <textarea id="course-notes-ta" oninput="autoSaveCourseNote('overall')" style="width:100%;min-height:100px;background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:15px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.7" placeholder="General course strategy, green complexes, weather tendencies…"></textarea>
       </div>
-      <div id="hole-notes-section"></div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-top:12px">
       <button onclick="saveCourseNotesModal()" class="btn btn-gold" style="flex:1">Save &amp; Close</button>
@@ -826,6 +825,14 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 // PRELOADED COURSE DATA
 // ═══════════════════════════════════════════════════════════════
 const PRELOADED_COURSES = [
+  {
+    id: 'paramount',
+    name: 'Paramount Country Club',
+    tees: [
+      { name: 'Blue',   par: [4,4,4,3,4,4,4,5,3,4,5,3,4,4,4,4,4,3], yds: [410,337,378,220,332,413,410,495,179,361,558,120,360,400,343,395,419,153] },
+      { name: 'Silver', par: [4,4,4,3,4,4,4,5,3,4,5,3,4,4,4,4,4,3], yds: [335,325,365,182,327,392,391,375,165,325,517,112,310,374,320,285,391,138] }
+    ]
+  },
   {
     id: 'westchester',
     name: 'Westchester Hills Golf Club',
@@ -1035,14 +1042,13 @@ function renderCourseList() {
   const courses = getCourses();
   const el = document.getElementById('course-list');
   el.innerHTML = courses.map(c=>{
-    const hasNotes = !!(localStorage.getItem('caddie_course_notes_'+c.id));
     return `
     <div class="course-card ${S.setupCourseId===c.id?'selected':''}" onclick="selectCourse('${c.id}')">
       <div style="flex:1">
         <div class="cc-name">${c.name}</div>
         <div class="cc-meta">${c.tees.map(t=>t.name).join(' · ')} — Par ${c.tees[0].par.reduce((a,b)=>a+b,0)}</div>
       </div>
-      <button onclick="event.stopPropagation();openCourseNoteById('${c.id}')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px 8px;opacity:${hasNotes?'1':'.35'}" title="Course notes">📝</button>
+
       <div class="cc-check">✓</div>
     </div>`;
   }).join('');
@@ -2121,31 +2127,6 @@ function openCourseNotes(courseId, courseName) {
   document.getElementById('course-notes-title').textContent = '📝 ' + courseName;
   const ta = document.getElementById('course-notes-ta');
   ta.value = localStorage.getItem('caddie_course_notes_' + courseId) || '';
-  // HOLE NOTES: render per-hole note boxes
-  const course = getCourses().find(c => c.id === courseId);
-  const holeSection = document.getElementById('hole-notes-section');
-  if (holeSection && course) {
-    const par = course.tees[0].par;
-    const yds = course.tees[0].yds;
-    const holes = par.length;
-    holeSection.innerHTML = `<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:6px">Per-Hole Notes</div>` +
-      Array.from({length: holes}, (_, i) => {
-        const h = i + 1;
-        const key = 'caddie_hole_notes_' + courseId + '_' + h;
-        const val = localStorage.getItem(key) || '';
-        const hasNote = val.trim().length > 0;
-        return `<details style="background:var(--ink3);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;overflow:hidden" ${hasNote?'open':''}>
-          <summary style="padding:10px 14px;cursor:pointer;font-size:14px;color:var(--chalk);list-style:none;display:flex;align-items:center;gap:8px">
-            <span style="color:var(--gold);font-weight:700;font-size:12px;width:20px">H${h}</span>
-            <span style="color:var(--chalk3);font-size:12px">Par ${par[i]} · ${yds[i]} yds</span>
-            ${hasNote ? '<span style="margin-left:auto;font-size:10px;color:#5ec85e">✓</span>' : '<span style="margin-left:auto;font-size:10px;color:var(--chalk3)">+ add note</span>'}
-          </summary>
-          <div style="padding:0 14px 12px">
-            <textarea data-hole-key="${key}" oninput="autoSaveCourseNote('hole','${key}')" style="width:100%;min-height:70px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Aim, trouble, smart miss, pin positions, green reads…">${val}</textarea>
-          </div>
-        </details>`;
-      }).join('');
-  }
   const modal = document.getElementById('course-notes-modal');
   modal.style.display = 'flex';
   setTimeout(() => ta.focus(), 100);
@@ -2157,11 +2138,6 @@ function autoSaveCourseNote(type, key) {
     const val = document.getElementById('course-notes-ta').value;
     if (val.trim()) localStorage.setItem('caddie_course_notes_' + id, val);
     else localStorage.removeItem('caddie_course_notes_' + id);
-  } else if (type === 'hole' && key) {
-    const ta = document.querySelector('[data-hole-key="' + key + '"]');
-    if (!ta) return;
-    if (ta.value.trim()) localStorage.setItem(key, ta.value);
-    else localStorage.removeItem(key);
   }
   // Flash saved indicator
   const sp = document.getElementById('course-notes-saved');
@@ -3872,7 +3848,7 @@ function renderCourseHub() {
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--chalk3);margin-top:12px;margin-bottom:6px">Per Hole</div>
         <div id="${cid}-holenotes">
           ${(()=>{
-            const course = getCourses().find(c=>c.id===courseRounds[0]?.courseId);
+            const course = getCourses().find(c=>c.id===courseRounds[0]?.courseId) || getCourses().find(c=>c.name===name);
             if (!course) return '<div style="font-size:12px;color:var(--chalk3)">Hole notes available after selecting course.</div>';
             const par = course.tees[0].par;
             const yds = course.tees[0].yds;
