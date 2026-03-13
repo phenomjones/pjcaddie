@@ -414,7 +414,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.1 · Mar 13, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.2 · Mar 13, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -440,7 +440,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 </div>
 
 <!-- ═══════════════ IMPORT OVERLAY ═══════════════ -->
-<div id="import-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;display:none;align-items:center;justify-content:center;padding:24px">
+<div id="import-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;padding:24px">
   <div style="background:var(--ink2);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:360px">
     <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk);margin-bottom:6px">Import Rounds</div>
     <div style="font-size:12px;color:var(--chalk3);margin-bottom:16px">Paste exported JSON below. Existing rounds with matching IDs will be skipped — no data will be overwritten.</div>
@@ -855,9 +855,21 @@ const CLUBS = ['Driver','3W','5W','2H','3H','4H','5H','5i','6i','7i','8i','9i','
 const SHOT_TYPES = ['Tee','Approach','Layup','Recovery','Pitch','Sand','Chip','Putt','Flub','Penalty','?'];
 const RESULT_OPTIONS = ['---','--','-','O','+','++','+++','?'];
 const SHAPE_OPTIONS = ['---','--','-','O','+','++','+++','?'];
-const APPROACH_RESULTS = ['Short','Long','On Green','Out of Position'];
-
 const LIE_OPTIONS = ['Fairway','LR','HR','Fringe','Green','Sand','Trees','Penalty'];
+
+// ── GIR HELPER: single source of truth ──
+// New model: approachDist==='On' on any approach/pitch/par3-tee shot
+// Legacy fallback: approachFinish==='green' or par3 first shot result==='O'
+function isGIR(score) {
+  const shots = score.shots || [];
+  // New model
+  if (shots.some(sh => ['Approach','Pitch'].includes(sh.type) && sh.approachDist === 'On')) return true;
+  if (score.par === 3 && shots[0]?.type === 'Tee' && shots[0]?.approachDist === 'On') return true;
+  // Legacy fallback
+  if (shots.some(sh => sh.approachFinish === 'green')) return true;
+  if (score.par === 3 && shots[0]?.result === 'O') return true;
+  return false;
+}
 
 // ═══════════════════════════════════════════════════════════════
 let S = {
@@ -2260,11 +2272,7 @@ function overviewHTML(round) {
   const putts=scores.reduce((a,s)=>a+s.putts,0);
   const penalties=scores.reduce((a,s)=>a+(s.penalties||0),0);
   const threePutts=scores.filter(s=>s.putts>=3).length;
-  const gir=scores.filter(s=>{
-    const shots=s.shots||[];
-    if(s.par===3 && shots[0]?.result==='O') return true;
-    return shots.some(sh=>sh.approachFinish==='green');
-  }).length;
+  const gir=scores.filter(s=>isGIR(s)).length;
   const fir=scores.filter(s=>s.par!==3 && (s.shots||[])[0]?.result==='O').length;
   const firHoles=scores.filter(s=>s.par!==3).length;
   const eagles=scores.filter(s=>s.strokes<=s.par-2).length;
@@ -2325,7 +2333,7 @@ function scorecardHTML(round) {
       let cls='sc-par';
       if(rel<=-2)cls='sc-eagle';else if(rel===-1)cls='sc-birdie';
       else if(rel===1)cls='sc-bogey';else if(rel===2)cls='sc-double';else if(rel>=3)cls='sc-worse';
-      const girY=(s.shots||[]).some(sh=>(sh.approachResult||[]).includes('On Green'));
+      const girY=isGIR(s);
       const firstResult=(s.shots||[])[0]?.result||'—';
       const pp=s.penalties||0;
       const clubs=(s.shots||[]).map(sh=>sh.club).join('→')||'—';
@@ -2402,22 +2410,31 @@ function tendenciesHTML(round) {
   allShots.filter(sh=>sh.lie && sh.club!=='PT').forEach(sh=>{lieCounts[sh.lie]=(lieCounts[sh.lie]||0)+1;});
   const totalLies=Object.values(lieCounts).reduce((a,b)=>a+b,0);
 
-  // Approach finish zones
+  // Approach finish zones — new model: approachDist + approachSide + approachZone
+  // Legacy fallback: approachFinish
   const apprFinishCounts={};
-  allShots.filter(sh=>sh.approachFinish).forEach(sh=>{apprFinishCounts[sh.approachFinish]=(apprFinishCounts[sh.approachFinish]||0)+1;});
+  const approachShots = allShots.filter(sh=>['Approach','Pitch'].includes(sh.type)||(sh.type==='Tee'&&sh.approachDist));
+  approachShots.forEach(sh=>{
+    let key = null;
+    if (sh.approachDist) {
+      if (sh.approachDist==='On') key = sh.approachZone || 'green';
+      else if (sh.approachDist==='Short') key = sh.approachSide ? 'short-'+sh.approachSide.toLowerCase() : 'short-center';
+      else if (sh.approachDist==='Long')  key = sh.approachSide ? 'long-'+sh.approachSide.toLowerCase()  : 'long-center';
+      else if (sh.approachDist==='PH')    key = sh.approachSide ? 'ph-'+sh.approachSide.toLowerCase()    : 'ph-center';
+    } else if (sh.approachFinish) {
+      key = sh.approachFinish; // legacy
+    }
+    if (key) apprFinishCounts[key]=(apprFinishCounts[key]||0)+1;
+  });
   const totalApprFinish=Object.values(apprFinishCounts).reduce((a,b)=>a+b,0);
-  const girCount=scores.filter(s=>{
-    const shots=s.shots||[];
-    if(s.par===3 && shots[0]?.result==='O') return true;
-    return shots.some(sh=>sh.approachFinish==='green');
-  }).length;
+  const girCount=scores.filter(s=>isGIR(s)).length;
 
   // Putting
   const puttDist={};
   scores.forEach(s=>{puttDist[s.putts]=(puttDist[s.putts]||0)+1;});
 
   const resultColors={'---':'var(--red)','--':'#c07050','-':'#e0a870','O':'#5ec85e','+':'#e0a870','++':'#c07050','+++':'var(--red)'};
-  const ZONE_LABELS={'long-left':'Long L','long-center':'Long','long-right':'Long R','back-left':'Back-L','back-center':'Back','back-right':'Back-R','left':'Left','green':'On Green','right':'Right','front-left':'Front-L','front-center':'Front','front-right':'Front-R','short-left':'Short L','short-center':'Short','short-right':'Short R'};
+  const ZONE_LABELS={'long-left':'Long L','long-center':'Long','long-right':'Long R','back-left':'Back-L','back-center':'Back','back-right':'Back-R','left':'Left','green':'On Green','right':'Right','ph-left':'PH Left','ph-center':'PH','ph-right':'PH Right','front-left':'Front-L','front-center':'Front','front-right':'Front-R','short-left':'Short L','short-center':'Short','short-right':'Short R'};
   const zoneColors={'green':'#5ec85e','left':'#e0a870','right':'#e0a870','back-left':'#c07050','back-center':'var(--red)','back-right':'#c07050','front-left':'#c07050','front-center':'#c07050','front-right':'#c07050','long-left':'#9060b0','long-center':'#9060b0','long-right':'#9060b0','short-left':'#5090c0','short-center':'#5090c0','short-right':'#5090c0'};
   const contactColors={Good:'#5ec85e',Thin:'#e07070',Fat:'#e07070'};
   const typeColors={Tee:'var(--sky)',Approach:'var(--gold)',Putt:'#b48ef0',Chip:'#6ab0e8',Pitch:'#6ab0e8',Flub:'var(--red)',Penalty:'#ffd700'};
@@ -2442,7 +2459,7 @@ function tendenciesHTML(round) {
   </div>`:''}
   ${totalApprFinish?`<div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:12px">Approach Finish Zones · ${girCount}/${scores.length} GIR</div>
-    ${['green','front-center','front-left','front-right','left','right','back-center','back-left','back-right','short-center','short-left','short-right','long-center','long-left','long-right'].map(z=>apprFinishCounts[z]?barRow(ZONE_LABELS[z],apprFinishCounts[z],totalApprFinish,zoneColors[z]||'var(--gold)'):'').join('')}
+    ${['green','back-left','back-center','back-right','left','ph-left','ph-center','ph-right','right','front-left','front-center','front-right','short-left','short-center','short-right','long-left','long-center','long-right'].map(z=>apprFinishCounts[z]?barRow(ZONE_LABELS[z],apprFinishCounts[z],totalApprFinish,zoneColors[z]||'var(--gold)'):'').join('')}
   </div>`:''}
   ${totalTypes?`<div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:12px">Shot Types (${totalTypes})</div>
@@ -2533,7 +2550,11 @@ function detTab(tab,el){
 function confirmDelete(){document.getElementById('del-sheet').classList.add('open');}
 function closeSheet(){document.getElementById('del-sheet').classList.remove('open');}
 function doDelete(){
-  saveRounds(getRounds().filter(r=>r.id!==S.viewingId));
+  const rounds = getRounds();
+  const r = rounds.find(r=>r.id===S.viewingId);
+  if (!r || r.locked) { closeSheet(); return; }
+  saveRounds(rounds.filter(r=>r.id!==S.viewingId));
+  syncWithGitHub(true);
   closeSheet();
   showView('history');
 }
@@ -2660,15 +2681,29 @@ async function runCoachAnalysis(round) {
   const holeData = scores.map(s=>({
     hole: s.hole, par: s.par, yds: s.yds,
     strokes: s.strokes, putts: s.putts, penalties: s.penalties||0,
-    gir: s.gir||false, pinLocation: s.pinLocation||null,
+    gir: isGIR(s), pinLocation: s.pinLocation||null,
     shots: (s.shots||[]).map(sh=>({
       club: sh.club, type: sh.type, result: sh.result,
-      contact: sh.contact||null, shape: sh.shape||null,
-      approachAim: sh.approachAim||null,
-      approachFinishDist: sh.approachFinishDist||sh.approachFinish||null,
-      approachFinishDir: sh.approachFinishDir||null,
-      lie: sh.lie||null, rating: sh.rating||null,
-      gotOut: sh.gotOut||null, chipProx: sh.chipProx||null
+      contact: sh.contact||null,
+      teeShape: sh.teeShape||null,
+      teeLanded: sh.teeLanded||null,
+      teeAimed: sh.teeAimed||null,
+      approachAimed: sh.approachAimed||null,
+      approachDist: sh.approachDist||null,
+      approachSide: sh.approachSide||null,
+      approachZone: sh.approachZone||null,
+      layupAimed: sh.layupAimed||null,
+      layupDist: sh.layupDist||null,
+      layupSide: sh.layupSide||null,
+      gotOut: sh.gotOut||null,
+      recoveryLanded: sh.recoveryLanded||null,
+      sandGotOut: sh.sandGotOut||null,
+      sandProx: sh.sandProx||null,
+      chipProx: sh.chipProx||null,
+      chipSide: sh.chipSide||null,
+      puttSpeed: sh.puttSpeed||null,
+      lie: sh.lie||null,
+      rating: sh.rating||null
     }))
   }));
 
@@ -2676,14 +2711,21 @@ async function runCoachAnalysis(round) {
   const playerNotes = localStorage.getItem('caddie_player_notes') || '';
   const courseNotesKey = 'caddie_course_notes_' + (round.courseId || '');
   const courseNotes = localStorage.getItem(courseNotesKey) || localStorage.getItem('caddie_course_notes') || '';
-  // NOTE COACH: gather per-hole notes
+  // NOTE COACH: gather per-hole notes + green notes
   const holeNotes = {};
+  const greenNotes = {};
+  const cid = round.courseId || '';
   for (let h = 1; h <= 18; h++) {
-    const hn = localStorage.getItem('caddie_hole_notes_' + (round.courseId||'') + '_' + h) || '';
+    const hn = localStorage.getItem('caddie_hole_notes_' + cid + '_' + h) || '';
+    const gn = localStorage.getItem('caddie_hole_green_notes_' + cid + '_' + h) || '';
     if (hn.trim()) holeNotes[h] = hn.trim();
+    if (gn.trim()) greenNotes[h] = gn.trim();
   }
   const holeNotesText = Object.keys(holeNotes).length
     ? '\nPER-HOLE CADDIE NOTES:\n' + Object.entries(holeNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n')
+    : '';
+  const greenNotesText = Object.keys(greenNotes).length
+    ? '\nPER-HOLE GREEN NOTES (slope, break, false fronts, pin tendencies):\n' + Object.entries(greenNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n')
     : '';
   const roundNotes = round.roundNotes || '';
 
@@ -2716,19 +2758,26 @@ Course: ${round.courseName} (${round.teeName}) | Date: ${round.date}
 Score: ${total} (${total-par>=0?'+':''}${total-par} vs par ${par}) | Holes: ${round.holes}
 ${roundNotes ? `\nROUND NOTES: ${roundNotes}` : ''}
 ${playerNotes ? `\nPLAYER PROFILE & GAPPING:\n${playerNotes}` : ''}
-${courseNotes ? `\nCOURSE KNOWLEDGE:\n${courseNotes}` : ''}${holeNotesText}
+${courseNotes ? `\nCOURSE KNOWLEDGE:\n${courseNotes}` : ''}${holeNotesText}${greenNotesText}
 
 DATA REFERENCE:
-- approachAim: Left/Center/Right (intended target line)
-- approachFinishDist: Short/On/Long (distance result)
-- approachFinishDir: Left/Center/Right (lateral result)
-- result: --- -- - O + ++ +++ (far-left to far-right)
-- contact: Thin / Fat / Good
-- shape: Hook Pull Draw Straight Fade Push Slice
-- rating: thumbsDown / neutral / thumbsUp
-- chipProx: Tap-in / Close / Medium / Far
-- gotOut: yes/no (sand/recovery)
-- lie: WHERE THE BALL ENDED UP after the shot (NOT the starting lie). e.g. lie=Sand means the shot landed in a bunker, NOT that the player was hitting from sand.
+- teeAimed: Left/Center/Right (intended aim on tee shots)
+- teeShape: Draw/Straight/Fade/Hook/Pull/Push/Slice/Fat/Top/Thin (tee shot shape)
+- teeLanded: fairway/rough-left/rough-right/bunker/ob-left/ob-right/oop-left/oop-right/short
+- approachAimed: Left/Center/Right (intended target line for approach/pitch/par3)
+- approachDist: Short/PH/On/Long (distance result — On = GIR)
+- approachSide: Left/Center/Right (lateral miss when not On)
+- approachZone: back-left/back-center/back-right/mid-left/mid-center/mid-right/front-left/front-center/front-right (green zone when On)
+- layupAimed/layupDist/layupSide: layup shot targeting data
+- result: --- -- - O + ++ +++ (directional result, far-left to far-right, used on Tee par4/5 and Flub)
+- contact: Thin / Fat (blank = solid)
+- rating: 👎 / 😐 / 👍 (player's feel rating)
+- lie: WHERE THE BALL ENDED UP after the shot (Fairway/LR/HR/Fringe/Green/Sand/Trees)
+- gotOut: Yes/No (recovery shots and sand shots)
+- recoveryLanded: where ball landed after successful recovery
+- sandGotOut: Yes/No, sandProx: Close/Medium/Far (bunker play)
+- chipProx: Tap-in/Close/Medium/Far, chipSide: Left/Center/Right
+- puttSpeed: Short/Long (only logged when speed error occurred)
 
 RAW HOLE DATA:
 ${JSON.stringify(holeData, null, 2)}
@@ -3848,23 +3897,34 @@ function renderCourseHub() {
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--chalk3);margin-top:12px;margin-bottom:6px">Per Hole</div>
         <div id="${cid}-holenotes">
           ${(()=>{
+            // Robust lookup: try course registry first, fall back to round data
             const course = getCourses().find(c=>c.id===courseRounds[0]?.courseId) || getCourses().find(c=>c.name===name);
-            if (!course) return '<div style="font-size:12px;color:var(--chalk3)">Hole notes available after selecting course.</div>';
-            const par = course.tees[0].par;
-            const yds = course.tees[0].yds;
+            const par = course ? course.tees[0].par : (courseRounds[0]?.pars || []);
+            const yds = course ? course.tees[0].yds : (courseRounds[0]?.yds || []);
+            const courseId = courseRounds[0]?.courseId || name.replace(/\s+/g,'_');
+            if (!par.length) return '<div style="font-size:12px;color:var(--chalk3)">No hole data found for this course.</div>';
             return par.map((p,i)=>{
               const h = i+1;
-              const hkey = 'caddie_hole_notes_' + courseRounds[0].courseId + '_' + h;
-              const hval = (localStorage.getItem(hkey) || '').replace(/</g,'&lt;');
-              const hasNote = hval.trim().length > 0;
+              const hkey  = 'caddie_hole_notes_' + courseId + '_' + h;
+              const gkey  = 'caddie_hole_green_notes_' + courseId + '_' + h;
+              const hval  = (localStorage.getItem(hkey)  || '').replace(/</g,'&lt;');
+              const gval  = (localStorage.getItem(gkey)  || '').replace(/</g,'&lt;');
+              const hasNote = hval.trim().length > 0 || gval.trim().length > 0;
               return '<details style="background:var(--ink3);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;overflow:hidden"' + (hasNote?' open':'') + '>' +
                 '<summary style="padding:10px 14px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px">' +
                   '<span style="color:var(--gold);font-weight:700;font-size:12px;width:22px">H'+h+'</span>' +
                   '<span style="color:var(--chalk3);font-size:12px">Par '+p+' · '+yds[i]+' yds</span>' +
                   (hasNote ? '<span style="margin-left:auto;font-size:10px;color:#5ec85e">✓</span>' : '<span style="margin-left:auto;font-size:10px;color:var(--chalk3)">+ add</span>') +
                 '</summary>' +
-                '<div style="padding:0 14px 12px">' +
-                  '<textarea data-hkey="'+hkey+'" oninput="saveHubHoleNote(this)" style="width:100%;min-height:65px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:DM Sans,sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Aim, trouble, smart miss, pin tendencies…">'+hval+'</textarea>' +
+                '<div style="padding:0 14px 12px;display:flex;flex-direction:column;gap:10px">' +
+                  '<div>' +
+                    '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:5px">Hole Notes</div>' +
+                    '<textarea data-hkey="'+hkey+'" oninput="saveHubHoleNote(this)" style="width:100%;min-height:65px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:\'DM Sans\',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Aim point, trouble, smart miss, layup target…">'+hval+'</textarea>' +
+                  '</div>' +
+                  '<div>' +
+                    '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:5px">Green Notes</div>' +
+                    '<textarea data-hkey="'+gkey+'" oninput="saveHubHoleNote(this)" style="width:100%;min-height:65px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:\'DM Sans\',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Slope, break, false fronts, pin tendencies…">'+gval+'</textarea>' +
+                  '</div>' +
                 '</div>' +
               '</details>';
             }).join('');
