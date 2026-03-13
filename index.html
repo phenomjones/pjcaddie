@@ -414,7 +414,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.19.3 · Mar 12, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.19.5 · Mar 12, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -472,8 +472,8 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="title">Settings</div>
   </div>
   <div class="scroll-body pad pad-b">
-    <div class="eyebrow" style="margin-bottom:12px">Coach Analysis</div>
-    <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Your Anthropic API key powers the PGA Coach Analysis. Get one at <span style="color:var(--gold)">console.anthropic.com</span> → API Keys. Costs fractions of a cent per analysis.</div>
+    <div class="eyebrow" style="margin-bottom:12px">Byron — AI Coach</div>
+    <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Your Anthropic API key powers Byron, your AI caddie coach. Get one at <span style="color:var(--gold)">console.anthropic.com</span> → API Keys. Costs fractions of a cent per analysis.</div>
     <div class="inp-grp">
       <label class="inp-label">Anthropic API Key</label>
       <input class="inp" id="ant-token" type="password" placeholder="sk-ant-..." autocapitalize="none" autocorrect="off">
@@ -511,7 +511,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <!-- PLAYER CARD -->
     <div style="height:1px;background:var(--border);margin:24px 0"></div>
     <div class="eyebrow" style="margin-bottom:12px">My Game Notes</div>
-    <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Tell the coach about your game — club gapping, tendencies, physical limitations, goals. This is included in every Coach Analysis.</div>
+    <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Tell Byron about your game — club gapping, tendencies, physical limitations, goals. This is included in every Byron Analysis.</div>
     <textarea id="player-notes" style="width:100%;min-height:160px;background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="e.g. Club gapping: Driver 220, 3W 195, 5W 180, 4H 165, 5i 158, 6i 150, 7i 140, 8i 130, 9i 118, PW 105, GW 90&#10;&#10;Tendencies: slice with driver under pressure, tend to chunk chips when nervous&#10;&#10;Goals: break 90, improve course management" oninput="savePlayerNotes()"></textarea>
     <div style="height:1px;background:var(--border);margin:24px 0"></div>
     <div style="font-size:12px;color:var(--chalk3);line-height:1.6">Course notes are now accessed via the 📝 icon on each course in New Round.</div>
@@ -668,7 +668,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
   </div>
   <div class="sticky-bot">
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-coach" onclick="openCoach(S.currentRound)">🎓 Coach Analysis</button>
+      <button class="btn-coach" onclick="openCoach(S.currentRound)">🎓 Ask Byron</button>
       <button class="btn btn-gold" onclick="saveRound()">Save Round</button>
     </div>
   </div>
@@ -704,7 +704,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
   </div>
   <div class="sticky-bot">
     <div style="display:flex;flex-direction:column;gap:8px">
-      <button class="btn-coach" onclick="openCoach(getRounds().find(r=>r.id===S.viewingId))">🎓 Coach Analysis</button>
+      <button class="btn-coach" onclick="openCoach(getRounds().find(r=>r.id===S.viewingId))">🎓 Ask Byron</button>
       <button class="btn btn-gold" onclick="openShotMap(S.viewingId,'detail')" style="background:rgba(200,168,75,.1);border:1px solid var(--gold);color:var(--gold)">🗺 Shot Maps</button>
       <button id="det-edit-btn" class="btn" onclick="editRound()" style="background:rgba(200,168,75,.08);border:1px solid var(--border);color:var(--chalk2)">✏️ Edit Round</button>
       <button class="btn btn-danger" onclick="confirmDelete()">Delete Round</button>
@@ -752,9 +752,9 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 <!-- ═══════════════ COACH OVERLAY ═══════════════ -->
 <div class="coach-overlay" id="coach-overlay">
   <div class="coach-hdr">
-    <div class="coach-hdr-title">🎓 PGA Coach Analysis</div>
+    <div class="coach-hdr-title">🎓 Byron Analysis</div>
     <div style="display:flex;align-items:center;gap:8px">
-      <button id="coach-rerun-btn" onclick="rerunCoach()" style="display:none;background:none;border:1px solid var(--border);border-radius:100px;padding:4px 10px;font-size:11px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.5px">↺ Re-run</button>
+      <button id="coach-rerun-btn" onclick="rerunCoach()" style="display:none;background:none;border:1px solid var(--border);border-radius:100px;padding:4px 10px;font-size:11px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.5px">↺ Re-run Byron</button>
       <button class="coach-close" onclick="closeCoach()">✕</button>
     </div>
   </div>
@@ -770,7 +770,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="coach-body" id="coach-body">
       <div class="coach-loading" id="coach-loading">
         <div class="coach-spinner"></div>
-        <div style="font-size:14px">Analyzing your round…</div>
+        <div style="font-size:14px">Byron is studying your round…</div>
         <div style="font-size:12px;opacity:.5">This takes about 20 seconds</div>
       </div>
       <div id="coach-content" style="display:none">
@@ -783,7 +783,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div id="coach-chat-area" style="display:none;flex-shrink:0;border-top:1px solid var(--border);background:var(--ink2)">
       <div id="coach-chat-thread" style="max-height:220px;overflow-y:auto;padding:10px 14px 4px;display:flex;flex-direction:column;gap:8px"></div>
       <div style="display:flex;align-items:flex-end;gap:8px;padding:8px 14px 12px">
-        <textarea id="coach-chat-input" placeholder="Ask your coach anything…" rows="1" style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:20px;padding:9px 14px;font-size:13px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:none;outline:none;line-height:1.4;max-height:80px;overflow-y:auto" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCoachChat();}"></textarea>
+        <textarea id="coach-chat-input" placeholder="Ask Byron anything…" rows="1" style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:20px;padding:9px 14px;font-size:13px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:none;outline:none;line-height:1.4;max-height:80px;overflow-y:auto" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCoachChat();}"></textarea>
         <button onclick="sendCoachChat()" style="background:var(--gold);border:none;border-radius:50%;width:36px;height:36px;flex-shrink:0;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">➤</button>
       </div>
     </div>
@@ -1022,7 +1022,7 @@ function deleteRound(id) {
   const r = rounds.find(r=>r.id===id);
   if(!r || r.locked) return;
   const date = new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
-  if(!confirm(`Permanently delete ${r.courseName} on ${date}?\n\nThis will remove ALL shot data, coach analysis and chat history. This CANNOT be undone.\n\nConsider 📦 Archive instead to hide the round while keeping the data.`)) return;
+  if(!confirm(`Permanently delete ${r.courseName} on ${date}?\n\nThis will remove ALL shot data, Byron analysis and chat history. This CANNOT be undone.\n\nConsider 📦 Archive instead to hide the round while keeping the data.`)) return;
   const updated = rounds.filter(r=>r.id!==id);
   saveRounds(updated);
   renderHome();
@@ -1805,8 +1805,9 @@ function renderShotBlocks(i) {
     const showContact = !isPutt && !isSand && !isRecovery && !isChip && !isFlub;
     // Result: only on Tee (par4/5), Flub — not on approach/pitch/par3/chip/sand/recovery/putt/layup/recovery
     const showResult = (isTeeOnPar45 || isFlub) && !isPutt;
-    // Lie: not on putts, sand, chip
-    const showLie = !isPT && !isTW && !isPutt && !isSand && !isChip;
+    // Lie: not on putts, sand, chip — also hide when approach/pitch/par3 is already logged as On Green
+    const onGreen = isSmartGrid && shot.approachDist === 'On';
+    const showLie = !isPT && !isTW && !isPutt && !isSand && !isChip && !onGreen;
 
     // Rating
     const RATINGS=[{v:'👎'},{v:'😐'},{v:'👍'}];
@@ -2587,7 +2588,7 @@ function openCoach(round) {
       <div style="text-align:center;padding:40px 20px">
         <div style="font-size:36px;margin-bottom:16px">🔑</div>
         <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk);margin-bottom:8px">API Key Required</div>
-        <div style="font-size:14px;color:var(--chalk3);line-height:1.6;margin-bottom:20px">Add your Anthropic API key in Settings to enable Coach Analysis. Get one free at console.anthropic.com</div>
+        <div style="font-size:14px;color:var(--chalk3);line-height:1.6;margin-bottom:20px">Add your Anthropic API key in Settings to enable Byron Analysis. Get one free at console.anthropic.com</div>
         <button onclick="closeCoach();showView('settings')" style="background:rgba(200,168,75,.15);border:1px solid var(--gold);border-radius:100px;padding:12px 28px;font-size:14px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif">Go to Settings →</button>
       </div>`;
     return;
@@ -2600,7 +2601,7 @@ function openCoach(round) {
       <div style="text-align:center;padding:40px 20px">
         <div style="font-size:36px;margin-bottom:16px">📡</div>
         <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk);margin-bottom:8px">You're Offline</div>
-        <div style="font-size:14px;color:var(--chalk3);line-height:1.6">Coach Analysis needs an internet connection. Your round data is saved — come back when you have signal.</div>
+        <div style="font-size:14px;color:var(--chalk3);line-height:1.6">Byron needs an internet connection. Your round data is saved — come back when you have signal.</div>
       </div>`;
     return;
   }
@@ -2642,7 +2643,7 @@ async function sendCoachChat() {
   thread.innerHTML += `<div class="coach-msg-user">${msg.replace(/</g,'&lt;')}</div>`;
   // Add thinking bubble
   const thinkId = 'chat-think-' + Date.now();
-  thread.innerHTML += `<div class="coach-msg-coach coach-msg-thinking" id="${thinkId}">Coach is thinking…</div>`;
+  thread.innerHTML += `<div class="coach-msg-coach coach-msg-thinking" id="${thinkId}">Byron is thinking…</div>`;
   thread.scrollTop = thread.scrollHeight;
 
   // Build context for chat
@@ -2651,7 +2652,7 @@ async function sendCoachChat() {
   const roundSummary = round ? `Round: ${round.courseName}, ${round.date}, Score ${round.scores.reduce((a,s)=>a+(s.strokes||0),0)}` : '';
   const analysisSummary = analysis ? `Initial analysis headline: "${analysis.headline}". Top findings: ${(analysis.topFindings||[]).join('; ')}` : '';
 
-  const systemPrompt = `You are an elite PGA Tour instructor analyzing a golfer's round data. You already ran a full analysis of this round. The player is asking follow-up questions. Be concise, direct, and specific. Reference their actual shot data when relevant. No more than 3 paragraphs per response.
+  const systemPrompt = `You are Byron, an elite PGA Tour instructor analyzing a golfer's round data. You already ran a full analysis of this round. The player is asking follow-up questions. Be concise, direct, and specific. Reference their actual shot data when relevant. No more than 3 paragraphs per response.
 
 ${roundSummary}
 ${analysisSummary}`;
@@ -2774,7 +2775,7 @@ async function runCoachAnalysis(round) {
     : '';
   const roundNotes = round.roundNotes || '';
 
-  const prompt = `You are an elite PGA Tour instructor who has coached multiple tour winners and hundreds of serious amateurs. Your job is to analyze raw shot data and uncover patterns the player CANNOT see just by looking at a shot map.
+  const prompt = `You are Byron, an elite PGA Tour instructor who has coached multiple tour winners and hundreds of serious amateurs. Your job is to analyze raw shot data and uncover patterns the player CANNOT see just by looking at a shot map.
 
 CRITICAL ANALYSIS MANDATE:
 - Find cross-hole patterns, not hole-by-hole descriptions
@@ -2916,8 +2917,8 @@ Respond ONLY with a valid JSON object, no markdown, no backticks:
     document.getElementById('coach-content').innerHTML=`
       <div class="coach-error">
         <div style="font-size:40px;margin-bottom:14px">⚠️</div>
-        <div style="font-size:15px;color:var(--chalk2);margin-bottom:8px">Analysis unavailable</div>
-        <div style="font-size:13px;opacity:.6">${e.message||'Could not reach coaching service'}</div>
+        <div style="font-size:15px;color:var(--chalk2);margin-bottom:8px">Byron unavailable</div>
+        <div style="font-size:13px;opacity:.6">${e.message||'Could not reach Byron'}</div>
       </div>`;
   }
 }
@@ -3016,7 +3017,7 @@ function renderCoachAnalysis(a, round) {
     ${fltHTML?`<div class="coach-section"><div class="coach-section-title">Areas Needing Work</div>${fltHTML}</div>`:''}
     ${priHTML?`<div class="coach-section"><div class="coach-section-title">Practice Priorities</div>${priHTML}</div>`:''}
     ${rt.coachNote?`<div class="card" style="margin-bottom:14px;border-color:rgba(200,168,75,.3)">
-      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:8px">From Your Coach</div>
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:8px">Byron Says</div>
       <div style="font-size:14px;color:var(--chalk2);line-height:1.65;font-style:italic">"${rt.coachNote}"</div>
     </div>`:''}
   `;
@@ -3532,16 +3533,18 @@ function renderShotMapHole() {
 
   // Tap handler
   const tapEl = document.getElementById('shotmap-tap');
-  tapEl.onclick = null;
+  // Remove all previous listeners by replacing the element clone
+  const newTap = tapEl.cloneNode(true);
+  tapEl.parentNode.replaceChild(newTap, tapEl);
+  const activeTap = document.getElementById('shotmap-tap');
   if (pendingIdx !== -1) {
-    tapEl.style.cursor = 'crosshair';
-    tapEl.onclick = (e) => {
-      const rect = tapEl.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = (e.clientY - rect.top) / rect.height;
+    activeTap.style.cursor = 'crosshair';
+    const placeShot = (clientX, clientY) => {
+      const rect = activeTap.getBoundingClientRect();
+      const x = (clientX - rect.left) / rect.width;
+      const y = (clientY - rect.top) / rect.height;
       const globalShotIdx = mappable[pendingIdx].idx;
       shots[globalShotIdx].mapPos = {x, y};
-      // Save
       if (SM.roundId) {
         const rounds = getRounds();
         const r = rounds.find(r=>r.id===SM.roundId);
@@ -3551,8 +3554,17 @@ function renderShotMapHole() {
       }
       renderShotMapHole();
     };
+    activeTap.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      placeShot(e.clientX, e.clientY);
+    });
+    activeTap.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const t = e.touches[0];
+      placeShot(t.clientX, t.clientY);
+    }, {passive: false});
   } else {
-    tapEl.style.cursor = 'default';
+    activeTap.style.cursor = 'default';
   }
 
   // Shot list
@@ -3829,7 +3841,7 @@ function loadGHSettingsForm() {
   const antStatus = el('ant-key-status');
   if (antStatus) {
     antStatus.style.color = antKey ? '#5ec85e' : 'var(--chalk3)';
-    antStatus.textContent = antKey ? '✓ Key saved' : 'No key saved — coach analysis unavailable';
+    antStatus.textContent = antKey ? '✓ Key saved' : 'No key saved — Byron unavailable';
   }
   // SYNC LOG: show last sync time
   const logEl = el('sync-log');
