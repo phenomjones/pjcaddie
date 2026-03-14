@@ -414,7 +414,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.2 · Mar 13, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.3 · Mar 14, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -3628,6 +3628,130 @@ async function ghPutFile(rounds, sha) {
   return res.json();
 }
 
+// ═══════════════════════════════════════════════════════════════
+// STONE VAULT — NOTES BACKUP / RESTORE
+// ═══════════════════════════════════════════════════════════════
+function collectLocalNotes() {
+  const notes = {};
+  Object.keys(localStorage).forEach(k => {
+    if (k.startsWith('caddie_hole_notes_') ||
+        k.startsWith('caddie_hole_green_notes_') ||
+        k.startsWith('caddie_course_notes_')) {
+      const v = localStorage.getItem(k);
+      if (v && v.trim()) notes[k] = v;
+    }
+  });
+  return notes;
+}
+
+async function ghGetNotes() {
+  const {owner, repo, token} = getGHConfig();
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/notes.json`, {
+    headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+  });
+  if (res.status === 404) return { notes: {}, sha: null };
+  if (!res.ok) throw new Error(`GitHub notes read failed: ${res.status}`);
+  const data = await res.json();
+  const raw = data.content ? data.content.replace(/\n/g,'') : '';
+  if (!raw) return { notes: {}, sha: data.sha };
+  const decoded = JSON.parse(decodeURIComponent(escape(atob(raw))));
+  return { notes: decoded.notes || {}, sha: data.sha, savedAt: decoded.savedAt };
+}
+
+async function ghPutNotes(notes, sha) {
+  const {owner, repo, token} = getGHConfig();
+  const payload = {
+    caddie_notes_backup: true,
+    version: 1,
+    locked: true,
+    savedAt: new Date().toISOString(),
+    notes
+  };
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+  const body = { message: `Notes backup ${new Date().toISOString().slice(0,10)}`, content };
+  if (sha) body.sha = sha;
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/notes.json`, {
+    method: 'PUT',
+    headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error(`GitHub notes write failed: ${res.status}`);
+  return res.json();
+}
+
+async function backupNotes() {
+  const btn = document.getElementById('vault-backup-btn');
+  const status = document.getElementById('vault-status');
+  if (!ghConfigured()) { setVaultStatus('GitHub sync not configured — go to Settings.', 'err'); return; }
+  if (!navigator.onLine) { setVaultStatus('Offline — cannot backup.', 'err'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = '↑ Backing up…'; }
+  try {
+    const { sha } = await ghGetNotes();
+    const notes = collectLocalNotes();
+    const count = Object.keys(notes).length;
+    await ghPutNotes(notes, sha);
+    const ts = new Date().toISOString();
+    localStorage.setItem('caddie_notes_last_backup', ts);
+    setVaultStatus(`✓ ${count} note${count!==1?'s':''} backed up`, 'ok');
+    renderNoteVaultBar();
+  } catch(e) {
+    setVaultStatus(`Backup failed: ${e.message}`, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '↑ Backup Notes'; }
+  }
+}
+
+async function restoreNotes() {
+  if (!ghConfigured()) { setVaultStatus('GitHub sync not configured — go to Settings.', 'err'); return; }
+  if (!navigator.onLine) { setVaultStatus('Offline — cannot restore.', 'err'); return; }
+  if (!confirm('Restore notes from GitHub backup?\n\nThis will merge backed-up notes into your local notes. Nothing will be deleted — local notes always win if there is a conflict.')) return;
+  const btn = document.getElementById('vault-restore-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '↓ Restoring…'; }
+  try {
+    const { notes, savedAt } = await ghGetNotes();
+    const count = Object.keys(notes).length;
+    if (!count) { setVaultStatus('No backed-up notes found.', 'err'); return; }
+    // Merge-only: remote fills in keys not present locally
+    let restored = 0;
+    Object.entries(notes).forEach(([k, v]) => {
+      if (!localStorage.getItem(k)) {
+        localStorage.setItem(k, v);
+        restored++;
+      }
+    });
+    const d = savedAt ? new Date(savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : 'unknown date';
+    setVaultStatus(`✓ Restored ${restored} note${restored!==1?'s':''} from backup (${d})`, 'ok');
+    renderCourseHub();
+  } catch(e) {
+    setVaultStatus(`Restore failed: ${e.message}`, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '↓ Restore Notes'; }
+  }
+}
+
+function setVaultStatus(msg, type) {
+  const el = document.getElementById('vault-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = type==='ok' ? '#5ec85e' : type==='err' ? '#e07070' : 'var(--chalk3)';
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  if (type==='ok') el._t = setTimeout(()=>{ el.style.opacity='0'; }, 4000);
+}
+
+function renderNoteVaultBar() {
+  const el = document.getElementById('vault-last-backup');
+  if (!el) return;
+  const ts = localStorage.getItem('caddie_notes_last_backup');
+  if (ts) {
+    const d = new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+    el.textContent = 'Last backup: ' + d;
+  } else {
+    el.textContent = 'Not yet backed up';
+    el.style.color = '#e07070';
+  }
+}
+
 function mergeRounds(local, remote) {
   const map = {};
   // Index remote as base
@@ -3819,6 +3943,7 @@ async function ghClearWIP(sha) {
 function showCourseHub() {
   renderCourseHub();
   showView('coursehub');
+  renderNoteVaultBar();
 }
 
 function renderCourseHub() {
@@ -3839,7 +3964,22 @@ function renderCourseHub() {
     return;
   }
 
-  body.innerHTML = Object.entries(courseMap).map(([name, data]) => {
+  // ── STONE VAULT: notes backup bar ──
+  const vaultBar = `<div style="background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--chalk);letter-spacing:.3px">📒 Notes Backup</div>
+        <div id="vault-last-backup" style="font-size:10px;color:var(--chalk3);margin-top:2px"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="vault-backup-btn" onclick="backupNotes()" style="background:var(--gold);border:none;border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">↑ Backup Notes</button>
+        <button id="vault-restore-btn" onclick="restoreNotes()" style="background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:7px 14px;font-size:12px;color:var(--chalk2);cursor:pointer;font-family:'DM Sans',sans-serif">↓ Restore</button>
+      </div>
+    </div>
+    <div id="vault-status" style="font-size:11px;color:var(--chalk3);min-height:14px;opacity:1;transition:opacity .5s"></div>
+  </div>`;
+
+  body.innerHTML = vaultBar + Object.entries(courseMap).map(([name, data]) => {
     const courseRounds = data.rounds.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     const notesKey = 'caddie_course_notes_' + (courseRounds[0]?.courseId || name.replace(/\s+/g,'_'));
     const savedNotes = localStorage.getItem(notesKey) || '';
