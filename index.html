@@ -414,7 +414,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.4 · Mar 14, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.5 · Mar 14, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -706,42 +706,8 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
   <div class="sticky-bot">
     <div style="display:flex;flex-direction:column;gap:8px">
       <button class="btn-coach" onclick="openCoach(getRounds().find(r=>r.id===S.viewingId))">🎓 Ask Byron</button>
-      <button class="btn btn-gold" onclick="openShotMap(S.viewingId,'detail')" style="background:rgba(200,168,75,.1);border:1px solid var(--gold);color:var(--gold)">🗺 Shot Maps</button>
       <button id="det-edit-btn" class="btn" onclick="editRound()" style="background:rgba(200,168,75,.08);border:1px solid var(--border);color:var(--chalk2)">✏️ Edit Round</button>
       <button class="btn btn-danger" onclick="confirmDelete()">Delete Round</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════ SHOT MAP ═══════════════ -->
-<div class="view" id="view-shotmap">
-  <div class="hdr" style="padding-bottom:8px">
-    <button class="back-btn" id="shotmap-back-btn" onclick="closeShotMap()">← Back</button>
-    <div class="eyebrow" id="shotmap-eyebrow">Paramount · Blue</div>
-    <div class="title serif" id="shotmap-title" style="font-size:20px">Hole 1</div>
-  </div>
-  <!-- HOLE NAV -->
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:0 18px 8px;flex-shrink:0">
-    <button id="shotmap-prev" onclick="shotMapNav(-1)" style="background:none;border:none;color:var(--chalk3);font-size:22px;cursor:pointer;padding:4px 8px">‹</button>
-    <div id="shotmap-hole-dots" style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;flex:1"></div>
-    <button id="shotmap-next" onclick="shotMapNav(1)" style="background:none;border:none;color:var(--chalk3);font-size:22px;cursor:pointer;padding:4px 8px">›</button>
-  </div>
-  <!-- MAP + SHOTS -->
-  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;gap:12px;padding:0 18px 100px">
-    <!-- MAP -->
-    <div style="position:relative;width:200px;height:600px;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.6);cursor:crosshair;flex-shrink:0" id="shotmap-wrap">
-      <svg id="shotmap-svg" style="position:absolute;top:0;left:0;pointer-events:none" viewBox="0 0 200 600" width="200" height="600"></svg>
-    </div>
-    <!-- STATUS -->
-    <div id="shotmap-status" style="font-size:12px;color:var(--chalk3);text-align:center"></div>
-    <!-- SHOT LIST -->
-    <div id="shotmap-list" style="width:100%;max-width:300px"></div>
-  </div>
-  <div class="sticky-bot">
-    <div style="display:flex;gap:8px">
-      <button onclick="shotMapUndo()" style="background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.4);border-radius:100px;padding:10px 20px;font-size:13px;color:#e07070;cursor:pointer;font-family:'DM Sans',sans-serif">↩ Undo</button>
-      <button onclick="shotMapClear()" style="background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:10px 20px;font-size:13px;color:var(--chalk2);cursor:pointer;font-family:'DM Sans',sans-serif">Clear</button>
-      <button onclick="shotMapSave()" style="flex:1;background:rgba(200,168,75,.15);border:1px solid var(--gold);border-radius:100px;padding:10px 20px;font-size:13px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif">✓ Save</button>
     </div>
   </div>
 </div>
@@ -1439,6 +1405,7 @@ function renderDots(cur) {
 
 function commitHole(i) {
   const round=S.currentRound;
+  if(!round || i < 0 || i >= round.holes) return;
   const existing=round.scores[i]||defaultScore(i);
   round.scores[i]={
     ...existing,
@@ -2314,50 +2281,96 @@ function distBar(label,n,total,color) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SCORECARD HTML
+// SCORECARD HTML — paper scorecard layout
 // ═══════════════════════════════════════════════════════════════
 function scorecardHTML(round) {
-  const scores=round.scores;
-  function ninePart(arr, label) {
-    if(!arr.length) return '';
-    const rows=arr.map(s=>{
-      const rel=s.strokes-s.par;
-      let cls='sc-par';
-      if(rel<=-2)cls='sc-eagle';else if(rel===-1)cls='sc-birdie';
-      else if(rel===1)cls='sc-bogey';else if(rel===2)cls='sc-double';else if(rel>=3)cls='sc-worse';
-      const girY=isGIR(s);
-      const firstResult=(s.shots||[])[0]?.result||'—';
-      const pp=s.penalties||0;
-      const clubs=(s.shots||[]).map(sh=>sh.club).join('→')||'—';
-      return `<tr>
-        <td style="color:var(--chalk3)">${s.hole}</td>
-        <td style="color:var(--chalk3)">${s.par}</td>
-        <td><span class="sc-badge ${cls}">${s.strokes}</span></td>
-        <td>${s.putts}${s.putts>=3?'*':''}</td>
-        <td style="font-size:10px;color:var(--chalk3)">${firstResult}</td>
-        <td style="color:${girY?'#5ec85e':'var(--chalk3)'}">${girY?'✓':'✗'}</td>
-        <td style="color:${pp>0?'#ffd700':'var(--chalk3)'}">${pp||'—'}</td>
-      </tr>`;
-    }).join('');
-    const tot=arr.reduce((a,s)=>a+s.strokes,0);
-    const par=arr.reduce((a,s)=>a+s.par,0);
-    const rel=tot-par;
-    return `<tr class="section-lbl"><td colspan="7">${label}</td></tr>
-    ${rows}
-    <tr class="tot"><td>—</td><td>${par}</td><td>${tot}</td><td>${arr.reduce((a,s)=>a+s.putts,0)}</td>
-    <td colspan="2" style="color:${rel<0?'#5ec85e':rel>0?'var(--red)':'var(--chalk2)'}">${rel===0?'E':rel>0?'+'+rel:rel}</td>
-    <td>${arr.reduce((a,s)=>a+(s.penalties||0),0)||'—'}</td></tr>`;
+  const scores = round.scores;
+  const front = scores.slice(0,9);
+  const back  = scores.slice(9);
+
+  function scoreBadgeStyle(rel) {
+    if (rel <= -2) return 'background:var(--gold);color:var(--ink);border-radius:50%';
+    if (rel === -1) return 'background:var(--blue);color:#fff;border-radius:50%';
+    if (rel === 0)  return 'background:transparent;border:1.5px solid var(--chalk3);color:var(--chalk2);border-radius:50%';
+    if (rel === 1)  return 'background:rgba(201,64,64,.25);border:1px solid var(--red);color:#e07070;border-radius:3px';
+    if (rel === 2)  return 'background:rgba(201,64,64,.5);border:1px solid var(--red);color:#fff;border-radius:3px';
+    return 'background:#7a1010;color:#fff;border-radius:3px';
   }
-  const front=scores.slice(0,9);
-  const back=scores.slice(9);
-  return `<div class="card" style="overflow-x:auto">
-    <table class="sc-table" style="min-width:300px">
-      <thead><tr><th>#</th><th>Par</th><th>Score</th><th>Putts</th><th>1st Result</th><th>GIR</th><th>Pen</th></tr></thead>
-      <tbody>
-        ${ninePart(front,'Front Nine')}
-        ${back.length?ninePart(back,'Back Nine'):''}
-      </tbody>
-    </table>
+
+  function nineTable(arr, label, showTot) {
+    if (!arr.length) return '';
+    const totalPar    = arr.reduce((a,s)=>a+s.par,0);
+    const totalStr    = arr.reduce((a,s)=>a+s.strokes,0);
+    const totalPutts  = arr.reduce((a,s)=>a+s.putts,0);
+    const totalPen    = arr.reduce((a,s)=>a+(s.penalties||0),0);
+    const totalGIR    = arr.filter(s=>isGIR(s)).length;
+    const rel         = totalStr - totalPar;
+    const relStr      = rel===0?'E':rel>0?'+'+rel:''+rel;
+    const relColor    = rel<0?'#5ec85e':rel>0?'var(--red)':'var(--chalk2)';
+    const totLabel    = label==='Front' ? 'OUT' : 'IN';
+
+    // Cell style helpers
+    const th = (t, w='') => `<th style="padding:5px 3px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:500;text-align:center;white-space:nowrap;${w?'width:'+w:''}border-bottom:1px solid var(--border)">${t}</th>`;
+    const td = (t, s='') => `<td style="padding:6px 3px;text-align:center;${s}">${t}</td>`;
+
+    const holeHeaders = arr.map(s=>th(s.hole)).join('') + th(totLabel);
+    const ydsRow  = '<tr>' + td('Yds','font-size:10px;color:var(--gold);font-weight:600') +
+      arr.map(s=>td(s.yds||'—','font-size:10px;color:var(--chalk3)')).join('') +
+      td(arr.reduce((a,s)=>a+(s.yds||0),0),'font-size:10px;color:var(--chalk3);font-weight:600') + '</tr>';
+    const parRow  = '<tr style="border-top:1px solid var(--border)">' + td('Par','font-size:11px;color:var(--gold);font-weight:600') +
+      arr.map(s=>td(s.par,'font-size:12px;color:var(--chalk2)')).join('') +
+      td(totalPar,'font-size:12px;color:var(--chalk2);font-weight:700') + '</tr>';
+    const scoreRow = '<tr style="border-top:1px solid var(--border)">' + td('Score','font-size:11px;color:var(--gold);font-weight:600') +
+      arr.map(s=>{
+        const rel=s.strokes-s.par;
+        return `<td style="padding:5px 2px;text-align:center"><div style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;${scoreBadgeStyle(rel)}">${s.strokes}</div></td>`;
+      }).join('') +
+      `<td style="padding:5px 2px;text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:18px;color:${relColor};font-weight:700">${totalStr}</div><div style="font-size:10px;color:${relColor}">${relStr}</div></td>` + '</tr>';
+    const puttRow = '<tr style="border-top:1px solid var(--border)">' + td('Putts','font-size:11px;color:var(--gold);font-weight:600') +
+      arr.map(s=>td(s.putts, `font-size:12px;color:${s.putts>=3?'var(--red)':s.putts===1?'#5ec85e':'var(--chalk2)'}`)).join('') +
+      td(totalPutts,'font-size:12px;color:var(--chalk2);font-weight:700') + '</tr>';
+    const girRow = '<tr style="border-top:1px solid var(--border)">' + td('GIR','font-size:11px;color:var(--gold);font-weight:600') +
+      arr.map(s=>{ const g=isGIR(s); return td(g?'●':'·',`font-size:${g?'10':'14'}px;color:${g?'#5ec85e':'var(--ink3)'}`); }).join('') +
+      td(totalGIR+'/'+arr.length,'font-size:11px;color:var(--chalk3)') + '</tr>';
+    const penRow = totalPen > 0 ? '<tr style="border-top:1px solid var(--border)">' + td('Pen','font-size:11px;color:var(--gold);font-weight:600') +
+      arr.map(s=>td(s.penalties||'·',`font-size:12px;color:${s.penalties>0?'#ffd700':'var(--ink3)'}`)).join('') +
+      td(totalPen,'font-size:12px;color:#ffd700;font-weight:700') + '</tr>' : '';
+
+    return `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px">
+      <table style="border-collapse:collapse;min-width:100%;font-family:'DM Sans',sans-serif">
+        <thead>
+          <tr>
+            ${th('','70px')}
+            ${holeHeaders}
+          </tr>
+        </thead>
+        <tbody>
+          ${ydsRow}${parRow}${scoreRow}${puttRow}${girRow}${penRow}
+        </tbody>
+      </table>
+    </div>`;
+  }
+
+  // Totals row if 18 holes
+  let totalsBlock = '';
+  if (back.length) {
+    const allStr   = scores.reduce((a,s)=>a+s.strokes,0);
+    const allPar   = scores.reduce((a,s)=>a+s.par,0);
+    const rel      = allStr-allPar;
+    const relStr   = rel===0?'E':rel>0?'+'+rel:''+rel;
+    const relColor = rel<0?'#5ec85e':rel>0?'var(--red)':'var(--chalk2)';
+    totalsBlock = `<div style="display:flex;align-items:center;justify-content:flex-end;gap:16px;padding:10px 4px 4px;border-top:1px solid var(--border)">
+      <div style="font-size:12px;color:var(--chalk3)">Total</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--chalk);line-height:1">${allStr}</div>
+      <div style="font-size:14px;color:${relColor};font-weight:600">${relStr}</div>
+    </div>`;
+  }
+
+  return `<div class="card" style="padding:14px 10px">
+    <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:10px">Front Nine</div>
+    ${nineTable(front,'Front')}
+    ${back.length?`<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:10px;margin-top:4px">Back Nine</div>${nineTable(back,'Back')}`:'' }
+    ${totalsBlock}
   </div>`;
 }
 
@@ -3299,243 +3312,8 @@ function rerunCoach() {
 // ═══════════════════════════════════════════════════════════════
 
 // Shot colors per position in sequence
-const SHOT_COLORS = ['#6ab0e8','#e6a53c','#5ec85e','#e07070','#b48ef0','#e8a86a','#60cfc9'];
 // Normalize AI-returned percentage: handles both 0.73 and 73 formats
 function normPct(v) { v = v||0; return v > 1 ? v : v * 100; }
-
-// Non-putt types that get placed on map
-const MAPPABLE_TYPES = ['Tee','Approach','Layup','Recovery','Pitch','Sand','Chip'];
-
-let SM = {
-  roundId: null,
-  holeIdx: 0,      // 0-based hole index into round.course.holes
-  fromView: 'detail',
-  _tapHandler: null
-};
-
-function openShotMap(roundId, fromView) {
-  SM.roundId = roundId;
-  SM.fromView = fromView || 'detail';
-  SM.holeIdx = 0;
-  document.getElementById('shotmap-back-btn').textContent = '← ' + (SM.fromView === 'summary' ? 'Summary' : 'Detail');
-  renderShotMapHole();
-  showView('shotmap');
-}
-
-function closeShotMap() {
-  const wrap = document.getElementById('shotmap-wrap');
-  if (wrap && SM._tapHandler) { wrap.removeEventListener('pointerdown', SM._tapHandler); SM._tapHandler = null; }
-  showView(SM.fromView);
-}
-
-function shotMapNav(dir) {
-  const round = SM.roundId ? getRounds().find(r=>r.id===SM.roundId) : S.currentRound;
-  if (!round) return;
-  const total = round.holes || round.pars.length;
-  SM.holeIdx = (SM.holeIdx + dir + total) % total;
-  renderShotMapHole();
-}
-
-function renderShotMapHole() {
-  const round = SM.roundId ? getRounds().find(r=>r.id===SM.roundId) : S.currentRound;
-  if (!round) return;
-
-  const totalHoles = round.holes || round.pars.length;
-  const holeNum = SM.holeIdx + 1; // 1-based
-  const holePar = round.pars[SM.holeIdx];
-  const holeYds = round.yds[SM.holeIdx];
-  const score = (round.scores && round.scores[SM.holeIdx]) || null;
-
-  // Header
-  document.getElementById('shotmap-eyebrow').textContent = round.courseName + ' · ' + round.teeName;
-  document.getElementById('shotmap-title').textContent = `Hole ${holeNum} · Par ${holePar} · ${holeYds} yds`;
-
-  // Dots nav
-  const dotsEl = document.getElementById('shotmap-hole-dots');
-  dotsEl.innerHTML = Array.from({length: totalHoles}, (_,i) => {
-    const active = i === SM.holeIdx;
-    return `<div onclick="SM.holeIdx=${i};renderShotMapHole()" style="width:${active?'18px':'8px'};height:8px;border-radius:4px;background:${active?'var(--gold)':'var(--ink3)'};border:1px solid ${active?'var(--gold)':'var(--border)'};cursor:pointer;transition:all .2s"></div>`;
-  }).join('');
-
-  // Get mappable shots
-  const shots = score ? (score.shots || []) : [];
-  const mappable = shots.map((sh, idx) => ({sh, idx})).filter(({sh}) =>
-    sh.type && MAPPABLE_TYPES.includes(sh.type)
-  );
-
-  // Determine which shot is pending placement
-  const pendingIdx = mappable.findIndex(({sh}) => sh.mapPos === null || sh.mapPos === undefined);
-
-  // Status
-  const statusEl = document.getElementById('shotmap-status');
-  if (mappable.length === 0) {
-    statusEl.textContent = 'No shots recorded for this hole yet.';
-  } else if (pendingIdx !== -1) {
-    const {sh} = mappable[pendingIdx];
-    const label = sh.type === 'Tee' ? 'Tee shot' : `Shot ${pendingIdx+1} (${sh.type})`;
-    statusEl.innerHTML = `Tap to place: <span style="color:${SHOT_COLORS[pendingIdx % SHOT_COLORS.length]};font-weight:600">${label} · ${sh.club}</span>`;
-  } else {
-    statusEl.textContent = 'All shots placed ✓';
-  }
-
-  // Draw SVG markers
-  const svg = document.getElementById('shotmap-svg');
-  svg.innerHTML = '';
-  mappable.forEach(({sh}, seqIdx) => {
-    if (!sh.mapPos) return;
-    const color = SHOT_COLORS[seqIdx % SHOT_COLORS.length];
-    const x = sh.mapPos.x * 200;
-    const y = sh.mapPos.y * 600;
-    // Line from previous
-    if (seqIdx > 0) {
-      const prev = mappable[seqIdx-1].sh.mapPos;
-      if (prev) {
-        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-        line.setAttribute('x1', prev.x*200); line.setAttribute('y1', prev.y*600);
-        line.setAttribute('x2', x); line.setAttribute('y2', y);
-        line.setAttribute('stroke','rgba(255,255,255,0.35)');
-        line.setAttribute('stroke-width','1.5');
-        line.setAttribute('stroke-dasharray','4 3');
-        svg.appendChild(line);
-      }
-    }
-    // Circle
-    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    circle.setAttribute('cx', x); circle.setAttribute('cy', y);
-    circle.setAttribute('r','9');
-    circle.setAttribute('fill', color);
-    circle.setAttribute('stroke','#fff');
-    circle.setAttribute('stroke-width','2');
-    svg.appendChild(circle);
-    // Number
-    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
-    text.setAttribute('x', x); text.setAttribute('y', y+4);
-    text.setAttribute('text-anchor','middle');
-    text.setAttribute('fill','#fff');
-    text.setAttribute('font-size','9');
-    text.setAttribute('font-weight','700');
-    text.setAttribute('font-family','DM Sans,sans-serif');
-    text.textContent = seqIdx+1;
-    svg.appendChild(text);
-  });
-
-  // Tap handler — pointerdown covers mouse + touch in one event
-  const wrap = document.getElementById('shotmap-wrap');
-  // Remove previous listener if any
-  if (SM._tapHandler) {
-    wrap.removeEventListener('pointerdown', SM._tapHandler);
-    SM._tapHandler = null;
-  }
-
-  if (pendingIdx !== -1) {
-    wrap.style.cursor = 'crosshair';
-    SM._tapHandler = (e) => {
-      e.preventDefault();
-      const rect = wrap.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = (e.clientY - rect.top) / rect.height;
-      const globalShotIdx = mappable[pendingIdx].idx;
-      shots[globalShotIdx].mapPos = {x, y};
-      if (SM.roundId) {
-        const rounds = getRounds();
-        const r = rounds.find(r=>r.id===SM.roundId);
-        if (r) { localStorage.setItem('caddie_rounds', JSON.stringify(rounds)); syncWithGitHub(true); }
-      } else {
-        saveWIP(S.currentRound);
-      }
-      renderShotMapHole();
-    };
-    wrap.addEventListener('pointerdown', SM._tapHandler);
-  } else {
-    wrap.style.cursor = 'default';
-  }
-
-  // Shot list
-  const listEl = document.getElementById('shotmap-list');
-  if (mappable.length === 0) {
-    listEl.innerHTML = '';
-    return;
-  }
-  // Helper to render result label
-  listEl.innerHTML = mappable.map(({sh}, seqIdx) => {
-    const color = SHOT_COLORS[seqIdx % SHOT_COLORS.length];
-    const isPending = !sh.mapPos;
-    const borderColor = isPending ? 'rgba(200,168,75,.5)' : 'var(--border)';
-
-    // Build stat pills
-    const pills = [];
-    if (sh.result && sh.type !== 'Putt') pills.push({label:'Result', val: sh.result});
-    if (sh.contact) pills.push({label:'Contact', val: sh.contact});
-    if (sh.teeShape) pills.push({label:'Shape', val: sh.teeShape});
-    if (sh.lie) pills.push({label:'Landed In', val: sh.lie});
-    if (sh.approachAimed) pills.push({label:'Aimed', val: sh.approachAimed});
-    if (sh.approachDist) pills.push({label:'Dist', val: sh.approachDist});
-    if (sh.approachSide && sh.approachDist !== 'On') pills.push({label:'Side', val: sh.approachSide});
-
-    const pillsHTML = pills.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
-      ${pills.map(p=>`<div style="font-size:10px;background:var(--ink);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--chalk2)"><span style="color:var(--chalk3);margin-right:3px">${p.label}</span>${p.val}</div>`).join('')}
-    </div>` : `<div style="font-size:10px;color:var(--chalk3);margin-top:4px;font-style:italic">No shot data recorded</div>`;
-
-    const placedBadge = sh.mapPos
-      ? `<div style="font-size:10px;background:rgba(94,200,94,.15);border:1px solid rgba(94,200,94,.4);border-radius:4px;padding:2px 7px;color:#5ec85e;white-space:nowrap">✓ placed</div>`
-      : `<div style="font-size:10px;background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.4);border-radius:4px;padding:2px 7px;color:var(--gold);white-space:nowrap;animation:pulse 1.5s infinite">tap map ↑</div>`;
-
-    return `<div style="padding:10px 12px;background:var(--ink3);border-radius:10px;margin-bottom:8px;border:1px solid ${borderColor}">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:26px;height:26px;border-radius:50%;background:${color};border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${seqIdx+1}</div>
-        <div style="flex:1">
-          <div style="font-size:13px;color:var(--chalk);font-weight:600">${sh.type} · <span style="color:${sh.club==='7i'||sh.club==='GW'?'#e6a53c':sh.club==='PT'?'#b48ef0':'var(--chalk)'}">${sh.club}</span></div>
-        </div>
-        ${placedBadge}
-      </div>
-      ${pillsHTML}
-    </div>`;
-  }).join('');
-}
-
-function shotMapUndo() {
-  const round = SM.roundId ? getRounds().find(r=>r.id===SM.roundId) : S.currentRound;
-  if (!round) return;
-  const score = round.scores && round.scores[SM.holeIdx];
-  if (!score) return;
-  const shots = score.shots || [];
-  const mappable = shots.map((sh,idx)=>({sh,idx})).filter(({sh})=>sh.type&&MAPPABLE_TYPES.includes(sh.type));
-  // Find last placed
-  let lastPlaced = -1;
-  mappable.forEach(({sh,idx},seqIdx)=>{ if(sh.mapPos) lastPlaced = idx; });
-  if (lastPlaced === -1) return;
-  shots[lastPlaced].mapPos = null;
-  if (SM.roundId) {
-    const rounds = getRounds();
-    const r = rounds.find(r=>r.id===SM.roundId);
-    if (r) localStorage.setItem('caddie_rounds', JSON.stringify(rounds)); syncWithGitHub(true);
-  } else {
-    saveWIP(round);
-  }
-  renderShotMapHole();
-}
-
-function shotMapClear() {
-  const round = SM.roundId ? getRounds().find(r=>r.id===SM.roundId) : S.currentRound;
-  if (!round) return;
-  const score = round.scores && round.scores[SM.holeIdx];
-  if (!score) return;
-  (score.shots||[]).forEach(sh=>{ if(sh.type&&MAPPABLE_TYPES.includes(sh.type)) sh.mapPos=null; });
-  if (SM.roundId) {
-    const rounds = getRounds();
-    const r = rounds.find(r=>r.id===SM.roundId);
-    if (r) localStorage.setItem('caddie_rounds', JSON.stringify(rounds)); syncWithGitHub(true);
-  } else {
-    saveWIP(round);
-  }
-  renderShotMapHole();
-}
-
-function shotMapSave() {
-  // Already auto-saved on each tap — just nav back
-  closeShotMap();
-}
-
 // ═══════════════════════════════════════════════════════════════
 // SERVICE WORKER REGISTRATION
 // ═══════════════════════════════════════════════════════════════
