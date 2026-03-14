@@ -414,7 +414,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.3 · Mar 14, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.4 · Mar 14, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -730,7 +730,6 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
   <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;align-items:center;gap:12px;padding:0 18px 100px">
     <!-- MAP -->
     <div style="position:relative;width:200px;height:600px;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.6);cursor:crosshair;flex-shrink:0" id="shotmap-wrap">
-      <img id="shotmap-img" style="display:none;width:200px;height:600px;object-fit:fill" src=""/>
       <svg id="shotmap-svg" style="position:absolute;top:0;left:0;pointer-events:none" viewBox="0 0 200 600" width="200" height="600"></svg>
     </div>
     <!-- STATUS -->
@@ -2088,13 +2087,6 @@ function renderShotBlocks(i) {
 }
 
 // ── GENERIC SEQUENCES (legacy — kept for migration only) ──
-const SEQ_CHIP_COLORS={
-  result:{'---':'var(--red)','--':'#c07050','-':'#e0a870','O':'#5ec85e','+':'#e0a870','++':'#c07050','+++':'var(--red)'},
-  contact:{'Good':'#5ec85e','Thin':'#e07070','Fat':'#e07070'},
-  type:{'Tee':'var(--sky)','Approach':'var(--gold)','Putt':'#b48ef0','Chip':'#6ab0e8','Pitch':'#6ab0e8','Flub':'var(--red)'},
-  finish:{'Left':'#e07070','On Target':'#5ec85e','Right':'#e07070'},
-  shape:{'Hook':'#e07070','Pull':'#e07070','Draw':'#6ab0e8','Straight':'#5ec85e','Fade':'#6ab0e8','Push':'#e0a870','Slice':'var(--red)'}
-};
 
 function setPin(i, pos) {
   const round=S.currentRound;
@@ -2751,7 +2743,6 @@ ABSOLUTE BAN — NEVER write any of the following (or anything similar):
 - Any suggestion that any 18-handicap could figure out themselves without data
 
 Every recommendation in holesTab.suggestion and holesTab.courseManagement MUST cite specific data: hole number, club name, yardage, miss direction, lie, contact quality, or gapping number. If the data is insufficient for a specific recommendation, say exactly what information would enable better advice.
-${holeImages.length > 0 ? `\nHole map images included for ${holeImages.length} holes with placed shots.` : ''}
 
 ROUND DATA:
 Course: ${round.courseName} (${round.teeName}) | Date: ${round.date}
@@ -2823,15 +2814,6 @@ Respond ONLY with a valid JSON object, no markdown, no backticks:
   ]`;
 
   const messageContent = [{type:'text', text: prompt}];
-  holeImages.forEach(hi => messageContent.push({
-    type:'image', source:{type:'base64', media_type:'image/jpeg', data: hi.data}
-  }));
-  // GREEN BRAIN: inject stored green analysis text instead of images
-  const greenAnalysisKey = 'caddie_green_analysis_' + (round.courseId || round.courseName.toLowerCase().replace(/\s+/g,'_'));
-  const greenAnalysis = localStorage.getItem(greenAnalysisKey);
-  if (greenAnalysis) {
-    messageContent.push({type:'text', text:'--- COURSE GREEN ANALYSIS (pre-analyzed Strackaline data) ---\n' + greenAnalysis + '\n--- END GREEN ANALYSIS ---'});
-  }
 
   try {
     const antKey = localStorage.getItem('caddie_ant_key');
@@ -3375,11 +3357,6 @@ function renderShotMapHole() {
     return `<div onclick="SM.holeIdx=${i};renderShotMapHole()" style="width:${active?'18px':'8px'};height:8px;border-radius:4px;background:${active?'var(--gold)':'var(--ink3)'};border:1px solid ${active?'var(--gold)':'var(--border)'};cursor:pointer;transition:all .2s"></div>`;
   }).join('');
 
-  // Image (hole maps removed)
-  const imgEl = document.getElementById('shotmap-img');
-  imgEl.src = '';
-  imgEl.style.display = 'none';
-
   // Get mappable shots
   const shots = score ? (score.shots || []) : [];
   const mappable = shots.map((sh, idx) => ({sh, idx})).filter(({sh}) =>
@@ -3480,9 +3457,6 @@ function renderShotMapHole() {
     return;
   }
   // Helper to render result label
-  const RESULT_LABELS = {'---':'Hook','--':'Pull Hook','-':'Pull','O':'Straight','+':'Push','++':'Push Fade','+++':'Slice'};
-  const SHAPE_LABELS  = {'---':'Hook','--':'Draw','−':'Slight Draw','-':'Slight Draw','O':'Straight','+':'Slight Fade','++':'Fade','+++':'Slice'};
-
   listEl.innerHTML = mappable.map(({sh}, seqIdx) => {
     const color = SHOT_COLORS[seqIdx % SHOT_COLORS.length];
     const isPending = !sh.mapPos;
@@ -3491,11 +3465,12 @@ function renderShotMapHole() {
     // Build stat pills
     const pills = [];
     if (sh.result && sh.type !== 'Putt') pills.push({label:'Result', val: sh.result});
-    if (sh.contact && sh.club !== 'PT') pills.push({label:'Contact', val: sh.contact});
-    if (sh.shape && !['Chip','Pitch','Putt'].includes(sh.type)) pills.push({label:'Shape', val: sh.shape});
+    if (sh.contact) pills.push({label:'Contact', val: sh.contact});
+    if (sh.teeShape) pills.push({label:'Shape', val: sh.teeShape});
     if (sh.lie) pills.push({label:'Landed In', val: sh.lie});
-    if (sh.approachAim) pills.push({label:'Aim', val: sh.approachAim.replace(/-/g,' ')});
-    if (sh.approachFinish) pills.push({label:'Finish', val: sh.approachFinish.replace(/-/g,' ')});
+    if (sh.approachAimed) pills.push({label:'Aimed', val: sh.approachAimed});
+    if (sh.approachDist) pills.push({label:'Dist', val: sh.approachDist});
+    if (sh.approachSide && sh.approachDist !== 'On') pills.push({label:'Side', val: sh.approachSide});
 
     const pillsHTML = pills.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
       ${pills.map(p=>`<div style="font-size:10px;background:var(--ink);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--chalk2)"><span style="color:var(--chalk3);margin-right:3px">${p.label}</span>${p.val}</div>`).join('')}
