@@ -414,7 +414,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.7 · Mar 14, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.8 · Mar 15, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -889,7 +889,7 @@ function renderHome() {
   const resumeBtn = document.getElementById('home-resume-btn');
   if (wip) {
     resumeDiv.style.display = 'block';
-    const h = (wip.scores||[]).length + 1;
+    const h = (wip.scores||[]).filter(s=>s.shots&&s.shots.length>0).length + 1;
     resumeBtn.textContent = `▶ Resume: ${wip.courseName} — Hole ${h}`;
   } else {
     resumeDiv.style.display = 'none';
@@ -1088,11 +1088,13 @@ function resumeRound() {
   const wip = getInProgress();
   if (!wip) return;
   S.currentRound = migrateRound(wip);
-  S.currentHole = S.currentRound.scores.length;
+  // GHOST HOLE: resume at first hole with no shots logged, not just scores.length
+  const resumeHole = S.currentRound.scores.filter(s=>s.shots&&s.shots.length>0).length;
+  S.currentHole = resumeHole;
   if (!S.activeBag || !S.activeBag.length) S.activeBag = [...CLUBS];
   showView('scoring');
   buildScoringView();
-  loadHole(S.currentRound.scores.length);
+  loadHole(resumeHole);
 }
 
 function renderBagScreen() {
@@ -1484,6 +1486,8 @@ function addShot(i, club) {
       if(par===4 && shotIdx===1) defaultType='Approach';
       else if(par===5 && shotIdx===2) defaultType='Approach';
     }
+    // WEDGE CHIP: 56/58 default to Chip when no other type inferred
+    if(!defaultType && (club==='56'||club==='58')) defaultType='Chip';
   }
   s.shots.push({
     club, type:defaultType,
@@ -2066,7 +2070,7 @@ function renderShotBlocks(i) {
       ['front-left','Front<br>Left'],['front-center','Front<br>Center'],['front-right','Front<br>Right']
     ];
     const pinBtns = PINS.map(([pos,lbl]) =>
-      `<button class="pin-btn\${pinLoc===pos?' on':''}" data-pin="${pos}" onclick="setPin(${i},'${pos}')">${lbl}</button>`
+      `<button class="pin-btn${pinLoc===pos?' on':''}" data-pin="${pos}" onclick="setPin(${i},'${pos}')">${lbl}</button>`
     ).join('');
     const pinCard = `<div class="card" style="margin:8px 0" id="pin-card-${i}">
       <div class="eyebrow" style="margin-bottom:8px">Pin Location</div>
