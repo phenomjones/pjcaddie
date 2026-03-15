@@ -97,6 +97,8 @@ body{display:flex;flex-direction:column}
 .sg-cell.on{background:rgba(200,168,75,.18);border-color:var(--gold);color:var(--gold);font-weight:700}
 .sg-cell.on-green{background:rgba(58,107,58,.4);border-color:var(--fairway);color:#8ed88e;font-weight:700}
 .sg-cell.on-red{background:rgba(201,64,64,.2);border-color:var(--red);color:#e07070;font-weight:700}
+.sg-cell--heat{cursor:default;font-size:11px;padding:8px 3px;line-height:1.3;border-color:rgba(255,255,255,.08)}
+.sg-cell--heat:active{opacity:1}
 .sg-arrow{font-size:17px;font-weight:800;display:block}
 .sg-divider{height:1px;background:rgba(255,255,255,.07);margin:12px 0}
 .sg-section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;margin-bottom:8px}
@@ -387,12 +389,6 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 @keyframes chipIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
 
 /* ── PIN GRID ── */
-.pin-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;max-width:260px}
-.pin-btn{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 4px;font-size:11px;color:var(--chalk2);cursor:pointer;text-align:center;transition:all .15s;line-height:1.3}
-.pin-btn.on{background:rgba(200,168,75,.25);border-color:var(--gold);color:var(--gold);font-weight:600}
-.pin-btn:active{opacity:.7}
-.pin-label-top{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--chalk3);text-align:center;margin-bottom:4px}
-.pin-label-bot{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--chalk3);text-align:center;margin-top:4px}
 
 /* ── INLINE EDIT COURSE ── */
 .par-row{display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
@@ -414,7 +410,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.12 · Mar 15, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.21.0 · Mar 15, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -819,6 +815,21 @@ const PRELOADED_COURSES = [
 const CLUBS = ['Driver','3W','5W','2H','3H','4H','5H','5i','6i','7i','8i','9i','PW','GW','56','58','PT','TW','?'];
 const SHOT_TYPES = ['Tee','Approach','Layup','Recovery','Pitch','Sand','Chip','Putt','Flub','Penalty','?'];
 const LIE_OPTIONS = ['Fairway','Rough','Fringe','Green','Sand','Jail','Penalty'];
+
+// ── SAFE BASE64 ENCODER — chunked to avoid stack overflow on large payloads ──
+function safeBase64Encode(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
+// ── SHARED ZONE CONSTANTS — single source of truth ──
+const ZONE_LABELS = {'long-left':'Long L','long-center':'Long','long-right':'Long R','back-left':'Back-L','back-center':'Back','back-right':'Back-R','left':'Left','green':'On Green','right':'Right','ph-left':'PH Left','ph-center':'PH','ph-right':'PH Right','front-left':'Front-L','front-center':'Front','front-right':'Front-R','short-left':'Short L','short-center':'Short','short-right':'Short R'};
+const ZONE_COLORS = {'green':'#5ec85e','left':'#e0a870','right':'#e0a870','back-left':'#c07050','back-center':'var(--red)','back-right':'#c07050','front-left':'#c07050','front-center':'#c07050','front-right':'#c07050','long-left':'#9060b0','long-center':'#9060b0','long-right':'#9060b0','short-left':'#5090c0','short-center':'#5090c0','short-right':'#5090c0'};
 
 // ── GIR HELPER: single source of truth ──
 // New model: approachDist==='On' on any approach/pitch/par3-tee shot
@@ -1236,6 +1247,15 @@ function holePageHTML(i) {
       <div class="shots-empty">Tap a club above to log your first shot</div>
     </div>
 
+    <!-- PIN LOCATION -->
+    <div class="sg-section" style="margin:10px 0" id="pin-card-${i}">
+      <span class="grid-lbl">Pin Location</span>
+      <div class="sg-hint" style="margin-bottom:8px;margin-top:-4px">Flag back = away from you at address</div>
+      <div class="sg-3x3" id="pin-grid-${i}">
+        ${[['back-left','Back L'],['back-center','Back'],['back-right','Back R'],['middle-left','Mid L'],['middle-center','Mid'],['middle-right','Mid R'],['front-left','Front L'],['front-center','Front'],['front-right','Front R']].map(([pos,lbl])=>`<button class="sg-cell" data-pin="${pos}" onclick="setPin(${i},'${pos}')">${lbl}</button>`).join('')}
+      </div>
+    </div>
+
     <!-- NOTES -->
     <div class="card" style="margin:10px 0 10px">
       <div class="ctr-label" style="margin-bottom:6px">Hole Notes</div>
@@ -1264,7 +1284,7 @@ function setupSwipe() {
   area.addEventListener('touchend',e=>{
     if(!isDragging) return;
     const dx=e.changedTouches[0].clientX-startX;
-    if(Math.abs(dx)>50){
+    if(Math.abs(dx)>80){
       if(dx<0) goNext();
       else goPrev();
     }
@@ -1418,6 +1438,10 @@ function commitHole(i) {
 function goNext() {
   commitHole(S.currentHole);
   const round=S.currentRound;
+  const currentShots = (round.scores[S.currentHole]?.shots||[]).length;
+  if(currentShots === 0 && S.currentHole < round.holes-1) {
+    if(!confirm('No shots logged for this hole. Skip it?')) return;
+  }
   if(S.currentHole>=round.holes-1){
     // Only commit holes that have shots
     for(let i=0;i<round.holes;i++){
@@ -1496,8 +1520,7 @@ function addShot(i, club) {
     teeAimed:null, teeShape:null, teeLanded:null,
     // Approach / Pitch / Par3 Tee
     approachAimed:null, approachDist:null, approachSide:null, approachZone:null,
-    // Legacy compat (kept for old data)
-    approachAim:null, approachFinishDist:null, approachFinishDir:null,
+    // Legacy compat fields removed — migration code handles old data
     // Layup
     layupAimed:null, layupDist:null, layupSide:null,
     // Recovery
@@ -1521,7 +1544,7 @@ function addPenalty(i) {
   if(!round.scores[i]) round.scores[i]=defaultScore(i);
   const s=round.scores[i];
   if(!s.shots) s.shots=[];
-  s.shots.push({club:'⚠️', type:'Penalty', result:null, contact:null, shape:null, approachAim:null, approachFinish:null});
+  s.shots.push({club:'⚠️', type:'Penalty'});
   renderShotBlocks(i);
   calcScore(i);
   saveWIP(round);
@@ -1625,13 +1648,6 @@ function setShotAttr(i, idx, attr, value) {
   // ── PUTT ──
   } else if(attr==='puttSpeed') {
     shot.puttSpeed = shot.puttSpeed===value ? null : value;
-  // ── LEGACY ──
-  } else if(attr==='approachAim') {
-    shot.approachAim = shot.approachAim===value ? null : value;
-  } else if(attr==='approachFinish_dist') {
-    shot.approachFinishDist = shot.approachFinishDist===value ? null : value;
-  } else if(attr==='approachFinish_dir') {
-    shot.approachFinishDir = shot.approachFinishDir===value ? null : value;
   }
 
   renderShotBlocks(i);
@@ -2030,35 +2046,6 @@ function renderShotBlocks(i) {
     </div>`;
   }).join('');
 
-  // Inject pin card inline after last approach/pitch/par3-tee shot
-  const pinIdx = shots.reduce((last, sh, idx) => {
-    const needsPin = ['Approach','Pitch'].includes(sh.type) || (sh.type==='Tee' && holePar===3);
-    return needsPin ? idx : last;
-  }, -1);
-
-  if (pinIdx >= 0) {
-    const pinLoc = s.pinLocation || null;
-    const PINS = [
-      ['back-left','Back<br>Left'],['back-center','Back<br>Center'],['back-right','Back<br>Right'],
-      ['middle-left','Middle<br>Left'],['middle-center','Middle<br>Center'],['middle-right','Middle<br>Right'],
-      ['front-left','Front<br>Left'],['front-center','Front<br>Center'],['front-right','Front<br>Right']
-    ];
-    const pinBtns = PINS.map(([pos,lbl]) =>
-      `<button class="pin-btn${pinLoc===pos?' on':''}" data-pin="${pos}" onclick="setPin(${i},'${pos}')">${lbl}</button>`
-    ).join('');
-    const pinCard = `<div class="card" style="margin:8px 0" id="pin-card-${i}">
-      <div class="eyebrow" style="margin-bottom:8px">Pin Location</div>
-      <div class="pin-label-top">← Back →</div>
-      <div class="pin-grid" id="pin-grid-${i}">${pinBtns}</div>
-      <div class="pin-label-bot">← Front →</div>
-    </div>`;
-    const blocks = el.querySelectorAll('.shot-block');
-    if (blocks[pinIdx]) {
-      blocks[pinIdx].insertAdjacentHTML('afterend', pinCard);
-    } else {
-      el.insertAdjacentHTML('beforeend', pinCard);
-    }
-  }
 }
 
 // ── GENERIC SEQUENCES (legacy — kept for migration only) ──
@@ -2074,7 +2061,7 @@ function setPin(i, pos) {
 function setPinUI(i, selected) {
   const grid=document.getElementById(`pin-grid-${i}`);
   if(!grid) return;
-  grid.querySelectorAll('.pin-btn').forEach(btn=>{
+  grid.querySelectorAll('.sg-cell').forEach(btn=>{
     btn.classList.toggle('on', btn.getAttribute('data-pin')===selected);
   });
 }
@@ -2415,6 +2402,17 @@ function tendenciesHTML(round) {
   const totalTeeShapes=Object.values(teeShapeCounts).reduce((a,b)=>a+b,0);
   const teeShapeColors={Draw:'#5ec85e',Straight:'#5ec85e',Fade:'#e0a870',Hook:'var(--red)',Pull:'var(--red)',Push:'var(--red)',Slice:'var(--red)',Fat:'#c07050',Top:'#c07050',Thin:'#c07050'};
 
+  // Tee shot direction (par 4/5 only — iterate scores to preserve par context)
+  const TEE_LAND_ORDER=['fairway','rough-left','rough-right','bunker','ob-left','ob-right','oop-left','oop-right'];
+  const TEE_LAND_LABELS={fairway:'Fairway','rough-left':'Rough L','rough-right':'Rough R',bunker:'Bunker','ob-left':'OB L','ob-right':'OB R','oop-left':'OOP L','oop-right':'OOP R'};
+  const TEE_LAND_COLORS={fairway:'#5ec85e','rough-left':'#e0a870','rough-right':'#e0a870',bunker:'var(--gold)','ob-left':'var(--red)','ob-right':'var(--red)','oop-left':'var(--red)','oop-right':'var(--red)'};
+  const teeLandCounts={};
+  let totalTeeLand=0;
+  scores.filter(s=>s.par!==3).forEach(s=>{
+    const teeShot=(s.shots||[]).find(sh=>sh.type==='Tee');
+    if(teeShot&&teeShot.teeLanded){teeLandCounts[teeShot.teeLanded]=(teeLandCounts[teeShot.teeLanded]||0)+1;totalTeeLand++;}
+  });
+
   const lieCounts={};
   allShots.filter(sh=>sh.lie && sh.club!=='PT').forEach(sh=>{lieCounts[sh.lie]=(lieCounts[sh.lie]||0)+1;});
   const totalLies=Object.values(lieCounts).reduce((a,b)=>a+b,0);
@@ -2442,8 +2440,6 @@ function tendenciesHTML(round) {
   const puttDist={};
   scores.forEach(s=>{puttDist[s.putts]=(puttDist[s.putts]||0)+1;});
 
-  const ZONE_LABELS={'long-left':'Long L','long-center':'Long','long-right':'Long R','back-left':'Back-L','back-center':'Back','back-right':'Back-R','left':'Left','green':'On Green','right':'Right','ph-left':'PH Left','ph-center':'PH','ph-right':'PH Right','front-left':'Front-L','front-center':'Front','front-right':'Front-R','short-left':'Short L','short-center':'Short','short-right':'Short R'};
-  const zoneColors={'green':'#5ec85e','left':'#e0a870','right':'#e0a870','back-left':'#c07050','back-center':'var(--red)','back-right':'#c07050','front-left':'#c07050','front-center':'#c07050','front-right':'#c07050','long-left':'#9060b0','long-center':'#9060b0','long-right':'#9060b0','short-left':'#5090c0','short-center':'#5090c0','short-right':'#5090c0'};
   const contactColors={Good:'#5ec85e',Thin:'#e07070',Fat:'#e07070'};
   const typeColors={Tee:'var(--sky)',Approach:'var(--gold)',Putt:'#b48ef0',Chip:'#6ab0e8',Pitch:'#6ab0e8',Flub:'var(--red)',Penalty:'#ffd700'};
 
@@ -2456,13 +2452,28 @@ function tendenciesHTML(round) {
     <div class="eyebrow" style="margin-bottom:12px">Tee Shot Shape (${totalTeeShapes})</div>
     ${TEE_SHAPE_ORDER.map(s=>teeShapeCounts[s]?barRow(s,teeShapeCounts[s],totalTeeShapes,teeShapeColors[s]||'var(--chalk2)'):'').join('')}
   </div>`:''}
+  ${totalTeeLand?`<div class="card" style="margin-bottom:10px">
+    <div class="eyebrow" style="margin-bottom:12px">Tee Shot Direction · Par 4/5 (${totalTeeLand})</div>
+    ${TEE_LAND_ORDER.map(z=>teeLandCounts[z]?barRow(TEE_LAND_LABELS[z],teeLandCounts[z],totalTeeLand,TEE_LAND_COLORS[z]):'').join('')}
+  </div>`:''}
   ${totalLies?`<div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:12px">Lie Results (${totalLies})</div>
     ${LIE_OPTIONS.map(l=>lieCounts[l]?barRow(l,lieCounts[l],totalLies,l==='Fairway'?'#5ec85e':l==='Green'?'#b48ef0':l==='Fringe'?'#8ed88e':l==='Rough'?'#e0a870':l==='Sand'?'var(--gold)':l==='Jail'?'#4a7a4a':l==='Penalty'?'#e0c030':'var(--red)'):'').join('')}
   </div>`:''}
   ${totalApprFinish?`<div class="card" style="margin-bottom:10px">
-    <div class="eyebrow" style="margin-bottom:12px">Approach Finish Zones · ${girCount}/${scores.length} GIR</div>
-    ${['green','back-left','back-center','back-right','left','ph-left','ph-center','ph-right','right','front-left','front-center','front-right','short-left','short-center','short-right','long-left','long-center','long-right'].map(z=>apprFinishCounts[z]?barRow(ZONE_LABELS[z],apprFinishCounts[z],totalApprFinish,zoneColors[z]||'var(--gold)'):'').join('')}
+    <div class="eyebrow" style="margin-bottom:6px">Approach Finish Zones · ${girCount}/${scores.length} GIR${apprFinishCounts['green']?` · <span style="color:var(--chalk3);font-size:11px">${apprFinishCounts['green']} on-green unplaced</span>`:''}</div>
+    <div style="max-width:280px;margin:8px auto 10px">
+      <div class="sg-3x3">${(()=>{
+        const hzones=['back-left','back-center','back-right','ph-left','ph-center','ph-right','front-left','front-center','front-right'];
+        const hlbl={'back-left':'Bk L','back-center':'Back','back-right':'Bk R','ph-left':'Mid L','ph-center':'Mid','ph-right':'Mid R','front-left':'Fr L','front-center':'Front','front-right':'Fr R'};
+        const maxH=Math.max(1,...hzones.map(z=>apprFinishCounts[z]||0));
+        return hzones.map(z=>{const cnt=apprFinishCounts[z]||0;const pct=totalApprFinish?Math.round(cnt/totalApprFinish*100):0;const op=cnt?Math.max(0.15,cnt/maxH*0.85):0.07;return `<div class="sg-cell sg-cell--heat" style="background:rgba(58,107,58,${op.toFixed(2)});border-color:rgba(90,160,90,${cnt?0.4:0.12})">${hlbl[z]}<br><span style="color:var(--chalk);font-size:13px;font-weight:700">${cnt||'·'}</span>${cnt?`<br><span style="font-size:10px;opacity:.65">${pct}%</span>`:''}</div>`;}).join('');
+      })()}</div>
+    </div>
+    ${['green','left','right','short-left','short-center','short-right','long-left','long-center','long-right'].map(z=>{
+      if(z==='green') return apprFinishCounts['green']?barRow('On Green (unplaced)',apprFinishCounts['green'],totalApprFinish,'#5ec85e'):'';
+      return apprFinishCounts[z]?barRow(ZONE_LABELS[z],apprFinishCounts[z],totalApprFinish,ZONE_COLORS[z]||'var(--gold)'):'';
+    }).join('')}
   </div>`:''}
   ${totalTypes?`<div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:12px">Shot Types (${totalTypes})</div>
@@ -2749,7 +2760,7 @@ CRITICAL ANALYSIS MANDATE:
 - DO NOT describe what is visible on shot maps — synthesize and explain WHY and WHAT IT MEANS
 
 ABSOLUTE BAN — NEVER write any of the following (or anything similar):
-- "Focus on contact quality" / "Focus on solid contact"
+- Generic contact phrases: "Focus on contact quality" / "Focus on solid contact" / "Work on making better contact" — BANNED. EXCEPTION: citing specific contact data IS required when the data warrants it (e.g. "7 of 9 iron shots were thin, concentrated on holes 4–9" is a valid finding — the ban is on the generic cue, not the data pattern).
 - "Trust your swing" / "Stay committed"
 - "Hit it straighter" / "Be more consistent"
 - "Take your time" / "Slow down your swing"
@@ -3370,7 +3381,7 @@ async function ghGetFile() {
 
 async function ghPutFile(rounds, sha) {
   const {owner, repo, token} = getGHConfig();
-  const content = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify({caddie_export:true, version:1, updated: new Date().toISOString(), rounds}, null, 2))));
+  const content = safeBase64Encode(JSON.stringify({caddie_export:true, version:1, updated: new Date().toISOString(), rounds}, null, 2));
   const body = { message: `Sync rounds ${new Date().toISOString().slice(0,10)}`, content };
   if (sha) body.sha = sha;
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/rounds.json`, {
@@ -3424,7 +3435,7 @@ async function ghPutNotes(notes, sha) {
     savedAt: new Date().toISOString(),
     notes
   };
-  const content = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(payload, null, 2))));
+  const content = safeBase64Encode(JSON.stringify(payload, null, 2));
   const body = { message: `Notes backup ${new Date().toISOString().slice(0,10)}`, content };
   if (sha) body.sha = sha;
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/notes.json`, {
@@ -3675,7 +3686,7 @@ async function ghGetWIP() {
 
 async function ghPutWIP(wip, sha) {
   const {owner, repo, token} = getGHConfig();
-  const content = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(wip, null, 2))));
+  const content = safeBase64Encode(JSON.stringify(wip, null, 2));
   const body = { message: `WIP round ${new Date().toISOString().slice(0,10)}`, content };
   if (sha) body.sha = sha;
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/wip.json`, {
