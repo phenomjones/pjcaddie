@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Voice Shot Demo</title>
+<style>
+:root {
+  --ink: #0e1a0e;
+  --ink2: #1c301c;
+  --ink3: #2a4a2a;
+  --gold: #c8a84b;
+  --chalk: #f2edd8;
+  --chalk2: #c9c3a8;
+  --chalk3: #908a72;
+  --red: #c94040;
+  --border: rgba(200,168,75,0.18);
+  --r: 14px;
+  --rs: 10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%;background:var(--ink);color:var(--chalk);font-family:'DM Sans',sans-serif;font-size:16px}
+body{display:flex;flex-direction:column;align-items:center;padding:env(safe-area-inset-top,24px) 18px 60px;gap:0}
+
+.eyebrow{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);opacity:.75}
+.card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+
+.hero{text-align:center;margin-bottom:28px;width:100%;max-width:420px;padding-top:20px}
+.hero-title{font-family:'DM Serif Display',serif;font-size:28px;color:var(--chalk);line-height:1.1;margin:6px 0 4px}
+.hero-sub{font-size:13px;color:var(--chalk3);line-height:1.6;margin-top:6px}
+
+.key-section{width:100%;max-width:420px;margin-bottom:20px}
+.inp{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:11px 14px;color:var(--chalk);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none}
+.inp:focus{border-color:var(--gold)}
+.inp::placeholder{color:var(--chalk3)}
+.inp-label{font-size:11px;color:var(--chalk2);margin-bottom:6px;display:block;letter-spacing:.3px}
+.save-key-btn{margin-top:8px;background:rgba(200,168,75,.12);border:1px solid var(--border);border-radius:var(--rs);padding:11px 16px;font-size:13px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif;width:100%}
+.key-status{font-size:11px;margin-top:6px;min-height:16px;text-align:center}
+
+.mic-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;margin-bottom:28px}
+.mic-btn{
+  width:96px;height:96px;border-radius:50%;
+  background:var(--ink2);
+  border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;
+  font-size:40px;
+  -webkit-user-select:none;user-select:none;
+}
+.mic-btn.listening{background:rgba(201,64,64,.15);border-color:var(--red);animation:pulse 1.2s ease-in-out infinite}
+.mic-btn.processing{background:rgba(200,168,75,.1);border-color:var(--gold)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,64,64,.4)}50%{box-shadow:0 0 0 18px rgba(201,64,64,0)}}
+.mic-status{font-size:13px;color:var(--chalk3);text-align:center;min-height:20px;letter-spacing:.3px}
+.mic-status.listening{color:var(--red)}
+.mic-status.processing{color:var(--gold)}
+.mic-status.done{color:#5ec85e}
+.mic-status.error{color:var(--red)}
+
+.transcript-box{width:100%;max-width:420px;margin-bottom:16px;display:none}
+.transcript-text{font-size:14px;color:var(--chalk2);line-height:1.6;font-style:italic;padding:12px 14px;background:var(--ink3);border-radius:10px;border:1px solid var(--border)}
+
+.result-box{width:100%;max-width:420px;display:none}
+.field-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.field-row:last-child{border-bottom:none}
+.field-name{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--chalk3)}
+.field-val{font-size:14px;font-weight:500}
+.field-val.hit{color:var(--gold)}
+.field-val.null{color:rgba(255,255,255,.15);font-style:italic;font-size:12px}
+.confidence-badge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600;margin-bottom:12px}
+.conf-high{background:rgba(94,200,94,.15);border:1px solid #5ec85e;color:#5ec85e}
+.conf-med{background:rgba(200,168,75,.15);border:1px solid var(--gold);color:var(--gold)}
+.conf-low{background:rgba(201,64,64,.15);border:1px solid var(--red);color:var(--red)}
+
+.try-again-btn{background:transparent;border:1px solid var(--border);border-radius:var(--rs);padding:13px;font-size:14px;color:var(--chalk2);cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;margin-top:8px}
+
+.hint{font-size:12px;color:var(--chalk3);text-align:center;margin-top:4px;line-height:1.8;max-width:360px}
+.hint span{color:var(--chalk2)}
+
+.not-supported{background:rgba(201,64,64,.08);border:1px solid rgba(201,64,64,.25);border-radius:10px;padding:14px;font-size:13px;color:#e07070;text-align:center;width:100%;max-width:420px;margin-bottom:20px;display:none}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">PJ Caddie</div>
+  <div class="hero-title">Voice Shot Demo</div>
+  <div class="hero-sub">Tap the mic, describe your shot in plain English. See what the app would log.</div>
+</div>
+
+<div class="not-supported" id="not-supported">
+  ⚠️ Web Speech API not available in this browser. Try Safari on iOS.
+</div>
+
+<div class="key-section" id="key-section">
+  <label class="inp-label">Anthropic API Key</label>
+  <input class="inp" type="password" id="api-key-input" placeholder="sk-ant-…">
+  <button class="save-key-btn" onclick="saveKey()">Save Key</button>
+  <div class="key-status" id="key-status"></div>
+</div>
+
+<div class="mic-wrap">
+  <div class="mic-btn" id="mic-btn" onclick="toggleMic()">🎤</div>
+  <div class="mic-status" id="mic-status">Tap to speak</div>
+</div>
+
+<div class="transcript-box" id="transcript-box">
+  <div class="eyebrow" style="margin-bottom:8px">I heard</div>
+  <div class="transcript-text" id="transcript-text"></div>
+</div>
+
+<div class="result-box" id="result-box"></div>
+
+<div class="hint" id="hint">
+  Try saying:<br>
+  <span>"Driver, aimed center, big slice, ended up OB right"</span><br>
+  <span>"7 iron approach, aimed at the flag, came up short left"</span><br>
+  <span>"56 degree, chipped it close"</span><br>
+  <span>"Two putts, first one was long"</span>
+</div>
+
+<script>
+let recognition = null;
+let isListening = false;
+let apiKey = localStorage.getItem('caddie_ant_key') || localStorage.getItem('voice_demo_key') || '';
+
+function init() {
+  const inp = document.getElementById('api-key-input');
+  if (apiKey) {
+    inp.value = apiKey.slice(0,12) + '••••••••••••';
+    const st = document.getElementById('key-status');
+    st.style.color = '#5ec85e';
+    st.textContent = '✓ Key loaded from caddie app';
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    document.getElementById('not-supported').style.display = 'block';
+    const btn = document.getElementById('mic-btn');
+    btn.style.opacity = '.3';
+    btn.style.pointerEvents = 'none';
+    return;
+  }
+
+  recognition = new SR();
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    stopListening();
+    showTranscript(transcript);
+    parseShot(transcript);
+  };
+  recognition.onerror = (e) => {
+    stopListening();
+    setStatus('error', e.error === 'no-speech' ? 'No speech detected — try again' : 'Mic error: ' + e.error);
+  };
+  recognition.onend = () => { if (isListening) stopListening(); };
+}
+
+function saveKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  const st = document.getElementById('key-status');
+  if (!val || (!val.startsWith('sk-ant-') && !val.includes('••'))) {
+    st.style.color = 'var(--red)'; st.textContent = 'Key must start with sk-ant-'; return;
+  }
+  if (!val.includes('••')) { apiKey = val; localStorage.setItem('voice_demo_key', val); }
+  st.style.color = '#5ec85e'; st.textContent = '✓ Key saved';
+}
+
+function toggleMic() {
+  if (!recognition) return;
+  if (isListening) { recognition.stop(); stopListening(); }
+  else startListening();
+}
+
+function startListening() {
+  isListening = true;
+  document.getElementById('mic-btn').classList.add('listening');
+  setStatus('listening', 'Listening… speak your shot');
+  document.getElementById('result-box').style.display = 'none';
+  document.getElementById('transcript-box').style.display = 'none';
+  document.getElementById('hint').style.display = 'none';
+  recognition.start();
+}
+
+function stopListening() {
+  isListening = false;
+  document.getElementById('mic-btn').classList.remove('listening');
+  document.getElementById('mic-btn').classList.remove('processing');
+}
+
+function setStatus(type, msg) {
+  const el = document.getElementById('mic-status');
+  el.className = 'mic-status ' + type;
+  el.textContent = msg;
+}
+
+function showTranscript(text) {
+  const box = document.getElementById('transcript-box');
+  box.style.display = 'block';
+  document.getElementById('transcript-text').textContent = '\u201c' + text + '\u201d';
+}
+
+async function parseShot(transcript) {
+  if (!apiKey) { setStatus('error', 'No API key — enter above'); return; }
+  document.getElementById('mic-btn').classList.add('processing');
+  setStatus('processing', 'Byron is parsing\u2026');
+
+  const system = `You are parsing a golfer's spoken shot description into structured data.
+
+Fields:
+- club: Driver, 3W, 5W, 2H, 3H, 4H, 5H, 5i, 6i, 7i, 8i, 9i, PW, GW, 56, 58, PT, TW, ?
+- type: Tee, Approach, Pitch, Chip, Sand, Layup, Recovery, Putt, Flub, Penalty, ?
+- teeAimed: Left, Center, Right
+- teeShape: Draw, Straight, Fade, Hook, Pull, Push, Slice, Fat, Top, Thin
+- teeLanded: fairway, rough-left, rough-right, bunker, ob-left, ob-right, oop-left, oop-right, short
+- approachAimed: Left, Center, Right
+- approachDist: Short, PH, On, Long (On = GIR, hit the green)
+- approachSide: Left, Center, Right (when not On)
+- chipProx: Tap-in, Close, Medium, Far
+- sandGotOut: Yes, No
+- gotOut: Yes, No (recovery shots)
+- puttSpeed: Short, Long (only when speed was wrong)
+- lie: Fairway, Rough, Fringe, Green, Sand, Jail, Penalty (Jail = trees/trouble)
+- contact: Thin, Fat
+- rating: thumbs down, neutral, thumbs up
+
+Return ONLY valid JSON, no markdown:
+{"club":null,"type":null,"confidence":"high|medium|low","parsed":{"teeAimed":null,"teeShape":null,"teeLanded":null,"approachAimed":null,"approachDist":null,"approachSide":null,"chipProx":null,"sandGotOut":null,"gotOut":null,"puttSpeed":null,"lie":null,"contact":null,"rating":null},"notes":null}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 600,
+        system,
+        messages: [{role:'user', content: transcript}]
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || 'API error ' + res.status);
+    const raw = data.content.map(c=>c.text||'').join('').trim().replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(raw);
+    stopListening();
+    setStatus('done', '\u2713 Parsed');
+    renderResult(parsed);
+  } catch(e) {
+    stopListening();
+    setStatus('error', 'Failed: ' + e.message);
+  }
+}
+
+function renderResult(r) {
+  const confClass = r.confidence==='high'?'conf-high':r.confidence==='medium'?'conf-med':'conf-low';
+  const confLabel = r.confidence==='high'?'High confidence':r.confidence==='medium'?'Medium — review fields':'Low confidence — check carefully';
+
+  const allFields = [
+    ['Club', r.club], ['Type', r.type],
+    ['Aimed', r.parsed.teeAimed || r.parsed.approachAimed],
+    ['Shape', r.parsed.teeShape],
+    ['Landed', r.parsed.teeLanded],
+    ['Distance', r.parsed.approachDist],
+    ['Side', r.parsed.approachSide],
+    ['Chip Prox', r.parsed.chipProx],
+    ['Got Out', r.parsed.sandGotOut || r.parsed.gotOut],
+    ['Putt Speed', r.parsed.puttSpeed],
+    ['Lie', r.parsed.lie],
+    ['Contact', r.parsed.contact],
+    ['Rating', r.parsed.rating],
+  ];
+
+  const hits = allFields.filter(([,v]) => v !== null && v !== undefined);
+  const misses = allFields.filter(([k,v]) => (v === null || v === undefined) && (k==='Club'||k==='Type'));
+
+  const box = document.getElementById('result-box');
+  box.style.display = 'block';
+  box.innerHTML = `
+    <div class="eyebrow" style="margin-bottom:10px">What the app would log</div>
+    <div class="card">
+      <span class="confidence-badge ${confClass}">${confLabel}</span>
+      ${hits.map(([name,val]) => `<div class="field-row"><span class="field-name">${name}</span><span class="field-val hit">${val}</span></div>`).join('')}
+      ${misses.map(([name]) => `<div class="field-row"><span class="field-name">${name}</span><span class="field-val null">not detected</span></div>`).join('')}
+      ${r.notes ? `<div style="margin-top:10px;padding:10px;background:var(--ink3);border-radius:8px;font-size:12px;color:var(--chalk3);line-height:1.5">\uD83D\uDCDD ${r.notes}</div>` : ''}
+    </div>
+    <button class="try-again-btn" onclick="reset()">🎤 Try another shot</button>`;
+}
+
+function reset() {
+  document.getElementById('result-box').style.display = 'none';
+  document.getElementById('transcript-box').style.display = 'none';
+  document.getElementById('hint').style.display = 'block';
+  setStatus('', 'Tap to speak');
+}
+
+init();
+</script>
+</body>
+</html>
