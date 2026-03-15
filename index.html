@@ -414,7 +414,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.8 · Mar 15, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.12 · Mar 15, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -504,7 +504,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 
     <button onclick="saveGHSettings()" class="btn btn-gold" style="margin-bottom:10px">Save & Test Connection</button>
     <button onclick="manualSync()" class="btn btn-outline" style="margin-bottom:10px">↺ Sync Now</button>
-    <button onclick="debugStorage()" style="width:100%;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-radius:100px;padding:10px;font-size:12px;color:var(--chalk3);cursor:pointer;margin-bottom:6px;font-family:'DM Sans',sans-serif">🔍 Debug Storage</button>
+    <div id="dev-tap-zone" onclick="devTap()" style="height:12px;cursor:default;margin-bottom:6px" title=""></div>
     <div id="debug-out" style="font-size:10px;color:var(--chalk3);font-family:monospace;background:rgba(0,0,0,.3);border-radius:8px;padding:8px;display:none;word-break:break-all;margin-bottom:8px"></div>
     <button onclick="clearGHSettings()" style="width:100%;background:none;border:none;font-size:12px;color:rgba(201,64,64,.6);cursor:pointer;padding:8px;font-family:'DM Sans',sans-serif">Clear GitHub Settings</button>
 
@@ -818,7 +818,6 @@ const PRELOADED_COURSES = [
 
 const CLUBS = ['Driver','3W','5W','2H','3H','4H','5H','5i','6i','7i','8i','9i','PW','GW','56','58','PT','TW','?'];
 const SHOT_TYPES = ['Tee','Approach','Layup','Recovery','Pitch','Sand','Chip','Putt','Flub','Penalty','?'];
-const RESULT_OPTIONS = ['---','--','-','O','+','++','+++','?'];
 const LIE_OPTIONS = ['Fairway','Rough','Fringe','Green','Sand','Jail','Penalty'];
 
 // ── GIR HELPER: single source of truth ──
@@ -1556,8 +1555,6 @@ function setShotAttr(i, idx, attr, value) {
 
   if(attr==='type') {
     shot.type = shot.type===value ? null : value;
-  } else if(attr==='result') {
-    shot.result = shot.result===value ? null : value;
   } else if(attr==='contact') {
     shot.contact = shot.contact===value ? null : value;
   } else if(attr==='lie') {
@@ -1694,22 +1691,9 @@ function applyClubSwap(i, idx, club) {
   calcScore(i);
   saveWIP(round);
 }
-function resultPillClass(v) {
-  if(v==='---') return 'pill-far-minus';
-  if(v==='--')  return 'pill-mid-minus';
-  if(v==='-')   return 'pill-close-minus';
-  if(v==='O')   return 'pill-o';
-  if(v==='+')   return 'pill-close-plus';
-  if(v==='++')  return 'pill-mid-plus';
-  if(v==='+++') return 'pill-far-plus';
-  return 'pill-generic';
-}
 function typePillClass(v) {
   const m={'Tee':'pill-tee','Approach':'pill-approach','Putt':'pill-putt','Chip':'pill-chip','Pitch':'pill-pitch','Flub':'pill-flub','Penalty':'pill-penalty'};
   return m[v]||'pill-generic';
-}
-function shapePillClass(v) {
-  return resultPillClass(v);
 }
 
 function renderShotBlocks(i) {
@@ -1770,8 +1754,6 @@ function renderShotBlocks(i) {
     const showShape = isTeeOnPar45;
     // Contact: not on putts, sand, recovery, chip
     const showContact = !isPutt && !isSand && !isRecovery && !isFlub;
-    // Result: only on Tee (par4/5), Flub — not on approach/pitch/par3/chip/sand/recovery/putt/layup/recovery
-    const showResult = isFlub;
     // Lie: not on putts, sand, chip — also hide when approach/pitch/par3 is already logged as On Green
     const onGreen = isSmartGrid && shot.approachDist === 'On';
     const showLie = !isPT && !isTW && !isPutt && !isSand && !isChip && !onGreen && !isSmartGrid && !isLayup && !isTeeOnPar45;
@@ -1793,12 +1775,6 @@ function renderShotBlocks(i) {
       </div>
       <div class="penalty-note">Penalty stroke — no attributes tracked</div>
     </div>`;
-
-    // ── RESULT pills (only Tee par4/5, Flub)
-    const resultPills = showResult ? RESULT_OPTIONS.map(v=>{
-      const on=shot.result===v?' on':'';
-      return `<button class="attr-pill ${resultPillClass(v)}${on}" onclick="setShotAttr(${i},${idx},'result','${v}')">${v}</button>`;
-    }).join('') : '';
 
     // ── CONTACT pills — BLANK WATCH: no "Good (default)" label
     const contactPills = showContact ? ['Thin','Fat'].map(v=>{
@@ -1844,7 +1820,7 @@ function renderShotBlocks(i) {
         }).join('')}
       </div>` : '';
 
-      const lieRow = showSide ? `<div class="sg-divider"></div>${LBL('Lie')}<div class="sg-row" style="margin-bottom:6px">
+      const lieRow = showSide ? `<div class="sg-divider"></div>${LBL('Landed In')}<div class="sg-row" style="margin-bottom:6px">
         ${['Fairway','Rough','Fringe'].map(val=>{
           const on=shot.lie===val;
           return `<button class="sg-btn ${on?'on':''}" onclick="setShotAttr(${i},${idx},'lie','${val}')">${val}</button>`;
@@ -1908,25 +1884,27 @@ function renderShotBlocks(i) {
         ${SHAPE_ROW3.map(([lbl,val])=>`<button class="sg-btn ${shot.teeShape===val?'on':''}" onclick="setShotAttr(${i},${idx},'teeShape','${val}')">${lbl}</button>`).join('')}
       </div>`;
 
-      // LANDED 3×3
-      const LANDED = [
+      // LANDED — row1: Rough←/Fairway/Rough→  row2: OOP←/OOP→  row3: OB←/Bunker/OB→
+      const LANDED_R1 = [
         ['Rough<br><span class="sg-arrow">←</span>','rough-left',''],
         ['Fairway','fairway','on-green'],
-        ['Rough<br><span class="sg-arrow">→</span>','rough-right',''],
+        ['Rough<br><span class="sg-arrow">→</span>','rough-right','']
+      ];
+      const LANDED_R2 = [
         ['OOP<br><span class="sg-arrow">←</span>','oop-left','on-red'],
-        ['Short','short',''],
-        ['OOP<br><span class="sg-arrow">→</span>','oop-right','on-red'],
+        ['OOP<br><span class="sg-arrow">→</span>','oop-right','on-red']
+      ];
+      const LANDED_R3 = [
         ['OB<br><span class="sg-arrow">←</span>','ob-left','on-red'],
         ['Bunker','bunker',''],
         ['OB<br><span class="sg-arrow">→</span>','ob-right','on-red']
       ];
-      const landedGrid = `<div class="sg-divider"></div>${LBL('Landed')}<div class="sg-3x3">
-        ${LANDED.map(([lbl,val,hi])=>{
-          const on=shot.teeLanded===val;
-          const cls = on ? (val==='fairway'?'on-green':val.startsWith('rough')?'on':val.startsWith('ob')||val.startsWith('oop')?'on-red':'on') : '';
-          return `<button class="sg-cell ${cls}" onclick="setShotAttr(${i},${idx},'teeLanded','${val}')">${lbl}</button>`;
-        }).join('')}
-      </div>`;
+      const mkLandedBtn = ([lbl,val]) => {
+        const on=shot.teeLanded===val;
+        const cls=on?(val==='fairway'?'on-green':val.startsWith('rough')?'on':'on-red'):'';
+        return `<button class="sg-cell ${cls}" onclick="setShotAttr(${i},${idx},'teeLanded','${val}')">${lbl}</button>`;
+      };
+      const landedGrid = `<div class="sg-divider"></div>${LBL('Landed')}<div class="sg-3x3">${LANDED_R1.map(mkLandedBtn).join('')}</div><div class="sg-row" style="gap:5px;margin-top:5px">${LANDED_R2.map(mkLandedBtn).join('')}</div><div class="sg-3x3" style="margin-top:5px">${LANDED_R3.map(mkLandedBtn).join('')}</div>`;
 
       return GRP(aimedRow + shapeRows + landedGrid);
     })() : '';
@@ -1941,7 +1919,7 @@ function renderShotBlocks(i) {
       <div class="sg-divider"></div>${LBL('Distance')}<div class="sg-row">
         ${[['Short','Short'],['On Target','On Target'],['Long','Long']].map(([lbl,val])=>`<button class="sg-btn ${shot.layupDist===val?'on':''}" onclick="setShotAttr(${i},${idx},'layupDist','${val}')">${lbl}</button>`).join('')}
       </div>
-      <div class="sg-divider"></div>${LBL('Lie')}<div class="sg-row" style="margin-bottom:6px">
+      <div class="sg-divider"></div>${LBL('Landed In')}<div class="sg-row" style="margin-bottom:6px">
         ${['Fairway','Rough','Fringe'].map(val=>`<button class="sg-btn ${shot.lie===val?'on':''}" onclick="setShotAttr(${i},${idx},'lie','${val}')">${val}</button>`).join('')}
       </div>
       <div class="sg-row">
@@ -2015,16 +1993,12 @@ function renderShotBlocks(i) {
       </div>
     `) : '';
 
-    // ── Assemble result + contact + lie
-    const resultSection = (showResult||showContact) ? GRP(`
-      ${showResult ? `<div class="attr-row">
-        <div class="attr-label">Result · vs intended line</div>
-        <div class="attr-pills">${resultPills}</div>
-      </div>` : ''}
-      ${showContact ? `<div class="attr-row" style="${showResult?'':'margin-bottom:0'}">
+    // ── Contact section
+    const contactSection = showContact ? GRP(`
+      <div class="attr-row" style="margin-bottom:0">
         <div class="attr-label">Contact${!shot.contact?'<span style="font-size:10px;color:var(--chalk3);margin-left:6px;font-style:italic;font-weight:400">(blank = good)</span>':''}</div>
         <div class="attr-pills">${contactPills}</div>
-      </div>` : ''}
+      </div>
     `) : '';
 
     const lieSection = showLie ? GRP(`<div class="attr-row" style="margin-bottom:0">
@@ -2051,7 +2025,7 @@ function renderShotBlocks(i) {
         <button class="shot-block-remove" onclick="removeShot(${i},${idx})">✕</button>
       </div>
       ${typeSection}
-      ${resultSection}
+      ${contactSection}
       ${lieSection}
     </div>`;
   }).join('');
@@ -2263,7 +2237,7 @@ function overviewHTML(round) {
   const firHoles=teeHoles.length;
   const fir=teeHoles.filter(s=>(s.shots||[])[0]?.teeLanded==='fairway').length;
   const inPlay=teeHoles.filter(s=>{const tl=(s.shots||[])[0]?.teeLanded;return tl==='fairway'||tl==='rough-left'||tl==='rough-right';}).length;
-  const trouble=teeHoles.filter(s=>{const tl=(s.shots||[])[0]?.teeLanded;return tl==='bunker'||tl?.startsWith('ob-')||tl?.startsWith('oop-')||tl==='short';}).length;
+  const trouble=teeHoles.filter(s=>{const sh0=(s.shots||[])[0];const tl=sh0?.teeLanded;return tl==='bunker'||tl?.startsWith('ob-')||tl?.startsWith('oop-')||sh0?.type==='Flub';}).length;
   const eagles=scores.filter(s=>s.strokes<=s.par-2).length;
   const birdies=scores.filter(s=>s.strokes===s.par-1).length;
   const pars=scores.filter(s=>s.strokes===s.par).length;
@@ -2424,11 +2398,6 @@ function tendenciesHTML(round) {
   allShots.filter(sh=>sh.type).forEach(sh=>{typeCounts[sh.type]=(typeCounts[sh.type]||0)+1;});
   const totalTypes=Object.values(typeCounts).reduce((a,b)=>a+b,0);
 
-  // Results
-  const resultCounts={};
-  allShots.filter(sh=>sh.result).forEach(sh=>{resultCounts[sh.result]=(resultCounts[sh.result]||0)+1;});
-  const totalResults=Object.values(resultCounts).reduce((a,b)=>a+b,0);
-
   // Contact — only shot types where contact is tracked and shown in UI
   const CONTACT_TYPES = ['Tee','Approach','Layup','Pitch','Chip'];
   const contactCounts={Thin:0,Fat:0,Good:0};
@@ -2473,17 +2442,12 @@ function tendenciesHTML(round) {
   const puttDist={};
   scores.forEach(s=>{puttDist[s.putts]=(puttDist[s.putts]||0)+1;});
 
-  const resultColors={'---':'var(--red)','--':'#c07050','-':'#e0a870','O':'#5ec85e','+':'#e0a870','++':'#c07050','+++':'var(--red)'};
   const ZONE_LABELS={'long-left':'Long L','long-center':'Long','long-right':'Long R','back-left':'Back-L','back-center':'Back','back-right':'Back-R','left':'Left','green':'On Green','right':'Right','ph-left':'PH Left','ph-center':'PH','ph-right':'PH Right','front-left':'Front-L','front-center':'Front','front-right':'Front-R','short-left':'Short L','short-center':'Short','short-right':'Short R'};
   const zoneColors={'green':'#5ec85e','left':'#e0a870','right':'#e0a870','back-left':'#c07050','back-center':'var(--red)','back-right':'#c07050','front-left':'#c07050','front-center':'#c07050','front-right':'#c07050','long-left':'#9060b0','long-center':'#9060b0','long-right':'#9060b0','short-left':'#5090c0','short-center':'#5090c0','short-right':'#5090c0'};
   const contactColors={Good:'#5ec85e',Thin:'#e07070',Fat:'#e07070'};
   const typeColors={Tee:'var(--sky)',Approach:'var(--gold)',Putt:'#b48ef0',Chip:'#6ab0e8',Pitch:'#6ab0e8',Flub:'var(--red)',Penalty:'#ffd700'};
 
   return `
-  ${totalResults?`<div class="card" style="margin-bottom:10px">
-    <div class="eyebrow" style="margin-bottom:12px">Result — vs Intended Line (${totalResults})</div>
-    ${RESULT_OPTIONS.map(r=>resultCounts[r]?barRow(r,resultCounts[r],totalResults,resultColors[r]||'var(--gold)'):'').join('')}
-  </div>`:''}
   ${totalContact?`<div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:12px">Contact Quality (${totalContact} shots)</div>
     ${['Good','Thin','Fat'].map(c=>contactCounts[c]?barRow(c,contactCounts[c],totalContact,contactColors[c]):'').join('')}
@@ -2682,6 +2646,8 @@ ${roundSummary}
 ${analysisSummary}`;
 
   S._coachHistory.push({role:'user', content: msg});
+  // SHORT MEMORY: cap at last 6 turns (3 user + 3 assistant) to control token cost
+  if (S._coachHistory.length > 6) S._coachHistory = S._coachHistory.slice(-6);
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -2693,7 +2659,7 @@ ${analysisSummary}`;
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 800,
         system: systemPrompt,
         messages: S._coachHistory
@@ -2703,7 +2669,8 @@ ${analysisSummary}`;
     const reply = (data.content||[]).map(c=>c.text||'').join('').trim();
     S._coachHistory.push({role:'assistant', content: reply});
     const think = document.getElementById(thinkId);
-    if (think) think.outerHTML = `<div class="coach-msg-coach">${reply.replace(/\n/g,'<br>')}</div>`;
+    const safeReply = reply.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    if (think) think.outerHTML = `<div class="coach-msg-coach">${safeReply}</div>`;
   } catch(e) {
     const think = document.getElementById(thinkId);
     if (think) think.outerHTML = `<div class="coach-msg-coach" style="color:var(--red)">Sorry, couldn't reach the coach. Try again.</div>`;
@@ -2722,7 +2689,7 @@ async function runCoachAnalysis(round) {
     strokes: s.strokes, putts: s.putts, penalties: s.penalties||0,
     gir: isGIR(s), pinLocation: s.pinLocation||null,
     shots: (s.shots||[]).map(sh=>({
-      club: sh.club, type: sh.type, result: sh.result,
+      club: sh.club, type: sh.type,
       contact: sh.contact||null,
       teeShape: sh.teeShape||null,
       teeLanded: sh.teeLanded||null,
@@ -2749,7 +2716,7 @@ async function runCoachAnalysis(round) {
 
   const playerNotes = localStorage.getItem('caddie_player_notes') || '';
   const courseNotesKey = 'caddie_course_notes_' + (round.courseId || '');
-  const courseNotes = localStorage.getItem(courseNotesKey) || localStorage.getItem('caddie_course_notes') || '';
+  const courseNotes = localStorage.getItem(courseNotesKey) || '';
   // NOTE COACH: gather per-hole notes + green notes
   const holeNotes = {};
   const greenNotes = {};
@@ -2801,13 +2768,12 @@ ${courseNotes ? `\nCOURSE KNOWLEDGE:\n${courseNotes}` : ''}${holeNotesText}${gre
 DATA REFERENCE:
 - teeAimed: Left/Center/Right (intended aim on tee shots)
 - teeShape: Draw/Straight/Fade/Hook/Pull/Push/Slice/Fat/Top/Thin (tee shot shape)
-- teeLanded: fairway/rough-left/rough-right/bunker/ob-left/ob-right/oop-left/oop-right/short. PRIMARY METRIC: In Play = fairway+rough-left+rough-right vs par. Trouble = bunker+ob+oop+short. FIR = fairway only (secondary).
+- teeLanded: fairway/rough-left/rough-right/bunker/ob-left/ob-right/oop-left/oop-right/short. PRIMARY METRIC: In Play = fairway+rough-left+rough-right vs par. Trouble = bunker+ob+oop+Flub-type-shot-1. FIR = fairway only (secondary).
 - approachAimed: Left/Center/Right (intended target line for approach/pitch/par3)
 - approachDist: Short/PH/On/Long (distance result — On = GIR)
 - approachSide: Left/Center/Right (lateral miss when not On)
 - approachZone: back-left/back-center/back-right/mid-left/mid-center/mid-right/front-left/front-center/front-right (green zone when On)
 - layupAimed/layupDist/layupSide: layup shot targeting data
-- result: --- -- - O + ++ +++ (directional result, far-left to far-right, used on Flub shots only)
 - contact: Thin / Fat (blank = solid). Tracked on Tee, Approach, Layup, Pitch, Chip shots.
 - rating: 👎 / 😐 / 👍 (player's feel rating)
 - lie: WHERE THE BALL ENDED UP after the shot (Fairway/Rough/Fringe/Green/Sand/Jail/Penalty). Jail = trees, bushes, behind obstacle — any lie requiring a punch-out or escape shot decision. Legacy data may use LR/HR (treat as Rough) or Trees (treat as Jail).
@@ -3323,6 +3289,7 @@ function toggleHoleRow(hdr) {
 function rerunCoach() {
   const round = S._coachRound;
   if (!round) return;
+  if (!confirm('Re-run Byron Analysis?\n\nThis uses a Sonnet API call (~$0.05). Only needed if you\'ve added or changed shots since the last analysis.')) return;
   // Clear cached analysis from round
   const rounds = getRounds();
   const ri = rounds.findIndex(r=>r.id===round.id);
@@ -3397,13 +3364,13 @@ async function ghGetFile() {
   const data = await res.json();
   const raw = data.content ? data.content.replace(/\n/g, '') : '';
   if (!raw) return { rounds: [], sha: data.sha };
-  const decoded = JSON.parse(decodeURIComponent(escape(atob(raw))));
+  const decoded = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(raw), c => c.charCodeAt(0))));
   return { rounds: decoded.rounds || decoded || [], sha: data.sha };
 }
 
 async function ghPutFile(rounds, sha) {
   const {owner, repo, token} = getGHConfig();
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify({caddie_export:true, version:1, updated: new Date().toISOString(), rounds}, null, 2))));
+  const content = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify({caddie_export:true, version:1, updated: new Date().toISOString(), rounds}, null, 2))));
   const body = { message: `Sync rounds ${new Date().toISOString().slice(0,10)}`, content };
   if (sha) body.sha = sha;
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/rounds.json`, {
@@ -3444,7 +3411,7 @@ async function ghGetNotes() {
   const data = await res.json();
   const raw = data.content ? data.content.replace(/\n/g,'') : '';
   if (!raw) return { notes: {}, sha: data.sha };
-  const decoded = JSON.parse(decodeURIComponent(escape(atob(raw))));
+  const decoded = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(raw), c => c.charCodeAt(0))));
   return { notes: decoded.notes || {}, sha: data.sha, savedAt: decoded.savedAt };
 }
 
@@ -3457,7 +3424,7 @@ async function ghPutNotes(notes, sha) {
     savedAt: new Date().toISOString(),
     notes
   };
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+  const content = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(payload, null, 2))));
   const body = { message: `Notes backup ${new Date().toISOString().slice(0,10)}`, content };
   if (sha) body.sha = sha;
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/notes.json`, {
@@ -3587,18 +3554,12 @@ async function manualSync() {
   if (!ghConfigured()) { setSettingsStatus('No GitHub settings saved yet.','err',false); return; }
   if (!navigator.onLine) { setSettingsStatus('Offline — cannot sync.','err',false); return; }
   try {
-    const { rounds: remote, sha } = await ghGetFile();
-    const local = getRounds();
-    const merged = mergeRounds(local, remote);
-    localStorage.setItem('caddie_rounds', JSON.stringify(merged));
-    await ghPutFile(merged, sha);
-    localStorage.setItem('caddie_last_sync', new Date().toISOString());
-    setSettingsStatus(`✓ Synced · ${merged.length} round${merged.length!==1?'s':''}${merged.length===0?' — no rounds yet':''}`,'ok',true);
+    await syncWithGitHub(false);
+    const count = getRounds().length;
+    setSettingsStatus(`✓ Synced · ${count} round${count!==1?'s':''}${count===0?' — no rounds yet':''}`,'ok',true);
     loadGHSettingsForm();
-    renderHome();
   } catch(e) {
     setSettingsStatus(`Sync failed: ${e.message}`,'err',false);
-    console.error('GitHub sync error:', e);
   }
 }
 
@@ -3619,12 +3580,24 @@ function saveGHSettings() {
   });
 }
 
+let _devTaps = 0, _devTimer = null;
+function devTap() {
+  _devTaps++;
+  clearTimeout(_devTimer);
+  if (_devTaps >= 5) {
+    _devTaps = 0;
+    debugStorage();
+  } else {
+    _devTimer = setTimeout(() => { _devTaps = 0; }, 1500);
+  }
+}
+
 function debugStorage() {
   const out = document.getElementById('debug-out');
   out.style.display = 'block';
   const keys = Object.keys(localStorage);
   if (!keys.length) { out.textContent = 'localStorage is empty'; return; }
-  const sensitive = ['gh_token'];
+  const sensitive = ['gh_token', 'caddie_ant_key'];
   const lines = keys.map(k => {
     if (sensitive.includes(k)) return `${k}: ••••••••••••`;
     let val = localStorage.getItem(k);
@@ -3696,13 +3669,13 @@ async function ghGetWIP() {
   const data = await res.json();
   const raw = data.content ? data.content.replace(/\n/g, '') : '';
   if (!raw) return { wip: null, sha: data.sha };
-  const decoded = JSON.parse(decodeURIComponent(escape(atob(raw))));
+  const decoded = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(raw), c => c.charCodeAt(0))));
   return { wip: decoded, sha: data.sha };
 }
 
 async function ghPutWIP(wip, sha) {
   const {owner, repo, token} = getGHConfig();
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(wip, null, 2))));
+  const content = btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(wip, null, 2))));
   const body = { message: `WIP round ${new Date().toISOString().slice(0,10)}`, content };
   if (sha) body.sha = sha;
   const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/wip.json`, {
@@ -3929,7 +3902,7 @@ async function checkRemoteWIP() {
     bar.style.background = 'rgba(200,168,75,.1)';
     bar.style.border = '1px solid rgba(200,168,75,.3)';
     bar.style.color = 'var(--gold)';
-    const course = wip.courseName || 'Unknown course';
+    const course = (wip.courseName || 'Unknown course').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const hole = (wip.scores||[]).length + 1;
     const paused = wip._paused ? new Date(wip._paused).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
     bar.innerHTML = `⏸ Paused round: ${course} — Hole ${hole}${paused?' · '+paused:''} &nbsp; <button onclick="resumeRemoteWIP('${sha}')" style="background:rgba(200,168,75,.2);border:1px solid var(--gold);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif">Resume</button> <button onclick="dismissRemoteWIP()" style="background:none;border:none;font-size:11px;color:var(--chalk3);cursor:pointer;margin-left:4px">✕</button>`;
