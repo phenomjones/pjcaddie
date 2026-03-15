@@ -414,7 +414,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.6 · Mar 14, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.20.7 · Mar 14, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -590,7 +590,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="subtitle" style="margin-top:4px">Tap to remove clubs you didn't bring</div>
   </div>
   <div class="scroll-body" style="padding:18px">
-    <div id="bag-grid" style="display:flex;flex-wrap:wrap;gap:10px;padding-bottom:20px"></div>
+    <div id="bag-grid" style="display:flex;flex-wrap:wrap;gap:10px;padding-bottom:20px;justify-content:center"></div>
   </div>
   <div class="sticky-bot">
     <button class="btn btn-gold" onclick="confirmBag()">Start Round →</button>
@@ -819,7 +819,7 @@ const PRELOADED_COURSES = [
 const CLUBS = ['Driver','3W','5W','2H','3H','4H','5H','5i','6i','7i','8i','9i','PW','GW','56','58','PT','TW','?'];
 const SHOT_TYPES = ['Tee','Approach','Layup','Recovery','Pitch','Sand','Chip','Putt','Flub','Penalty','?'];
 const RESULT_OPTIONS = ['---','--','-','O','+','++','+++','?'];
-const LIE_OPTIONS = ['Fairway','LR','HR','Fringe','Green','Sand','Trees','Penalty'];
+const LIE_OPTIONS = ['Fairway','Rough','Fringe','Green','Sand','Jail','Penalty'];
 
 // ── GIR HELPER: single source of truth ──
 // New model: approachDist==='On' on any approach/pitch/par3-tee shot
@@ -1477,7 +1477,7 @@ function addShot(i, club) {
     if(prevLie==='Sand') defaultType='Sand';
     else if(prevLie==='Green') defaultType='Putt';
     else if(prevLie==='Fringe') defaultType='Chip';
-    else if(prevLie==='Trees') defaultType='Recovery';
+    else if(prevLie==='Jail'||prevLie==='Trees') defaultType='Recovery';
     // PAR SENSE: auto-default by par + shot index (if no lie chain)
     if(!defaultType) {
       const par = round.pars?.[i];
@@ -1564,7 +1564,7 @@ function setShotAttr(i, idx, attr, value) {
       if(shot.lie==='Sand') nextShot.type='Sand';
       else if(shot.lie==='Green') nextShot.type='Putt';
       else if(shot.lie==='Fringe') nextShot.type='Chip';
-      else if(shot.lie==='Trees') nextShot.type='Recovery';
+      else if(shot.lie==='Jail'||shot.lie==='Trees') nextShot.type='Recovery';
     }
   } else if(attr==='rating') {
     shot.rating = shot.rating===value ? null : value;
@@ -1575,12 +1575,24 @@ function setShotAttr(i, idx, attr, value) {
     shot.teeShape = shot.teeShape===value ? null : value;
   } else if(attr==='teeLanded') {
     shot.teeLanded = shot.teeLanded===value ? null : value;
+    // CHAIN LINK: auto-derive lie from teeLanded — no manual entry needed on tee shots
+    if(shot.teeLanded) {
+      const tl = shot.teeLanded;
+      if(tl==='fairway'||tl==='short') shot.lie='Fairway';
+      else if(tl==='rough-left'||tl==='rough-right') shot.lie='Rough';
+      else if(tl==='bunker') shot.lie='Sand';
+      else if(tl.startsWith('ob-')||tl.startsWith('oop-')) shot.lie='Penalty';
+    } else {
+      shot.lie=null;
+    }
   // ── SMART GRID ──
   } else if(attr==='approachAimed') {
     shot.approachAimed = shot.approachAimed===value ? null : value;
   } else if(attr==='approachDist') {
     shot.approachDist = shot.approachDist===value ? null : value;
     if(shot.approachDist !== 'On') shot.approachZone = null;
+    // GRID FLOW: auto-set lie to Green when on the green
+    if(shot.approachDist === 'On') shot.lie = 'Green';
   } else if(attr==='approachSide') {
     shot.approachSide = shot.approachSide===value ? null : value;
   } else if(attr==='approachZone') {
@@ -1755,10 +1767,10 @@ function renderShotBlocks(i) {
     // Contact: not on putts, sand, recovery, chip
     const showContact = !isPutt && !isSand && !isRecovery && !isFlub;
     // Result: only on Tee (par4/5), Flub — not on approach/pitch/par3/chip/sand/recovery/putt/layup/recovery
-    const showResult = (isTeeOnPar45 || isFlub) && !isPutt;
+    const showResult = isFlub;
     // Lie: not on putts, sand, chip — also hide when approach/pitch/par3 is already logged as On Green
     const onGreen = isSmartGrid && shot.approachDist === 'On';
-    const showLie = !isPT && !isTW && !isPutt && !isSand && !isChip && !onGreen;
+    const showLie = !isPT && !isTW && !isPutt && !isSand && !isChip && !onGreen && !isSmartGrid && !isLayup && !isTeeOnPar45;
 
     // Rating
     const RATINGS=[{v:'👎'},{v:'😐'},{v:'👍'}];
@@ -1791,7 +1803,7 @@ function renderShotBlocks(i) {
     }).join('') : '';
 
     // ── LIE pills
-    const LIE_GROUPS=[['Fairway','LR','HR'],['Fringe','Green'],['Sand','Trees']];
+    const LIE_GROUPS=[['Fairway','Rough'],['Fringe','Green'],['Sand','Jail']];
     const liePills = showLie ? LIE_GROUPS.map(group=>
       `<span style="display:inline-flex;gap:4px;margin-right:6px">${group.map(v=>{
         const on=shot.lie===v?' on':'';
@@ -1828,6 +1840,19 @@ function renderShotBlocks(i) {
         }).join('')}
       </div>` : '';
 
+      const lieRow = showSide ? `<div class="sg-divider"></div>${LBL('Lie')}<div class="sg-row" style="margin-bottom:6px">
+        ${['Fairway','Rough','Fringe'].map(val=>{
+          const on=shot.lie===val;
+          return `<button class="sg-btn ${on?'on':''}" onclick="setShotAttr(${i},${idx},'lie','${val}')">${val}</button>`;
+        }).join('')}
+      </div>
+      <div class="sg-row">
+        ${['Sand','Jail','Penalty'].map(val=>{
+          const on=shot.lie===val;
+          return `<button class="sg-btn ${on?'on':''}" onclick="setShotAttr(${i},${idx},'lie','${val}')">${val}</button>`;
+        }).join('')}
+      </div>` : '';
+
       const ZONES = [
         ['←','back-left'],['Back Ctr','back-center'],['→','back-right'],
         ['←','mid-left'], ['Mid Ctr', 'mid-center'], ['→','mid-right'],
@@ -1851,7 +1876,7 @@ function renderShotBlocks(i) {
         }).join('')}
       </div><div class="sg-hint">Back = away from you</div>` : '';
 
-      return GRP(aimedRow + distRow + sideRow + zoneGrid);
+      return GRP(aimedRow + distRow + lieRow + sideRow + zoneGrid);
     })() : '';
 
     // ════════════════════════════════════════════
@@ -1911,6 +1936,12 @@ function renderShotBlocks(i) {
       </div>
       <div class="sg-divider"></div>${LBL('Distance')}<div class="sg-row">
         ${[['Short','Short'],['On Target','On Target'],['Long','Long']].map(([lbl,val])=>`<button class="sg-btn ${shot.layupDist===val?'on':''}" onclick="setShotAttr(${i},${idx},'layupDist','${val}')">${lbl}</button>`).join('')}
+      </div>
+      <div class="sg-divider"></div>${LBL('Lie')}<div class="sg-row" style="margin-bottom:6px">
+        ${['Fairway','Rough','Fringe'].map(val=>`<button class="sg-btn ${shot.lie===val?'on':''}" onclick="setShotAttr(${i},${idx},'lie','${val}')">${val}</button>`).join('')}
+      </div>
+      <div class="sg-row">
+        ${['Sand','Jail','Penalty'].map(val=>`<button class="sg-btn ${shot.lie===val?'on':''}" onclick="setShotAttr(${i},${idx},'lie','${val}')">${val}</button>`).join('')}
       </div>
       <div class="sg-divider"></div>${LBL('Side')}<div class="sg-row">
         ${[['← Left','Left'],['Center','Center'],['Right →','Right']].map(([lbl,val])=>`<button class="sg-btn ${shot.layupSide===val?'on':''}" onclick="setShotAttr(${i},${idx},'layupSide','${val}')">${lbl}</button>`).join('')}
@@ -2224,8 +2255,11 @@ function overviewHTML(round) {
   const penalties=scores.reduce((a,s)=>a+(s.penalties||0),0);
   const threePutts=scores.filter(s=>s.putts>=3).length;
   const gir=scores.filter(s=>isGIR(s)).length;
-  const fir=scores.filter(s=>s.par!==3 && (s.shots||[])[0]?.teeLanded==='fairway').length;
-  const firHoles=scores.filter(s=>s.par!==3).length;
+  const teeHoles=scores.filter(s=>s.par!==3);
+  const firHoles=teeHoles.length;
+  const fir=teeHoles.filter(s=>(s.shots||[])[0]?.teeLanded==='fairway').length;
+  const inPlay=teeHoles.filter(s=>{const tl=(s.shots||[])[0]?.teeLanded;return tl==='fairway'||tl==='rough-left'||tl==='rough-right';}).length;
+  const trouble=teeHoles.filter(s=>{const tl=(s.shots||[])[0]?.teeLanded;return tl==='bunker'||tl?.startsWith('ob-')||tl?.startsWith('oop-')||tl==='short';}).length;
   const eagles=scores.filter(s=>s.strokes<=s.par-2).length;
   const birdies=scores.filter(s=>s.strokes===s.par-1).length;
   const pars=scores.filter(s=>s.strokes===s.par).length;
@@ -2248,10 +2282,12 @@ function overviewHTML(round) {
     <div class="stat-box"><div class="stat-n sm">${penalties}</div><div class="stat-l">Penalties</div></div>
     <div class="stat-box"><div class="stat-n sm">${(putts/scores.length).toFixed(1)}</div><div class="stat-l">Avg Putts</div></div>
   </div>
-  <div class="stat-g2">
-    <div class="stat-box"><div class="stat-n sm">${firHoles?Math.round(fir/firHoles*100)+'%':'—'}</div><div class="stat-l">Fairways</div></div>
+  <div class="stat-g3">
+    <div class="stat-box"><div class="stat-n sm">${firHoles?Math.round(inPlay/firHoles*100)+'%':'—'}</div><div class="stat-l">In Play</div></div>
+    <div class="stat-box"><div class="stat-n sm">${firHoles?Math.round(trouble/firHoles*100)+'%':'—'}</div><div class="stat-l">Trouble</div></div>
     <div class="stat-box"><div class="stat-n sm">${Math.round(gir/scores.length*100)}%</div><div class="stat-l">GIR</div></div>
   </div>
+  ${firHoles?`<div style="text-align:center;font-size:11px;color:var(--chalk3);margin:-2px 0 8px">FIR: ${fir}/${firHoles} fairways (${Math.round(fir/firHoles*100)}%)</div>`:''}
   <div class="card">
     <div class="eyebrow" style="margin-bottom:12px">Score Distribution</div>
     ${distBar('Eagles / Better', eagles, scores.length, 'var(--gold)')}
@@ -2454,7 +2490,7 @@ function tendenciesHTML(round) {
   </div>`:''}
   ${totalLies?`<div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:12px">Lie Results (${totalLies})</div>
-    ${LIE_OPTIONS.map(l=>lieCounts[l]?barRow(l,lieCounts[l],totalLies,l==='Fairway'?'#5ec85e':l==='Green'?'#b48ef0':l==='Fringe'?'#8ed88e':l==='LR'?'#e0a870':l==='HR'?'#c07050':l==='Trees'?'#4a7a4a':l==='Penalty'?'#e0c030':'var(--red)'):'').join('')}
+    ${LIE_OPTIONS.map(l=>lieCounts[l]?barRow(l,lieCounts[l],totalLies,l==='Fairway'?'#5ec85e':l==='Green'?'#b48ef0':l==='Fringe'?'#8ed88e':l==='Rough'?'#e0a870':l==='Sand'?'var(--gold)':l==='Jail'?'#4a7a4a':l==='Penalty'?'#e0c030':'var(--red)'):'').join('')}
   </div>`:''}
   ${totalApprFinish?`<div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:12px">Approach Finish Zones · ${girCount}/${scores.length} GIR</div>
@@ -2761,16 +2797,16 @@ ${courseNotes ? `\nCOURSE KNOWLEDGE:\n${courseNotes}` : ''}${holeNotesText}${gre
 DATA REFERENCE:
 - teeAimed: Left/Center/Right (intended aim on tee shots)
 - teeShape: Draw/Straight/Fade/Hook/Pull/Push/Slice/Fat/Top/Thin (tee shot shape)
-- teeLanded: fairway/rough-left/rough-right/bunker/ob-left/ob-right/oop-left/oop-right/short
+- teeLanded: fairway/rough-left/rough-right/bunker/ob-left/ob-right/oop-left/oop-right/short. PRIMARY METRIC: In Play = fairway+rough-left+rough-right vs par. Trouble = bunker+ob+oop+short. FIR = fairway only (secondary).
 - approachAimed: Left/Center/Right (intended target line for approach/pitch/par3)
 - approachDist: Short/PH/On/Long (distance result — On = GIR)
 - approachSide: Left/Center/Right (lateral miss when not On)
 - approachZone: back-left/back-center/back-right/mid-left/mid-center/mid-right/front-left/front-center/front-right (green zone when On)
 - layupAimed/layupDist/layupSide: layup shot targeting data
-- result: --- -- - O + ++ +++ (directional result, far-left to far-right, used on Tee par4/5 and Flub)
-- contact: Thin / Fat (blank = solid)
+- result: --- -- - O + ++ +++ (directional result, far-left to far-right, used on Flub shots only)
+- contact: Thin / Fat (blank = solid). Tracked on Tee, Approach, Layup, Pitch, Chip shots.
 - rating: 👎 / 😐 / 👍 (player's feel rating)
-- lie: WHERE THE BALL ENDED UP after the shot (Fairway/LR/HR/Fringe/Green/Sand/Trees)
+- lie: WHERE THE BALL ENDED UP after the shot (Fairway/Rough/Fringe/Green/Sand/Jail/Penalty). Jail = trees, bushes, behind obstacle — any lie requiring a punch-out or escape shot decision. Legacy data may use LR/HR (treat as Rough) or Trees (treat as Jail).
 - gotOut: Yes/No (recovery shots and sand shots)
 - recoveryLanded: where ball landed after successful recovery
 - sandGotOut: Yes/No, sandProx: Close/Medium/Far (bunker play)
