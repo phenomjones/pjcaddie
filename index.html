@@ -410,7 +410,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.21.7 · Mar 15, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.21.9 · Mar 15, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -2294,9 +2294,9 @@ function scorecardHTML(round) {
     if (rel <= -2) return 'background:var(--gold);color:var(--ink);border-radius:50%';
     if (rel === -1) return 'background:var(--blue);color:#fff;border-radius:50%';
     if (rel === 0)  return 'background:transparent;border:1.5px solid var(--chalk3);color:var(--chalk2);border-radius:50%';
-    if (rel === 1)  return 'background:rgba(201,64,64,.25);border:1px solid var(--red);color:#e07070;border-radius:3px';
-    if (rel === 2)  return 'background:rgba(201,64,64,.5);border:1px solid var(--red);color:#fff;border-radius:3px';
-    return 'background:#7a1010;color:#fff;border-radius:3px';
+    if (rel === 1)  return 'background:rgba(201,64,64,.3);border:1px solid var(--red);color:#fff;border-radius:3px';
+    if (rel === 2)  return 'background:rgba(201,64,64,.6);border:1px solid var(--red);color:#fff;border-radius:3px';
+    return 'background:#7a1010;border:1px solid #a01010;color:#fff;border-radius:3px';
   }
 
   function nineTable(arr, label, showTot) {
@@ -2304,8 +2304,6 @@ function scorecardHTML(round) {
     const totalPar    = arr.reduce((a,s)=>a+s.par,0);
     const totalStr    = arr.reduce((a,s)=>a+s.strokes,0);
     const totalPutts  = arr.reduce((a,s)=>a+s.putts,0);
-    const totalPen    = arr.reduce((a,s)=>a+(s.penalties||0),0);
-    const totalGIR    = arr.filter(s=>isGIR(s)).length;
     const rel         = totalStr - totalPar;
     const relStr      = rel===0?'E':rel>0?'+'+rel:''+rel;
     const relColor    = rel<0?'#5ec85e':rel>0?'var(--red)':'var(--chalk2)';
@@ -2322,21 +2320,56 @@ function scorecardHTML(round) {
     const parRow  = '<tr style="border-top:1px solid var(--border)">' + td('Par','font-size:11px;color:var(--gold);font-weight:600') +
       arr.map(s=>td(s.par,'font-size:12px;color:var(--chalk2)')).join('') +
       td(totalPar,'font-size:12px;color:var(--chalk2);font-weight:700') + '</tr>';
+
+    // CARD PENALTY: penalty ✕ superscripts on score badge, no separate row
     const scoreRow = '<tr style="border-top:1px solid var(--border)">' + td('Score','font-size:11px;color:var(--gold);font-weight:600') +
       arr.map(s=>{
         const rel=s.strokes-s.par;
-        return `<td style="padding:5px 2px;text-align:center"><div style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;${scoreBadgeStyle(rel)}">${s.strokes}</div></td>`;
+        const penMarks = s.penalties>0 ? `<span style="font-size:8px;color:var(--red);letter-spacing:1px;display:block;line-height:1;margin-top:1px">${'✕'.repeat(s.penalties)}</span>` : '';
+        return `<td style="padding:5px 2px;text-align:center"><div style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;${scoreBadgeStyle(rel)}">${s.strokes}</div>${penMarks}</td>`;
       }).join('') +
       `<td style="padding:5px 2px;text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:18px;color:${relColor};font-weight:700">${totalStr}</div><div style="font-size:10px;color:${relColor}">${relStr}</div></td>` + '</tr>';
+
     const puttRow = '<tr style="border-top:1px solid var(--border)">' + td('Putts','font-size:11px;color:var(--gold);font-weight:600') +
       arr.map(s=>td(s.putts, `font-size:12px;color:${s.putts>=3?'var(--red)':s.putts===1?'#5ec85e':'var(--chalk2)'}`)).join('') +
       td(totalPutts,'font-size:12px;color:var(--chalk2);font-weight:700') + '</tr>';
-    const girRow = '<tr style="border-top:1px solid var(--border)">' + td('GIR','font-size:11px;color:var(--gold);font-weight:600') +
-      arr.map(s=>{ const g=isGIR(s); return td(g?'●':'·',`font-size:${g?'10':'14'}px;color:${g?'#5ec85e':'var(--ink3)'}`); }).join('') +
-      td(totalGIR+'/'+arr.length,'font-size:11px;color:var(--chalk3)') + '</tr>';
-    const penRow = totalPen > 0 ? '<tr style="border-top:1px solid var(--border)">' + td('Pen','font-size:11px;color:var(--gold);font-weight:600') +
-      arr.map(s=>td(s.penalties||'·',`font-size:12px;color:${s.penalties>0?'#ffd700':'var(--ink3)'}`)).join('') +
-      td(totalPen,'font-size:12px;color:#ffd700;font-weight:700') + '</tr>' : '';
+
+    // CARD DRIVE: ✓ = in position (fairway/rough-L/rough-R), ✕ = trouble, — = par 3 or no data
+    const IN_POS = ['fairway','rough-left','rough-right'];
+    const driveData = arr.map(s => {
+      if (s.par === 3) return { sym: '—', color: 'var(--chalk3)', eligible: false };
+      const teeShot = (s.shots||[]).find(sh=>sh.type==='Tee');
+      const tl = teeShot?.teeLanded;
+      if (!tl) return { sym: '—', color: 'var(--chalk3)', eligible: false };
+      const inPos = IN_POS.includes(tl);
+      return { sym: inPos ? '✓' : '✕', color: inPos ? '#5ec85e' : 'var(--red)', eligible: true };
+    });
+    const driveElig  = driveData.filter(d=>d.eligible).length;
+    const driveHit   = driveData.filter(d=>d.sym==='✓').length;
+    const driveTotTxt = driveElig ? `${driveHit}/${driveElig}` : '—';
+    const driveTotClr = driveElig ? (driveHit/driveElig >= .6 ? '#5ec85e' : driveHit/driveElig >= .4 ? 'var(--chalk2)' : 'var(--red)') : 'var(--chalk3)';
+    const driveRow = '<tr style="border-top:1px solid var(--border)">' + td('Drive','font-size:11px;color:var(--gold);font-weight:600') +
+      driveData.map(d=>`<td style="padding:6px 3px;text-align:center;font-size:13px;font-weight:700;color:${d.color}">${d.sym}</td>`).join('') +
+      td(driveTotTxt,`font-size:11px;color:${driveTotClr};font-weight:700`) + '</tr>';
+
+    // CARD APPROACH: On=●, Short=↓, Long=↑, Left=◀, Right=▶, no data=—
+    const approachData = arr.map(s => {
+      const appShot = (s.shots||[]).find(sh=>['Approach','Pitch'].includes(sh.type)||(sh.type==='Tee'&&s.par===3));
+      if (!appShot || !appShot.approachDist) return { sym: '—', color: 'var(--chalk3)' };
+      if (appShot.approachDist==='On') return { sym: '●', color: '#5ec85e' };
+      const side = appShot.approachSide;
+      if (appShot.approachDist==='Short') return { sym: side==='Left'?'↙':side==='Right'?'↘':'↓', color: '#5090c0' };
+      if (appShot.approachDist==='Long')  return { sym: side==='Left'?'↖':side==='Right'?'↗':'↑', color: '#9060b0' };
+      if (appShot.approachDist==='PH')    return { sym: side==='Left'?'◀':'▶', color: '#e0a870' };
+      return { sym: '—', color: 'var(--chalk3)' };
+    });
+    const appHit  = approachData.filter(d=>d.sym==='●').length;
+    const appElig = approachData.filter(d=>d.sym!=='—').length;
+    const appTotTxt = appElig ? `${appHit}/${arr.length}` : '—';
+    const appTotClr = appElig ? (appHit/arr.length >= .5 ? '#5ec85e' : appHit/arr.length >= .3 ? 'var(--chalk2)' : 'var(--red)') : 'var(--chalk3)';
+    const approachRow = '<tr style="border-top:1px solid var(--border)">' + td('Appr','font-size:11px;color:var(--gold);font-weight:600') +
+      approachData.map(d=>`<td style="padding:6px 3px;text-align:center;font-size:${d.sym==='●'?'10':'13'}px;font-weight:700;color:${d.color}">${d.sym}</td>`).join('') +
+      td(appTotTxt,`font-size:11px;color:${appTotClr};font-weight:700`) + '</tr>';
 
     return `<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:12px">
       <table style="border-collapse:collapse;min-width:100%;font-family:'DM Sans',sans-serif">
@@ -2347,7 +2380,7 @@ function scorecardHTML(round) {
           </tr>
         </thead>
         <tbody>
-          ${ydsRow}${parRow}${scoreRow}${puttRow}${girRow}${penRow}
+          ${ydsRow}${parRow}${scoreRow}${puttRow}${driveRow}${approachRow}
         </tbody>
       </table>
     </div>`;
@@ -2428,17 +2461,24 @@ function tendenciesHTML(round) {
 
   // Approach finish zones — new model: approachDist + approachSide + approachZone
   // Legacy fallback: approachFinish
+  // One entry per HOLE (first qualifying approach shot) to match isGIR() count
   const apprFinishCounts={};
-  const approachShots = allShots.filter(sh=>['Approach','Pitch'].includes(sh.type)||(sh.type==='Tee'&&sh.approachDist));
-  approachShots.forEach(sh=>{
+  scores.forEach(s=>{
+    const shots = s.shots || [];
+    const qualifying = shots.filter(sh=>
+      (['Approach','Pitch'].includes(sh.type)) ||
+      (sh.type==='Tee' && s.par===3 && sh.approachDist)
+    );
+    const shot = qualifying.find(sh=>sh.approachDist) || qualifying.find(sh=>sh.approachFinish);
+    if (!shot) return;
     let key = null;
-    if (sh.approachDist) {
-      if (sh.approachDist==='On') key = sh.approachZone || 'green';
-      else if (sh.approachDist==='Short') key = sh.approachSide ? 'short-'+sh.approachSide.toLowerCase() : 'short-center';
-      else if (sh.approachDist==='Long')  key = sh.approachSide ? 'long-'+sh.approachSide.toLowerCase()  : 'long-center';
-      else if (sh.approachDist==='PH')    key = sh.approachSide ? 'ph-'+sh.approachSide.toLowerCase()    : 'ph-center';
-    } else if (sh.approachFinish) {
-      key = sh.approachFinish; // legacy
+    if (shot.approachDist) {
+      if (shot.approachDist==='On') key = shot.approachZone || 'green';
+      else if (shot.approachDist==='Short') key = shot.approachSide ? 'short-'+shot.approachSide.toLowerCase() : 'short-center';
+      else if (shot.approachDist==='Long')  key = shot.approachSide ? 'long-'+shot.approachSide.toLowerCase()  : 'long-center';
+      else if (shot.approachDist==='PH')    key = shot.approachSide ? 'ph-'+shot.approachSide.toLowerCase()    : 'ph-center';
+    } else if (shot.approachFinish) {
+      key = shot.approachFinish;
     }
     if (key) apprFinishCounts[key]=(apprFinishCounts[key]||0)+1;
   });
