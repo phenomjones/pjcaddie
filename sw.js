@@ -1,6 +1,6 @@
 // PJ Caddie Service Worker — LIVE WIRE
 // Network-first for HTML (always gets latest app), cache-first for everything else
-const CACHE_NAME = 'caddie-v6';
+const CACHE_NAME = 'caddie-v7';
 const URLS_TO_CACHE = [
   '/pjcaddie/',
   '/pjcaddie/index.html'
