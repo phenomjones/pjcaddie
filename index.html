@@ -410,7 +410,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.21.3 · Mar 15, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.21.5 · Mar 15, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -1759,9 +1759,11 @@ function renderShotBlocks(i) {
     const isRecovery=shot.type==='Recovery';
     const isPutt=shot.type==='Putt'||isPT||isTW;
     const isFlub=shot.type==='Flub';
-    // LAST PUTT: count putts up to and including this shot — if it matches hole's putt count, it's the last one
-    const puttsSoFar = isPutt ? shots.slice(0,idx+1).filter(sh=>sh.type==='Putt'||sh.club==='PT'||sh.club==='TW').length : 0;
-    const isLastPutt = isPutt && puttsSoFar === s.putts;
+    // LAST PUTT: only count PT/type=Putt — TW is off-green, never counts toward hole putts
+    const puttsSoFar = (isPT || shot.type==='Putt') ? shots.slice(0,idx+1).filter(sh=>sh.type==='Putt'||sh.club==='PT').length : 0;
+    const isLastPutt = (isPT || shot.type==='Putt') && puttsSoFar === s.putts;
+    // TW hides speed only when it finishes the hole with no official putts (s.putts===0)
+    const isTWFinal = isTW && idx === shots.length-1 && s.putts===0;
     const isApproach=['Approach','Pitch'].includes(shot.type);
     const isLayup=shot.type==='Layup';
     const isTee=shot.type==='Tee';
@@ -2007,7 +2009,7 @@ function renderShotBlocks(i) {
     // ════════════════════════════════════════════
     // PUTT GRID — Speed only
     // ════════════════════════════════════════════
-    const puttGrid = isPutt && !isLastPutt ? GRP(`
+    const puttGrid = isPutt && !isTWFinal && !isLastPutt ? GRP(`
       ${LBL('Speed')}<div class="sg-row">
         ${[['Short','Short','on-red'],['Long','Long','on-red']].map(([lbl,val,hi])=>{
           const on=shot.puttSpeed===val;
@@ -3701,6 +3703,19 @@ async function ghPutWIP(wip, sha) {
     headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
+  // 409 = SHA conflict — re-fetch current SHA and retry once
+  if (res.status === 409) {
+    const fresh = await ghGetWIP();
+    const body2 = { message: `WIP round ${new Date().toISOString().slice(0,10)}`, content };
+    if (fresh.sha) body2.sha = fresh.sha;
+    const res2 = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/wip.json`, {
+      method: 'PUT',
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body2)
+    });
+    if (!res2.ok) throw new Error(`GitHub WIP write failed: ${res2.status}`);
+    return res2.json();
+  }
   if (!res.ok) throw new Error(`GitHub WIP write failed: ${res.status}`);
   return res.json();
 }
@@ -3910,9 +3925,13 @@ async function checkRemoteWIP() {
   try {
     const { wip, sha } = await ghGetWIP();
     if (!wip) return;
-    // Only show remote WIP if we don't already have a local one
+    // If local WIP exists for same round, only show banner if remote is newer
     const localWip = getInProgress();
-    if (localWip && localWip.id === wip.id) return;
+    if (localWip && localWip.id === wip.id) {
+      const localTs  = localWip._paused ? new Date(localWip._paused).getTime() : 0;
+      const remoteTs = wip._paused      ? new Date(wip._paused).getTime()      : 0;
+      if (remoteTs <= localTs) return; // local is same age or newer — ignore remote
+    }
     // Show banner offering to resume
     const bar = document.getElementById('sync-status-bar');
     if (!bar) return;
