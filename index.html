@@ -410,7 +410,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.21.9 · Mar 15, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.22.0 · Mar 16, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -2438,16 +2438,18 @@ function tendenciesHTML(round) {
   const totalContact=allShots.filter(sh=>CONTACT_TYPES.includes(sh.type)).length;
 
   // Tee shot shapes (new model: teeShape field on Tee shots)
-  const TEE_SHAPE_ORDER = ['Draw','Straight','Fade','Hook','Pull','Push','Slice','Fat','Top','Thin'];
+  const TEE_SHAPE_ORDER = ['Hook','Pull','Draw','Straight','Fade','Push','Slice'];
+  const TEE_SHAPE_LABELS = {Hook:'Hook',Pull:'Pull',Draw:'Draw',Straight:'Str',Fade:'Fade',Push:'Push',Slice:'Slice'};
+  const TEE_SHAPE_MISHITS = ['Fat','Top','Thin'];
   const teeShapeCounts={};
   allShots.filter(sh=>sh.type==='Tee' && sh.teeShape).forEach(sh=>{teeShapeCounts[sh.teeShape]=(teeShapeCounts[sh.teeShape]||0)+1;});
   const totalTeeShapes=Object.values(teeShapeCounts).reduce((a,b)=>a+b,0);
-  const teeShapeColors={Draw:'#5ec85e',Straight:'#5ec85e',Fade:'#e0a870',Hook:'var(--red)',Pull:'var(--red)',Push:'var(--red)',Slice:'var(--red)',Fat:'#c07050',Top:'#c07050',Thin:'#c07050'};
+  const teeShapeColors={Hook:'#e07070',Pull:'#e07070',Draw:'#5ec85e',Straight:'#5ec85e',Fade:'#e0a870',Push:'#e07070',Slice:'#e07070',Fat:'#c07050',Top:'#c07050',Thin:'#c07050'};
 
   // Tee shot direction (par 4/5 only — iterate scores to preserve par context)
-  const TEE_LAND_ORDER=['fairway','rough-left','rough-right','bunker','ob-left','ob-right','oop-left','oop-right'];
-  const TEE_LAND_LABELS={fairway:'Fairway','rough-left':'Rough L','rough-right':'Rough R',bunker:'Bunker','ob-left':'OB L','ob-right':'OB R','oop-left':'OOP L','oop-right':'OOP R'};
-  const TEE_LAND_COLORS={fairway:'#5ec85e','rough-left':'#e0a870','rough-right':'#e0a870',bunker:'var(--gold)','ob-left':'var(--red)','ob-right':'var(--red)','oop-left':'var(--red)','oop-right':'var(--red)'};
+  const TEE_LAND_ORDER=['oop-left','ob-left','rough-left','fairway','rough-right','ob-right','oop-right'];
+  const TEE_LAND_LABELS={fairway:'FWY','rough-left':'Rgh-L','rough-right':'Rgh-R',bunker:'Bunker','ob-left':'OB-L','ob-right':'OB-R','oop-left':'OOP-L','oop-right':'OOP-R'};
+  const TEE_LAND_COLORS={fairway:'#5ec85e','rough-left':'#e0a870','rough-right':'#e0a870',bunker:'var(--gold)','ob-left':'#e07070','ob-right':'#e07070','oop-left':'#e07070','oop-right':'#e07070'};
   const teeLandCounts={};
   let totalTeeLand=0;
   scores.filter(s=>s.par!==3).forEach(s=>{
@@ -2489,21 +2491,28 @@ function tendenciesHTML(round) {
   const puttDist={};
   scores.forEach(s=>{puttDist[s.putts]=(puttDist[s.putts]||0)+1;});
 
-  const contactColors={Good:'#5ec85e',Thin:'#e07070',Fat:'#e07070'};
+  const contactColors={Good:'#5ec85e',Thin:'#e07070',Fat:'#c07050'};
   const typeColors={Tee:'var(--sky)',Approach:'var(--gold)',Putt:'#b48ef0',Chip:'#6ab0e8',Pitch:'#6ab0e8',Flub:'var(--red)',Penalty:'#ffd700'};
 
   return `
   ${totalContact?`<div class="card" style="margin-bottom:10px">
-    <div class="eyebrow" style="margin-bottom:12px">Contact Quality (${totalContact} shots)</div>
-    ${['Good','Thin','Fat'].map(c=>contactCounts[c]?barRow(c,contactCounts[c],totalContact,contactColors[c]):'').join('')}
+    <div class="eyebrow" style="margin-bottom:10px">Contact Quality (${totalContact} shots)</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="flex-shrink:0">${donutSVG([{label:'Good',count:contactCounts.Good,color:'#5ec85e'},{label:'Thin',count:contactCounts.Thin,color:'#e07070'},{label:'Fat',count:contactCounts.Fat,color:'#c07050'}],totalContact)}</div>
+      <div style="flex:1">${['Good','Thin','Fat'].map(c=>contactCounts[c]?barRow(c,contactCounts[c],totalContact,contactColors[c]):'').join('')}</div>
+    </div>
   </div>`:''}
   ${totalTeeShapes?`<div class="card" style="margin-bottom:10px">
-    <div class="eyebrow" style="margin-bottom:12px">Tee Shot Shape (${totalTeeShapes})</div>
-    ${TEE_SHAPE_ORDER.map(s=>teeShapeCounts[s]?barRow(s,teeShapeCounts[s],totalTeeShapes,teeShapeColors[s]||'var(--chalk2)'):'').join('')}
+    <div class="eyebrow" style="margin-bottom:4px">Tee Shot Shape (${totalTeeShapes})</div>
+    <div style="font-size:9px;color:var(--chalk3);margin-bottom:8px;display:flex;justify-content:space-between"><span>← miss left</span><span>miss right →</span></div>
+    ${spatialBarChart(TEE_SHAPE_ORDER,teeShapeCounts,teeShapeColors,TEE_SHAPE_LABELS,totalTeeShapes)}
+    ${TEE_SHAPE_MISHITS.some(m=>teeShapeCounts[m])?`<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">${TEE_SHAPE_MISHITS.map(s=>teeShapeCounts[s]?barRow(s,teeShapeCounts[s],totalTeeShapes,teeShapeColors[s]):'').join('')}</div>`:''}
   </div>`:''}
   ${totalTeeLand?`<div class="card" style="margin-bottom:10px">
-    <div class="eyebrow" style="margin-bottom:12px">Tee Shot Direction · Par 4/5 (${totalTeeLand})</div>
-    ${TEE_LAND_ORDER.map(z=>teeLandCounts[z]?barRow(TEE_LAND_LABELS[z],teeLandCounts[z],totalTeeLand,TEE_LAND_COLORS[z]):'').join('')}
+    <div class="eyebrow" style="margin-bottom:4px">Tee Shot Direction · Par 4/5 (${totalTeeLand})</div>
+    <div style="font-size:9px;color:var(--chalk3);margin-bottom:8px;display:flex;justify-content:space-between"><span>← left</span><span>right →</span></div>
+    ${spatialBarChart(TEE_LAND_ORDER,teeLandCounts,TEE_LAND_COLORS,TEE_LAND_LABELS,totalTeeLand)}
+    ${teeLandCounts['bunker']?`<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">${barRow('Bunker',teeLandCounts['bunker'],totalTeeLand,'var(--gold)')}</div>`:''}
   </div>`:''}
   ${totalLies?`<div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:12px">Lie Results (${totalLies})</div>
@@ -2511,18 +2520,21 @@ function tendenciesHTML(round) {
   </div>`:''}
   ${totalApprFinish?`<div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:6px">Approach Finish Zones · ${girCount}/${scores.length} GIR${apprFinishCounts['green']?` · <span style="color:var(--chalk3);font-size:11px">${apprFinishCounts['green']} on-green unplaced</span>`:''}</div>
-    <div style="max-width:280px;margin:8px auto 10px">
-      <div class="sg-3x3">${(()=>{
-        const hzones=['back-left','back-center','back-right','ph-left','ph-center','ph-right','front-left','front-center','front-right'];
-        const hlbl={'back-left':'Bk L','back-center':'Back','back-right':'Bk R','ph-left':'Mid L','ph-center':'Mid','ph-right':'Mid R','front-left':'Fr L','front-center':'Front','front-right':'Fr R'};
-        const maxH=Math.max(1,...hzones.map(z=>apprFinishCounts[z]||0));
-        return hzones.map(z=>{const cnt=apprFinishCounts[z]||0;const pct=totalApprFinish?Math.round(cnt/totalApprFinish*100):0;const op=cnt?Math.max(0.15,cnt/maxH*0.85):0.07;return `<div class="sg-cell sg-cell--heat" style="background:rgba(58,107,58,${op.toFixed(2)});border-color:rgba(90,160,90,${cnt?0.4:0.12})">${hlbl[z]}<br><span style="color:var(--chalk);font-size:13px;font-weight:700">${cnt||'·'}</span>${cnt?`<br><span style="font-size:10px;opacity:.65">${pct}%</span>`:''}</div>`;}).join('');
-      })()}</div>
-    </div>
-    ${['green','left','right','short-left','short-center','short-right','long-left','long-center','long-right'].map(z=>{
-      if(z==='green') return apprFinishCounts['green']?barRow('On Green (unplaced)',apprFinishCounts['green'],totalApprFinish,'#5ec85e'):'';
-      return apprFinishCounts[z]?barRow(ZONE_LABELS[z],apprFinishCounts[z],totalApprFinish,ZONE_COLORS[z]||'var(--gold)'):'';
-    }).join('')}
+    <div style="max-width:300px;margin:8px auto 4px">${(()=>{
+      const onZones=['back-left','back-center','back-right','ph-left','ph-center','ph-right','front-left','front-center','front-right'];
+      const offZones3x=['long-left','long-center','long-right','short-left','short-center','short-right'];
+      const hlbl={'back-left':'Bk-L','back-center':'Back','back-right':'Bk-R','ph-left':'Mid-L','ph-center':'Mid','ph-right':'Mid-R','front-left':'Fr-L','front-center':'Front','front-right':'Fr-R'};
+      const maxH=Math.max(1,...onZones.map(z=>apprFinishCounts[z]||0));
+      function greenCell(z){const cnt=apprFinishCounts[z]||0;const pct=totalApprFinish?Math.round(cnt/totalApprFinish*100):0;const op=cnt?Math.max(0.15,cnt/maxH*0.85):0.07;return `<div class="sg-cell sg-cell--heat" style="background:rgba(58,107,58,${op.toFixed(2)});border-color:rgba(90,160,90,${cnt?0.4:0.12})">${hlbl[z]}<br><span style="color:var(--chalk);font-size:13px;font-weight:700">${cnt||'·'}</span>${cnt?`<br><span style="font-size:10px;opacity:.65">${pct}%</span>`:''}</div>`;}
+      function offCell(z,lbl){const cnt=apprFinishCounts[z]||0;const pct=totalApprFinish&&cnt?Math.round(cnt/totalApprFinish*100):0;return `<div class="sg-cell sg-cell--heat" style="background:${cnt?'rgba(180,130,60,.18)':'rgba(180,130,60,.05)'};border-color:rgba(180,130,60,${cnt?0.35:0.12})">${lbl}<br><span style="color:${cnt?'var(--gold)':'var(--chalk3)'};font-size:13px;font-weight:700">${cnt||'·'}</span>${cnt?`<br><span style="font-size:10px;opacity:.65">${pct}%</span>`:''}</div>`;}
+      const longRow=`<div></div>${offCell('long-left','Lng-L')}${offCell('long-center','Long')}${offCell('long-right','Lng-R')}<div></div>`;
+      const leftCell=`<div class="sg-cell sg-cell--heat" style="background:${apprFinishCounts['left']?'rgba(180,130,60,.18)':'rgba(180,130,60,.05)'};border-color:rgba(180,130,60,${apprFinishCounts['left']?0.35:0.12});grid-row:2/5">Left<br><span style="color:${apprFinishCounts['left']?'var(--gold)':'var(--chalk3)'};font-size:13px;font-weight:700">${apprFinishCounts['left']||'·'}</span>${apprFinishCounts['left']?`<br><span style="font-size:10px;opacity:.65">${Math.round(apprFinishCounts['left']/totalApprFinish*100)}%</span>`:''}</div>`;
+      const rightCell=`<div class="sg-cell sg-cell--heat" style="background:${apprFinishCounts['right']?'rgba(180,130,60,.18)':'rgba(180,130,60,.05)'};border-color:rgba(180,130,60,${apprFinishCounts['right']?0.35:0.12});grid-row:2/5">Right<br><span style="color:${apprFinishCounts['right']?'var(--gold)':'var(--chalk3)'};font-size:13px;font-weight:700">${apprFinishCounts['right']||'·'}</span>${apprFinishCounts['right']?`<br><span style="font-size:10px;opacity:.65">${Math.round(apprFinishCounts['right']/totalApprFinish*100)}%</span>`:''}</div>`;
+      const shortRow=`<div></div>${offCell('short-left','Sht-L')}${offCell('short-center','Short')}${offCell('short-right','Sht-R')}<div></div>`;
+      const greenBlock=`<div style="grid-column:2/5;grid-row:2/5;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3px;padding:4px;border:2.5px solid rgba(94,200,94,.5);border-radius:7px;box-sizing:border-box">${onZones.map(z=>greenCell(z)).join('')}</div>`;
+      return `<div style="display:grid;grid-template-columns:52px 1fr 1fr 1fr 52px;grid-template-rows:auto auto auto auto auto;gap:3px">${longRow}${leftCell}${greenBlock}${rightCell}${shortRow}</div>`;
+    })()}</div>
+    ${apprFinishCounts['green']?`<div style="margin-top:6px">${barRow('On Green (unplaced)',apprFinishCounts['green'],totalApprFinish,'#5ec85e')}</div>`:''}
   </div>`:''}
   ${totalTypes?`<div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:12px">Shot Types (${totalTypes})</div>
@@ -2545,6 +2557,37 @@ function barRow(label,n,total,color='var(--gold)') {
     <div class="bar-hd"><span style="color:var(--chalk2)">${label}</span><span style="color:${color};font-weight:500">${n} (${pct}%)</span></div>
     <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
   </div>`;
+}
+
+function donutSVG(segments, total) {
+  const r=54,cx=64,cy=64,sw=18,tau=2*Math.PI;
+  let start=-Math.PI/2,paths='';
+  const dominant=segments.reduce((a,b)=>b.count>a.count?b:a,segments[0]);
+  segments.forEach(seg=>{
+    if(!seg.count) return;
+    const angle=(seg.count/total)*tau;
+    const end=start+angle;
+    const x1=cx+r*Math.cos(start),y1=cy+r*Math.sin(start);
+    const x2=cx+r*Math.cos(end),y2=cy+r*Math.sin(end);
+    const large=angle>Math.PI?1:0;
+    paths+=`<path d="M${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${large},1 ${x2.toFixed(1)},${y2.toFixed(1)}" fill="none" stroke="${seg.color}" stroke-width="${sw}" stroke-linecap="butt"/>`;
+    start=end;
+  });
+  const dpct=total?Math.round(dominant.count/total*100):0;
+  return `<svg width="128" height="128" viewBox="0 0 128 128"><g>${paths}</g><text x="64" y="59" text-anchor="middle" font-size="13" font-weight="500" fill="${dominant.color}" font-family="DM Sans,sans-serif">${dominant.label}</text><text x="64" y="75" text-anchor="middle" font-size="12" fill="var(--chalk2)" font-family="DM Sans,sans-serif">${dpct}%</text></svg>`;
+}
+
+function spatialBarChart(order, counts, colors, labels, total) {
+  const vals=order.map(k=>counts[k]||0);
+  const mx=Math.max(1,...vals);
+  const H=80;
+  const cols=order.map((k,i)=>{
+    const v=vals[i],h=v?Math.max(4,Math.round(v/mx*H)):2;
+    const bg=v?(colors[k]||'var(--chalk3)'):'var(--ink2)';
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;height:${H}px"><div style="font-size:10px;font-weight:500;color:var(--chalk2);opacity:${v?1:0.25}">${v||''}</div><div style="width:100%;max-width:32px;height:${h}px;background:${bg};border-radius:2px 2px 0 0"></div></div>`;
+  }).join('');
+  const lbls=order.map(k=>`<div style="flex:1;text-align:center;font-size:9px;color:var(--chalk3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${labels[k]||k}</div>`).join('');
+  return `<div style="display:flex;gap:3px">${cols}</div><div style="display:flex;gap:3px;margin-top:3px">${lbls}</div>`;
 }
 
 // ═══════════════════════════════════════════════════════════════
