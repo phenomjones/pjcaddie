@@ -398,11 +398,141 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 .yrd-row{display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
 .yrd-input{flex-shrink:0;width:38px;background:var(--ink3);border:1px solid var(--border);border-radius:8px;color:var(--chalk);font-size:12px;text-align:center;padding:5px 2px;outline:none;font-family:'DM Sans',sans-serif}
 .yrd-input:focus{border-color:var(--gold)}
+
+/* ── CLUB FIRST ENTRY ── */
+.cf-mode-toggle{display:flex;gap:6px;padding:8px 0 4px}
+.cf-tgl{flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:8px;padding:7px 4px;font-size:11px;color:var(--chalk3);cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;transition:all .15s}
+.cf-tgl.on{background:rgba(200,168,75,.15);border-color:var(--gold);color:var(--gold);font-weight:600}
+/* Phase 1 — seq strip */
+.cf-seq-strip{min-height:44px;background:var(--ink2);border:1px solid var(--border);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.cf-chip{background:rgba(200,168,75,.12);border:1px solid rgba(200,168,75,.4);border-radius:7px;padding:4px 8px;font-size:12px;color:var(--gold);display:inline-flex;align-items:center;gap:3px}
+.cf-chip-rm{font-size:10px;color:rgba(200,168,75,.5);cursor:pointer;padding:0 2px}
+.cf-empty{font-size:11px;color:var(--chalk3);font-style:italic}
+.cf-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:10px}
+.cf-btn{background:var(--ink3);border:1px solid var(--border);border-radius:9px;padding:10px 3px;font-size:13px;color:var(--chalk2);text-align:center;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .1s}
+.cf-btn:active{background:rgba(200,168,75,.2);border-color:var(--gold)}
+.cf-done{width:100%;background:rgba(200,168,75,.15);border:1px solid var(--gold);border-radius:10px;padding:13px;font-size:15px;color:var(--gold);font-family:'DM Serif Display',serif;cursor:pointer;margin-top:4px}
+.cf-done:disabled{opacity:.25;cursor:default}
+/* Phase 1.5 overlay */
+.cf-overlay{display:none;position:fixed;inset:0;z-index:500;background:var(--ink);flex-direction:column}
+.cf-overlay.open{display:flex}
+.cf-ov-hdr{background:var(--ink2);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.cf-ov-title{font-size:13px;font-weight:600;color:var(--chalk)}
+.cf-ov-body{flex:1;overflow-y:auto;padding:10px 14px 20px}
+.cf-rev-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.cf-rev-num{font-size:10px;color:var(--chalk3);width:16px;flex-shrink:0;text-align:right}
+.cf-rev-club{font-size:14px;font-weight:500;color:var(--chalk);width:52px;flex-shrink:0}
+.cf-rev-chip{border-radius:100px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:4px;border:1px solid}
+.cf-rev-chip.certain{background:rgba(94,200,94,.1);border-color:rgba(94,200,94,.4);color:#5ec85e;cursor:default}
+.cf-rev-chip.green{background:rgba(94,200,94,.08);border-color:rgba(94,200,94,.35);color:#5ec85e}
+.cf-rev-chip.amber{background:rgba(200,168,75,.1);border-color:rgba(200,168,75,.4);color:var(--gold)}
+.cf-rev-chip.red{background:rgba(200,64,64,.1);border-color:rgba(200,64,64,.4);color:#e07070}
+.cf-legend{display:flex;gap:10px;padding:6px 0 10px;flex-wrap:wrap}
+.cf-leg{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--chalk3)}
+.cf-leg-dot{width:7px;height:7px;border-radius:50%}
+.cf-ov-foot{padding:10px 14px;background:var(--ink2);border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+/* Type picker modal */
+.cf-type-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:600;align-items:flex-end;justify-content:center}
+.cf-type-overlay.open{display:flex}
+.cf-type-modal{background:var(--ink2);border:1px solid rgba(200,168,75,.3);border-radius:16px 16px 0 0;padding:16px 14px 28px;width:100%;max-width:420px}
+.cf-type-title{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--chalk3);margin-bottom:12px;text-align:center}
+.cf-type-opts{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.cf-tmo{background:var(--ink3);border:1px solid var(--border);border-radius:9px;padding:10px 16px;font-size:13px;color:var(--chalk2);cursor:pointer;font-family:'DM Sans',sans-serif}
+.cf-tmo.cur{background:rgba(200,168,75,.15);border-color:var(--gold);color:var(--gold)}
+.cf-cancel{display:block;width:100%;margin-top:12px;background:var(--ink3);border:1px solid var(--border);border-radius:9px;padding:11px;font-size:13px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center}
+/* Phase 2 popup */
+.cf-p2{display:none;position:fixed;inset:0;z-index:500;background:var(--ink);flex-direction:column}
+.cf-p2.open{display:flex}
+.cf-prog-wrap{background:var(--ink2);border-bottom:1px solid var(--border);padding:8px 14px;flex-shrink:0}
+.cf-prog-track{background:rgba(255,255,255,.07);border-radius:2px;height:3px}
+.cf-prog-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .35s}
+.cf-prog-lbl{font-size:10px;color:var(--chalk3);margin-top:4px}
+.cf-cip{text-align:center;padding:14px 12px 4px;flex-shrink:0}
+.cf-cip-club{font-size:24px;font-weight:600;color:var(--chalk)}
+.cf-cip-type{display:inline-block;margin-top:4px;font-size:11px;background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:3px 10px;color:var(--chalk3)}
+.cf-pop-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 14px 14px}
+.cf-popup{background:var(--ink2);border:1px solid rgba(200,168,75,.3);border-radius:14px;padding:18px 14px 12px;width:100%;max-width:360px;animation:pop .15s ease-out}
+@keyframes pop{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+.cf-pq{font-size:16px;color:var(--chalk);font-weight:500;margin-bottom:14px;text-align:center;line-height:1.4}
+.cf-opts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.cf-opt{background:var(--ink3);border:1px solid var(--border);border-radius:9px;padding:10px 13px;font-size:13px;color:var(--chalk2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:transform .08s;min-width:64px;text-align:center}
+.cf-opt:active{transform:scale(.95)}
+.cf-opt.def{background:rgba(94,200,94,.12);border-color:#5ec85e;color:#5ec85e}
+.cf-opt.g{border-color:rgba(94,200,94,.3);color:#5ec85e}
+.cf-opt.r{border-color:rgba(200,64,64,.3);color:#e07070}
+.cf-opt.s{border-color:rgba(106,176,232,.3);color:var(--sky)}
+.cf-g3{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;width:100%}
+.cf-gc{background:var(--ink3);border:1px solid var(--border);border-radius:8px;padding:10px 3px;font-size:11px;color:var(--chalk2);cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;transition:transform .08s;line-height:1.3}
+.cf-gc:active{transform:scale(.95)}
+.cf-gc.g{border-color:rgba(94,200,94,.3);color:#5ec85e}
+.cf-gc.r{border-color:rgba(200,64,64,.3);color:#e07070}
+.cf-gc.o{border-color:rgba(200,168,75,.3);color:var(--gold)}
+.cf-phint{font-size:10px;color:var(--chalk3);text-align:center;margin-top:6px;opacity:.7}
+.cf-pfoot{display:flex;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06)}
+.cf-pbk,.cf-pskip{background:none;border:none;font-size:11px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif;padding:3px 0;text-decoration:underline;text-underline-offset:3px}
+/* Phase 3 — shot log */
+.cf-log-row{display:flex;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.06)}
+.cf-log-club{background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.3);border-radius:6px;padding:3px 7px;font-size:12px;color:var(--gold);flex-shrink:0;min-width:44px;text-align:center;height:fit-content;margin-top:1px}
+.cf-log-body{flex:1;font-size:12px;color:var(--chalk3);line-height:1.6}
+.cf-log-body b{color:var(--chalk2);font-weight:500}
+.cf-log-type{font-size:10px;color:var(--chalk3);display:block}
+.cf-contact-flags{display:flex;gap:5px;margin-top:5px}
+.cf-cf{background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:3px 9px;font-size:10px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif}
+.cf-cf.on.thin{background:rgba(200,64,64,.12);border-color:rgba(200,64,64,.4);color:#e07070}
+.cf-cf.on.fat{background:rgba(192,112,80,.12);border-color:rgba(192,112,80,.4);color:#c07050}
 </style>
 </head>
 <body>
 <div id="app">
 <div class="safe-top"></div>
+
+<!-- ═══════════════ CLUB FIRST OVERLAYS ═══════════════ -->
+<!-- Phase 1.5 — Review & confirm types -->
+<div class="cf-overlay" id="cf-review-overlay">
+  <div class="cf-ov-hdr">
+    <div class="cf-ov-title" id="cf-rev-title">Confirm Shot Types</div>
+    <div id="cf-rev-hdr-r" style="font-size:11px;color:var(--chalk3)"></div>
+  </div>
+  <div class="cf-ov-body" id="cf-rev-body">
+    <div class="cf-legend">
+      <span class="cf-leg"><span class="cf-leg-dot" style="background:#5ec85e"></span>Certain</span>
+      <span class="cf-leg"><span class="cf-leg-dot" style="background:#5ec85e;opacity:.5"></span>Confident — tap to change</span>
+      <span class="cf-leg"><span class="cf-leg-dot" style="background:var(--gold)"></span>Inferred — tap to change</span>
+      <span class="cf-leg"><span class="cf-leg-dot" style="background:#e07070"></span>Needs input</span>
+    </div>
+    <div id="cf-rev-list"></div>
+  </div>
+  <div class="cf-ov-foot">
+    <button class="cf-done" style="flex:none;background:var(--ink3);border-color:var(--border);color:var(--chalk3);font-family:'DM Sans',sans-serif;font-size:13px;padding:13px 16px;width:auto" onclick="cfBackToClubs()">← Clubs</button>
+    <button class="cf-done" id="cf-start-btn" onclick="cfStartPopups()">Start entering details →</button>
+  </div>
+</div>
+
+<!-- Phase 2 — Rapid popups -->
+<div class="cf-p2" id="cf-p2">
+  <div class="cf-ov-hdr">
+    <button class="cf-pbk" style="text-decoration:none;font-size:13px;color:var(--gold)" onclick="cfExitToPhase1()">← Exit</button>
+    <div id="cf-p2-hdr-r" style="font-size:11px;color:var(--chalk3)"></div>
+  </div>
+  <div class="cf-prog-wrap">
+    <div class="cf-prog-track"><div class="cf-prog-fill" id="cf-prog" style="width:0%"></div></div>
+    <div class="cf-prog-lbl" id="cf-prog-lbl"></div>
+  </div>
+  <div class="cf-cip">
+    <div class="cf-cip-club" id="cf-cip-club">—</div>
+    <div class="cf-cip-type" id="cf-cip-type">—</div>
+  </div>
+  <div class="cf-pop-area" id="cf-pop-area"></div>
+</div>
+
+<!-- Type picker modal -->
+<div class="cf-type-overlay" id="cf-type-overlay" onclick="cfCloseTypePicker(event)">
+  <div class="cf-type-modal">
+    <div class="cf-type-title" id="cf-type-title">Change shot type</div>
+    <div class="cf-type-opts" id="cf-type-opts"></div>
+    <button class="cf-cancel" onclick="cfCloseTypePicker()">Cancel</button>
+  </div>
+</div>
 
 <!-- ═══════════════ HOME ═══════════════ -->
 <div class="view active" id="view-home">
@@ -410,7 +540,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.22.2 · Mar 16, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v4.23.0 · Mar 17, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -894,7 +1024,15 @@ function showView(id) {
 // HOME
 // ═══════════════════════════════════════════════════════════════
 function renderHome() {
-  const wip = getInProgress();
+  let wip = getInProgress();
+  // STALE WIP GUARD: if WIP round is already in saved rounds, clear it silently
+  if (wip) {
+    const saved = getRounds();
+    if (saved.some(r => r.id === wip.id)) {
+      saveWIP(null);
+      wip = null;
+    }
+  }
   const resumeDiv = document.getElementById('home-resume');
   const resumeBtn = document.getElementById('home-resume-btn');
   if (wip) {
@@ -1228,25 +1366,33 @@ function buildScoringView() {
 
 function holePageHTML(i) {
   const bag = S.activeBag.length ? S.activeBag : CLUBS;
-  const clubBtns=bag.map(c=>{
-    const isPT = c==='PT';
-    const isLandmark = c==='7i' || c==='GW';
-    const cls = isPT ? ' pt' : isLandmark ? ' landmark' : '';
-    return `<button class="club-pick-btn${cls}" onclick="addShot(${i},'${c}')">${c}</button>`;
-  }).join('');
-  return `
+  const cfMode = localStorage.getItem('caddie_entry_mode') !== 'classic';
+
+  // Mode toggle
+  const modeToggle = `<div class="cf-mode-toggle">
+    <button class="cf-tgl ${cfMode?'on':''}" onclick="setCFMode(true,${i})">Club First</button>
+    <button class="cf-tgl ${!cfMode?'on':''}" onclick="setCFMode(false,${i})">Classic</button>
+  </div>`;
+
+  if (cfMode) {
+    // ── CLUB FIRST MODE ──
+    const clubBtns = bag.map(c => {
+      const isPT = c==='PT', isTW = c==='TW', isPen = c==='Penalty';
+      const col = isPT||isTW ? 'color:#b48ef0' : isPen ? 'color:#e07070;font-size:11px' : '';
+      return `<button class="cf-btn" style="${col}" onclick="cfAddClub(${i},'${c}')">${c}</button>`;
+    }).join('');
+    return `
   <div style="padding:0">
-    <!-- STICKY CLUB PICKER -->
-    <div class="club-picker-sticky" id="club-picker-${i}">
-      <div class="eyebrow" style="margin-bottom:8px;padding-top:12px">Add Shot</div>
-      <div class="club-picker-wrap" style="padding-bottom:10px">${clubBtns}<button class="club-pick-btn penalty-btn" onclick="addPenalty(${i})">⚠️ Penalty</button></div>
+    ${modeToggle}
+    <!-- CLUB SEQUENCE STRIP -->
+    <div class="cf-seq-strip" id="cf-strip-${i}">
+      <span class="cf-empty" id="cf-empty-${i}">Tap clubs in order used…</span>
     </div>
-
-    <!-- SHOT BLOCKS -->
-    <div style="padding:0" id="shot-blocks-${i}">
-      <div class="shots-empty">Tap a club above to log your first shot</div>
-    </div>
-
+    <!-- CLUB GRID -->
+    <div class="cf-grid" id="cf-grid-${i}">${clubBtns}</div>
+    <button class="cf-done" id="cf-done-btn-${i}" disabled onclick="cfShowReview(${i})">Review shots →</button>
+    <!-- SHOT LOG (filled after Save Hole) -->
+    <div id="cf-log-${i}" style="margin-top:12px"></div>
     <!-- PIN LOCATION -->
     <div class="sg-section" style="margin:10px 0" id="pin-card-${i}">
       <span class="grid-lbl">Pin Location</span>
@@ -1255,13 +1401,47 @@ function holePageHTML(i) {
         ${[['back-left','Back L'],['back-center','Back'],['back-right','Back R'],['middle-left','Mid L'],['middle-center','Mid'],['middle-right','Mid R'],['front-left','Front L'],['front-center','Front'],['front-right','Front R']].map(([pos,lbl])=>`<button class="sg-cell" data-pin="${pos}" onclick="setPin(${i},'${pos}')">${lbl}</button>`).join('')}
       </div>
     </div>
-
-    <!-- NOTES -->
+    <!-- FIELD NOTES -->
     <div class="card" style="margin:10px 0 10px">
-      <div class="ctr-label" style="margin-bottom:6px">Hole Notes</div>
-      <input class="inp" type="text" id="notes-${i}" placeholder="Optional…" oninput="saveNote(${i})">
+      <div class="ctr-label" style="margin-bottom:6px">Field Notes</div>
+      <input class="inp" type="text" id="notes-${i}" placeholder="Wind, lie, mental state, unusual circumstance…" oninput="saveNote(${i})">
     </div>
   </div>`;
+  } else {
+    // ── CLASSIC MODE ──
+    const clubBtns = bag.map(c=>{
+      const isPT = c==='PT';
+      const isLandmark = c==='7i' || c==='GW';
+      const cls = isPT ? ' pt' : isLandmark ? ' landmark' : '';
+      return `<button class="club-pick-btn${cls}" onclick="addShot(${i},'${c}')">${c}</button>`;
+    }).join('');
+    return `
+  <div style="padding:0">
+    ${modeToggle}
+    <!-- STICKY CLUB PICKER -->
+    <div class="club-picker-sticky" id="club-picker-${i}">
+      <div class="eyebrow" style="margin-bottom:8px;padding-top:12px">Add Shot</div>
+      <div class="club-picker-wrap" style="padding-bottom:10px">${clubBtns}<button class="club-pick-btn penalty-btn" onclick="addPenalty(${i})">⚠️ Penalty</button></div>
+    </div>
+    <!-- SHOT BLOCKS -->
+    <div style="padding:0" id="shot-blocks-${i}">
+      <div class="shots-empty">Tap a club above to log your first shot</div>
+    </div>
+    <!-- PIN LOCATION -->
+    <div class="sg-section" style="margin:10px 0" id="pin-card-${i}">
+      <span class="grid-lbl">Pin Location</span>
+      <div class="sg-hint" style="margin-bottom:8px;margin-top:-4px">Flag back = away from you at address</div>
+      <div class="sg-3x3" id="pin-grid-${i}">
+        ${[['back-left','Back L'],['back-center','Back'],['back-right','Back R'],['middle-left','Mid L'],['middle-center','Mid'],['middle-right','Mid R'],['front-left','Front L'],['front-center','Front'],['front-right','Front R']].map(([pos,lbl])=>`<button class="sg-cell" data-pin="${pos}" onclick="setPin(${i},'${pos}')">${lbl}</button>`).join('')}
+      </div>
+    </div>
+    <!-- FIELD NOTES -->
+    <div class="card" style="margin:10px 0 10px">
+      <div class="ctr-label" style="margin-bottom:6px">Field Notes</div>
+      <input class="inp" type="text" id="notes-${i}" placeholder="Wind, lie, mental state, unusual circumstance…" oninput="saveNote(${i})">
+    </div>
+  </div>`;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1484,6 +1664,587 @@ function calcScore(i) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// CLUB FIRST — ENTRY FLOW
+// ═══════════════════════════════════════════════════════════════
+
+// ── State ──
+let _cfHoleIdx = 0;
+let _cfSeq = [];       // club sequence for current hole
+let _cfShots = [];     // inferred shot objects
+let _cfPopIdx = 0;     // current shot in popup flow
+let _cfPopHist = [];   // [{shotIdx, key}] for back
+
+// ── Mode toggle ──
+function setCFMode(clubFirst, holeIdx) {
+  localStorage.setItem('caddie_entry_mode', clubFirst ? 'clubfirst' : 'classic');
+  // Rebuild the swipe page for this hole
+  const page = document.getElementById(`hole-page-${holeIdx}`);
+  if (page) page.innerHTML = holePageHTML(holeIdx);
+  // Re-apply live state
+  calcScore(holeIdx);
+  setPinUI(holeIdx, (S.currentRound.scores[holeIdx]||{}).pinLocation||null);
+  const n = document.getElementById(`notes-${holeIdx}`);
+  if (n) n.value = (S.currentRound.scores[holeIdx]||{}).notes||'';
+  if (clubFirst) cfRestoreLog(holeIdx);
+}
+
+// ── Club categories (inference engine) ──
+const CF_CAT = {
+  'Driver':'driver','3W':'wood','5W':'wood',
+  '2H':'hybrid','3H':'hybrid','4H':'hybrid','5H':'hybrid',
+  '5i':'long-iron','6i':'long-iron','7i':'mid-iron',
+  '8i':'short-iron','9i':'short-iron',
+  'PW':'wedge','GW':'wedge','56':'wedge','58':'wedge',
+  'PT':'putter','TW':'tw','Penalty':'penalty'
+};
+const cfCat   = c => CF_CAT[c]||'unknown';
+const cfLong  = c => ['driver','wood','hybrid','long-iron'].includes(cfCat(c));
+const cfMid   = c => cfCat(c)==='mid-iron';
+const cfShort = c => ['short-iron','wedge'].includes(cfCat(c));
+
+const CF_TYPE_LBL = {Tee:'Tee Shot',Approach:'Approach',Pitch:'Pitch',Layup:'Layup',
+  Chip:'Chip',Sand:'Sand',Recovery:'Recovery',Flub:'Flub',Penalty:'Penalty',Putt:'Putt'};
+const CF_ALL_TYPES = ['Approach','Pitch','Layup','Chip','Sand','Recovery','Flub','Penalty'];
+
+// ── Inference ──
+function cfInferAll(clubs, par) {
+  const n = clubs.length;
+  const res = clubs.map(c=>({club:c,type:null,confidence:'red',counted:true,isTW:false,isLastPutt:false}));
+  clubs.forEach((c,i)=>{
+    if(i===0){res[i].type='Tee';res[i].confidence='certain';}
+    else if(c==='PT'){res[i].type='Putt';res[i].confidence='certain';}
+    else if(c==='TW'){res[i].type='Putt';res[i].confidence='certain';res[i].counted=false;res[i].isTW=true;}
+    else if(c==='Penalty'){res[i].type='Penalty';res[i].confidence='certain';}
+  });
+  for(let i=n-1;i>=0;i--){if(clubs[i]==='PT'){res[i].isLastPutt=true;break;}}
+  const swingIdxs=res.map((_,i)=>i).filter(i=>res[i].type===null);
+  if(!swingIdxs.length) return res;
+  const penPos=res.map((_,i)=>i).filter(i=>res[i].type==='Penalty');
+  const segments=[];let cur=[];
+  swingIdxs.forEach(idx=>{
+    const prev=cur.length?cur[cur.length-1]:(segments.length?segments[segments.length-1].slice(-1)[0]:0);
+    if(penPos.some(p=>p>(prev||0)&&p<idx)){if(cur.length)segments.push(cur);cur=[];}
+    cur.push(idx);
+  });
+  if(cur.length)segments.push(cur);
+  segments.forEach((seg,segNum)=>{
+    const sc=seg.map(i=>clubs[i]);
+    const types=cfInferSeg(sc,par,segNum>0);
+    seg.forEach((idx,j)=>{if(types[j]){res[idx].type=types[j].type;res[idx].confidence=types[j].conf;}});
+  });
+  return res;
+}
+
+function cfInferSeg(clubs,par,afterPen){
+  const n=clubs.length;
+  if(!n)return[];
+  const G=t=>({type:t,conf:'green'});
+  const A=t=>({type:t,conf:'amber'});
+  const R=()=>({type:null,conf:'red'});
+  const lastCat=cfCat(clubs[n-1]);
+  const lastShort=['wedge','short-iron'].includes(lastCat);
+  const lastMid=lastCat==='mid-iron';
+  const lastLong=['long-iron','hybrid','wood','driver'].includes(lastCat);
+  // Consecutive wedge pre-check
+  if(n===2&&cfShort(clubs[0])&&cfShort(clubs[1]))return[A('Chip'),A('Chip')];
+  if(n===3&&cfShort(clubs[1])&&cfShort(clubs[2])){
+    if(afterPen)return[G('Approach'),A('Chip'),A('Chip')];
+    if(cfLong(clubs[0]))return[G('Approach'),A('Chip'),A('Chip')];
+    return[A('Approach'),A('Chip'),A('Chip')];
+  }
+  if(par===3){
+    if(afterPen){if(n===1)return[G('Approach')];if(n===2)return[A('Approach'),A('Chip')];}
+    if(n===1)return[A('Chip')];
+    if(n===2)return[A('Recovery'),A('Chip')];
+    return clubs.map(R);
+  }
+  if(par===4){
+    if(afterPen){
+      if(n===1)return[G('Approach')];
+      if(n===2&&cfShort(clubs[1]))return[G('Approach'),A('Chip')];
+      if(n===2)return[G('Approach'),A('Approach')];
+      if(n===3&&cfShort(clubs[1])&&cfShort(clubs[2]))return[G('Approach'),A('Chip'),A('Chip')];
+      if(n===3&&cfShort(clubs[2]))return[G('Approach'),A('Approach'),A('Chip')];
+      return[G('Approach'),...clubs.slice(1).map(R)];
+    }
+    if(n===1)return[G('Approach')];
+    if(n===2){
+      const isW=c=>['PW','GW','56','58'].includes(c);
+      if(cfShort(clubs[0])&&cfShort(clubs[1]))return[A('Chip'),A('Chip')];
+      if(isW(clubs[1])&&cfLong(clubs[0]))return[G('Approach'),A('Chip')];
+      if(isW(clubs[1])&&cfMid(clubs[0]))return[A('Approach'),A('Chip')];
+      if(isW(clubs[1])&&cfShort(clubs[0]))return[A('Approach'),A('Chip')];
+      if(cfMid(clubs[0])&&cfMid(clubs[1]))return[A('Flub'),A('Approach')];
+      if(cfMid(clubs[0])&&cfShort(clubs[1]))return[A('Flub'),A('Approach')];
+      if(cfCat(clubs[0])===cfCat(clubs[1]))return[A('Flub'),G('Approach')];
+      if(lastMid||lastLong)return[A('Flub'),A('Approach')];
+      return[G('Approach'),A('Chip')];
+    }
+    if(n===3){if(lastShort)return[A('Flub'),A('Approach'),A('Chip')];return[A('Flub'),A('Flub'),A('Approach')];}
+    if(n===4&&lastShort)return[A('Flub'),A('Flub'),A('Approach'),A('Chip')];
+    return clubs.map(R);
+  }
+  if(par===5){
+    if(afterPen){
+      if(n===1)return[G('Approach')];
+      if(n===2&&cfShort(clubs[1]))return[G('Approach'),A('Chip')];
+      if(n===2)return[A('Layup'),G('Approach')];
+      if(n===3&&cfShort(clubs[1])&&cfShort(clubs[2]))return[G('Approach'),A('Chip'),A('Chip')];
+      if(n===3&&cfShort(clubs[2]))return[G('Approach'),A('Approach'),A('Chip')];
+      return[G('Approach'),...clubs.slice(1).map(R)];
+    }
+    if(n===1)return[G('Approach')];
+    if(n===2){
+      if(cfShort(clubs[0])&&cfShort(clubs[1]))return[A('Chip'),A('Chip')];
+      if(cfLong(clubs[0])&&!lastShort)return[G('Layup'),A('Approach')]; // amber — might be 2nd layup
+      if(cfLong(clubs[0])&&lastShort)return[G('Layup'),A('Chip')];
+      if(!cfLong(clubs[0])&&lastShort)return[A('Approach'),A('Chip')];
+      return[A('Layup'),A('Approach')];
+    }
+    if(n===3){
+      if(lastShort&&cfLong(clubs[0]))return[G('Layup'),G('Approach'),A('Chip')];
+      if(lastShort)return[A('Layup'),A('Approach'),A('Chip')];
+      if(cfLong(clubs[0])&&cfLong(clubs[1]))return[G('Layup'),A('Layup'),G('Approach')];
+      return[A('Layup'),A('Approach'),A('Chip')];
+    }
+    if(n===4&&lastShort)return[G('Layup'),A('Flub'),G('Approach'),A('Chip')];
+    return clubs.map(R);
+  }
+  return clubs.map(R);
+}
+
+// ── Question flows ──
+const CF_TEE_GRID=[
+  {lbl:'← Rough',val:'rough-left',cls:''},{lbl:'Fairway',val:'fairway',cls:'g'},{lbl:'Rough →',val:'rough-right',cls:''},
+  {lbl:'← OOP',val:'oop-left',cls:'r'},{lbl:'🌴🍺',val:'oop-center',cls:''},{lbl:'OOP →',val:'oop-right',cls:'r'},
+  {lbl:'← OB',val:'ob-left',cls:'r'},{lbl:'Bunker',val:'bunker',cls:'o'},{lbl:'OB →',val:'ob-right',cls:'r'}
+];
+const CF_ZONE_GRID=[
+  {lbl:'← Bk',val:'back-left'},{lbl:'Back Ctr',val:'back-center'},{lbl:'Bk →',val:'back-right'},
+  {lbl:'← Mid',val:'mid-left'},{lbl:'Mid Ctr',val:'mid-center'},{lbl:'Mid →',val:'mid-right'},
+  {lbl:'← Front',val:'front-left'},{lbl:'Front Ctr',val:'front-center'},{lbl:'Front →',val:'front-right'}
+];
+
+function cfGetQs(sh, par) {
+  const isTeeP45=sh.type==='Tee'&&(par===4||par===5);
+  const isTeeP3=sh.type==='Tee'&&par===3;
+  const isAppr=sh.type==='Approach'||sh.type==='Pitch'||isTeeP3;
+  if(!sh.type||sh.type==='Penalty'||sh.type==='Flub')return[];
+  if(sh.type==='Putt'){
+    if(sh.isLastPutt&&!sh.isTW)return[];
+    return[{key:'puttSpeed',q:'Putt — speed?',opts:[
+      {lbl:'Short',val:'Short',cls:'r'},{lbl:'Good ✓',val:'',cls:'g',def:true},{lbl:'Long',val:'Long',cls:'r'}
+    ]}];
+  }
+  if(sh.type==='Sand')return[
+    {key:'sandGotOut',q:'Sand — got out? (GIOTG)',opts:[{lbl:'Yes ✓',val:'Yes',cls:'g'},{lbl:'No',val:'No',cls:'r'}]},
+    {key:'sandProx',q:'Sand — proximity to hole?',opts:[{lbl:'Close',cls:'g'},{lbl:'Medium',cls:'s'},{lbl:'Far',cls:'r'}],skipIf:s=>s.sandGotOut!=='Yes'}
+  ];
+  if(sh.type==='Recovery')return[
+    {key:'gotOut',q:'Recovery — got out?',opts:[{lbl:'Yes ✓',val:'Yes',cls:'g'},{lbl:'No',val:'No',cls:'r'}]},
+    {key:'recoveryLanded',q:'Recovery — landed in?',opts:[
+      {lbl:'Fairway',val:'fairway',cls:'g'},{lbl:'Rough ←',val:'rough-left'},{lbl:'Rough →',val:'rough-right'},
+      {lbl:'OOP',val:'oop',cls:'r'},{lbl:'Short',val:'short'}
+    ],skipIf:s=>s.gotOut!=='Yes'}
+  ];
+  if(sh.type==='Chip')return[
+    {key:'chipProx',q:'Chip — result?',opts:[
+      {lbl:'Tap-in',cls:'g'},{lbl:'Close',cls:'g'},{lbl:'Medium',cls:'s'},{lbl:'Far',cls:'r'},
+      {lbl:'Bladed',val:'Bladed',cls:'r'},{lbl:'Chunked',val:'Chunked',cls:'r'}
+    ]},
+    {key:'bladedLie',q:'Chip (bladed) — where did it end up?',opts:[
+      {lbl:'Fringe',cls:'s'},{lbl:'Rough',cls:'r'},{lbl:'Across green',val:'AcrossGreen',cls:'r'},{lbl:'Penalty',cls:'r'}
+    ],skipIf:s=>s.chipProx!=='Bladed'}
+  ];
+  if(sh.type==='Layup')return[
+    {key:'layupAimed',q:'Layup — where did you aim?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
+    {key:'layupDist',q:'Layup — distance result?',opts:[{lbl:'Short',cls:'r'},{lbl:'On Target',cls:'g',def:true},{lbl:'Long',cls:'r'}]},
+    {key:'lie',q:'Layup — landed in?',opts:[{lbl:'Fairway',cls:'g'},{lbl:'Rough',cls:'r'},{lbl:'Fringe',cls:'s'},{lbl:'Sand',cls:'r'},{lbl:'Jail',cls:'r'},{lbl:'Penalty',cls:'r'}]},
+    {key:'layupSide',q:'Layup — which side?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]}
+  ];
+  if(isTeeP45)return[
+    {key:'teeAimed',q:'Tee shot — where did you aim?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
+    {key:'teeShape',q:'Tee shot — shape?',opts:[
+      {lbl:'Draw',cls:'g'},{lbl:'Straight',cls:'g'},{lbl:'Fade',cls:'s'},
+      {lbl:'Hook',cls:'r'},{lbl:'Pull',cls:'r'},{lbl:'Push',cls:'r'},{lbl:'Slice',cls:'r'},
+      {lbl:'Fat',cls:'r'},{lbl:'Top',cls:'r'},{lbl:'Thin',cls:'r'}
+    ]},
+    {key:'teeLanded',q:'Tee shot — where did it land?',grid:'tee'}
+  ];
+  if(isAppr)return[
+    {key:'approachAimed',q:'Approach — where did you aim?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
+    {key:'approachDist',q:'Approach — distance result?',opts:[
+      {lbl:'Short',val:'Short',cls:'r'},{lbl:'Pin High',val:'PH',cls:'s'},
+      {lbl:'On Green ✓',val:'On',cls:'g'},{lbl:'Long',val:'Long',cls:'r'}
+    ]},
+    {key:'approachZone',q:'Approach — where on the green?',grid:'zone',hint:'Back = away from you',skipIf:s=>s.approachDist!=='On'},
+    {key:'approachSide',q:'Approach — finished which side?',opts:[{lbl:'← Left',val:'Left',cls:'r'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right',cls:'r'}],skipIf:s=>s.approachDist==='On'||!s.approachDist},
+    {key:'lie',q:'Approach — landed in?',opts:[{lbl:'Rough',cls:'r'},{lbl:'Fringe',cls:'s'},{lbl:'Sand',cls:'r'},{lbl:'Jail',cls:'r'},{lbl:'Penalty',cls:'r'}],skipIf:s=>s.approachDist==='On'||!s.approachDist}
+  ];
+  return[];
+}
+
+// ── Phase 1 ──
+function cfAddClub(holeIdx, club) {
+  _cfHoleIdx = holeIdx;
+  _cfSeq.push(club);
+  cfRenderStrip(holeIdx);
+  const btn = document.getElementById(`cf-done-btn-${holeIdx}`);
+  if(btn) btn.disabled = false;
+}
+
+function cfRemoveClub(i, holeIdx) {
+  _cfSeq.splice(i,1);
+  cfRenderStrip(holeIdx);
+  const btn = document.getElementById(`cf-done-btn-${holeIdx}`);
+  if(btn) btn.disabled = !_cfSeq.length;
+}
+
+function cfRenderStrip(holeIdx) {
+  const strip = document.getElementById(`cf-strip-${holeIdx}`);
+  if(!strip) return;
+  const empty = document.getElementById(`cf-empty-${holeIdx}`);
+  if(!_cfSeq.length) {
+    strip.innerHTML = '';
+    if(empty) strip.appendChild(empty);
+    return;
+  }
+  strip.innerHTML = '';
+  _cfSeq.forEach((c,i)=>{
+    const ch = document.createElement('span');
+    ch.className = 'cf-chip';
+    ch.innerHTML = `${c} <span class="cf-chip-rm" onclick="cfRemoveClub(${i},${holeIdx})">✕</span>`;
+    strip.appendChild(ch);
+  });
+}
+
+// ── Phase 1.5 ──
+function cfShowReview(holeIdx) {
+  _cfHoleIdx = holeIdx;
+  const round = S.currentRound;
+  const par = round.pars[holeIdx];
+  // Pre-populate from existing shots if re-entering
+  if(!_cfSeq.length) {
+    const existing = (round.scores[holeIdx]||{}).shots||[];
+    _cfSeq = existing.map(s=>s.club);
+  }
+  _cfShots = cfInferAll(_cfSeq, par);
+  document.getElementById('cf-review-overlay').classList.add('open');
+  document.getElementById('cf-rev-title').textContent = `Hole ${holeIdx+1} · Par ${par}`;
+  cfRenderReview();
+}
+
+function cfRenderReview() {
+  const list = document.getElementById('cf-rev-list');
+  list.innerHTML = '';
+  let hasRed = false;
+  _cfShots.forEach((sh,i)=>{
+    if(sh.confidence==='red') hasRed = true;
+    const row = document.createElement('div');
+    row.className = 'cf-rev-row';
+    const num = document.createElement('div'); num.className='cf-rev-num'; num.textContent=i+1;
+    const club = document.createElement('div'); club.className='cf-rev-club'; club.textContent=sh.club+(sh.isTW?' *':'');
+    const chip = document.createElement('button');
+    chip.className = `cf-rev-chip ${sh.confidence}`;
+    const lbl = sh.type?(CF_TYPE_LBL[sh.type]||sh.type):'? Tap to set';
+    const arrow = sh.confidence!=='certain'?' ▾':'';
+    chip.textContent = lbl + arrow;
+    if(sh.confidence!=='certain') chip.onclick = ()=>cfOpenTypePicker(i);
+    row.appendChild(num); row.appendChild(club); row.appendChild(chip);
+    list.appendChild(row);
+  });
+  const startBtn = document.getElementById('cf-start-btn');
+  startBtn.disabled = hasRed;
+  startBtn.style.opacity = hasRed ? '.4' : '1';
+  document.getElementById('cf-rev-hdr-r').textContent = hasRed ? '⚠ Resolve red items' : `${_cfShots.length} shots`;
+}
+
+let _cfPickerIdx = null;
+function cfOpenTypePicker(i) {
+  _cfPickerIdx = i;
+  const sh = _cfShots[i];
+  document.getElementById('cf-type-title').textContent = `Shot ${i+1} · ${sh.club}`;
+  const opts = document.getElementById('cf-type-opts');
+  opts.innerHTML = '';
+  CF_ALL_TYPES.forEach(t=>{
+    const b = document.createElement('button');
+    b.className = 'cf-tmo' + (sh.type===t?' cur':'');
+    b.textContent = CF_TYPE_LBL[t]||t;
+    b.onclick = ()=>cfSetType(i,t);
+    opts.appendChild(b);
+  });
+  document.getElementById('cf-type-overlay').classList.add('open');
+}
+
+function cfSetType(i, type) {
+  _cfShots[i].type = type;
+  _cfShots[i].confidence = 'green';
+  cfCloseTypePicker();
+  cfRenderReview();
+}
+
+function cfCloseTypePicker(e) {
+  if(e && e.target !== document.getElementById('cf-type-overlay')) return;
+  document.getElementById('cf-type-overlay').classList.remove('open');
+  _cfPickerIdx = null;
+}
+
+function cfBackToClubs() {
+  document.getElementById('cf-review-overlay').classList.remove('open');
+  cfRenderStrip(_cfHoleIdx);
+  const btn = document.getElementById(`cf-done-btn-${_cfHoleIdx}`);
+  if(btn) btn.disabled = !_cfSeq.length;
+}
+
+// ── Phase 2 ──
+function cfStartPopups() {
+  document.getElementById('cf-review-overlay').classList.remove('open');
+  const par = S.currentRound.pars[_cfHoleIdx];
+  // Init all answer fields on shots
+  _cfShots.forEach(sh=>{
+    Object.assign(sh,{
+      teeAimed:null,teeShape:null,teeLanded:null,
+      approachAimed:null,approachDist:null,approachSide:null,approachZone:null,
+      layupAimed:null,layupDist:null,layupSide:null,
+      lie:null,contact:null,rating:null,
+      gotOut:null,recoveryLanded:null,
+      sandGotOut:null,sandProx:null,
+      chipProx:null,chipSide:null,bladedLie:null,
+      puttSpeed:null,mapPos:null
+    });
+  });
+  _cfPopIdx = 0; _cfPopHist = [];
+  document.getElementById('cf-p2').classList.add('open');
+  cfNextQ();
+}
+
+function cfExitToPhase1() {
+  document.getElementById('cf-p2').classList.remove('open');
+  document.getElementById('cf-review-overlay').classList.add('open');
+}
+
+function cfNextQ() {
+  const par = S.currentRound.pars[_cfHoleIdx];
+  if(_cfPopIdx >= _cfShots.length) { cfShowSummary(); return; }
+  const sh = _cfShots[_cfPopIdx];
+  const qs = cfGetQs(sh, par);
+  for(let k=0;k<qs.length;k++){
+    const q=qs[k];
+    if(q.skipIf&&q.skipIf(sh)) continue;
+    if(sh[q.key]===null||sh[q.key]===undefined){
+      cfUpdateCIP(sh, k, qs.length);
+      cfShowPopup(q);
+      return;
+    }
+  }
+  _cfPopIdx++; cfNextQ();
+}
+
+function cfUpdateCIP(sh, stepK, totalK) {
+  document.getElementById('cf-cip-club').textContent = sh.club+(sh.isTW?' (TW)':'');
+  document.getElementById('cf-cip-type').textContent = CF_TYPE_LBL[sh.type]||sh.type||'?';
+  document.getElementById('cf-p2-hdr-r').textContent = `${_cfPopIdx+1}/${_cfShots.length}`;
+  const par = S.currentRound.pars[_cfHoleIdx];
+  const donePrev = _cfShots.slice(0,_cfPopIdx).reduce((a,s)=>{
+    const qs=cfGetQs(s,par).filter(q=>!q.skipIf||!q.skipIf(s));
+    return a+qs.length;
+  },0);
+  const total = _cfShots.reduce((a,s)=>{const qs=cfGetQs(s,par).filter(q=>!q.skipIf||!q.skipIf(s));return a+qs.length;},0);
+  const pct = total ? Math.round((donePrev+stepK)/total*100) : 100;
+  document.getElementById('cf-prog').style.width = pct+'%';
+  document.getElementById('cf-prog-lbl').textContent = `Shot ${_cfPopIdx+1} of ${_cfShots.length} · ${sh.club}`;
+}
+
+function cfShowPopup(q) {
+  const area = document.getElementById('cf-pop-area');
+  const card = document.createElement('div'); card.className='cf-popup';
+  const qq = document.createElement('div'); qq.className='cf-pq'; qq.textContent=q.q;
+  card.appendChild(qq);
+  if(q.grid==='tee'){
+    const g=document.createElement('div');g.className='cf-g3';
+    CF_TEE_GRID.forEach(c=>{
+      const b=document.createElement('button');b.className='cf-gc '+(c.cls||'');
+      b.textContent=c.lbl;b.onclick=()=>cfAns(q.key,c.val);g.appendChild(b);
+    });card.appendChild(g);
+  } else if(q.grid==='zone'){
+    const g=document.createElement('div');g.className='cf-g3';
+    CF_ZONE_GRID.forEach(c=>{
+      const b=document.createElement('button');b.className='cf-gc';
+      b.textContent=c.lbl;b.onclick=()=>cfAns(q.key,c.val);g.appendChild(b);
+    });card.appendChild(g);
+    if(q.hint){const h=document.createElement('div');h.className='cf-phint';h.textContent=q.hint;card.appendChild(h);}
+  } else {
+    const d=document.createElement('div');d.className='cf-opts';
+    (q.opts||[]).forEach(o=>{
+      const b=document.createElement('button');
+      b.className='cf-opt '+(o.cls||'')+(o.def?' def':'');
+      b.textContent=o.lbl;
+      b.onclick=()=>cfAns(q.key,o.val!==undefined?o.val:o.lbl);
+      d.appendChild(b);
+    });card.appendChild(d);
+  }
+  const foot=document.createElement('div');foot.className='cf-pfoot';
+  const bk=document.createElement('button');bk.className='cf-pbk';bk.textContent='← Back';
+  bk.onclick=cfGoBack;bk.disabled=!_cfPopHist.length;bk.style.opacity=_cfPopHist.length?'1':'.3';
+  const sk=document.createElement('button');sk.className='cf-pskip';sk.textContent='Skip';
+  sk.onclick=()=>{_cfShots[_cfPopIdx][q.key]='';cfNextQ();};
+  foot.appendChild(bk);foot.appendChild(sk);card.appendChild(foot);
+  area.innerHTML='';area.appendChild(card);
+}
+
+function cfAns(key, val) {
+  const par = S.currentRound.pars[_cfHoleIdx];
+  _cfPopHist.push({shotIdx:_cfPopIdx, key});
+  _cfShots[_cfPopIdx][key] = val===undefined?'':val;
+  // Chain-back: auto-derive lie
+  if(key==='chipProx'){
+    if(val==='Chunked') _cfShots[_cfPopIdx].lie='Fringe';
+    if(['Tap-in','Close','Medium','Far'].includes(val)) _cfShots[_cfPopIdx].lie='Green';
+  }
+  if(key==='bladedLie'){
+    const m={Fringe:'Fringe',Rough:'Rough',AcrossGreen:'Fringe',Penalty:'Penalty'};
+    if(m[val]) _cfShots[_cfPopIdx].lie=m[val];
+  }
+  if(key==='teeLanded'){
+    const m={fairway:'Fairway','rough-left':'Rough','rough-right':'Rough',bunker:'Sand',
+      'ob-left':'Penalty','ob-right':'Penalty','oop-left':'Penalty','oop-right':'Penalty'};
+    if(m[val]) _cfShots[_cfPopIdx].lie=m[val];
+  }
+  if(key==='approachDist'&&val==='On') _cfShots[_cfPopIdx].lie='Green';
+  // Animate out
+  const c=document.querySelector('.cf-popup');
+  if(c){c.style.transition='opacity .1s,transform .1s';c.style.opacity='0';c.style.transform='scale(.93)';}
+  setTimeout(cfNextQ,100);
+}
+
+function cfGoBack() {
+  if(!_cfPopHist.length) return;
+  const par = S.currentRound.pars[_cfHoleIdx];
+  const prev = _cfPopHist.pop();
+  const sh = _cfShots[prev.shotIdx];
+  const qs = cfGetQs(sh, par);
+  const ki = qs.findIndex(q=>q.key===prev.key);
+  for(let k=(ki<0?0:ki);k<qs.length;k++) sh[qs[k].key]=null;
+  if(prev.key==='teeLanded') sh.lie=null;
+  if(prev.key==='approachDist'){sh.approachZone=null;sh.approachSide=null;sh.lie=null;}
+  if(prev.key==='chipProx') sh.lie=null;
+  _cfPopIdx = prev.shotIdx;
+  cfNextQ();
+}
+
+// ── Phase 3 — Summary & Save ──
+function cfShowSummary() {
+  document.getElementById('cf-p2').classList.remove('open');
+  // Render contact flags inline on the hole page log area
+  cfRenderShotLog(_cfHoleIdx, _cfShots, false);
+  // Show a save button in the log area
+  const logEl = document.getElementById(`cf-log-${_cfHoleIdx}`);
+  if(logEl) {
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'cf-done';
+    saveBtn.style.marginTop = '12px';
+    saveBtn.textContent = 'Save Hole ✓';
+    saveBtn.onclick = ()=>cfSaveHole(_cfHoleIdx);
+    logEl.appendChild(saveBtn);
+  }
+}
+
+function cfRenderShotLog(holeIdx, shots, saved) {
+  const logEl = document.getElementById(`cf-log-${holeIdx}`);
+  if(!logEl) return;
+  logEl.innerHTML = `<div class="eyebrow" style="margin-bottom:8px;padding-top:4px">${saved?'Shot Log':'Review & Confirm Contact'}</div>`;
+  const par = (S.currentRound.pars||[])[holeIdx];
+  shots.forEach((sh,i)=>{
+    if(sh.type==='Penalty') return; // skip penalty rows
+    const row = document.createElement('div'); row.className='cf-log-row';
+    const cl = document.createElement('span'); cl.className='cf-log-club';
+    cl.textContent = sh.club+(sh.isTW?'*':'');
+    const body = document.createElement('div'); body.className='cf-log-body';
+    const typeSpan = document.createElement('span'); typeSpan.className='cf-log-type';
+    typeSpan.textContent = CF_TYPE_LBL[sh.type]||sh.type||'?';
+    const parts=[];
+    if(sh.teeAimed)      parts.push(`Aimed <b>${sh.teeAimed}</b>`);
+    if(sh.teeShape)      parts.push(`<b>${sh.teeShape}</b>`);
+    if(sh.teeLanded)     parts.push(`→ <b>${sh.teeLanded.replace(/-/g,' ')}</b>`);
+    if(sh.approachAimed) parts.push(`Aimed <b>${sh.approachAimed}</b>`);
+    if(sh.approachDist)  parts.push(`<b>${sh.approachDist}</b>`);
+    if(sh.approachZone)  parts.push(`zone <b>${sh.approachZone.replace(/-/g,' ')}</b>`);
+    if(sh.approachSide)  parts.push(`side <b>${sh.approachSide}</b>`);
+    if(sh.layupAimed)    parts.push(`Aimed <b>${sh.layupAimed}</b>`);
+    if(sh.layupDist)     parts.push(`<b>${sh.layupDist}</b>`);
+    if(sh.layupSide)     parts.push(`side <b>${sh.layupSide}</b>`);
+    if(sh.chipProx)      parts.push(`<b>${sh.chipProx}</b>`);
+    if(sh.bladedLie)     parts.push(`ended <b>${sh.bladedLie}</b>`);
+    if(sh.sandGotOut)    parts.push(`got out <b>${sh.sandGotOut}</b>`);
+    if(sh.sandProx)      parts.push(`prox <b>${sh.sandProx}</b>`);
+    if(sh.gotOut)        parts.push(`got out <b>${sh.gotOut}</b>`);
+    if(sh.puttSpeed)     parts.push(`speed <b style="color:#e07070">${sh.puttSpeed}</b>`);
+    if(sh.lie)           parts.push(`lie <b>${sh.lie}</b>`);
+    const dataDiv = document.createElement('div');
+    dataDiv.innerHTML = parts.length?parts.join(' · '):'<i style="color:var(--chalk3)">no data</i>';
+    body.appendChild(typeSpan); body.appendChild(dataDiv);
+    // Contact flags for non-putts/sand/recovery/flub/penalty
+    const showContact = ['Tee','Approach','Pitch','Layup','Chip'].includes(sh.type);
+    if(showContact && !saved){
+      const cf = document.createElement('div'); cf.className='cf-contact-flags';
+      ['Thin','Fat'].forEach(t=>{
+        const b=document.createElement('button');
+        b.className=`cf-cf ${t.toLowerCase()}`;
+        b.textContent=t;
+        if(sh.contact===t) b.classList.add('on');
+        b.onclick=()=>{
+          if(sh.contact===t){sh.contact=null;b.classList.remove('on');}
+          else{sh.contact=t;b.classList.toggle('on',true);
+            // clear the other button
+            cf.querySelectorAll('.cf-cf').forEach(x=>{if(x!==b)x.classList.remove('on');});
+          }
+        };
+        cf.appendChild(b);
+      });
+      body.appendChild(cf);
+    }
+    row.appendChild(cl); row.appendChild(body);
+    logEl.appendChild(row);
+  });
+}
+
+function cfSaveHole(holeIdx) {
+  const round = S.currentRound;
+  if(!round.scores[holeIdx]) round.scores[holeIdx] = defaultScore(holeIdx);
+  // Write all shots — full replace
+  round.scores[holeIdx].shots = _cfShots.map(sh=>({
+    club:sh.club, type:sh.type,
+    contact:sh.contact||null, lie:sh.lie||null, rating:null, mapPos:null,
+    teeAimed:sh.teeAimed||null, teeShape:sh.teeShape||null, teeLanded:sh.teeLanded||null,
+    approachAimed:sh.approachAimed||null, approachDist:sh.approachDist||null,
+    approachSide:sh.approachSide||null, approachZone:sh.approachZone||null,
+    layupAimed:sh.layupAimed||null, layupDist:sh.layupDist||null, layupSide:sh.layupSide||null,
+    gotOut:sh.gotOut||null, recoveryLanded:sh.recoveryLanded||null,
+    sandGotOut:sh.sandGotOut||null, sandProx:sh.sandProx||null,
+    chipProx:sh.chipProx||null, chipSide:sh.chipSide||null, bladedLie:sh.bladedLie||null,
+    puttSpeed:sh.puttSpeed||null,
+    counted:sh.counted!==false, isTW:sh.isTW||false, isLastPutt:sh.isLastPutt||false
+  }));
+  calcScore(holeIdx);
+  saveWIP(round);
+  // Clear CF state
+  _cfSeq = []; _cfShots = []; _cfPopIdx = 0; _cfPopHist = [];
+  // Render read-only log
+  cfRestoreLog(holeIdx);
+  // Reset the club strip / done button
+  cfRenderStrip(holeIdx);
+  const btn = document.getElementById(`cf-done-btn-${holeIdx}`);
+  if(btn) btn.disabled = true;
+}
+
+function cfRestoreLog(holeIdx) {
+  const round = S.currentRound;
+  const shots = (round.scores[holeIdx]||{}).shots||[];
+  if(!shots.length) return;
+  cfRenderShotLog(holeIdx, shots, true);
+}
+
+// ═══════════════════════════════════════════════════════════════
 // SHOT-CENTRIC DATA FUNCTIONS
 // ═══════════════════════════════════════════════════════════════
 function addShot(i, club) {
@@ -1528,7 +2289,7 @@ function addShot(i, club) {
     // Sand
     sandGotOut:null, sandProx:null,
     // Chip
-    chipProx:null, chipSide:null,
+    chipProx:null, chipSide:null, bladedLie:null,
     // Putt
     puttSpeed:null,
     // Map
@@ -1647,6 +2408,8 @@ function setShotAttr(i, idx, attr, value) {
     shot.chipProx = shot.chipProx===value ? null : value;
   } else if(attr==='chipSide') {
     shot.chipSide = shot.chipSide===value ? null : value;
+  } else if(attr==='bladedLie') {
+    shot.bladedLie = shot.bladedLie===value ? null : value;
   // ── PUTT ──
   } else if(attr==='puttSpeed') {
     shot.puttSpeed = shot.puttSpeed===value ? null : value;
@@ -2134,7 +2897,9 @@ function saveCourseNotesModal() {
 function saveRoundNotes() {
   if(!S.currentRound) return;
   S.currentRound.roundNotes = document.getElementById('round-notes-ta')?.value || '';
-  saveWIP(S.currentRound);
+  // Only write WIP if this round hasn't been saved yet
+  const alreadySaved = getRounds().some(r => r.id === S.currentRound.id);
+  if (!alreadySaved) saveWIP(S.currentRound);
 }
 function saveAntKey() {
   const val = document.getElementById('ant-token')?.value.trim();
@@ -2322,12 +3087,15 @@ function scorecardHTML(round) {
       arr.map(s=>td(s.par,'font-size:12px;color:var(--chalk2)')).join('') +
       td(totalPar,'font-size:12px;color:var(--chalk2);font-weight:700') + '</tr>';
 
-    // CARD PENALTY: penalty ✕ superscripts on score badge, no separate row
+    // CARD PENALTY: penalty ✕ superscripts inline-right of score badge
     const scoreRow = '<tr style="border-top:1px solid var(--border)">' + td('Score','font-size:11px;color:var(--gold);font-weight:600') +
       arr.map(s=>{
         const rel=s.strokes-s.par;
-        const penMarks = s.penalties>0 ? `<span style="font-size:8px;color:var(--red);letter-spacing:1px;display:block;line-height:1;margin-top:1px">${'✕'.repeat(s.penalties)}</span>` : '';
-        return `<td style="padding:5px 2px;text-align:center"><div style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;${scoreBadgeStyle(rel)}">${s.strokes}</div>${penMarks}</td>`;
+        const penMarks = s.penalties>0 ? `<span style="font-size:8px;color:var(--red);letter-spacing:0px;vertical-align:super;line-height:1;margin-left:2px">${'✕'.repeat(s.penalties)}</span>` : '';
+        const fieldNote = (s.notes||'').trim();
+        const noteDot = fieldNote ? `<span style="display:block;font-size:6px;color:var(--gold);line-height:1;margin-top:2px;opacity:.8" title="${fieldNote.replace(/"/g,'&quot;')}">●</span>` : '';
+        const titleAttr = fieldNote ? ` title="${fieldNote.replace(/"/g,'&quot;')}"` : '';
+        return `<td style="padding:5px 2px;text-align:center;white-space:nowrap"${titleAttr}><div style="display:inline-flex;align-items:flex-start;gap:1px"><div style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;${scoreBadgeStyle(rel)}">${s.strokes}</div>${penMarks}</div>${noteDot}</td>`;
       }).join('') +
       `<td style="padding:5px 2px;text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:18px;color:${relColor};font-weight:700">${totalStr}</div><div style="font-size:10px;color:${relColor}">${relStr}</div></td>` + '</tr>';
 
@@ -2764,16 +3532,39 @@ async function sendCoachChat() {
   thread.innerHTML += `<div class="coach-msg-coach coach-msg-thinking" id="${thinkId}">Byron is thinking…</div>`;
   thread.scrollTop = thread.scrollHeight;
 
-  // Build context for chat
+  // Build rich context for chat — full analysis + all notes
   const round = S._coachRound;
   const analysis = S._coachAnalysis;
-  const roundSummary = round ? `Round: ${round.courseName}, ${round.date}, Score ${round.scores.reduce((a,s)=>a+(s.strokes||0),0)}` : '';
-  const analysisSummary = analysis ? `Initial analysis headline: "${analysis.headline}". Top findings: ${(analysis.topFindings||[]).join('; ')}` : '';
+  const roundSummary = round ? `Round: ${round.courseName} (${round.teeName||''}), ${round.date}, Score ${round.scores.reduce((a,s)=>a+(s.strokes||0),0)}` : '';
 
-  const systemPrompt = `You are Byron, an elite PGA Tour instructor analyzing a golfer's round data. You already ran a full analysis of this round. The player is asking follow-up questions. Be concise, direct, and specific. Reference their actual shot data when relevant. No more than 3 paragraphs per response.
+  // Pull notes from localStorage (same keys used in runCoachAnalysis)
+  const chatCid = round ? (round.courseId || '') : '';
+  const chatPlayerNotes = localStorage.getItem('caddie_player_notes') || '';
+  const chatCourseNotes = localStorage.getItem('caddie_course_notes_' + chatCid) || '';
+  const chatHoleNotes = {}; const chatGreenNotes = {};
+  for (let h=1;h<=18;h++) {
+    const hn = localStorage.getItem('caddie_hole_notes_' + chatCid + '_' + h) || '';
+    const gn = localStorage.getItem('caddie_hole_green_notes_' + chatCid + '_' + h) || '';
+    if (hn.trim()) chatHoleNotes[h] = hn.trim();
+    if (gn.trim()) chatGreenNotes[h] = gn.trim();
+  }
+  const chatHoleNotesText = Object.keys(chatHoleNotes).length
+    ? 'PER-HOLE CADDIE NOTES:\n' + Object.entries(chatHoleNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n') : '';
+  const chatGreenNotesText = Object.keys(chatGreenNotes).length
+    ? 'PER-HOLE GREEN NOTES:\n' + Object.entries(chatGreenNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n') : '';
+
+  const analysisFull = analysis ? JSON.stringify(analysis) : '';
+
+  const systemPrompt = `You are Byron, an elite caddie and data analyst. You already ran a full analysis of this round. The player is asking follow-up questions. Be concise, direct, and specific. No more than 3 paragraphs per response.
+
+CRITICAL RULE: Never invent terrain, elevation, wind, slope, or lie conditions that are not explicitly stated in the data below. If you cannot explain WHY a pattern exists from the data alone, say so directly. Never fabricate plausible-sounding golf reasons to fill gaps.
 
 ${roundSummary}
-${analysisSummary}`;
+${chatPlayerNotes ? 'PLAYER PROFILE:\n' + chatPlayerNotes : ''}
+${chatCourseNotes ? 'COURSE KNOWLEDGE:\n' + chatCourseNotes : ''}
+${chatHoleNotesText}
+${chatGreenNotesText}
+${analysisFull ? 'FULL ANALYSIS DATA:\n' + analysisFull : ''}`;
 
   S._coachHistory.push({role:'user', content: msg});
   // SHORT MEMORY: cap at last 6 turns (3 user + 3 assistant) to control token cost
@@ -2859,7 +3650,7 @@ async function runCoachAnalysis(round) {
     if (gn.trim()) greenNotes[h] = gn.trim();
   }
   const holeNotesText = Object.keys(holeNotes).length
-    ? '\nPER-HOLE CADDIE NOTES:\n' + Object.entries(holeNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n')
+    ? '\nPER-HOLE CADDIE NOTES (pre-round strategy, aim points, smart misses):\n' + Object.entries(holeNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n')
     : '';
   const greenNotesText = Object.keys(greenNotes).length
     ? '\nPER-HOLE GREEN NOTES (slope, break, false fronts, pin tendencies):\n' + Object.entries(greenNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n')
@@ -2921,7 +3712,7 @@ DATA REFERENCE:
 - sandGotOut: Yes/No, sandProx: Close/Medium/Far (bunker play)
 - chipProx: Tap-in/Close/Medium/Far, chipSide: Left/Center/Right
 - puttSpeed: Short/Long (only logged when speed error occurred)
-- roundNote: player's in-the-moment note for this hole (wind, lie condition, mental state, unusual circumstance) — treat as primary context when present
+- roundNote: player's in-the-moment Field Note for this hole (wind, lie condition, mental state, unusual circumstance) — treat as primary context when present. Written during the round, NOT pre-round strategy.
 
 RAW HOLE DATA:
 ${JSON.stringify(holeData, null, 2)}
@@ -2981,7 +3772,7 @@ Respond ONLY with a valid JSON object, no markdown, no backticks:
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 6000,
         messages: [{role:'user', content: messageContent}]
       })
@@ -4012,7 +4803,7 @@ function renderCourseHub() {
         <div style="font-size:10px;letter-spacing:1px;color:var(--gold);opacity:.7;margin-bottom:8px">COURSE NOTES</div>
         <div style="font-size:11px;color:var(--chalk3);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-size:10px">Overall</div>
         <textarea id="${cid}-notes" oninput="saveCourseHubNote('${notesKey}','${cid}')" style="width:100%;background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:15px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:vertical;min-height:90px;box-sizing:border-box;line-height:1.7" placeholder="General strategy, green complexes, weather tendencies…">${savedNotes}</textarea>
-        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--chalk3);margin-top:12px;margin-bottom:6px">Per Hole</div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--chalk3);margin-top:12px;margin-bottom:6px">Per Hole — Caddie Notes &amp; Green Notes</div>
         <div id="${cid}-holenotes">
           ${(()=>{
             // Robust lookup: try course registry first, fall back to round data
@@ -4036,7 +4827,7 @@ function renderCourseHub() {
                 '</summary>' +
                 '<div style="padding:0 14px 12px;display:flex;flex-direction:column;gap:10px">' +
                   '<div>' +
-                    '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:5px">Hole Notes</div>' +
+                    '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:5px">Caddie Notes</div>' +
                     '<textarea data-hkey="'+hkey+'" oninput="saveHubHoleNote(this)" style="width:100%;min-height:65px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:\'DM Sans\',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Aim point, trouble, smart miss, layup target…">'+hval+'</textarea>' +
                   '</div>' +
                   '<div>' +
