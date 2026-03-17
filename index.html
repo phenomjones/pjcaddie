@@ -540,7 +540,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.0.0 · Mar 17, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.0.2 · Mar 17, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -716,7 +716,10 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="subtitle" style="margin-top:4px">Tap to remove clubs you didn't bring</div>
   </div>
   <div class="scroll-body" style="padding:18px">
-    <div id="bag-grid" style="display:flex;flex-wrap:wrap;gap:10px;padding-bottom:20px;justify-content:center"></div>
+    <div id="bag-grid" style="display:flex;flex-wrap:wrap;gap:10px;padding-bottom:12px;justify-content:center"></div>
+    <div id="last-bag-btn-wrap" style="display:none;padding-bottom:20px;text-align:center">
+      <button onclick="useLastBag()" style="background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:8px 20px;font-size:12px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif">↺ Same clubs as last round</button>
+    </div>
   </div>
   <div class="sticky-bot">
     <button class="btn btn-gold" onclick="confirmBag()">Start Round →</button>
@@ -1256,6 +1259,31 @@ function renderBagScreen() {
     const opacity = inBag ? '1' : '0.3';
     return `<button onclick="toggleBagClub('${c}')" style="background:var(--ink3);border:1px solid ${border};border-radius:100px;padding:8px 16px;font-size:13px;color:${color};opacity:${opacity};cursor:pointer;transition:all .2s" id="bag-btn-${c}">${c}</button>`;
   }).join('');
+  // Show "same as last round" if a saved bag exists and differs from full CLUBS
+  const lastBag = localStorage.getItem('caddie_last_bag');
+  const wrap = document.getElementById('last-bag-btn-wrap');
+  if (wrap) wrap.style.display = lastBag ? 'block' : 'none';
+}
+
+function useLastBag() {
+  const lastBag = localStorage.getItem('caddie_last_bag');
+  if (!lastBag) return;
+  try {
+    S.activeBag = JSON.parse(lastBag);
+    renderBagScreen();
+  } catch(e) { /* silent fail */ }
+}
+
+function confirmBag() {
+  if (!S.activeBag.length) { alert('Add at least one club.'); return; }
+  // Save this bag as "last used" for next round
+  localStorage.setItem('caddie_last_bag', JSON.stringify(S.activeBag));
+  showView('scoring');
+  buildScoringView();
+  loadHole(0);
+  // Update home button to show back arrow
+  const homeBtn = document.getElementById('sc-home-btn');
+  if (homeBtn) homeBtn.textContent = '← Back';
 }
 
 function toggleBagClub(c) {
@@ -1270,16 +1298,6 @@ function toggleBagClub(c) {
     else S.activeBag.splice(insertAt, 0, c);
   }
   renderBagScreen();
-}
-
-function confirmBag() {
-  if (!S.activeBag.length) { alert('Add at least one club.'); return; }
-  showView('scoring');
-  buildScoringView();
-  loadHole(0);
-  // Update home button to show back arrow
-  const homeBtn = document.getElementById('sc-home-btn');
-  if (homeBtn) homeBtn.textContent = '← Back';
 }
 
 function editBag() {
@@ -1701,6 +1719,7 @@ const cfCat   = c => CF_CAT[c]||'unknown';
 const cfLong  = c => ['driver','wood','hybrid','long-iron'].includes(cfCat(c));
 const cfMid   = c => cfCat(c)==='mid-iron';
 const cfShort = c => ['short-iron','wedge'].includes(cfCat(c));
+const cfWedge = c => cfCat(c)==='wedge'; // true wedges only — PW/GW/56/58; excludes 8i/9i
 
 const CF_TYPE_LBL = {Tee:'Tee Shot',Approach:'Approach',Pitch:'Pitch',Layup:'Layup',
   Chip:'Chip',Sand:'Sand',Recovery:'Recovery',Flub:'Flub',Penalty:'Penalty',Putt:'Putt'};
@@ -1745,9 +1764,9 @@ function cfInferSeg(clubs,par,afterPen){
   const lastShort=['wedge','short-iron'].includes(lastCat);
   const lastMid=lastCat==='mid-iron';
   const lastLong=['long-iron','hybrid','wood','driver'].includes(lastCat);
-  // Consecutive wedge pre-check
-  if(n===2&&cfShort(clubs[0])&&cfShort(clubs[1]))return[A('Chip'),A('Chip')];
-  if(n===3&&cfShort(clubs[1])&&cfShort(clubs[2])){
+  // Consecutive wedge pre-check — true wedges only (PW/GW/56/58), NOT 8i/9i
+  if(n===2&&cfWedge(clubs[0])&&cfWedge(clubs[1]))return[A('Chip'),A('Chip')];
+  if(n===3&&cfWedge(clubs[1])&&cfWedge(clubs[2])){
     if(afterPen)return[G('Approach'),A('Chip'),A('Chip')];
     if(cfLong(clubs[0]))return[G('Approach'),A('Chip'),A('Chip')];
     return[A('Approach'),A('Chip'),A('Chip')];
@@ -1760,7 +1779,12 @@ function cfInferSeg(clubs,par,afterPen){
   }
   if(par===4){
     if(afterPen){
+      // RETEE: driver/wood after penalty on par 4 = re-tee (stroke & distance)
+      const isReTee = cfCat(clubs[0])==='driver'||cfCat(clubs[0])==='wood';
+      if(n===1&&isReTee)return[A('Tee')];
       if(n===1)return[G('Approach')];
+      if(n===2&&isReTee&&cfShort(clubs[1]))return[A('Tee'),A('Approach')];
+      if(n===2&&isReTee)return[A('Tee'),A('Approach')];
       if(n===2&&cfShort(clubs[1]))return[G('Approach'),A('Chip')];
       if(n===2)return[G('Approach'),A('Approach')];
       if(n===3&&cfShort(clubs[1])&&cfShort(clubs[2]))return[G('Approach'),A('Chip'),A('Chip')];
@@ -1786,7 +1810,12 @@ function cfInferSeg(clubs,par,afterPen){
   }
   if(par===5){
     if(afterPen){
+      // RETEE: driver/wood after penalty on par 5 = re-tee (stroke & distance)
+      const isReTee5 = cfCat(clubs[0])==='driver'||cfCat(clubs[0])==='wood';
+      if(n===1&&isReTee5)return[A('Tee')];
       if(n===1)return[G('Approach')];
+      if(n===2&&isReTee5&&!cfShort(clubs[1]))return[A('Tee'),A('Layup')];
+      if(n===2&&isReTee5&&cfShort(clubs[1]))return[A('Tee'),A('Approach')];
       if(n===2&&cfShort(clubs[1]))return[G('Approach'),A('Chip')];
       if(n===2)return[A('Layup'),G('Approach')];
       if(n===3&&cfShort(clubs[1])&&cfShort(clubs[2]))return[G('Approach'),A('Chip'),A('Chip')];
@@ -1871,16 +1900,18 @@ function cfGetQs(sh, par) {
     ]},
     {key:'teeLanded',q:'Tee shot — where did it land?',grid:'tee'}
   ];
-  if(isAppr)return[
-    {key:'approachAimed',q:'Approach — where did you aim?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
-    {key:'approachDist',q:'Approach — distance result?',opts:[
+  if(isAppr){
+    const pfx = isTeeP3 ? 'Tee shot' : 'Approach';
+    return[
+    {key:'approachAimed',q:`${pfx} — where did you aim?`,opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
+    {key:'approachDist',q:`${pfx} — distance result?`,opts:[
       {lbl:'Short',val:'Short',cls:'r'},{lbl:'Pin High',val:'PH',cls:'s'},
       {lbl:'On Green ✓',val:'On',cls:'g'},{lbl:'Long',val:'Long',cls:'r'}
     ]},
-    {key:'approachZone',q:'Approach — where on the green?',grid:'zone',hint:'Back = away from you',skipIf:s=>s.approachDist!=='On'},
-    {key:'approachSide',q:'Approach — finished which side?',opts:[{lbl:'← Left',val:'Left',cls:'r'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right',cls:'r'}],skipIf:s=>s.approachDist==='On'||!s.approachDist},
-    {key:'lie',q:'Approach — landed in?',opts:[{lbl:'Rough',cls:'r'},{lbl:'Fringe',cls:'s'},{lbl:'Sand',cls:'r'},{lbl:'Jail',cls:'r'},{lbl:'Penalty',cls:'r'}],skipIf:s=>s.approachDist==='On'||!s.approachDist}
-  ];
+    {key:'approachZone',q:`${pfx} — where on the green?`,grid:'zone',hint:'Back = away from you',skipIf:s=>s.approachDist!=='On'},
+    {key:'approachSide',q:`${pfx} — finished which side?`,opts:[{lbl:'← Left',val:'Left',cls:'r'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right',cls:'r'}],skipIf:s=>s.approachDist==='On'||!s.approachDist},
+    {key:'lie',q:`${pfx} — landed in?`,opts:[{lbl:'Rough',cls:'r'},{lbl:'Fringe',cls:'s'},{lbl:'Sand',cls:'r'},{lbl:'Jail',cls:'r'},{lbl:'Penalty',cls:'r'}],skipIf:s=>s.approachDist==='On'||!s.approachDist}
+  ];}
   return[];
 }
 
@@ -2085,7 +2116,7 @@ function cfShowPopup(q) {
   }
   const foot=document.createElement('div');foot.className='cf-pfoot';
   const bk=document.createElement('button');bk.className='cf-pbk';bk.textContent='← Back';
-  bk.onclick=cfGoBack;bk.disabled=!_cfPopHist.length;bk.style.opacity=_cfPopHist.length?'1':'.3';
+  bk.onclick=cfGoBack;bk.disabled=!_cfPopHist.length;bk.style.opacity=_cfPopHist.length?'1':'.55';
   const sk=document.createElement('button');sk.className='cf-pskip';sk.textContent='Skip';
   sk.onclick=()=>{_cfShots[_cfPopIdx][q.key]='';cfNextQ();};
   foot.appendChild(bk);foot.appendChild(sk);card.appendChild(foot);
@@ -2223,7 +2254,7 @@ function cfSaveHole(holeIdx) {
     sandGotOut:sh.sandGotOut||null, sandProx:sh.sandProx||null,
     chipProx:sh.chipProx||null, chipSide:sh.chipSide||null, bladedLie:sh.bladedLie||null,
     puttSpeed:sh.puttSpeed||null,
-    counted:sh.counted!==false, isTW:sh.isTW||false, isLastPutt:sh.isLastPutt||false
+    isTW:sh.isTW||false
   }));
   calcScore(holeIdx);
   saveWIP(round);
@@ -2897,9 +2928,9 @@ function saveCourseNotesModal() {
 function saveRoundNotes() {
   if(!S.currentRound) return;
   S.currentRound.roundNotes = document.getElementById('round-notes-ta')?.value || '';
-  // Only write WIP if this round hasn't been saved yet
+  // Write WIP unless round is already saved AND we're not in edit mode
   const alreadySaved = getRounds().some(r => r.id === S.currentRound.id);
-  if (!alreadySaved) saveWIP(S.currentRound);
+  if (!alreadySaved || S._editingRoundId) saveWIP(S.currentRound);
 }
 function saveAntKey() {
   const val = document.getElementById('ant-token')?.value.trim();
@@ -3093,7 +3124,7 @@ function scorecardHTML(round) {
         const rel=s.strokes-s.par;
         const penMarks = s.penalties>0 ? `<span style="font-size:8px;color:var(--red);letter-spacing:0px;vertical-align:super;line-height:1;margin-left:2px">${'✕'.repeat(s.penalties)}</span>` : '';
         const fieldNote = (s.notes||'').trim();
-        const noteDot = fieldNote ? `<span style="display:block;font-size:6px;color:var(--gold);line-height:1;margin-top:2px;opacity:.8" title="${fieldNote.replace(/"/g,'&quot;')}">●</span>` : '';
+        const noteDot = fieldNote ? `<span style="display:block;font-size:9px;color:var(--gold);line-height:1;margin-top:2px;opacity:1" title="${fieldNote.replace(/"/g,'&quot;')}">●</span>` : '';
         const titleAttr = fieldNote ? ` title="${fieldNote.replace(/"/g,'&quot;')}"` : '';
         return `<td style="padding:5px 2px;text-align:center;white-space:nowrap"${titleAttr}><div style="display:inline-flex;align-items:flex-start;gap:1px"><div style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;${scoreBadgeStyle(rel)}">${s.strokes}</div>${penMarks}</div>${noteDot}</td>`;
       }).join('') +
@@ -3307,7 +3338,11 @@ function tendenciesHTML(round) {
   </div>`:''}
   ${totalTypes?`<div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:12px">Shot Types (${totalTypes})</div>
-    ${SHOT_TYPES.map(t=>typeCounts[t]?barRow(t,typeCounts[t],totalTypes,typeColors[t]||'var(--chalk2)'):'').join('')}
+    ${SHOT_TYPES.map(t=>{
+      if(!typeCounts[t]) return '';
+      const lbl = t==='Flub' ? 'Flub (mis-hit, no advance)' : t;
+      return barRow(lbl,typeCounts[t],totalTypes,typeColors[t]||'var(--chalk2)');
+    }).join('')}
   </div>`:''}
   <div class="card" style="margin-bottom:10px">
     <div class="eyebrow" style="margin-bottom:12px">Putting Distribution (Avg ${(scores.reduce((a,s)=>a+s.putts,0)/scores.length).toFixed(1)})</div>
@@ -3671,6 +3706,7 @@ CRITICAL ANALYSIS MANDATE:
 - Surface miss quadrants (short-left, long-right, etc.) per club — for course management purposes
 - Flag contact trends (thin/fat clustering) as DATA OBSERVATIONS only — never as swing cues. MINIMUM THRESHOLD: only flag a contact pattern if 3+ shots with the same club show the same miss type. 1-2 bad contacts is noise, not a pattern.
 - Identify decision quality issues (wrong target given tendencies, unnecessary risk, wrong club for the lie)
+- AIM-VS-RESULT ANALYSIS (mandatory): For every hole where teeAimed or approachAimed is logged, compare the intended aim direction against the actual result direction (teeLanded, approachSide, approachDist). Classify each divergence as either (a) EXECUTION ERROR — correct aim given tendencies, poor execution, or (b) DECISION ERROR — wrong aim given the player's established miss pattern. A correct aim decision that produces a bad shot is NOT the same as a wrong aim decision. Flag decision errors explicitly in decisionFlags. If the player consistently aims center but misses right, and they aimed center again — that is a decision error, not an execution error. Course management improvement requires fixing decisions, not execution.
 - Rate calibration: compare player's 👍/👎 ratings against actual results
 - Scoring root causes: of all over-par holes, what 2-3 root causes dominate?
 - Front vs Back 9 trends, momentum patterns, pressure signatures
@@ -3710,7 +3746,8 @@ DATA REFERENCE:
 - gotOut: Yes/No (recovery shots and sand shots)
 - recoveryLanded: where ball landed after successful recovery
 - sandGotOut: Yes/No, sandProx: Close/Medium/Far (bunker play)
-- chipProx: Tap-in/Close/Medium/Far, chipSide: Left/Center/Right
+- chipProx: Tap-in/Close/Medium/Far/Bladed/Chunked. chipSide: Left/Center/Right (unused in Club First flow — omit from analysis)
+- bladedLie: Where ball ended up after a bladed chip — Fringe/Rough/AcrossGreen/Penalty. Only present when chipProx='Bladed'. Drives next shot type (Fringe→Chip, Rough→Chip, AcrossGreen→Chip, Penalty→Penalty stroke).
 - puttSpeed: Short/Long (only logged when speed error occurred)
 - roundNote: player's in-the-moment Field Note for this hole (wind, lie condition, mental state, unusual circumstance) — treat as primary context when present. Written during the round, NOT pre-round strategy.
 
