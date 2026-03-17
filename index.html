@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -47,179 +46,179 @@ body{display:flex;flex-direction:column}
 .pad-b{padding-bottom:110px}
 
 /* ── TYPOGRAPHY ── */
-.serif{font-family:‘DM Serif Display’,serif}
-.eyebrow{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(–gold);opacity:.75}
-.title{font-family:‘DM Serif Display’,serif;font-size:28px;color:var(–chalk);line-height:1.1}
-.subtitle{font-size:13px;color:var(–chalk2)}
+.serif{font-family:'DM Serif Display',serif}
+.eyebrow{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);opacity:.75}
+.title{font-family:'DM Serif Display',serif;font-size:28px;color:var(--chalk);line-height:1.1}
+.subtitle{font-size:13px;color:var(--chalk2)}
 
 /* ── STATUS BAR SPACER ── */
-.safe-top{height:env(safe-area-inset-top,44px);flex-shrink:0;background:var(–ink)}
+.safe-top{height:env(safe-area-inset-top,44px);flex-shrink:0;background:var(--ink)}
 .safe-bot{height:calc(env(safe-area-inset-bottom,20px) + 8px);flex-shrink:0}
 
 /* ── HEADER ── */
 .hdr{padding:12px max(18px, calc((100% - 680px) / 2)) 14px;flex-shrink:0}
 .hdr-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-.back-btn{background:none;border:none;color:var(–gold);font-family:‘DM Sans’,sans-serif;font-size:13px;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px}
-.back-btn::before{content:‘←’;font-size:15px}
+.back-btn{background:none;border:none;color:var(--gold);font-family:'DM Sans',sans-serif;font-size:13px;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px}
+.back-btn::before{content:'←';font-size:15px}
 
 /* ── CARDS ── */
-.card{background:var(–ink2);border:1px solid var(–border);border-radius:var(–r);padding:16px}
+.card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);padding:16px}
 .card+.card,.card+.section-gap{margin-top:10px}
 .section-gap{height:10px}
 .section{padding:0 18px}
 
 /* ── BUTTONS ── */
-.btn{border:none;border-radius:var(–rs);padding:15px 20px;font-family:‘DM Sans’,sans-serif;font-size:15px;font-weight:500;cursor:pointer;width:100%;transition:opacity .15s,transform .1s}
+.btn{border:none;border-radius:var(--rs);padding:15px 20px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;width:100%;transition:opacity .15s,transform .1s}
 .btn:active{opacity:.8;transform:scale(.99)}
-.btn-gold{background:var(–gold);color:var(–ink)}
-.btn-outline{background:transparent;color:var(–chalk);border:1px solid var(–border);font-weight:400}
-.btn-danger{background:transparent;color:var(–red);border:1px solid rgba(201,64,64,.25)}
+.btn-gold{background:var(--gold);color:var(--ink)}
+.btn-outline{background:transparent;color:var(--chalk);border:1px solid var(--border);font-weight:400}
+.btn-danger{background:transparent;color:var(--red);border:1px solid rgba(201,64,64,.25)}
 .btn-sm{padding:10px 16px;font-size:13px;width:auto}
 
 /* ── TOGGLE GROUP ── */
 .tgl-group{display:flex;gap:7px}
-.tgl{flex:1;background:var(–ink3);border:1px solid var(–border);border-radius:var(–rs);padding:11px 6px;font-family:‘DM Sans’,sans-serif;font-size:13px;color:var(–chalk2);cursor:pointer;text-align:center;transition:all .15s;white-space:nowrap}
-.tgl.on{background:var(–gold);color:var(–ink);border-color:var(–gold);font-weight:600}
+.tgl{flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:11px 6px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--chalk2);cursor:pointer;text-align:center;transition:all .15s;white-space:nowrap}
+.tgl.on{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:600}
 .tgl:active{opacity:.7}
 
 /* ── GRID LABEL (Option D) ── */
-.grid-lbl{font-size:10px;letter-spacing:2px;color:var(–gold);font-weight:700;text-transform:uppercase;background:rgba(200,168,75,.1);border-left:3px solid var(–gold);border-radius:0 6px 6px 0;padding:5px 10px;margin-bottom:10px;display:block}
+.grid-lbl{font-size:10px;letter-spacing:2px;color:var(--gold);font-weight:700;text-transform:uppercase;background:rgba(200,168,75,.1);border-left:3px solid var(--gold);border-radius:0 6px 6px 0;padding:5px 10px;margin-bottom:10px;display:block}
 
 /* ── SMART GRID / TEE MAP BUTTONS ── */
 .sg-row{display:flex;gap:7px;margin-bottom:0}
-.sg-btn{flex:1;padding:11px 5px;border-radius:10px;border:1px solid var(–ink3);background:var(–ink3);color:var(–chalk2);font-size:13px;font-family:‘DM Sans’,sans-serif;cursor:pointer;text-align:center;line-height:1.35;font-weight:600;transition:all .15s}
+.sg-btn{flex:1;padding:11px 5px;border-radius:10px;border:1px solid var(--ink3);background:var(--ink3);color:var(--chalk2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;line-height:1.35;font-weight:600;transition:all .15s}
 .sg-btn:active{opacity:.7}
-.sg-btn.on{background:rgba(200,168,75,.18);border-color:var(–gold);color:var(–gold);font-weight:700}
-.sg-btn.on-green{background:rgba(58,107,58,.4);border-color:var(–fairway);color:#8ed88e;font-weight:700}
-.sg-btn.on-red{background:rgba(201,64,64,.2);border-color:var(–red);color:#e07070;font-weight:700}
+.sg-btn.on{background:rgba(200,168,75,.18);border-color:var(--gold);color:var(--gold);font-weight:700}
+.sg-btn.on-green{background:rgba(58,107,58,.4);border-color:var(--fairway);color:#8ed88e;font-weight:700}
+.sg-btn.on-red{background:rgba(201,64,64,.2);border-color:var(--red);color:#e07070;font-weight:700}
 .sg-3x3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.sg-cell{padding:14px 3px;border-radius:10px;border:1px solid var(–ink3);background:var(–ink3);color:var(–chalk2);font-size:12px;font-family:‘DM Sans’,sans-serif;cursor:pointer;text-align:center;line-height:1.4;font-weight:600;transition:all .15s}
+.sg-cell{padding:14px 3px;border-radius:10px;border:1px solid var(--ink3);background:var(--ink3);color:var(--chalk2);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;line-height:1.4;font-weight:600;transition:all .15s}
 .sg-cell:active{opacity:.7}
-.sg-cell.on{background:rgba(200,168,75,.18);border-color:var(–gold);color:var(–gold);font-weight:700}
-.sg-cell.on-green{background:rgba(58,107,58,.4);border-color:var(–fairway);color:#8ed88e;font-weight:700}
-.sg-cell.on-red{background:rgba(201,64,64,.2);border-color:var(–red);color:#e07070;font-weight:700}
-.sg-cell–heat{cursor:default;font-size:11px;padding:8px 3px;line-height:1.3;border-color:rgba(255,255,255,.08)}
-.sg-cell–heat:active{opacity:1}
+.sg-cell.on{background:rgba(200,168,75,.18);border-color:var(--gold);color:var(--gold);font-weight:700}
+.sg-cell.on-green{background:rgba(58,107,58,.4);border-color:var(--fairway);color:#8ed88e;font-weight:700}
+.sg-cell.on-red{background:rgba(201,64,64,.2);border-color:var(--red);color:#e07070;font-weight:700}
+.sg-cell--heat{cursor:default;font-size:11px;padding:8px 3px;line-height:1.3;border-color:rgba(255,255,255,.08)}
+.sg-cell--heat:active{opacity:1}
 .sg-arrow{font-size:17px;font-weight:800;display:block}
 .sg-divider{height:1px;background:rgba(255,255,255,.07);margin:12px 0}
 .sg-section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;margin-bottom:8px}
-.sg-hint{font-size:9px;color:var(–chalk3);text-align:center;margin-top:5px;letter-spacing:.3px}
+.sg-hint{font-size:9px;color:var(--chalk3);text-align:center;margin-top:5px;letter-spacing:.3px}
 
 /* ── 5-ZONE TEE ── */
 .zone-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:5px}
-.zone-btn{background:var(–ink3);border:1px solid var(–border);border-radius:var(–rs);padding:10px 2px;font-size:11px;color:var(–chalk2);cursor:pointer;text-align:center;transition:all .15s;line-height:1.3}
+.zone-btn{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 2px;font-size:11px;color:var(--chalk2);cursor:pointer;text-align:center;transition:all .15s;line-height:1.3}
 .zone-btn .zone-icon{font-size:16px;display:block;margin-bottom:3px}
-.zone-btn.on-lob{background:rgba(201,64,64,.35);border-color:var(–red);color:var(–red)}
+.zone-btn.on-lob{background:rgba(201,64,64,.35);border-color:var(--red);color:var(--red)}
 .zone-btn.on-lrgh{background:rgba(201,64,64,.15);border-color:rgba(201,64,64,.5);color:#e07070}
-.zone-btn.on-fair{background:rgba(58,107,58,.5);border-color:var(–fairway);color:#8ed88e}
+.zone-btn.on-fair{background:rgba(58,107,58,.5);border-color:var(--fairway);color:#8ed88e}
 .zone-btn.on-rrgh{background:rgba(201,64,64,.15);border-color:rgba(201,64,64,.5);color:#e07070}
-.zone-btn.on-rob{background:rgba(201,64,64,.35);border-color:var(–red);color:var(–red)}
+.zone-btn.on-rob{background:rgba(201,64,64,.35);border-color:var(--red);color:var(--red)}
 .zone-btn:active{opacity:.7}
 
 /* ── APPROACH GRID ── */
 .approach-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
-.appr-btn{background:var(–ink3);border:1px solid var(–border);border-radius:var(–rs);padding:11px 6px;font-size:13px;color:var(–chalk2);cursor:pointer;text-align:center;transition:all .15s}
-.appr-btn.on{background:rgba(200,168,75,.2);border-color:var(–gold);color:var(–gold);font-weight:500}
-.appr-btn.on-green{background:rgba(58,107,58,.4);border-color:var(–fairway);color:#8ed88e;font-weight:500}
+.appr-btn{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:11px 6px;font-size:13px;color:var(--chalk2);cursor:pointer;text-align:center;transition:all .15s}
+.appr-btn.on{background:rgba(200,168,75,.2);border-color:var(--gold);color:var(--gold);font-weight:500}
+.appr-btn.on-green{background:rgba(58,107,58,.4);border-color:var(--fairway);color:#8ed88e;font-weight:500}
 .appr-btn:active{opacity:.7}
 
 /* ── COUNTER ── */
-.counter{display:flex;align-items:center;background:var(–ink3);border:1px solid var(–border);border-radius:var(–rs);overflow:hidden}
-.ctr-btn{background:none;border:none;color:var(–gold);font-size:20px;padding:10px 18px;cursor:pointer;line-height:1;font-weight:300}
+.counter{display:flex;align-items:center;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);overflow:hidden}
+.ctr-btn{background:none;border:none;color:var(--gold);font-size:20px;padding:10px 18px;cursor:pointer;line-height:1;font-weight:300}
 .ctr-btn:active{background:rgba(255,255,255,.05)}
-.ctr-val{flex:1;text-align:center;font-family:‘DM Serif Display’,serif;font-size:28px;color:var(–white)}
-.ctr-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(–chalk3);margin-bottom:8px}
+.ctr-val{flex:1;text-align:center;font-family:'DM Serif Display',serif;font-size:28px;color:var(--white)}
+.ctr-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--chalk3);margin-bottom:8px}
 
 /* ── CLUB CHIPS ── */
 .club-wrap{display:flex;flex-wrap:wrap;gap:6px}
-.club{background:var(–ink3);border:1px solid var(–border);border-radius:100px;padding:7px 13px;font-size:12px;color:var(–chalk2);cursor:pointer;transition:all .15s;white-space:nowrap}
-.club.on{background:rgba(200,168,75,.2);border-color:var(–gold);color:var(–gold)}
+.club{background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:7px 13px;font-size:12px;color:var(--chalk2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.club.on{background:rgba(200,168,75,.2);border-color:var(--gold);color:var(--gold)}
 .club:active{opacity:.7}
 
 /* ── INPUT ── */
-.inp{background:var(–ink3);border:1px solid var(–border);border-radius:var(–rs);padding:13px 15px;color:var(–chalk);font-family:‘DM Sans’,sans-serif;font-size:15px;width:100%;outline:none}
-.inp:focus{border-color:var(–gold)}
-.inp::placeholder{color:var(–chalk3)}
-.inp-label{font-size:12px;color:var(–chalk2);margin-bottom:7px;display:block}
+.inp{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:13px 15px;color:var(--chalk);font-family:'DM Sans',sans-serif;font-size:15px;width:100%;outline:none}
+.inp:focus{border-color:var(--gold)}
+.inp::placeholder{color:var(--chalk3)}
+.inp-label{font-size:12px;color:var(--chalk2);margin-bottom:7px;display:block}
 .inp-grp{margin-bottom:14px}
 
 /* ── STATS ── */
 .stat-g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
 .stat-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
 .stat-g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px}
-.stat-box{background:var(–ink3);border:1px solid var(–border);border-radius:var(–rs);padding:13px 8px;text-align:center}
-.stat-n{font-family:‘DM Serif Display’,serif;font-size:30px;line-height:1;color:var(–chalk)}
+.stat-box{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:13px 8px;text-align:center}
+.stat-n{font-family:'DM Serif Display',serif;font-size:30px;line-height:1;color:var(--chalk)}
 .stat-n.sm{font-size:22px}
-.stat-l{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(–gold);opacity:.7;margin-top:4px}
+.stat-l{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-top:4px}
 
 /* ── SCORE BADGE ── */
 .sc-badge{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
-.sc-eagle{background:var(–gold);color:var(–ink)}
-.sc-birdie{background:var(–blue);color:#fff}
-.sc-par{background:transparent;border:1px solid var(–chalk3);color:var(–chalk2)}
-.sc-bogey{background:rgba(201,64,64,.2);border:1px solid var(–red);color:var(–red)}
-.sc-double{background:var(–red);color:#fff}
+.sc-eagle{background:var(--gold);color:var(--ink)}
+.sc-birdie{background:var(--blue);color:#fff}
+.sc-par{background:transparent;border:1px solid var(--chalk3);color:var(--chalk2)}
+.sc-bogey{background:rgba(201,64,64,.2);border:1px solid var(--red);color:var(--red)}
+.sc-double{background:var(--red);color:#fff}
 .sc-worse{background:#7a1010;color:#fff}
 
 /* ── SCORE COLORS ── */
 .c-under{color:#5ec85e}
-.c-over{color:var(–red)}
-.c-even{color:var(–chalk2)}
+.c-over{color:var(--red)}
+.c-even{color:var(--chalk2)}
 .c-way-over{color:#ff4444}
 
 /* ── ROUND ROW ── */
-.round-row{display:flex;align-items:center;gap:14px;padding:15px 16px;background:var(–ink2);border:1px solid var(–border);border-radius:var(–r);cursor:pointer;transition:background .15s;margin-bottom:8px}
-.round-row:active{background:var(–ink3)}
+.round-row{display:flex;align-items:center;gap:14px;padding:15px 16px;background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:background .15s;margin-bottom:8px}
+.round-row:active{background:var(--ink3)}
 .rr-info{flex:1;min-width:0}
-.rr-course{font-size:15px;font-weight:500;color:var(–chalk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rr-meta{font-size:11px;color:var(–chalk3);margin-top:3px}
+.rr-course{font-size:15px;font-weight:500;color:var(--chalk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rr-meta{font-size:11px;color:var(--chalk3);margin-top:3px}
 .rr-score{text-align:right;flex-shrink:0}
-.rr-num{font-family:‘DM Serif Display’,serif;font-size:26px;color:var(–chalk);line-height:1}
+.rr-num{font-family:'DM Serif Display',serif;font-size:26px;color:var(--chalk);line-height:1}
 .rr-rel{font-size:12px;margin-top:1px}
 
 /* ── TABS ── */
-.tab-bar{display:flex;border-bottom:1px solid var(–border);flex-shrink:0;padding:0 max(0px, calc((100% - 680px) / 2))}
-.tab{flex:1;padding:13px;text-align:center;font-size:13px;color:var(–chalk3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
-.tab.on{color:var(–gold);border-bottom-color:var(–gold)}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 max(0px, calc((100% - 680px) / 2))}
+.tab{flex:1;padding:13px;text-align:center;font-size:13px;color:var(--chalk3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab.on{color:var(--gold);border-bottom-color:var(--gold)}
 
 /* ── BAR ── */
 .bar-row{margin-bottom:10px}
 .bar-hd{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
-.bar-bg{height:7px;background:var(–ink3);border-radius:4px;overflow:hidden}
-.bar-fill{height:100%;background:var(–gold);border-radius:4px;transition:width .5s}
+.bar-bg{height:7px;background:var(--ink3);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;background:var(--gold);border-radius:4px;transition:width .5s}
 
 /* ── SCORECARD TABLE ── */
 .sc-table{width:100%;border-collapse:collapse;font-size:12px}
-.sc-table th{padding:7px 4px;text-align:center;color:var(–gold);font-weight:500;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(–border)}
-.sc-table td{padding:7px 4px;text-align:center;color:var(–chalk);border-bottom:1px solid rgba(255,255,255,.04)}
-.sc-table .tot td{color:var(–gold);font-weight:600;border-top:1px solid var(–border);border-bottom:none}
-.sc-table .section-lbl td{text-align:left;padding-top:10px;font-size:10px;letter-spacing:2px;color:var(–gold);opacity:.6}
+.sc-table th{padding:7px 4px;text-align:center;color:var(--gold);font-weight:500;font-size:10px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.sc-table td{padding:7px 4px;text-align:center;color:var(--chalk);border-bottom:1px solid rgba(255,255,255,.04)}
+.sc-table .tot td{color:var(--gold);font-weight:600;border-top:1px solid var(--border);border-bottom:none}
+.sc-table .section-lbl td{text-align:left;padding-top:10px;font-size:10px;letter-spacing:2px;color:var(--gold);opacity:.6}
 
 /* ── HOLE HEADER ── */
-.hole-hdr{flex-shrink:0;background:var(–ink2);border-top:2px solid var(–gold);border-bottom:1px solid var(–border)}
+.hole-hdr{flex-shrink:0;background:var(--ink2);border-top:2px solid var(--gold);border-bottom:1px solid var(--border)}
 .hole-top{display:flex;align-items:stretch;justify-content:space-between;padding:10px max(18px, calc((100% - 680px) / 2)) 6px}
 .hole-num-wrap{text-align:left;min-width:80px;flex:1;display:flex;flex-direction:column;justify-content:center}
-.hole-num-eye{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(–sky);opacity:.8}
-.hole-num-val{font-family:‘DM Serif Display’,serif;font-size:22px;color:var(–chalk);line-height:1}
-.hdr-live-val{font-family:‘DM Serif Display’,serif;font-size:42px;line-height:1}
-.hdr-live-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(–chalk3);margin-top:2px}
+.hole-num-eye{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--sky);opacity:.8}
+.hole-num-val{font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk);line-height:1}
+.hdr-live-val{font-family:'DM Serif Display',serif;font-size:42px;line-height:1}
+.hdr-live-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--chalk3);margin-top:2px}
 .hole-par-wrap{text-align:center;display:flex;align-items:center;justify-content:center}
-.par-circle{width:54px;height:54px;border-radius:50%;border:1.5px solid var(–gold);display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(200,168,75,.08)}
-.par-circle-num{font-family:‘DM Serif Display’,serif;font-size:22px;color:var(–gold);line-height:1}
-.par-circle-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(–gold);opacity:.6}
+.par-circle{width:54px;height:54px;border-radius:50%;border:1.5px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(200,168,75,.08)}
+.par-circle-num{font-family:'DM Serif Display',serif;font-size:22px;color:var(--gold);line-height:1}
+.par-circle-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6}
 .hole-right{text-align:right;flex:1;display:flex;flex-direction:column;justify-content:center}
-.thru-lbl{font-size:10px;color:var(–chalk3)}
-.thru-val{font-family:‘DM Serif Display’,serif;font-size:24px;color:var(–chalk);line-height:1}
+.thru-lbl{font-size:10px;color:var(--chalk3)}
+.thru-val{font-family:'DM Serif Display',serif;font-size:24px;color:var(--chalk);line-height:1}
 .thru-rel{font-size:12px;margin-top:1px}
-.hole-yardage{font-size:11px;color:var(–chalk3);padding:0 18px 6px;text-align:center;letter-spacing:1px}
+.hole-yardage{font-size:11px;color:var(--chalk3);padding:0 18px 6px;text-align:center;letter-spacing:1px}
 
 /* ── PROGRESS DOTS ── */
 .progress-bar{display:flex;gap:4px;padding:6px max(18px, calc((100% - 680px) / 2)) 8px;overflow-x:auto;flex-shrink:0}
 .progress-bar::-webkit-scrollbar{display:none}
-.p-dot{width:22px;height:22px;border-radius:50%;background:var(–ink3);border:1px solid var(–border2);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(–chalk3);flex-shrink:0;cursor:pointer;transition:all .2s}
-.p-dot.cur{border-color:var(–gold);background:rgba(200,168,75,.15);color:var(–gold);font-weight:600}
-.p-dot.done{background:var(–ink3);border-color:var(–fairway)}
-.p-dot.done-over{border-color:var(–red)}
+.p-dot{width:22px;height:22px;border-radius:50%;background:var(--ink3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--chalk3);flex-shrink:0;cursor:pointer;transition:all .2s}
+.p-dot.cur{border-color:var(--gold);background:rgba(200,168,75,.15);color:var(--gold);font-weight:600}
+.p-dot.done{background:var(--ink3);border-color:var(--fairway)}
+.p-dot.done-over{border-color:var(--red)}
 
 /* ── SWIPE AREA ── */
 .swipe-area{flex:1;overflow:hidden;position:relative}
@@ -227,92 +226,92 @@ body{display:flex;flex-direction:column}
 .swipe-page{flex-shrink:0;width:100%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 max(18px, calc((100% - 680px) / 2)) 100px;box-sizing:border-box}
 
 /* ── STICKY BOTTOM ── */
-.sticky-bot{padding:12px max(18px, calc((100% - 680px) / 2));background:linear-gradient(to top,var(–ink) 70%,transparent);position:sticky;bottom:0;flex-shrink:0}
+.sticky-bot{padding:12px max(18px, calc((100% - 680px) / 2));background:linear-gradient(to top,var(--ink) 70%,transparent);position:sticky;bottom:0;flex-shrink:0}
 .nav-row{display:flex;gap:8px}
-.nav-prev{background:var(–ink2);border:1px solid var(–border);border-radius:var(–rs);padding:15px 18px;font-size:18px;cursor:pointer;color:var(–chalk2);transition:opacity .15s;flex-shrink:0}
+.nav-prev{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:15px 18px;font-size:18px;cursor:pointer;color:var(--chalk2);transition:opacity .15s;flex-shrink:0}
 .nav-prev:disabled{opacity:.3}
 .nav-prev:active{opacity:.7}
 
 /* ── HOME ── */
 .home-hero{padding:50px 18px 24px;text-align:center}
-.home-logo{font-family:‘DM Serif Display’,serif;font-size:56px;color:var(–gold);line-height:1}
-.home-tagline{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(–chalk2);margin-top:6px;opacity:.5}
-.home-rule{width:36px;height:1px;background:var(–gold);margin:20px auto;opacity:.35}
+.home-logo{font-family:'DM Serif Display',serif;font-size:56px;color:var(--gold);line-height:1}
+.home-tagline{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--chalk2);margin-top:6px;opacity:.5}
+.home-rule{width:36px;height:1px;background:var(--gold);margin:20px auto;opacity:.35}
 
 /* ── COURSE PICKER ── */
-.course-card{background:var(–ink2);border:1px solid var(–border);border-radius:var(–r);padding:15px 16px;cursor:pointer;transition:all .15s;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
-.course-card.selected{border-color:var(–gold);background:rgba(200,168,75,.08)}
+.course-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);padding:15px 16px;cursor:pointer;transition:all .15s;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.course-card.selected{border-color:var(--gold);background:rgba(200,168,75,.08)}
 .course-card:active{opacity:.8}
-.cc-name{font-size:15px;font-weight:500;color:var(–chalk)}
-.cc-meta{font-size:11px;color:var(–chalk3);margin-top:3px}
-.cc-check{color:var(–gold);font-size:18px;opacity:0;transition:opacity .15s}
+.cc-name{font-size:15px;font-weight:500;color:var(--chalk)}
+.cc-meta{font-size:11px;color:var(--chalk3);margin-top:3px}
+.cc-check{color:var(--gold);font-size:18px;opacity:0;transition:opacity .15s}
 .course-card.selected .cc-check{opacity:1}
 
 /* ── TEE PICKER ── */
-.tee-pill{flex:1;background:var(–ink3);border:1px solid var(–border);border-radius:var(–rs);padding:11px 8px;font-size:13px;color:var(–chalk2);cursor:pointer;text-align:center;transition:all .15s}
-.tee-pill.on{background:var(–gold);color:var(–ink);border-color:var(–gold);font-weight:600}
+.tee-pill{flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:11px 8px;font-size:13px;color:var(--chalk2);cursor:pointer;text-align:center;transition:all .15s}
+.tee-pill.on{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:600}
 
 /* ── 3PT FLAG ── */
-.three-putt-flag{display:inline-block;background:rgba(201,64,64,.2);border:1px solid rgba(201,64,64,.5);color:var(–red);border-radius:100px;padding:2px 10px;font-size:11px;font-weight:500;margin-left:8px}
+.three-putt-flag{display:inline-block;background:rgba(201,64,64,.2);border:1px solid rgba(201,64,64,.5);color:var(--red);border-radius:100px;padding:2px 10px;font-size:11px;font-weight:500;margin-left:8px}
 
 /* ── PENALTY BADGE ── */
 .penalty-badge{display:inline-block;background:rgba(255,200,0,.15);border:1px solid rgba(255,200,0,.4);color:#ffd700;border-radius:100px;padding:2px 10px;font-size:11px;font-weight:500;margin-left:8px}
 
 /* ── EMPTY ── */
-.empty{text-align:center;padding:60px 20px;color:var(–chalk3)}
+.empty{text-align:center;padding:60px 20px;color:var(--chalk3)}
 .empty-icon{font-size:44px;margin-bottom:14px;opacity:.35}
 
 /* ── SHEET ── */
 .sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:none;align-items:flex-end}
 .sheet-overlay.open{display:flex}
-.sheet{background:var(–ink2);border-radius:20px 20px 0 0;padding:24px 18px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));width:100%;border-top:1px solid var(–border)}
-.sheet h3{font-family:‘DM Serif Display’,serif;font-size:22px;color:var(–chalk);margin-bottom:8px}
-.sheet p{font-size:14px;color:var(–chalk2);margin-bottom:20px}
+.sheet{background:var(--ink2);border-radius:20px 20px 0 0;padding:24px 18px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));width:100%;border-top:1px solid var(--border)}
+.sheet h3{font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk);margin-bottom:8px}
+.sheet p{font-size:14px;color:var(--chalk2);margin-bottom:20px}
 
 /* ── COACH OVERLAY ── */
 .coach-overlay{position:fixed;inset:0;background:rgba(14,26,14,.96);z-index:200;display:none;flex-direction:column;overflow:hidden}
 .coach-overlay.open{display:flex}
-.coach-hdr{flex-shrink:0;padding:16px 18px 12px;background:var(–ink2);border-bottom:1px solid var(–border);display:flex;align-items:center;justify-content:space-between}
-.coach-hdr-title{font-family:‘DM Serif Display’,serif;font-size:20px;color:var(–chalk)}
-.coach-close{background:none;border:none;color:var(–chalk3);font-size:22px;cursor:pointer;padding:4px 8px;line-height:1}
+.coach-hdr{flex-shrink:0;padding:16px 18px 12px;background:var(--ink2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.coach-hdr-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk)}
+.coach-close{background:none;border:none;color:var(--chalk3);font-size:22px;cursor:pointer;padding:4px 8px;line-height:1}
 .coach-inner{width:100%;max-width:700px;margin:0 auto;display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
 .coach-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 18px 40px}
-.coach-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;color:var(–chalk2)}
-.coach-spinner{width:44px;height:44px;border:3px solid var(–border);border-top-color:var(–gold);border-radius:50%;animation:spin 1s linear infinite}
+.coach-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;color:var(--chalk2)}
+.coach-spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.coach-tab{flex:1;text-align:center;padding:10px 4px;font-size:13px;color:var(–chalk3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:‘DM Sans’,sans-serif}
-.coach-tab.on{color:var(–gold);border-bottom-color:var(–gold)}
+.coach-tab{flex:1;text-align:center;padding:10px 4px;font-size:13px;color:var(--chalk3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;font-family:'DM Sans',sans-serif}
+.coach-tab.on{color:var(--gold);border-bottom-color:var(--gold)}
 .coach-section{margin-bottom:20px}
-.coach-section-title{font-family:‘DM Serif Display’,serif;font-size:18px;color:var(–gold);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(–border)}
-.coach-text{font-size:14px;color:var(–chalk2);line-height:1.65;margin-bottom:10px}
+.coach-section-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.coach-text{font-size:14px;color:var(--chalk2);line-height:1.65;margin-bottom:10px}
 .coach-chart{margin-bottom:8px}
-.coach-chart-label{display:flex;justify-content:space-between;font-size:12px;color:var(–chalk2);margin-bottom:4px}
-.coach-chart-bar-bg{height:8px;background:var(–ink3);border-radius:4px;overflow:hidden}
+.coach-chart-label{display:flex;justify-content:space-between;font-size:12px;color:var(--chalk2);margin-bottom:4px}
+.coach-chart-bar-bg{height:8px;background:var(--ink3);border-radius:4px;overflow:hidden}
 .coach-chart-bar{height:100%;border-radius:4px;transition:width .6s ease}
 .coach-tag{display:inline-block;padding:4px 10px;border-radius:100px;font-size:12px;font-weight:500;margin:3px 4px 3px 0}
 .coach-tag-green{background:rgba(94,200,94,.15);border:1px solid #5ec85e;color:#5ec85e}
-.coach-tag-red{background:rgba(201,64,64,.15);border:1px solid var(–red);color:var(–red)}
-.coach-tag-gold{background:rgba(200,168,75,.15);border:1px solid var(–gold);color:var(–gold)}
-.coach-fault{background:var(–ink2);border:1px solid rgba(201,64,64,.3);border-left:3px solid var(–red);border-radius:var(–rs);padding:12px 14px;margin-bottom:10px}
-.coach-strength{background:var(–ink2);border:1px solid rgba(94,200,94,.3);border-left:3px solid #5ec85e;border-radius:var(–rs);padding:12px 14px;margin-bottom:10px}
-.coach-priority{background:var(–ink2);border:1px solid var(–border);border-left:3px solid var(–gold);border-radius:var(–rs);padding:12px 14px;margin-bottom:10px}
-.coach-card-title{font-size:13px;font-weight:600;color:var(–chalk);margin-bottom:4px}
-.coach-card-body{font-size:13px;color:var(–chalk2);line-height:1.55}
-.coach-error{text-align:center;padding:40px 20px;color:var(–chalk3)}
-.coach-hole-row{background:var(–ink2);border:1px solid var(–border);border-radius:var(–rs);margin-bottom:8px;overflow:hidden}
-.pat-block{background:var(–ink2);border:1px solid var(–border);border-radius:12px;padding:14px 16px;margin-bottom:12px}
-.pat-block-hdr{font-family:‘DM Serif Display’,serif;font-size:16px;color:var(–chalk);margin-bottom:2px;padding-bottom:8px;border-bottom:1px solid var(–border)}
+.coach-tag-red{background:rgba(201,64,64,.15);border:1px solid var(--red);color:var(--red)}
+.coach-tag-gold{background:rgba(200,168,75,.15);border:1px solid var(--gold);color:var(--gold)}
+.coach-fault{background:var(--ink2);border:1px solid rgba(201,64,64,.3);border-left:3px solid var(--red);border-radius:var(--rs);padding:12px 14px;margin-bottom:10px}
+.coach-strength{background:var(--ink2);border:1px solid rgba(94,200,94,.3);border-left:3px solid #5ec85e;border-radius:var(--rs);padding:12px 14px;margin-bottom:10px}
+.coach-priority{background:var(--ink2);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:var(--rs);padding:12px 14px;margin-bottom:10px}
+.coach-card-title{font-size:13px;font-weight:600;color:var(--chalk);margin-bottom:4px}
+.coach-card-body{font-size:13px;color:var(--chalk2);line-height:1.55}
+.coach-error{text-align:center;padding:40px 20px;color:var(--chalk3)}
+.coach-hole-row{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:8px;overflow:hidden}
+.pat-block{background:var(--ink2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.pat-block-hdr{font-family:'DM Serif Display',serif;font-size:16px;color:var(--chalk);margin-bottom:2px;padding-bottom:8px;border-bottom:1px solid var(--border)}
 .coach-hole-hdr{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer}
-.coach-hole-body{padding:0 14px 12px;display:none;border-top:1px solid var(–border)}
+.coach-hole-body{padding:0 14px 12px;display:none;border-top:1px solid var(--border)}
 .coach-hole-body.open{display:block}
-.coach-msg-user{align-self:flex-end;background:rgba(200,168,75,.15);border:1px solid rgba(200,168,75,.3);border-radius:16px 16px 4px 16px;padding:8px 12px;font-size:13px;color:var(–chalk2);max-width:85%;line-height:1.5}
-.coach-msg-coach{align-self:flex-start;background:var(–ink3);border:1px solid var(–border);border-radius:16px 16px 16px 4px;padding:8px 12px;font-size:13px;color:var(–chalk2);max-width:90%;line-height:1.5}
+.coach-msg-user{align-self:flex-end;background:rgba(200,168,75,.15);border:1px solid rgba(200,168,75,.3);border-radius:16px 16px 4px 16px;padding:8px 12px;font-size:13px;color:var(--chalk2);max-width:85%;line-height:1.5}
+.coach-msg-coach{align-self:flex-start;background:var(--ink3);border:1px solid var(--border);border-radius:16px 16px 16px 4px;padding:8px 12px;font-size:13px;color:var(--chalk2);max-width:90%;line-height:1.5}
 .coach-msg-thinking{opacity:.5;font-style:italic}
-.btn-coach{background:linear-gradient(135deg,#1a3a2a,#2a5a3a);border:1px solid var(–gold);border-radius:var(–rs);padding:15px 20px;font-family:‘DM Serif Display’,serif;font-size:16px;color:var(–gold);cursor:pointer;width:100%;transition:all .2s;letter-spacing:.5px}
+.btn-coach{background:linear-gradient(135deg,#1a3a2a,#2a5a3a);border:1px solid var(--gold);border-radius:var(--rs);padding:15px 20px;font-family:'DM Serif Display',serif;font-size:16px;color:var(--gold);cursor:pointer;width:100%;transition:all .2s;letter-spacing:.5px}
 .btn-coach:active{opacity:.8;transform:scale(.99)}
 
 /* ── DIVIDER ── */
-hr{border:none;border-top:1px solid var(–border);margin:14px 0}
+hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 
 /* ── ANIMATIONS ── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
@@ -321,93 +320,91 @@ hr{border:none;border-top:1px solid var(–border);margin:14px 0}
 /* ── APPROACH DUAL GRID ── */
 .approach-grids{display:flex;gap:10px;margin-top:2px}
 .approach-grid-wrap{flex:1}
-.approach-grid-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(–gold);opacity:.6;margin-bottom:5px;text-align:center}
+.approach-grid-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin-bottom:5px;text-align:center}
 .green-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px}
-.green-btn{background:var(–ink3);border:1px solid var(–border);border-radius:6px;padding:7px 2px;font-size:14px;font-weight:600;color:var(–chalk3);cursor:pointer;text-align:center;transition:all .15s;line-height:1.2}
+.green-btn{background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 2px;font-size:14px;font-weight:600;color:var(--chalk3);cursor:pointer;text-align:center;transition:all .15s;line-height:1.2}
 .green-btn:active{opacity:.7}
-.green-btn.on-green-zone{background:rgba(58,107,58,.5);border-color:var(–fairway);color:#8ed88e;font-weight:600}
+.green-btn.on-green-zone{background:rgba(58,107,58,.5);border-color:var(--fairway);color:#8ed88e;font-weight:600}
 .green-btn.on-miss{background:rgba(201,64,64,.2);border-color:rgba(201,64,64,.5);color:#e07070;font-weight:500}
 
-.club-picker-sticky{position:sticky;top:0;z-index:10;background:var(–ink2);border-bottom:1px solid var(–border);padding-bottom:2px;padding-left:max(18px, calc((100% - 680px) / 2));padding-right:max(18px, calc((100% - 680px) / 2))}
+.club-picker-sticky{position:sticky;top:0;z-index:10;background:var(--ink2);border-bottom:1px solid var(--border);padding-bottom:2px;padding-left:max(18px, calc((100% - 680px) / 2));padding-right:max(18px, calc((100% - 680px) / 2))}
 .penalty-btn{border-color:rgba(255,215,0,.4)!important;color:#ffd700!important}
 
 .club-picker-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.club-pick-btn{background:var(–ink3);border:1px solid var(–border);border-radius:100px;padding:7px 13px;font-size:12px;color:var(–chalk2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.club-pick-btn{background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:7px 13px;font-size:12px;color:var(--chalk2);cursor:pointer;transition:all .15s;white-space:nowrap}
 .club-pick-btn:active{opacity:.7}
 .club-pick-btn.pt{border-color:rgba(180,142,240,.5);color:#b48ef0}
 .club-pick-btn.landmark{border-color:rgba(230,165,60,.5);color:#e6a53c}
 
 /* ── SHOT BLOCKS ── */
-.shot-block{background:var(–ink2);border:1px solid var(–border);border-radius:var(–r);padding:12px 14px;margin-bottom:10px;animation:blockIn .18s ease both}
+.shot-block{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px;animation:blockIn .18s ease both}
 @keyframes blockIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .shot-block-hdr{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.shot-block-num{width:24px;height:24px;border-radius:50%;background:var(–ink3);border:1px solid var(–border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(–chalk3);flex-shrink:0}
-.shot-block-club{font-family:‘DM Serif Display’,serif;font-size:18px;color:var(–chalk);flex:1}
+.shot-block-num{width:24px;height:24px;border-radius:50%;background:var(--ink3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--chalk3);flex-shrink:0}
+.shot-block-club{font-family:'DM Serif Display',serif;font-size:18px;color:var(--chalk);flex:1}
 .shot-block-club.pt{color:#b48ef0}
 .shot-block-club.landmark{color:#e6a53c}
-.shot-block-remove{background:none;border:none;color:var(–chalk3);font-size:16px;cursor:pointer;padding:2px 4px;opacity:.5;line-height:1}
+.shot-block-remove{background:none;border:none;color:var(--chalk3);font-size:16px;cursor:pointer;padding:2px 4px;opacity:.5;line-height:1}
 .shot-block-remove:active{opacity:1}
 .attr-row{margin-bottom:10px}
 .attr-row:last-child{margin-bottom:0}
-.attr-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(–gold);opacity:.6;margin-bottom:6px}
+.attr-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.6;margin-bottom:6px}
 .attr-pills{display:flex;flex-wrap:wrap;gap:5px}
-.attr-pill{background:var(–ink3);border:1px solid var(–border);border-radius:100px;padding:6px 12px;font-size:12px;color:var(–chalk2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.attr-pill{background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:6px 12px;font-size:12px;color:var(--chalk2);cursor:pointer;transition:all .15s;white-space:nowrap}
 .attr-pill:active{opacity:.7}
 .attr-pill.on{font-weight:500}
 /* Result/Shape spectrum colors — subtle bg tint unselected, bright fill selected */
-.pill-far-minus{background:rgba(201,64,64,.25);color:var(–chalk2)}
+.pill-far-minus{background:rgba(201,64,64,.25);color:var(--chalk2)}
 .pill-far-minus.on{background:rgba(201,64,64,.6);border-color:#e05050;color:#fff;font-weight:600}
-.pill-mid-minus{background:rgba(201,64,64,.15);color:var(–chalk2)}
+.pill-mid-minus{background:rgba(201,64,64,.15);color:var(--chalk2)}
 .pill-mid-minus.on{background:rgba(201,64,64,.45);border-color:#c06060;color:#fff;font-weight:600}
-.pill-close-minus{background:rgba(201,64,64,.07);color:var(–chalk2)}
+.pill-close-minus{background:rgba(201,64,64,.07);color:var(--chalk2)}
 .pill-close-minus.on{background:rgba(201,64,64,.3);border-color:#b07070;color:#fff;font-weight:600}
-.pill-o{background:rgba(230,165,60,.08);color:var(–chalk2)}
-.pill-o.on{background:rgba(230,165,60,.35);border-color:var(–gold);color:#fff;font-weight:700}
-.pill-close-plus{background:rgba(230,140,40,.07);color:var(–chalk2)}
+.pill-o{background:rgba(230,165,60,.08);color:var(--chalk2)}
+.pill-o.on{background:rgba(230,165,60,.35);border-color:var(--gold);color:#fff;font-weight:700}
+.pill-close-plus{background:rgba(230,140,40,.07);color:var(--chalk2)}
 .pill-close-plus.on{background:rgba(230,140,40,.3);border-color:#c08040;color:#fff;font-weight:600}
-.pill-mid-plus{background:rgba(220,110,30,.15);color:var(–chalk2)}
+.pill-mid-plus{background:rgba(220,110,30,.15);color:var(--chalk2)}
 .pill-mid-plus.on{background:rgba(220,110,30,.45);border-color:#c08040;color:#fff;font-weight:600}
-.pill-far-plus{background:rgba(210,80,20,.25);color:var(–chalk2)}
+.pill-far-plus{background:rgba(210,80,20,.25);color:var(--chalk2)}
 .pill-far-plus.on{background:rgba(210,80,20,.6);border-color:#e07030;color:#fff;font-weight:600}
 /* Type colors */
-.pill-tee.on{background:rgba(106,176,232,.15);border-color:var(–sky);color:var(–sky)}
-.pill-approach.on{background:rgba(200,168,75,.15);border-color:var(–gold);color:var(–gold)}
+.pill-tee.on{background:rgba(106,176,232,.15);border-color:var(--sky);color:var(--sky)}
+.pill-approach.on{background:rgba(200,168,75,.15);border-color:var(--gold);color:var(--gold)}
 .pill-putt.on{background:rgba(180,142,240,.15);border-color:#b48ef0;color:#b48ef0}
 .pill-chip.on,.pill-pitch.on{background:rgba(106,176,232,.1);border-color:#6ab0e8;color:#6ab0e8}
-.pill-flub.on,.pill-penalty.on{background:rgba(201,64,64,.15);border-color:var(–red);color:var(–red)}
-.pill-generic.on{background:rgba(200,168,75,.1);border-color:var(–gold);color:var(–gold)}
+.pill-flub.on,.pill-penalty.on{background:rgba(201,64,64,.15);border-color:var(--red);color:var(--red)}
+.pill-generic.on{background:rgba(200,168,75,.1);border-color:var(--gold);color:var(--gold)}
 /* Contact */
-.pill-contact-bad.on{background:rgba(201,64,64,.15);border-color:var(–red);color:var(–red)}
+.pill-contact-bad.on{background:rgba(201,64,64,.15);border-color:var(--red);color:var(--red)}
 /* Approach result */
-.pill-ongreen.on{background:rgba(58,107,58,.35);border-color:var(–fairway);color:#8ed88e}
+.pill-ongreen.on{background:rgba(58,107,58,.35);border-color:var(--fairway);color:#8ed88e}
 /* Disabled */
 .attr-pill:disabled,.attr-pill[disabled]{opacity:.25;cursor:not-allowed}
 /* Penalty block */
 .shot-block-penalty{border-color:rgba(255,215,0,.2);background:rgba(255,215,0,.04)}
 .penalty-note{font-size:11px;color:#ffd700;opacity:.6;padding:4px 0;font-style:italic}
 /* Empty state */
-.shots-empty{text-align:center;padding:24px 0;color:var(–chalk3);font-size:13px;opacity:.5;font-style:italic}
+.shots-empty{text-align:center;padding:24px 0;color:var(--chalk3);font-size:13px;opacity:.5;font-style:italic}
 @keyframes chipIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
 
 /* ── PIN GRID ── */
 
 /* ── INLINE EDIT COURSE ── */
 .par-row{display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
-.par-cell{flex-shrink:0;background:var(–ink3);border:1px solid var(–border);border-radius:8px;width:34px;text-align:center;padding:6px 0}
-.par-cell-num{font-size:9px;color:var(–chalk3)}
-.par-cell select{background:transparent;border:none;color:var(–gold);font-size:15px;font-weight:600;width:100%;text-align:center;outline:none;cursor:pointer;appearance:none;font-family:‘DM Sans’,sans-serif;-webkit-appearance:none}
+.par-cell{flex-shrink:0;background:var(--ink3);border:1px solid var(--border);border-radius:8px;width:34px;text-align:center;padding:6px 0}
+.par-cell-num{font-size:9px;color:var(--chalk3)}
+.par-cell select{background:transparent;border:none;color:var(--gold);font-size:15px;font-weight:600;width:100%;text-align:center;outline:none;cursor:pointer;appearance:none;font-family:'DM Sans',sans-serif;-webkit-appearance:none}
 .yrd-row{display:flex;gap:5px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}
-.yrd-input{flex-shrink:0;width:38px;background:var(–ink3);border:1px solid var(–border);border-radius:8px;color:var(–chalk);font-size:12px;text-align:center;padding:5px 2px;outline:none;font-family:‘DM Sans’,sans-serif}
-.yrd-input:focus{border-color:var(–gold)}
+.yrd-input{flex-shrink:0;width:38px;background:var(--ink3);border:1px solid var(--border);border-radius:8px;color:var(--chalk);font-size:12px;text-align:center;padding:5px 2px;outline:none;font-family:'DM Sans',sans-serif}
+.yrd-input:focus{border-color:var(--gold)}
 </style>
-
 </head>
 <body>
 <div id="app">
 <div class="safe-top"></div>
 
 <!-- ═══════════════ HOME ═══════════════ -->
-
 <div class="view active" id="view-home">
   <div class="home-hero">
     <div class="home-logo">⛳ PJ Caddie</div>
@@ -439,7 +436,6 @@ hr{border:none;border-top:1px solid var(–border);margin:14px 0}
 </div>
 
 <!-- ═══════════════ IMPORT OVERLAY ═══════════════ -->
-
 <div id="import-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:200;align-items:center;justify-content:center;padding:24px">
   <div style="background:var(--ink2);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:360px">
     <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk);margin-bottom:6px">Import Rounds</div>
@@ -454,7 +450,6 @@ hr{border:none;border-top:1px solid var(–border);margin:14px 0}
 </div>
 
 <!-- ═══════════════ COURSE HUB ═══════════════ -->
-
 <div class="view" id="view-coursehub">
   <div class="hdr">
     <div class="hdr-row">
@@ -467,7 +462,6 @@ hr{border:none;border-top:1px solid var(–border);margin:14px 0}
 </div>
 
 <!-- ═══════════════ SETTINGS ═══════════════ -->
-
 <div class="view" id="view-settings">
   <div class="hdr">
     <button class="back-btn" onclick="showView('home')">Home</button>
@@ -483,49 +477,45 @@ hr{border:none;border-top:1px solid var(–border);margin:14px 0}
     <button onclick="saveAntKey()" class="btn btn-gold" style="margin-bottom:20px">Save API Key</button>
     <div id="ant-key-status" style="font-size:12px;min-height:16px;margin-top:-14px;margin-bottom:16px;color:var(--chalk3)"></div>
 
-```
-<div style="height:1px;background:var(--border);margin-bottom:24px"></div>
-<div class="eyebrow" style="margin-bottom:12px">GitHub Sync</div>
-<div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:16px">Sync rounds automatically to a private GitHub repo. Rounds merge by ID — no data is ever overwritten.</div>
+    <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+    <div class="eyebrow" style="margin-bottom:12px">GitHub Sync</div>
+    <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:16px">Sync rounds automatically to a private GitHub repo. Rounds merge by ID — no data is ever overwritten.</div>
 
-<div class="inp-grp">
-  <label class="inp-label">GitHub Username</label>
-  <input class="inp" id="gh-owner" type="text" placeholder="e.g. phenomjones" autocapitalize="none" autocorrect="off">
-</div>
-<div class="inp-grp">
-  <label class="inp-label">Private Data Repo</label>
-  <input class="inp" id="gh-repo" type="text" placeholder="e.g. pjcaddie-data" autocapitalize="none" autocorrect="off">
-</div>
-<div class="inp-grp">
-  <label class="inp-label">Personal Access Token</label>
-  <input class="inp" id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxx" autocapitalize="none" autocorrect="off">
-  <div style="font-size:10px;color:var(--chalk3);margin-top:4px;opacity:.7">GitHub → Settings → Developer Settings → Personal Access Tokens → Fine-grained → Contents: Read & Write</div>
-</div>
+    <div class="inp-grp">
+      <label class="inp-label">GitHub Username</label>
+      <input class="inp" id="gh-owner" type="text" placeholder="e.g. phenomjones" autocapitalize="none" autocorrect="off">
+    </div>
+    <div class="inp-grp">
+      <label class="inp-label">Private Data Repo</label>
+      <input class="inp" id="gh-repo" type="text" placeholder="e.g. pjcaddie-data" autocapitalize="none" autocorrect="off">
+    </div>
+    <div class="inp-grp">
+      <label class="inp-label">Personal Access Token</label>
+      <input class="inp" id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxx" autocapitalize="none" autocorrect="off">
+      <div style="font-size:10px;color:var(--chalk3);margin-top:4px;opacity:.7">GitHub → Settings → Developer Settings → Personal Access Tokens → Fine-grained → Contents: Read & Write</div>
+    </div>
 
-<div id="settings-status" style="font-size:12px;min-height:18px;margin:10px 0;color:var(--chalk3)"></div>
-<div id="sync-log" style="font-size:11px;color:var(--chalk3);opacity:.6;margin-bottom:8px;min-height:14px"></div>
+    <div id="settings-status" style="font-size:12px;min-height:18px;margin:10px 0;color:var(--chalk3)"></div>
+    <div id="sync-log" style="font-size:11px;color:var(--chalk3);opacity:.6;margin-bottom:8px;min-height:14px"></div>
 
-<button onclick="saveGHSettings()" class="btn btn-gold" style="margin-bottom:10px">Save & Test Connection</button>
-<button onclick="manualSync()" class="btn btn-outline" style="margin-bottom:10px">↺ Sync Now</button>
-<div id="dev-tap-zone" onclick="devTap()" style="height:12px;cursor:default;margin-bottom:6px" title=""></div>
-<div id="debug-out" style="font-size:10px;color:var(--chalk3);font-family:monospace;background:rgba(0,0,0,.3);border-radius:8px;padding:8px;display:none;word-break:break-all;margin-bottom:8px"></div>
-<button onclick="clearGHSettings()" style="width:100%;background:none;border:none;font-size:12px;color:rgba(201,64,64,.6);cursor:pointer;padding:8px;font-family:'DM Sans',sans-serif">Clear GitHub Settings</button>
+    <button onclick="saveGHSettings()" class="btn btn-gold" style="margin-bottom:10px">Save & Test Connection</button>
+    <button onclick="manualSync()" class="btn btn-outline" style="margin-bottom:10px">↺ Sync Now</button>
+    <div id="dev-tap-zone" onclick="devTap()" style="height:12px;cursor:default;margin-bottom:6px" title=""></div>
+    <div id="debug-out" style="font-size:10px;color:var(--chalk3);font-family:monospace;background:rgba(0,0,0,.3);border-radius:8px;padding:8px;display:none;word-break:break-all;margin-bottom:8px"></div>
+    <button onclick="clearGHSettings()" style="width:100%;background:none;border:none;font-size:12px;color:rgba(201,64,64,.6);cursor:pointer;padding:8px;font-family:'DM Sans',sans-serif">Clear GitHub Settings</button>
 
 
-<!-- PLAYER CARD -->
-<div style="height:1px;background:var(--border);margin:24px 0"></div>
-<div class="eyebrow" style="margin-bottom:12px">My Game Notes</div>
-<div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Tell Byron about your game — club gapping, tendencies, physical limitations, goals. This is included in every Byron Analysis.</div>
-<textarea id="player-notes" style="width:100%;min-height:160px;background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="e.g. Club gapping: Driver 220, 3W 195, 5W 180, 4H 165, 5i 158, 6i 150, 7i 140, 8i 130, 9i 118, PW 105, GW 90&#10;&#10;Tendencies: slice with driver under pressure, tend to chunk chips when nervous&#10;&#10;Goals: break 90, improve course management" oninput="savePlayerNotes()"></textarea>
-<div style="height:1px;background:var(--border);margin:24px 0"></div>
-<div style="font-size:12px;color:var(--chalk3);line-height:1.6">Course notes and hole-by-hole strategy are managed in the 🏌️ Course Hub.</div>
-```
-
+    <!-- PLAYER CARD -->
+    <div style="height:1px;background:var(--border);margin:24px 0"></div>
+    <div class="eyebrow" style="margin-bottom:12px">My Game Notes</div>
+    <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Tell Byron about your game — club gapping, tendencies, physical limitations, goals. This is included in every Byron Analysis.</div>
+    <textarea id="player-notes" style="width:100%;min-height:160px;background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="e.g. Club gapping: Driver 220, 3W 195, 5W 180, 4H 165, 5i 158, 6i 150, 7i 140, 8i 130, 9i 118, PW 105, GW 90&#10;&#10;Tendencies: slice with driver under pressure, tend to chunk chips when nervous&#10;&#10;Goals: break 90, improve course management" oninput="savePlayerNotes()"></textarea>
+    <div style="height:1px;background:var(--border);margin:24px 0"></div>
+    <div style="font-size:12px;color:var(--chalk3);line-height:1.6">Course notes and hole-by-hole strategy are managed in the 🏌️ Course Hub.</div>
   </div>
 </div>
 
 <!-- ═══════════════ SETUP ═══════════════ -->
-
 <div class="view" id="view-setup">
   <div class="safe-top" style="display:none"></div>
   <div class="hdr">
@@ -534,65 +524,61 @@ hr{border:none;border-top:1px solid var(–border);margin:14px 0}
   </div>
   <div class="scroll-body pad pad-b">
 
-```
-<!-- Date -->
-<div class="inp-grp">
-  <label class="inp-label">Date</label>
-  <input class="inp" id="setup-date" type="date">
-</div>
+    <!-- Date -->
+    <div class="inp-grp">
+      <label class="inp-label">Date</label>
+      <input class="inp" id="setup-date" type="date">
+    </div>
 
-<!-- Course picker -->
-<div class="eyebrow" style="margin-bottom:10px">Course</div>
-<div id="course-list"></div>
-<button class="btn btn-outline btn-sm" style="margin-bottom:18px" onclick="showAddCourse()">＋ Add Course</button>
+    <!-- Course picker -->
+    <div class="eyebrow" style="margin-bottom:10px">Course</div>
+    <div id="course-list"></div>
+    <button class="btn btn-outline btn-sm" style="margin-bottom:18px" onclick="showAddCourse()">＋ Add Course</button>
 
-<!-- Tee picker (shown after course selected) -->
-<div id="tee-section" style="display:none">
-  <div class="eyebrow" style="margin-bottom:10px">Tees</div>
-  <div class="tgl-group" id="tee-picker" style="margin-bottom:18px"></div>
-</div>
+    <!-- Tee picker (shown after course selected) -->
+    <div id="tee-section" style="display:none">
+      <div class="eyebrow" style="margin-bottom:10px">Tees</div>
+      <div class="tgl-group" id="tee-picker" style="margin-bottom:18px"></div>
+    </div>
 
-<!-- Holes -->
-<div class="eyebrow" style="margin-bottom:10px">Holes</div>
-<div class="tgl-group" style="margin-bottom:18px">
-  <button class="tgl on" id="h18" onclick="setHoles(18)">18 Holes</button>
-  <button class="tgl" id="h9" onclick="setHoles(9)">9 Holes</button>
-</div>
+    <!-- Holes -->
+    <div class="eyebrow" style="margin-bottom:10px">Holes</div>
+    <div class="tgl-group" style="margin-bottom:18px">
+      <button class="tgl on" id="h18" onclick="setHoles(18)">18 Holes</button>
+      <button class="tgl" id="h9" onclick="setHoles(9)">9 Holes</button>
+    </div>
 
-<button class="btn btn-gold" onclick="startRound()">Begin Round →</button>
+    <button class="btn btn-gold" onclick="startRound()">Begin Round →</button>
 
-<!-- Add / Edit Course Panel -->
-<div id="add-course-panel" style="display:none;margin-top:20px">
-  <hr>
-  <div class="eyebrow" style="margin-bottom:12px">Add / Edit Course</div>
-  <div class="inp-grp">
-    <label class="inp-label">Course Name</label>
-    <input class="inp" id="ac-name" type="text" placeholder="e.g. Augusta National">
-  </div>
-  <div class="inp-grp">
-    <label class="inp-label">Tee Name</label>
-    <input class="inp" id="ac-tee" type="text" placeholder="e.g. Blue">
-  </div>
-  <div class="inp-grp">
-    <label class="inp-label">Par — hole 1→18 (tap to change 3/4/5)</label>
-    <div class="par-row" id="ac-par-row"></div>
-  </div>
-  <div class="inp-grp">
-    <label class="inp-label">Yardage — hole 1→18</label>
-    <div class="yrd-row" id="ac-yrd-row"></div>
-  </div>
-  <div style="display:flex;gap:8px;margin-top:4px">
-    <button class="btn btn-gold" onclick="saveAddedCourse()" style="flex:1">Save Tee</button>
-    <button class="btn btn-outline btn-sm" onclick="hideAddCourse()">Cancel</button>
-  </div>
-</div>
-```
-
+    <!-- Add / Edit Course Panel -->
+    <div id="add-course-panel" style="display:none;margin-top:20px">
+      <hr>
+      <div class="eyebrow" style="margin-bottom:12px">Add / Edit Course</div>
+      <div class="inp-grp">
+        <label class="inp-label">Course Name</label>
+        <input class="inp" id="ac-name" type="text" placeholder="e.g. Augusta National">
+      </div>
+      <div class="inp-grp">
+        <label class="inp-label">Tee Name</label>
+        <input class="inp" id="ac-tee" type="text" placeholder="e.g. Blue">
+      </div>
+      <div class="inp-grp">
+        <label class="inp-label">Par — hole 1→18 (tap to change 3/4/5)</label>
+        <div class="par-row" id="ac-par-row"></div>
+      </div>
+      <div class="inp-grp">
+        <label class="inp-label">Yardage — hole 1→18</label>
+        <div class="yrd-row" id="ac-yrd-row"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-gold" onclick="saveAddedCourse()" style="flex:1">Save Tee</button>
+        <button class="btn btn-outline btn-sm" onclick="hideAddCourse()">Cancel</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- ═══════════════ BAG SELECTION ═══════════════ -->
-
 <div class="view" id="view-bag">
   <div class="hdr">
     <div class="eyebrow">What's in your bag?</div>
@@ -608,7 +594,6 @@ hr{border:none;border-top:1px solid var(–border);margin:14px 0}
 </div>
 
 <!-- ═══════════════ SCORING ═══════════════ -->
-
 <div class="view" id="view-scoring">
   <div class="hole-hdr">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 18px 0">
@@ -657,7 +642,6 @@ hr{border:none;border-top:1px solid var(–border);margin:14px 0}
 </div>
 
 <!-- ═══════════════ SUMMARY ═══════════════ -->
-
 <div class="view" id="view-summary">
   <div class="hdr">
     <div class="eyebrow" id="sum-eyebrow">Round Complete</div>
@@ -688,7 +672,6 @@ hr{border:none;border-top:1px solid var(–border);margin:14px 0}
 </div>
 
 <!-- ═══════════════ HISTORY ═══════════════ -->
-
 <div class="view" id="view-history">
   <div class="hdr">
     <button class="back-btn" onclick="showView('home')">Home</button>
@@ -700,7 +683,6 @@ hr{border:none;border-top:1px solid var(–border);margin:14px 0}
 </div>
 
 <!-- ═══════════════ DETAIL ═══════════════ -->
-
 <div class="view" id="view-detail">
   <div class="hdr">
     <button class="back-btn" onclick="showView('history')">History</button>
@@ -729,7 +711,6 @@ hr{border:none;border-top:1px solid var(–border);margin:14px 0}
 </div><!-- /app -->
 
 <!-- ═══════════════ COACH OVERLAY ═══════════════ -->
-
 <div class="coach-overlay" id="coach-overlay">
   <div class="coach-hdr">
     <div class="coach-hdr-title">🎓 Byron Analysis</div>
@@ -780,7 +761,6 @@ hr{border:none;border-top:1px solid var(–border);margin:14px 0}
 </div>
 
 <!-- COURSE GEAR: Course Notes Modal -->
-
 <div class="sheet-overlay" id="course-notes-modal" style="display:none;align-items:flex-end" onclick="if(event.target===this)closeCourseNotes()">
   <div class="sheet" style="border-radius:20px 20px 0 0;padding:20px 20px 32px;max-height:85vh;display:flex;flex-direction:column">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
@@ -4032,210 +4012,207 @@ function renderCourseHub() {
         <div style="font-size:10px;letter-spacing:1px;color:var(--gold);opacity:.7;margin-bottom:8px">COURSE NOTES</div>
         <div style="font-size:11px;color:var(--chalk3);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-size:10px">Overall</div>
         <textarea id="${cid}-notes" oninput="saveCourseHubNote('${notesKey}','${cid}')" style="width:100%;background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:15px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:vertical;min-height:90px;box-sizing:border-box;line-height:1.7" placeholder="General strategy, green complexes, weather tendencies…">${savedNotes}</textarea>
-
-```
-    <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--chalk3);margin-top:12px;margin-bottom:6px">Per Hole</div>
-    <div id="${cid}-holenotes">
-      ${(()=>{
-        // Robust lookup: try course registry first, fall back to round data
-        const course = getCourses().find(c=>c.id===courseRounds[0]?.courseId) || getCourses().find(c=>c.name===name);
-        const par = course ? course.tees[0].par : (courseRounds[0]?.pars || []);
-        const yds = course ? course.tees[0].yds : (courseRounds[0]?.yds || []);
-        const courseId = courseRounds[0]?.courseId || name.replace(/\s+/g,'_');
-        if (!par.length) return '<div style="font-size:12px;color:var(--chalk3)">No hole data found for this course.</div>';
-        return par.map((p,i)=>{
-          const h = i+1;
-          const hkey  = 'caddie_hole_notes_' + courseId + '_' + h;
-          const gkey  = 'caddie_hole_green_notes_' + courseId + '_' + h;
-          const hval  = (localStorage.getItem(hkey)  || '').replace(/</g,'&lt;');
-          const gval  = (localStorage.getItem(gkey)  || '').replace(/</g,'&lt;');
-          const hasNote = hval.trim().length > 0 || gval.trim().length > 0;
-          return '<details style="background:var(--ink3);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;overflow:hidden"' + (hasNote?' open':'') + '>' +
-            '<summary style="padding:10px 14px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px">' +
-              '<span style="color:var(--gold);font-weight:700;font-size:12px;width:22px">H'+h+'</span>' +
-              '<span style="color:var(--chalk3);font-size:12px">Par '+p+' · '+yds[i]+' yds</span>' +
-              (hasNote ? '<span style="margin-left:auto;font-size:10px;color:#5ec85e">✓</span>' : '<span style="margin-left:auto;font-size:10px;color:var(--chalk3)">+ add</span>') +
-            '</summary>' +
-            '<div style="padding:0 14px 12px;display:flex;flex-direction:column;gap:10px">' +
-              '<div>' +
-                '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:5px">Hole Notes</div>' +
-                '<textarea data-hkey="'+hkey+'" oninput="saveHubHoleNote(this)" style="width:100%;min-height:65px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:\'DM Sans\',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Aim point, trouble, smart miss, layup target…">'+hval+'</textarea>' +
-              '</div>' +
-              '<div>' +
-                '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:5px">Green Notes</div>' +
-                '<textarea data-hkey="'+gkey+'" oninput="saveHubHoleNote(this)" style="width:100%;min-height:65px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:\'DM Sans\',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Slope, break, false fronts, pin tendencies…">'+gval+'</textarea>' +
-              '</div>' +
-            '</div>' +
-          '</details>';
-        }).join('');
-      })()}
-    </div>
-  </div>
-</div>`;
-```
-
-}).join(’’);
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--chalk3);margin-top:12px;margin-bottom:6px">Per Hole</div>
+        <div id="${cid}-holenotes">
+          ${(()=>{
+            // Robust lookup: try course registry first, fall back to round data
+            const course = getCourses().find(c=>c.id===courseRounds[0]?.courseId) || getCourses().find(c=>c.name===name);
+            const par = course ? course.tees[0].par : (courseRounds[0]?.pars || []);
+            const yds = course ? course.tees[0].yds : (courseRounds[0]?.yds || []);
+            const courseId = courseRounds[0]?.courseId || name.replace(/\s+/g,'_');
+            if (!par.length) return '<div style="font-size:12px;color:var(--chalk3)">No hole data found for this course.</div>';
+            return par.map((p,i)=>{
+              const h = i+1;
+              const hkey  = 'caddie_hole_notes_' + courseId + '_' + h;
+              const gkey  = 'caddie_hole_green_notes_' + courseId + '_' + h;
+              const hval  = (localStorage.getItem(hkey)  || '').replace(/</g,'&lt;');
+              const gval  = (localStorage.getItem(gkey)  || '').replace(/</g,'&lt;');
+              const hasNote = hval.trim().length > 0 || gval.trim().length > 0;
+              return '<details style="background:var(--ink3);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;overflow:hidden"' + (hasNote?' open':'') + '>' +
+                '<summary style="padding:10px 14px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px">' +
+                  '<span style="color:var(--gold);font-weight:700;font-size:12px;width:22px">H'+h+'</span>' +
+                  '<span style="color:var(--chalk3);font-size:12px">Par '+p+' · '+yds[i]+' yds</span>' +
+                  (hasNote ? '<span style="margin-left:auto;font-size:10px;color:#5ec85e">✓</span>' : '<span style="margin-left:auto;font-size:10px;color:var(--chalk3)">+ add</span>') +
+                '</summary>' +
+                '<div style="padding:0 14px 12px;display:flex;flex-direction:column;gap:10px">' +
+                  '<div>' +
+                    '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:5px">Hole Notes</div>' +
+                    '<textarea data-hkey="'+hkey+'" oninput="saveHubHoleNote(this)" style="width:100%;min-height:65px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:\'DM Sans\',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Aim point, trouble, smart miss, layup target…">'+hval+'</textarea>' +
+                  '</div>' +
+                  '<div>' +
+                    '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:5px">Green Notes</div>' +
+                    '<textarea data-hkey="'+gkey+'" oninput="saveHubHoleNote(this)" style="width:100%;min-height:65px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:\'DM Sans\',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Slope, break, false fronts, pin tendencies…">'+gval+'</textarea>' +
+                  '</div>' +
+                '</div>' +
+              '</details>';
+            }).join('');
+          })()}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function saveCourseHubNote(key, cid) {
-const ta = document.getElementById(cid + ‘-notes’);
-if (ta) {
-if (ta.value.trim()) localStorage.setItem(key, ta.value);
-else localStorage.removeItem(key);
-flashHubSaved(cid);
-}
+  const ta = document.getElementById(cid + '-notes');
+  if (ta) {
+    if (ta.value.trim()) localStorage.setItem(key, ta.value);
+    else localStorage.removeItem(key);
+    flashHubSaved(cid);
+  }
 }
 function saveHubHoleNote(ta) {
-const key = ta.dataset.hkey;
-if (!key) return;
-if (ta.value.trim()) localStorage.setItem(key, ta.value);
-else localStorage.removeItem(key);
+  const key = ta.dataset.hkey;
+  if (!key) return;
+  if (ta.value.trim()) localStorage.setItem(key, ta.value);
+  else localStorage.removeItem(key);
 }
 function flashHubSaved(cid) {
-// no-op visual — auto-save is silent in hub
+  // no-op visual — auto-save is silent in hub
 }
+
 
 // ── BAIL OUT: abandon round in progress ──
 function bailOut() {
-if (!confirm(‘Abandon this round? All data for this round will be deleted.\n\nThis cannot be undone.’)) return;
-saveWIP(null);
-S.currentRound = null;
-showView(‘home’);
-renderHome();
+  if (!confirm('Abandon this round? All data for this round will be deleted.\n\nThis cannot be undone.')) return;
+  saveWIP(null);
+  S.currentRound = null;
+  showView('home');
+  renderHome();
 }
 
 async function savePause() {
-const round = S.currentRound;
-if (!round) return;
-saveWIP(round);
-if (!ghConfigured() || !navigator.onLine) {
-alert(‘Round saved locally. Connect to internet and configure GitHub sync to resume on another device.’);
-showView(‘home’);
-return;
-}
-try {
-const { sha } = await ghGetWIP();
-await ghPutWIP({ …round, _wip: true, _paused: new Date().toISOString() }, sha);
-setSyncStatus(‘⏸ Round paused — resume on any device’, ‘ok’);
-showView(‘home’);
-setTimeout(() => setSyncStatus(’’, ‘’), 4000);
-} catch(e) {
-alert(`Saved locally but GitHub sync failed: ${e.message}`);
-showView(‘home’);
-}
+  const round = S.currentRound;
+  if (!round) return;
+  saveWIP(round);
+  if (!ghConfigured() || !navigator.onLine) {
+    alert('Round saved locally. Connect to internet and configure GitHub sync to resume on another device.');
+    showView('home');
+    return;
+  }
+  try {
+    const { sha } = await ghGetWIP();
+    await ghPutWIP({ ...round, _wip: true, _paused: new Date().toISOString() }, sha);
+    setSyncStatus('⏸ Round paused — resume on any device', 'ok');
+    showView('home');
+    setTimeout(() => setSyncStatus('', ''), 4000);
+  } catch(e) {
+    alert(`Saved locally but GitHub sync failed: ${e.message}`);
+    showView('home');
+  }
 }
 
 async function checkRemoteWIP() {
-if (!ghConfigured() || !navigator.onLine) return;
-try {
-const { wip, sha } = await ghGetWIP();
-if (!wip) return;
-// If local WIP exists for same round, only show banner if remote is newer
-const localWip = getInProgress();
-if (localWip && localWip.id === wip.id) {
-const localTs  = localWip._paused ? new Date(localWip._paused).getTime() : 0;
-const remoteTs = wip._paused      ? new Date(wip._paused).getTime()      : 0;
-if (remoteTs <= localTs) return; // local is same age or newer — ignore remote
-}
-// Show banner offering to resume
-const bar = document.getElementById(‘sync-status-bar’);
-if (!bar) return;
-bar.style.display = ‘block’;
-bar.style.background = ‘rgba(200,168,75,.1)’;
-bar.style.border = ‘1px solid rgba(200,168,75,.3)’;
-bar.style.color = ‘var(–gold)’;
-const course = (wip.courseName || ‘Unknown course’).replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’);
-const hole = (wip.scores||[]).length + 1;
-const paused = wip._paused ? new Date(wip._paused).toLocaleDateString(‘en-US’,{month:‘short’,day:‘numeric’,hour:‘numeric’,minute:‘2-digit’}) : ‘’;
-bar.innerHTML = `⏸ Paused round: ${course} — Hole ${hole}${paused?' · '+paused:''} &nbsp; <button onclick="resumeRemoteWIP('${sha}')" style="background:rgba(200,168,75,.2);border:1px solid var(--gold);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif">Resume</button> <button onclick="dismissRemoteWIP()" style="background:none;border:none;font-size:11px;color:var(--chalk3);cursor:pointer;margin-left:4px">✕</button>`;
-} catch(e) { /* silent fail */ }
+  if (!ghConfigured() || !navigator.onLine) return;
+  try {
+    const { wip, sha } = await ghGetWIP();
+    if (!wip) return;
+    // If local WIP exists for same round, only show banner if remote is newer
+    const localWip = getInProgress();
+    if (localWip && localWip.id === wip.id) {
+      const localTs  = localWip._paused ? new Date(localWip._paused).getTime() : 0;
+      const remoteTs = wip._paused      ? new Date(wip._paused).getTime()      : 0;
+      if (remoteTs <= localTs) return; // local is same age or newer — ignore remote
+    }
+    // Show banner offering to resume
+    const bar = document.getElementById('sync-status-bar');
+    if (!bar) return;
+    bar.style.display = 'block';
+    bar.style.background = 'rgba(200,168,75,.1)';
+    bar.style.border = '1px solid rgba(200,168,75,.3)';
+    bar.style.color = 'var(--gold)';
+    const course = (wip.courseName || 'Unknown course').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const hole = (wip.scores||[]).length + 1;
+    const paused = wip._paused ? new Date(wip._paused).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+    bar.innerHTML = `⏸ Paused round: ${course} — Hole ${hole}${paused?' · '+paused:''} &nbsp; <button onclick="resumeRemoteWIP('${sha}')" style="background:rgba(200,168,75,.2);border:1px solid var(--gold);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif">Resume</button> <button onclick="dismissRemoteWIP()" style="background:none;border:none;font-size:11px;color:var(--chalk3);cursor:pointer;margin-left:4px">✕</button>`;
+  } catch(e) { /* silent fail */ }
 }
 
 async function resumeRemoteWIP(sha) {
-if (!ghConfigured() || !navigator.onLine) return;
-try {
-const { wip } = await ghGetWIP();
-if (!wip) return;
-saveWIP(wip);
-await ghClearWIP(sha);
-setSyncStatus(’’, ‘’);
-resumeRound();
-} catch(e) {
-alert(`Could not resume: ${e.message}`);
-}
+  if (!ghConfigured() || !navigator.onLine) return;
+  try {
+    const { wip } = await ghGetWIP();
+    if (!wip) return;
+    saveWIP(wip);
+    await ghClearWIP(sha);
+    setSyncStatus('', '');
+    resumeRound();
+  } catch(e) {
+    alert(`Could not resume: ${e.message}`);
+  }
 }
 
 function dismissRemoteWIP() {
-setSyncStatus(’’, ‘’);
+  setSyncStatus('', '');
 }
 
 // ═══════════════════════════════════════════════════════════════
 // EXPORT / IMPORT
 // ═══════════════════════════════════════════════════════════════
 function exportRounds() {
-const rounds = getRounds();
-if (!rounds.length) { alert(‘No rounds to export yet.’); return; }
-const json = JSON.stringify({caddie_export: true, version: 1, exported: new Date().toISOString(), rounds}, null, 2);
-const blob = new Blob([json], {type: ‘application/json’});
-const url = URL.createObjectURL(blob);
-const a = document.createElement(‘a’);
-a.href = url;
-a.download = `caddie-rounds-${new Date().toISOString().slice(0,10)}.json`;
-a.click();
-URL.revokeObjectURL(url);
+  const rounds = getRounds();
+  if (!rounds.length) { alert('No rounds to export yet.'); return; }
+  const json = JSON.stringify({caddie_export: true, version: 1, exported: new Date().toISOString(), rounds}, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `caddie-rounds-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function showImport() {
-const el = document.getElementById(‘import-overlay’);
-el.style.display = ‘flex’;
-document.getElementById(‘import-text’).value = ‘’;
-document.getElementById(‘import-status’).textContent = ‘’;
+  const el = document.getElementById('import-overlay');
+  el.style.display = 'flex';
+  document.getElementById('import-text').value = '';
+  document.getElementById('import-status').textContent = '';
 }
 
 function closeImport() {
-document.getElementById(‘import-overlay’).style.display = ‘none’;
+  document.getElementById('import-overlay').style.display = 'none';
 }
 
 function doImport() {
-const text = document.getElementById(‘import-text’).value.trim();
-const statusEl = document.getElementById(‘import-status’);
-if (!text) { statusEl.style.color=‘var(–red)’; statusEl.textContent = ‘Nothing to import.’; return; }
-let parsed;
-try { parsed = JSON.parse(text); } catch(e) { statusEl.style.color=‘var(–red)’; statusEl.textContent = ‘Invalid JSON — check your paste.’; return; }
-const incoming = parsed.rounds || (Array.isArray(parsed) ? parsed : null);
-if (!incoming) { statusEl.style.color=‘var(–red)’; statusEl.textContent = ‘No rounds found in this data.’; return; }
-const existing = getRounds();
-const existingIds = new Set(existing.map(r=>r.id));
-const newRounds = incoming.filter(r => r.id && !existingIds.has(r.id));
-const skipped = incoming.length - newRounds.length;
-const merged = […existing, …newRounds];
-localStorage.setItem(‘caddie_rounds’, JSON.stringify(merged));
-statusEl.style.color = ‘#5ec85e’;
-statusEl.textContent = `✓ Imported ${newRounds.length} round${newRounds.length!==1?'s':''}${skipped?' · '+skipped+' skipped (already exist)':''}`;
-renderHome();
-setTimeout(closeImport, 1800);
+  const text = document.getElementById('import-text').value.trim();
+  const statusEl = document.getElementById('import-status');
+  if (!text) { statusEl.style.color='var(--red)'; statusEl.textContent = 'Nothing to import.'; return; }
+  let parsed;
+  try { parsed = JSON.parse(text); } catch(e) { statusEl.style.color='var(--red)'; statusEl.textContent = 'Invalid JSON — check your paste.'; return; }
+  const incoming = parsed.rounds || (Array.isArray(parsed) ? parsed : null);
+  if (!incoming) { statusEl.style.color='var(--red)'; statusEl.textContent = 'No rounds found in this data.'; return; }
+  const existing = getRounds();
+  const existingIds = new Set(existing.map(r=>r.id));
+  const newRounds = incoming.filter(r => r.id && !existingIds.has(r.id));
+  const skipped = incoming.length - newRounds.length;
+  const merged = [...existing, ...newRounds];
+  localStorage.setItem('caddie_rounds', JSON.stringify(merged));
+  statusEl.style.color = '#5ec85e';
+  statusEl.textContent = `✓ Imported ${newRounds.length} round${newRounds.length!==1?'s':''}${skipped?' · '+skipped+' skipped (already exist)':''}`;
+  renderHome();
+  setTimeout(closeImport, 1800);
 }
 
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
 
-// KEY FIX: Migrate old ‘caddieRounds’ key to ‘caddie_rounds’
+// KEY FIX: Migrate old 'caddieRounds' key to 'caddie_rounds'
 (function migrateStorageKey() {
-try {
-const old = localStorage.getItem(‘caddieRounds’);
-if (old) {
-const oldRounds = JSON.parse(old);
-if (Array.isArray(oldRounds) && oldRounds.length) {
-const current = JSON.parse(localStorage.getItem(‘caddie_rounds’) || ‘[]’);
-const map = {};
-[…oldRounds, …current].forEach(r => { if (r && r.id) map[r.id] = r; });
-localStorage.setItem(‘caddie_rounds’, JSON.stringify(Object.values(map)));
-console.log(`Migrated ${oldRounds.length} rounds from caddieRounds to caddie_rounds`);
-}
-localStorage.removeItem(‘caddieRounds’);
-}
-} catch(e) { console.error(‘Migration error:’, e); }
+  try {
+    const old = localStorage.getItem('caddieRounds');
+    if (old) {
+      const oldRounds = JSON.parse(old);
+      if (Array.isArray(oldRounds) && oldRounds.length) {
+        const current = JSON.parse(localStorage.getItem('caddie_rounds') || '[]');
+        const map = {};
+        [...oldRounds, ...current].forEach(r => { if (r && r.id) map[r.id] = r; });
+        localStorage.setItem('caddie_rounds', JSON.stringify(Object.values(map)));
+        console.log(`Migrated ${oldRounds.length} rounds from caddieRounds to caddie_rounds`);
+      }
+      localStorage.removeItem('caddieRounds');
+    }
+  } catch(e) { console.error('Migration error:', e); }
 })();
 renderHome();
 // VAULT GUARD: sync immediately on load to protect data
@@ -4243,6 +4220,5 @@ syncWithGitHub(true);
 // HALF TIME: check for paused round on any device
 checkRemoteWIP();
 </script>
-
 </body>
 </html>
