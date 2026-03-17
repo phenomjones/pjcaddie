@@ -409,67 +409,75 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 .cf-chip-rm{font-size:10px;color:rgba(200,168,75,.5);cursor:pointer;padding:0 2px}
 .cf-empty{font-size:11px;color:var(--chalk3);font-style:italic}
 .cf-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:10px}
-.cf-btn{background:var(--ink3);border:1px solid var(--border);border-radius:9px;padding:10px 3px;font-size:13px;color:var(--chalk2);text-align:center;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .1s}
+@media(min-width:600px){.cf-grid{grid-template-columns:repeat(8,1fr)}}
+@media(min-width:900px){.cf-grid{grid-template-columns:repeat(10,1fr)}}
+.cf-btn{background:var(--ink3);border:1px solid var(--border);border-radius:9px;padding:clamp(8px,2vw,14px) 3px;font-size:clamp(12px,1.8vw,15px);color:var(--chalk2);text-align:center;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .1s}
 .cf-btn:active{background:rgba(200,168,75,.2);border-color:var(--gold)}
-.cf-done{width:100%;background:rgba(200,168,75,.15);border:1px solid var(--gold);border-radius:10px;padding:13px;font-size:15px;color:var(--gold);font-family:'DM Serif Display',serif;cursor:pointer;margin-top:4px}
+.cf-done{width:100%;background:rgba(200,168,75,.15);border:1px solid var(--gold);border-radius:10px;padding:clamp(11px,2vw,16px);font-size:clamp(14px,1.8vw,17px);color:var(--gold);font-family:'DM Serif Display',serif;cursor:pointer;margin-top:4px}
 .cf-done:disabled{opacity:.25;cursor:default}
 /* Phase 1.5 overlay */
-.cf-overlay{display:none;position:fixed;inset:0;z-index:500;background:var(--ink);flex-direction:column}
+.cf-overlay{display:none;position:fixed;inset:0;z-index:500;background:var(--ink);flex-direction:column;align-items:center}
 .cf-overlay.open{display:flex}
-.cf-ov-hdr{background:var(--ink2);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.cf-ov-title{font-size:13px;font-weight:600;color:var(--chalk)}
-.cf-ov-body{flex:1;overflow-y:auto;padding:10px 14px 20px}
-.cf-rev-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
-.cf-rev-num{font-size:10px;color:var(--chalk3);width:16px;flex-shrink:0;text-align:right}
-.cf-rev-club{font-size:14px;font-weight:500;color:var(--chalk);width:52px;flex-shrink:0}
-.cf-rev-chip{border-radius:100px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:4px;border:1px solid}
+.cf-ov-inner{display:flex;flex-direction:column;width:100%;max-width:680px;height:100%;flex:1;overflow:hidden}
+.cf-ov-hdr{background:var(--ink2);border-bottom:1px solid var(--border);padding:clamp(10px,2vw,16px) clamp(14px,3vw,24px);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;width:100%}
+.cf-ov-title{font-size:clamp(13px,1.8vw,16px);font-weight:600;color:var(--chalk)}
+.cf-ov-body{flex:1;overflow-y:auto;padding:clamp(8px,2vw,16px) clamp(14px,3vw,28px) 20px}
+.cf-rev-row{display:flex;align-items:center;gap:8px;padding:clamp(8px,1.5vw,12px) 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.cf-rev-num{font-size:clamp(10px,1.4vw,13px);color:var(--chalk3);width:20px;flex-shrink:0;text-align:right}
+.cf-rev-club{font-size:clamp(13px,1.8vw,17px);font-weight:500;color:var(--chalk);width:62px;flex-shrink:0}
+.cf-rev-chip{border-radius:100px;padding:clamp(4px,1vw,8px) clamp(10px,1.5vw,16px);font-size:clamp(11px,1.4vw,14px);cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:4px;border:1px solid}
 .cf-rev-chip.certain{background:rgba(94,200,94,.1);border-color:rgba(94,200,94,.4);color:#5ec85e;cursor:default}
 .cf-rev-chip.green{background:rgba(94,200,94,.08);border-color:rgba(94,200,94,.35);color:#5ec85e}
 .cf-rev-chip.amber{background:rgba(200,168,75,.1);border-color:rgba(200,168,75,.4);color:var(--gold)}
 .cf-rev-chip.red{background:rgba(200,64,64,.1);border-color:rgba(200,64,64,.4);color:#e07070}
 .cf-legend{display:flex;gap:10px;padding:6px 0 10px;flex-wrap:wrap}
-.cf-leg{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--chalk3)}
+.cf-leg{display:flex;align-items:center;gap:4px;font-size:clamp(10px,1.3vw,12px);color:var(--chalk3)}
 .cf-leg-dot{width:7px;height:7px;border-radius:50%}
-.cf-ov-foot{padding:10px 14px;background:var(--ink2);border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+.cf-ov-foot{padding:clamp(8px,2vw,14px) clamp(14px,3vw,24px);background:var(--ink2);border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;width:100%}
 /* Type picker modal */
 .cf-type-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:600;align-items:flex-end;justify-content:center}
 .cf-type-overlay.open{display:flex}
-.cf-type-modal{background:var(--ink2);border:1px solid rgba(200,168,75,.3);border-radius:16px 16px 0 0;padding:16px 14px 28px;width:100%;max-width:420px}
+.cf-type-modal{background:var(--ink2);border:1px solid rgba(200,168,75,.3);border-radius:16px 16px 0 0;padding:16px 14px 28px;width:100%;max-width:520px}
 .cf-type-title{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--chalk3);margin-bottom:12px;text-align:center}
 .cf-type-opts{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
-.cf-tmo{background:var(--ink3);border:1px solid var(--border);border-radius:9px;padding:10px 16px;font-size:13px;color:var(--chalk2);cursor:pointer;font-family:'DM Sans',sans-serif}
+.cf-tmo{background:var(--ink3);border:1px solid var(--border);border-radius:9px;padding:10px 16px;font-size:clamp(13px,1.6vw,16px);color:var(--chalk2);cursor:pointer;font-family:'DM Sans',sans-serif}
 .cf-tmo.cur{background:rgba(200,168,75,.15);border-color:var(--gold);color:var(--gold)}
 .cf-cancel{display:block;width:100%;margin-top:12px;background:var(--ink3);border:1px solid var(--border);border-radius:9px;padding:11px;font-size:13px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif;text-align:center}
 /* Phase 2 popup */
-.cf-p2{display:none;position:fixed;inset:0;z-index:500;background:var(--ink);flex-direction:column}
+.cf-p2{display:none;position:fixed;inset:0;z-index:500;background:var(--ink);flex-direction:column;align-items:center}
 .cf-p2.open{display:flex}
-.cf-prog-wrap{background:var(--ink2);border-bottom:1px solid var(--border);padding:8px 14px;flex-shrink:0}
-.cf-prog-track{background:rgba(255,255,255,.07);border-radius:2px;height:3px}
+.cf-p2-inner{display:flex;flex-direction:column;width:100%;max-width:680px;height:100%;flex:1;overflow:hidden}
+.cf-prog-wrap{background:var(--ink2);border-bottom:1px solid var(--border);padding:clamp(6px,1.5vw,12px) clamp(14px,3vw,28px);flex-shrink:0}
+.cf-prog-track{background:rgba(255,255,255,.07);border-radius:2px;height:4px}
 .cf-prog-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .35s}
-.cf-prog-lbl{font-size:10px;color:var(--chalk3);margin-top:4px}
-.cf-cip{text-align:center;padding:14px 12px 4px;flex-shrink:0}
-.cf-cip-club{font-size:24px;font-weight:600;color:var(--chalk)}
-.cf-cip-type{display:inline-block;margin-top:4px;font-size:11px;background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:3px 10px;color:var(--chalk3)}
-.cf-pop-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 14px 14px}
-.cf-popup{background:var(--ink2);border:1px solid rgba(200,168,75,.3);border-radius:14px;padding:18px 14px 12px;width:100%;max-width:360px;animation:pop .15s ease-out}
+.cf-prog-lbl{font-size:clamp(10px,1.3vw,13px);color:var(--chalk3);margin-top:5px}
+.cf-pop-area{flex:1;display:flex;flex-direction:column;align-items:stretch;justify-content:center;padding:clamp(12px,3vw,32px) clamp(14px,4vw,40px)}
+/* Popup card — fills space, no fixed max-width */
+.cf-popup{background:var(--ink2);border:1px solid rgba(200,168,75,.3);border-radius:clamp(12px,2vw,18px);padding:clamp(20px,3vw,36px) clamp(18px,3vw,36px) clamp(16px,2.5vw,28px);width:100%;animation:pop .15s ease-out;display:flex;flex-direction:column;gap:clamp(14px,2.5vw,24px)}
 @keyframes pop{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
-.cf-pq{font-size:16px;color:var(--chalk);font-weight:500;margin-bottom:14px;text-align:center;line-height:1.4}
-.cf-opts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.cf-opt{background:var(--ink3);border:1px solid var(--border);border-radius:9px;padding:10px 13px;font-size:13px;color:var(--chalk2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:transform .08s;min-width:64px;text-align:center}
-.cf-opt:active{transform:scale(.95)}
+/* CIP inside card */
+.cf-card-cip{text-align:center;padding-bottom:clamp(10px,2vw,18px);border-bottom:1px solid rgba(255,255,255,.07)}
+.cf-cip-club{font-size:clamp(22px,4vw,42px);font-weight:600;color:var(--chalk);line-height:1.1}
+.cf-cip-type{display:inline-block;margin-top:5px;font-size:clamp(11px,1.4vw,15px);background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:4px 14px;color:var(--chalk3)}
+.cf-pq{font-size:clamp(16px,2.5vw,26px);color:var(--chalk);font-weight:500;text-align:center;line-height:1.4}
+/* Vertical stacked buttons (default for simple choices) */
+.cf-opts{display:flex;flex-direction:column;gap:clamp(8px,1.5vw,14px)}
+.cf-opt{background:var(--ink3);border:1px solid var(--border);border-radius:clamp(9px,1.5vw,14px);padding:clamp(13px,2.5vw,22px) clamp(16px,3vw,28px);font-size:clamp(14px,2vw,20px);color:var(--chalk2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:transform .08s;width:100%;text-align:center}
+.cf-opt:active{transform:scale(.98)}
 .cf-opt.def{background:rgba(94,200,94,.12);border-color:#5ec85e;color:#5ec85e}
 .cf-opt.g{border-color:rgba(94,200,94,.3);color:#5ec85e}
 .cf-opt.r{border-color:rgba(200,64,64,.3);color:#e07070}
 .cf-opt.s{border-color:rgba(106,176,232,.3);color:var(--sky)}
-.cf-g3{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;width:100%}
-.cf-gc{background:var(--ink3);border:1px solid var(--border);border-radius:8px;padding:10px 3px;font-size:11px;color:var(--chalk2);cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;transition:transform .08s;line-height:1.3}
+/* Horizontal grid for spatial questions — tee landed, green zone */
+.cf-g3{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(5px,1vw,10px);width:100%}
+.cf-gc{background:var(--ink3);border:1px solid var(--border);border-radius:clamp(8px,1.2vw,12px);padding:clamp(12px,2vw,20px) 3px;font-size:clamp(11px,1.5vw,16px);color:var(--chalk2);cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;transition:transform .08s;line-height:1.35}
 .cf-gc:active{transform:scale(.95)}
 .cf-gc.g{border-color:rgba(94,200,94,.3);color:#5ec85e}
 .cf-gc.r{border-color:rgba(200,64,64,.3);color:#e07070}
 .cf-gc.o{border-color:rgba(200,168,75,.3);color:var(--gold)}
-.cf-phint{font-size:10px;color:var(--chalk3);text-align:center;margin-top:6px;opacity:.7}
-.cf-pfoot{display:flex;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06)}
-.cf-pbk,.cf-pskip{background:none;border:none;font-size:11px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif;padding:3px 0;text-decoration:underline;text-underline-offset:3px}
+.cf-phint{font-size:clamp(10px,1.3vw,13px);color:var(--chalk3);text-align:center;margin-top:6px;opacity:.7}
+.cf-pfoot{display:flex;justify-content:space-between;padding-top:clamp(8px,1.5vw,14px);border-top:1px solid rgba(255,255,255,.06);margin-top:auto}
+.cf-pbk,.cf-pskip{background:none;border:none;font-size:clamp(11px,1.4vw,15px);color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
 /* Phase 3 — shot log */
 .cf-log-row{display:flex;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.06)}
 .cf-log-club{background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.3);border-radius:6px;padding:3px 7px;font-size:12px;color:var(--gold);flex-shrink:0;min-width:44px;text-align:center;height:fit-content;margin-top:1px}
@@ -489,40 +497,40 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 <!-- ═══════════════ CLUB FIRST OVERLAYS ═══════════════ -->
 <!-- Phase 1.5 — Review & confirm types -->
 <div class="cf-overlay" id="cf-review-overlay">
-  <div class="cf-ov-hdr">
-    <div class="cf-ov-title" id="cf-rev-title">Confirm Shot Types</div>
-    <div id="cf-rev-hdr-r" style="font-size:11px;color:var(--chalk3)"></div>
-  </div>
-  <div class="cf-ov-body" id="cf-rev-body">
-    <div class="cf-legend">
-      <span class="cf-leg"><span class="cf-leg-dot" style="background:#5ec85e"></span>Certain</span>
-      <span class="cf-leg"><span class="cf-leg-dot" style="background:#5ec85e;opacity:.5"></span>Confident — tap to change</span>
-      <span class="cf-leg"><span class="cf-leg-dot" style="background:var(--gold)"></span>Inferred — tap to change</span>
-      <span class="cf-leg"><span class="cf-leg-dot" style="background:#e07070"></span>Needs input</span>
+  <div class="cf-ov-inner">
+    <div class="cf-ov-hdr">
+      <div class="cf-ov-title" id="cf-rev-title">Confirm Shot Types</div>
+      <div id="cf-rev-hdr-r" style="font-size:11px;color:var(--chalk3)"></div>
     </div>
-    <div id="cf-rev-list"></div>
-  </div>
-  <div class="cf-ov-foot">
-    <button class="cf-done" style="flex:none;background:var(--ink3);border-color:var(--border);color:var(--chalk3);font-family:'DM Sans',sans-serif;font-size:13px;padding:13px 16px;width:auto" onclick="cfBackToClubs()">← Clubs</button>
-    <button class="cf-done" id="cf-start-btn" onclick="cfStartPopups()">Start entering details →</button>
+    <div class="cf-ov-body" id="cf-rev-body">
+      <div class="cf-legend">
+        <span class="cf-leg"><span class="cf-leg-dot" style="background:#5ec85e"></span>Certain</span>
+        <span class="cf-leg"><span class="cf-leg-dot" style="background:#5ec85e;opacity:.5"></span>Confident — tap to change</span>
+        <span class="cf-leg"><span class="cf-leg-dot" style="background:var(--gold)"></span>Inferred — tap to change</span>
+        <span class="cf-leg"><span class="cf-leg-dot" style="background:#e07070"></span>Needs input</span>
+      </div>
+      <div id="cf-rev-list"></div>
+    </div>
+    <div class="cf-ov-foot">
+      <button class="cf-done" style="flex:none;background:var(--ink3);border-color:var(--border);color:var(--chalk3);font-family:'DM Sans',sans-serif;font-size:13px;padding:13px 16px;width:auto" onclick="cfBackToClubs()">← Clubs</button>
+      <button class="cf-done" id="cf-start-btn" onclick="cfStartPopups()">Start entering details →</button>
+    </div>
   </div>
 </div>
 
 <!-- Phase 2 — Rapid popups -->
 <div class="cf-p2" id="cf-p2">
-  <div class="cf-ov-hdr">
-    <button class="cf-pbk" style="text-decoration:none;font-size:13px;color:var(--gold)" onclick="cfExitToPhase1()">← Exit</button>
-    <div id="cf-p2-hdr-r" style="font-size:11px;color:var(--chalk3)"></div>
+  <div class="cf-p2-inner">
+    <div class="cf-ov-hdr">
+      <button class="cf-pbk" style="text-decoration:none;font-size:clamp(12px,1.6vw,15px);color:var(--gold)" onclick="cfExitToPhase1()">← Exit</button>
+      <div id="cf-p2-hdr-r" style="font-size:clamp(11px,1.4vw,14px);color:var(--chalk3)"></div>
+    </div>
+    <div class="cf-prog-wrap">
+      <div class="cf-prog-track"><div class="cf-prog-fill" id="cf-prog" style="width:0%"></div></div>
+      <div class="cf-prog-lbl" id="cf-prog-lbl"></div>
+    </div>
+    <div class="cf-pop-area" id="cf-pop-area"></div>
   </div>
-  <div class="cf-prog-wrap">
-    <div class="cf-prog-track"><div class="cf-prog-fill" id="cf-prog" style="width:0%"></div></div>
-    <div class="cf-prog-lbl" id="cf-prog-lbl"></div>
-  </div>
-  <div class="cf-cip">
-    <div class="cf-cip-club" id="cf-cip-club">—</div>
-    <div class="cf-cip-type" id="cf-cip-type">—</div>
-  </div>
-  <div class="cf-pop-area" id="cf-pop-area"></div>
 </div>
 
 <!-- Type picker modal -->
@@ -540,7 +548,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.0.2 · Mar 17, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.0.3 · Mar 17, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -1871,7 +1879,7 @@ function cfGetQs(sh, par) {
   ];
   if(sh.type==='Recovery')return[
     {key:'gotOut',q:'Recovery — got out?',opts:[{lbl:'Yes ✓',val:'Yes',cls:'g'},{lbl:'No',val:'No',cls:'r'}]},
-    {key:'recoveryLanded',q:'Recovery — landed in?',opts:[
+    {key:'recoveryLanded',q:'Recovery — where did it finish?',opts:[
       {lbl:'Fairway',val:'fairway',cls:'g'},{lbl:'Rough ←',val:'rough-left'},{lbl:'Rough →',val:'rough-right'},
       {lbl:'OOP',val:'oop',cls:'r'},{lbl:'Short',val:'short'}
     ],skipIf:s=>s.gotOut!=='Yes'}
@@ -1888,7 +1896,7 @@ function cfGetQs(sh, par) {
   if(sh.type==='Layup')return[
     {key:'layupAimed',q:'Layup — where did you aim?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
     {key:'layupDist',q:'Layup — distance result?',opts:[{lbl:'Short',cls:'r'},{lbl:'On Target',cls:'g',def:true},{lbl:'Long',cls:'r'}]},
-    {key:'lie',q:'Layup — landed in?',opts:[{lbl:'Fairway',cls:'g'},{lbl:'Rough',cls:'r'},{lbl:'Fringe',cls:'s'},{lbl:'Sand',cls:'r'},{lbl:'Jail',cls:'r'},{lbl:'Penalty',cls:'r'}]},
+    {key:'lie',q:'Layup — where did it finish?',opts:[{lbl:'Fairway',cls:'g'},{lbl:'Rough',cls:'r'},{lbl:'Fringe',cls:'s'},{lbl:'Sand',cls:'r'},{lbl:'Jail',cls:'r'},{lbl:'Penalty',cls:'r'}]},
     {key:'layupSide',q:'Layup — which side?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]}
   ];
   if(isTeeP45)return[
@@ -1910,7 +1918,7 @@ function cfGetQs(sh, par) {
     ]},
     {key:'approachZone',q:`${pfx} — where on the green?`,grid:'zone',hint:'Back = away from you',skipIf:s=>s.approachDist!=='On'},
     {key:'approachSide',q:`${pfx} — finished which side?`,opts:[{lbl:'← Left',val:'Left',cls:'r'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right',cls:'r'}],skipIf:s=>s.approachDist==='On'||!s.approachDist},
-    {key:'lie',q:`${pfx} — landed in?`,opts:[{lbl:'Rough',cls:'r'},{lbl:'Fringe',cls:'s'},{lbl:'Sand',cls:'r'},{lbl:'Jail',cls:'r'},{lbl:'Penalty',cls:'r'}],skipIf:s=>s.approachDist==='On'||!s.approachDist}
+    {key:'lie',q:`${pfx} — where did it finish?`,opts:[{lbl:'Rough',cls:'r'},{lbl:'Fringe',cls:'s'},{lbl:'Sand',cls:'r'},{lbl:'Jail',cls:'r'},{lbl:'Penalty',cls:'r'}],skipIf:s=>s.approachDist==='On'||!s.approachDist}
   ];}
   return[];
 }
@@ -2072,8 +2080,9 @@ function cfNextQ() {
 }
 
 function cfUpdateCIP(sh, stepK, totalK) {
-  document.getElementById('cf-cip-club').textContent = sh.club+(sh.isTW?' (TW)':'');
-  document.getElementById('cf-cip-type').textContent = CF_TYPE_LBL[sh.type]||sh.type||'?';
+  // Store CIP data — will be rendered inside popup card by cfShowPopup
+  cfUpdateCIP._club = sh.club+(sh.isTW?' (TW)':'');
+  cfUpdateCIP._type = CF_TYPE_LBL[sh.type]||sh.type||'?';
   document.getElementById('cf-p2-hdr-r').textContent = `${_cfPopIdx+1}/${_cfShots.length}`;
   const par = S.currentRound.pars[_cfHoleIdx];
   const donePrev = _cfShots.slice(0,_cfPopIdx).reduce((a,s)=>{
@@ -2083,12 +2092,22 @@ function cfUpdateCIP(sh, stepK, totalK) {
   const total = _cfShots.reduce((a,s)=>{const qs=cfGetQs(s,par).filter(q=>!q.skipIf||!q.skipIf(s));return a+qs.length;},0);
   const pct = total ? Math.round((donePrev+stepK)/total*100) : 100;
   document.getElementById('cf-prog').style.width = pct+'%';
-  document.getElementById('cf-prog-lbl').textContent = `Shot ${_cfPopIdx+1} of ${_cfShots.length} · ${sh.club}`;
+  document.getElementById('cf-prog-lbl').textContent = `Shot ${_cfPopIdx+1} of ${_cfShots.length} · ${cfUpdateCIP._club}`;
 }
 
 function cfShowPopup(q) {
   const area = document.getElementById('cf-pop-area');
   const card = document.createElement('div'); card.className='cf-popup';
+
+  // CIP folded into card as header
+  const cip = document.createElement('div'); cip.className='cf-card-cip';
+  const cipClub = document.createElement('div'); cipClub.className='cf-cip-club';
+  cipClub.textContent = cfUpdateCIP._club||'—';
+  const cipType = document.createElement('div'); cipType.className='cf-cip-type';
+  cipType.textContent = cfUpdateCIP._type||'—';
+  cip.appendChild(cipClub); cip.appendChild(cipType);
+  card.appendChild(cip);
+
   const qq = document.createElement('div'); qq.className='cf-pq'; qq.textContent=q.q;
   card.appendChild(qq);
   if(q.grid==='tee'){
@@ -3744,7 +3763,7 @@ DATA REFERENCE:
 - rating: 👎 / 😐 / 👍 (player's feel rating)
 - lie: WHERE THE BALL ENDED UP after the shot (Fairway/Rough/Fringe/Green/Sand/Jail/Penalty). Jail = trees, bushes, behind obstacle — any lie requiring a punch-out or escape shot decision. Legacy data may use LR/HR (treat as Rough) or Trees (treat as Jail).
 - gotOut: Yes/No (recovery shots and sand shots)
-- recoveryLanded: where ball landed after successful recovery
+- recoveryLanded: where ball came to rest after successful recovery
 - sandGotOut: Yes/No, sandProx: Close/Medium/Far (bunker play)
 - chipProx: Tap-in/Close/Medium/Far/Bladed/Chunked. chipSide: Left/Center/Right (unused in Club First flow — omit from analysis)
 - bladedLie: Where ball ended up after a bladed chip — Fringe/Rough/AcrossGreen/Penalty. Only present when chipProx='Bladed'. Drives next shot type (Fringe→Chip, Rough→Chip, AcrossGreen→Chip, Penalty→Penalty stroke).
