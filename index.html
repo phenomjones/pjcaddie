@@ -451,17 +451,20 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 .cf-prog-track{background:rgba(255,255,255,.07);border-radius:2px;height:4px}
 .cf-prog-fill{height:100%;background:var(--gold);border-radius:2px;transition:width .35s}
 .cf-prog-lbl{font-size:clamp(10px,1.3vw,13px);color:var(--chalk3);margin-top:5px}
-.cf-pop-area{flex:1;display:flex;flex-direction:column;align-items:stretch;justify-content:center;padding:clamp(12px,3vw,32px) clamp(14px,4vw,40px)}
+.cf-pop-area{flex:1;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;padding:clamp(12px,3vw,28px) clamp(14px,4vw,40px) clamp(12px,3vw,28px)}
 /* Popup card — fills space, no fixed max-width */
 .cf-popup{background:var(--ink2);border:1px solid rgba(200,168,75,.3);border-radius:clamp(12px,2vw,18px);padding:clamp(20px,3vw,36px) clamp(18px,3vw,36px) clamp(16px,2.5vw,28px);width:100%;animation:pop .15s ease-out;display:flex;flex-direction:column;gap:clamp(14px,2.5vw,24px)}
 @keyframes pop{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
 /* CIP inside card */
 .cf-card-cip{text-align:center;padding-bottom:clamp(10px,2vw,18px);border-bottom:1px solid rgba(255,255,255,.07)}
-.cf-cip-club{font-size:clamp(22px,4vw,42px);font-weight:600;color:var(--chalk);line-height:1.1}
-.cf-cip-type{display:inline-block;margin-top:5px;font-size:clamp(11px,1.4vw,15px);background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:4px 14px;color:var(--chalk3)}
+.cf-cip-hole{font-size:clamp(11px,1.4vw,14px);letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.8;margin-bottom:4px}
+.cf-cip-club{font-size:clamp(26px,5vw,52px);font-weight:700;color:var(--chalk);line-height:1.1}
+.cf-cip-type{display:inline-block;margin-top:6px;font-size:clamp(11px,1.4vw,15px);background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:4px 14px;color:var(--chalk3)}
 .cf-pq{font-size:clamp(16px,2.5vw,26px);color:var(--chalk);font-weight:500;text-align:center;line-height:1.4}
 /* Vertical stacked buttons (default for simple choices) */
 .cf-opts{display:flex;flex-direction:column;gap:clamp(8px,1.5vw,14px)}
+/* 2-column grid variant for shape questions */
+.cf-opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.5vw,14px)}
 .cf-opt{background:var(--ink3);border:1px solid var(--border);border-radius:clamp(9px,1.5vw,14px);padding:clamp(13px,2.5vw,22px) clamp(16px,3vw,28px);font-size:clamp(14px,2vw,20px);color:var(--chalk2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:transform .08s;width:100%;text-align:center}
 .cf-opt:active{transform:scale(.98)}
 .cf-opt.def{background:rgba(94,200,94,.12);border-color:#5ec85e;color:#5ec85e}
@@ -548,7 +551,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.0.3 · Mar 17, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.0.4 · Mar 17, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -724,7 +727,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="subtitle" style="margin-top:4px">Tap to remove clubs you didn't bring</div>
   </div>
   <div class="scroll-body" style="padding:18px">
-    <div id="bag-grid" style="display:flex;flex-wrap:wrap;gap:10px;padding-bottom:12px;justify-content:center"></div>
+    <div id="bag-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(clamp(52px,8vw,80px),1fr));gap:clamp(7px,1.5vw,14px);padding-bottom:12px"></div>
     <div id="last-bag-btn-wrap" style="display:none;padding-bottom:20px;text-align:center">
       <button onclick="useLastBag()" style="background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:8px 20px;font-size:12px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif">↺ Same clubs as last round</button>
     </div>
@@ -1265,7 +1268,7 @@ function renderBagScreen() {
     const color = isPT ? '#b48ef0' : isLandmark ? '#e6a53c' : 'var(--chalk2)';
     const border = inBag ? (isPT ? 'rgba(180,142,240,.5)' : isLandmark ? 'rgba(230,165,60,.5)' : 'var(--border)') : 'rgba(255,255,255,.08)';
     const opacity = inBag ? '1' : '0.3';
-    return `<button onclick="toggleBagClub('${c}')" style="background:var(--ink3);border:1px solid ${border};border-radius:100px;padding:8px 16px;font-size:13px;color:${color};opacity:${opacity};cursor:pointer;transition:all .2s" id="bag-btn-${c}">${c}</button>`;
+    return `<button onclick="toggleBagClub('${c}')" style="background:var(--ink3);border:1px solid ${border};border-radius:100px;padding:clamp(8px,1.5vw,14px) clamp(6px,1vw,10px);font-size:clamp(12px,1.6vw,16px);color:${color};opacity:${opacity};cursor:pointer;transition:all .2s;width:100%;text-align:center" id="bag-btn-${c}">${c}</button>`;
   }).join('');
   // Show "same as last round" if a saved bag exists and differs from full CLUBS
   const lastBag = localStorage.getItem('caddie_last_bag');
@@ -1901,10 +1904,9 @@ function cfGetQs(sh, par) {
   ];
   if(isTeeP45)return[
     {key:'teeAimed',q:'Tee shot — where did you aim?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
-    {key:'teeShape',q:'Tee shot — shape?',opts:[
-      {lbl:'Draw',cls:'g'},{lbl:'Straight',cls:'g'},{lbl:'Fade',cls:'s'},
-      {lbl:'Hook',cls:'r'},{lbl:'Pull',cls:'r'},{lbl:'Push',cls:'r'},{lbl:'Slice',cls:'r'},
-      {lbl:'Fat',cls:'r'},{lbl:'Top',cls:'r'},{lbl:'Thin',cls:'r'}
+    {key:'teeShape',q:'Tee shot — shape?',grid:'shape',opts:[
+      {lbl:'← Draw',val:'Draw',cls:'g'},{lbl:'↑ Straight',val:'Straight',cls:'g'},{lbl:'Fade →',val:'Fade',cls:'s'},
+      {lbl:'←← Hook',val:'Hook',cls:'r'},{lbl:'← Pull',val:'Pull',cls:'r'},{lbl:'Push →',val:'Push',cls:'r'},{lbl:'Slice →→',val:'Slice',cls:'r'}
     ]},
     {key:'teeLanded',q:'Tee shot — where did it land?',grid:'tee'}
   ];
@@ -2083,6 +2085,7 @@ function cfUpdateCIP(sh, stepK, totalK) {
   // Store CIP data — will be rendered inside popup card by cfShowPopup
   cfUpdateCIP._club = sh.club+(sh.isTW?' (TW)':'');
   cfUpdateCIP._type = CF_TYPE_LBL[sh.type]||sh.type||'?';
+  cfUpdateCIP._hole = `Hole ${_cfHoleIdx+1}`;
   document.getElementById('cf-p2-hdr-r').textContent = `${_cfPopIdx+1}/${_cfShots.length}`;
   const par = S.currentRound.pars[_cfHoleIdx];
   const donePrev = _cfShots.slice(0,_cfPopIdx).reduce((a,s)=>{
@@ -2101,10 +2104,13 @@ function cfShowPopup(q) {
 
   // CIP folded into card as header
   const cip = document.createElement('div'); cip.className='cf-card-cip';
+  const cipHole = document.createElement('div'); cipHole.className='cf-cip-hole';
+  cipHole.textContent = cfUpdateCIP._hole||'';
   const cipClub = document.createElement('div'); cipClub.className='cf-cip-club';
   cipClub.textContent = cfUpdateCIP._club||'—';
   const cipType = document.createElement('div'); cipType.className='cf-cip-type';
   cipType.textContent = cfUpdateCIP._type||'—';
+  cip.appendChild(cipHole); cip.appendChild(cipClub); cip.appendChild(cipType);
   cip.appendChild(cipClub); cip.appendChild(cipType);
   card.appendChild(cip);
 
@@ -2124,7 +2130,8 @@ function cfShowPopup(q) {
     });card.appendChild(g);
     if(q.hint){const h=document.createElement('div');h.className='cf-phint';h.textContent=q.hint;card.appendChild(h);}
   } else {
-    const d=document.createElement('div');d.className='cf-opts';
+    const d=document.createElement('div');
+    d.className = q.grid==='shape' ? 'cf-opts-grid' : 'cf-opts';
     (q.opts||[]).forEach(o=>{
       const b=document.createElement('button');
       b.className='cf-opt '+(o.cls||'')+(o.def?' def':'');
