@@ -563,7 +563,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.3.0 · Mar 17, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.3.2 · Mar 17, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -916,19 +916,12 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 
 <!-- COURSE BRIEF OVERLAY -->
 <div class="coach-overlay" id="brief-overlay">
-
-<!-- NOTES GATE OVERLAY -->
-<div class="cf-ov" id="cf-notes-gate" style="display:none;position:fixed;inset:0;z-index:180;background:rgba(14,26,14,.97);display:flex;flex-direction:column;align-items:stretch;justify-content:center;padding:clamp(24px,5vw,48px) clamp(18px,4vw,40px)">
-  <div style="max-width:520px;width:100%;margin:0 auto">
-    <div style="font-size:clamp(11px,1.4vw,13px);letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.8;margin-bottom:6px;text-align:center" id="ng-hole-lbl">Hole 1</div>
-    <div style="font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,32px);color:var(--chalk);text-align:center;margin-bottom:20px">Any field notes?</div>
-    <textarea id="ng-notes-input" placeholder="Wind, unusual lie, mental state, lucky bounce…" style="width:100%;min-height:90px;background:var(--ink3);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:16px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:none;box-sizing:border-box;line-height:1.6;outline:none" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,160)+'px'"></textarea>
-    <button onclick="cfNotesGateAdvance()" style="width:100%;margin-top:14px;background:var(--gold);border:none;border-radius:var(--rs);padding:clamp(14px,2.5vw,20px);font-size:clamp(15px,2vw,18px);font-weight:600;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif" id="ng-next-btn">Next Hole →</button>
-  </div>
-</div>
   <div class="coach-hdr">
     <div class="coach-hdr-title">📋 Pre-Round Brief</div>
-    <button class="coach-close" onclick="closeBrief()">✕</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button id="brief-rerun-btn" onclick="rerunBrief()" style="display:none;background:none;border:1px solid var(--border);border-radius:100px;padding:4px 10px;font-size:11px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.5px">↺ Re-run</button>
+      <button class="coach-close" onclick="closeBrief()">✕</button>
+    </div>
   </div>
   <div class="coach-inner">
     <div class="coach-body" id="brief-body">
@@ -939,6 +932,23 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
       </div>
       <div id="brief-content" style="display:none;padding:16px 18px"></div>
     </div>
+    <div id="brief-chat-area" style="display:none;flex-shrink:0;border-top:1px solid var(--border);background:var(--ink2)">
+      <div id="brief-chat-thread" style="max-height:220px;overflow-y:auto;padding:10px 14px 4px;display:flex;flex-direction:column;gap:8px"></div>
+      <div style="display:flex;align-items:flex-end;gap:8px;padding:8px 14px 12px">
+        <textarea id="brief-chat-input" placeholder="Ask Byron about the course…" rows="1" style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:20px;padding:9px 14px;font-size:13px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:none;outline:none;line-height:1.4;max-height:80px;overflow-y:auto" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendBriefChat();}"></textarea>
+        <button onclick="sendBriefChat()" style="background:var(--gold);border:none;border-radius:50%;width:36px;height:36px;flex-shrink:0;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES GATE OVERLAY -->
+<div class="cf-ov" id="cf-notes-gate" style="display:none;position:fixed;inset:0;z-index:180;background:rgba(14,26,14,.97);flex-direction:column;align-items:stretch;justify-content:center;padding:clamp(24px,5vw,48px) clamp(18px,4vw,40px)">
+  <div style="max-width:520px;width:100%;margin:0 auto">
+    <div style="font-size:clamp(11px,1.4vw,13px);letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.8;margin-bottom:6px;text-align:center" id="ng-hole-lbl">Hole 1</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:clamp(22px,4vw,32px);color:var(--chalk);text-align:center;margin-bottom:20px">Any field notes?</div>
+    <textarea id="ng-notes-input" placeholder="Wind, unusual lie, mental state, lucky bounce…" style="width:100%;min-height:90px;background:var(--ink3);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:16px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:none;box-sizing:border-box;line-height:1.6;outline:none" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,160)+'px'"></textarea>
+    <button onclick="cfNotesGateAdvance()" style="width:100%;margin-top:14px;background:var(--gold);border:none;border-radius:var(--rs);padding:clamp(14px,2.5vw,20px);font-size:clamp(15px,2vw,18px);font-weight:600;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif" id="ng-next-btn">Next Hole →</button>
   </div>
 </div>
 
@@ -5190,6 +5200,15 @@ function flashHubSaved(cid) {
 
 function closeBrief() {
   document.getElementById('brief-overlay').classList.remove('open');
+  document.getElementById('brief-chat-thread').innerHTML = '';
+  S._briefHistory = [];
+}
+
+function rerunBrief() {
+  if (!S._briefParams) return;
+  const {courseId, courseName, notesKey} = S._briefParams;
+  localStorage.removeItem('caddie_brief_' + courseId);
+  getBriefing(courseId, courseName, notesKey);
 }
 
 async function getBriefing(courseId, courseName, notesKey) {
@@ -5197,19 +5216,22 @@ async function getBriefing(courseId, courseName, notesKey) {
   const overlay = document.getElementById('brief-overlay');
   const loading = document.getElementById('brief-loading');
   const content = document.getElementById('brief-content');
+  const chatArea = document.getElementById('brief-chat-area');
+  const rerunBtn = document.getElementById('brief-rerun-btn');
+  S._briefParams = {courseId, courseName, notesKey};
+  S._briefHistory = [];
+  S._briefText = '';
   overlay.classList.add('open');
-  loading.style.display = 'flex';
-  content.style.display = 'none';
-  content.innerHTML = '';
+  chatArea.style.display = 'none';
+  document.getElementById('brief-chat-thread').innerHTML = '';
 
   if (!antKey) {
     loading.style.display = 'none';
     content.style.display = 'block';
-    content.innerHTML = `<div style="text-align:center;padding:40px 20px"><div style="font-size:36px;margin-bottom:16px">🔑</div><div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk);margin-bottom:8px">API Key Required</div><div style="font-size:14px;color:var(--chalk3);line-height:1.6;margin-bottom:20px">Add your Anthropic API key in Settings to use Pre-Round Brief.</div><button onclick="closeBrief();showView('settings')" style="background:rgba(200,168,75,.15);border:1px solid var(--gold);border-radius:100px;padding:12px 28px;font-size:14px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif">Go to Settings →</button></div>`;
+    content.innerHTML = `<div style="text-align:center;padding:40px 20px"><div style="font-size:36px;margin-bottom:16px">\u{1F511}</div><div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk);margin-bottom:8px">API Key Required</div><div style="font-size:14px;color:var(--chalk3);line-height:1.6;margin-bottom:20px">Add your Anthropic API key in Settings to use Pre-Round Brief.</div><button onclick="closeBrief();showView('settings')" style="background:rgba(200,168,75,.15);border:1px solid var(--gold);border-radius:100px;padding:12px 28px;font-size:14px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif">Go to Settings \u2192</button></div>`;
     return;
   }
 
-  // Gather course notes
   const courseNotes = localStorage.getItem(notesKey) || '';
   const course = getCourses().find(c=>c.id===courseId) || getCourses().find(c=>c.name===courseName);
   const par = course ? course.tees[0].par : [];
@@ -5220,33 +5242,53 @@ async function getBriefing(courseId, courseName, notesKey) {
     const gn = localStorage.getItem('caddie_hole_green_notes_'+courseId+'_'+h) || '';
     return (cn||gn) ? `Hole ${h} (Par ${par[i]}, ${yds[i]}y): ${cn}${gn?' | Green: '+gn:''}` : null;
   }).filter(Boolean).join('\n');
-
-  // Gather round history stats
   const rounds = getRounds().filter(r=>r.courseName===courseName);
   const scores = rounds.map(r=>r.scores?.reduce((t,s)=>t+(s.strokes||0),0)||0).filter(s=>s>0);
   const best = scores.length ? Math.min(...scores) : null;
   const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : null;
   const histSummary = scores.length ? `${scores.length} rounds played. Best: ${best}. Avg: ${avg}.` : 'No rounds played here yet.';
 
-  const prompt = `You are Byron, an elite caddie and course strategist. The golfer is an 18 handicap who is playing ${courseName}.\n\nCOURSE HISTORY: ${histSummary}\n\nOVERALL COURSE NOTES:\n${courseNotes||'None provided.'}\n\nPER-HOLE CADDIE/GREEN NOTES:\n${holeNotes||'None provided.'}\n\nDeliver a concise pre-round strategic brief. Cover:\n1. GAME PLAN (2-3 sentences): The single most important strategic mindset for this course at 18 handicap.\n2. KEY HOLES (pick 3-4): For each, one sentence of smart strategy — where to miss, what to avoid, when to lay up.\n3. SCORING ZONES: Which holes are birdie/par opportunities vs damage control holes?\n4. ONE THING TO REMEMBER walking to the first tee.\n\nBe direct, specific, and actionable. No fluff. Under 350 words.`;
+  // BRIEF CACHE: check localStorage first
+  const cacheKey = 'caddie_brief_' + courseId;
+  const cached = (() => { try { return JSON.parse(localStorage.getItem(cacheKey)); } catch { return null; } })();
+  if (cached && cached.text) {
+    const d = new Date(cached.savedAt);
+    const stamp = d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' \u00b7 ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    loading.style.display = 'none';
+    content.style.display = 'block';
+    content.innerHTML = `<div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--chalk);margin-bottom:2px">${courseName}</div><div style="font-size:11px;color:var(--chalk3);margin-bottom:4px">${histSummary}</div><div style="font-size:10px;color:var(--chalk3);opacity:.6;margin-bottom:14px">Briefed ${stamp}</div><div style="font-size:14px;color:var(--chalk2);line-height:1.75;white-space:pre-wrap">${cached.text.replace(/</g,'&lt;')}</div>`;
+    S._briefText = cached.text;
+    if (rerunBtn) rerunBtn.style.display = 'block';
+    chatArea.style.display = 'flex';
+    chatArea.style.flexDirection = 'column';
+    return;
+  }
+
+  // Run fresh
+  loading.style.display = 'flex';
+  content.style.display = 'none';
+  content.innerHTML = '';
+  if (rerunBtn) rerunBtn.style.display = 'none';
+
+  const prompt = `You are Byron, an elite caddie and course strategist. The golfer is an 18 handicap who is playing ${courseName}.\n\nCOURSE HISTORY: ${histSummary}\n\nOVERALL COURSE NOTES:\n${courseNotes||'None provided.'}\n\nPER-HOLE CADDIE/GREEN NOTES:\n${holeNotes||'None provided.'}\n\nDeliver a concise pre-round strategic brief. Cover:\n1. GAME PLAN (2-3 sentences): The single most important strategic mindset for this course at 18 handicap.\n2. KEY HOLES (pick 3-4): For each, one sentence of smart strategy \u2014 where to miss, what to avoid, when to lay up.\n3. SCORING ZONES: Which holes are birdie/par opportunities vs damage control holes?\n4. ONE THING TO REMEMBER walking to the first tee.\n\nBe direct, specific, and actionable. No fluff. Under 350 words.`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': antKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
+      headers: {'Content-Type':'application/json','x-api-key':antKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:700, messages:[{role:'user',content:prompt}]})
     });
     const data = await res.json();
     const text = (data.content||[]).map(b=>b.text||'').join('').trim();
     if (!text) throw new Error(data.error?.message || 'Empty response');
+    localStorage.setItem(cacheKey, JSON.stringify({text, savedAt: new Date().toISOString()}));
+    S._briefText = text;
     loading.style.display = 'none';
     content.style.display = 'block';
-    content.innerHTML = `<div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--chalk);margin-bottom:4px">${courseName}</div><div style="font-size:11px;color:var(--chalk3);margin-bottom:16px">${histSummary}</div><div style="font-size:14px;color:var(--chalk2);line-height:1.75;white-space:pre-wrap">${text.replace(/</g,'&lt;')}</div>`;
+    content.innerHTML = `<div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--chalk);margin-bottom:2px">${courseName}</div><div style="font-size:11px;color:var(--chalk3);margin-bottom:14px">${histSummary}</div><div style="font-size:14px;color:var(--chalk2);line-height:1.75;white-space:pre-wrap">${text.replace(/</g,'&lt;')}</div>`;
+    if (rerunBtn) rerunBtn.style.display = 'block';
+    chatArea.style.display = 'flex';
+    chatArea.style.flexDirection = 'column';
   } catch(e) {
     loading.style.display = 'none';
     content.style.display = 'block';
@@ -5254,6 +5296,41 @@ async function getBriefing(courseId, courseName, notesKey) {
   }
 }
 
+async function sendBriefChat() {
+  const input = document.getElementById('brief-chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  const antKey = localStorage.getItem('caddie_ant_key');
+  if (!antKey) return;
+  input.value = '';
+  input.style.height = 'auto';
+  const thread = document.getElementById('brief-chat-thread');
+  thread.innerHTML += `<div class="coach-msg-user">${msg.replace(/</g,'&lt;')}</div>`;
+  const thinkId = 'brief-think-' + Date.now();
+  thread.innerHTML += `<div class="coach-msg-coach coach-msg-thinking" id="${thinkId}">Byron is thinking\u2026</div>`;
+  thread.scrollTop = thread.scrollHeight;
+  if (!S._briefHistory) S._briefHistory = [];
+  S._briefHistory.push({role:'user', content: msg});
+  if (S._briefHistory.length > 6) S._briefHistory = S._briefHistory.slice(-6);
+  const system = `You are Byron, an elite caddie for ${(S._briefParams||{}).courseName||'this course'}. You just delivered this pre-round brief:\n\n${S._briefText||'(no brief loaded)'}\n\nAnswer follow-up questions concisely and directly. Stay focused on course management and strategy. No swing tips.`;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','x-api-key':antKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({model:'claude-haiku-4-5-20251001', max_tokens:800, system, messages: S._briefHistory})
+    });
+    const data = await res.json();
+    const reply = (data.content||[]).map(b=>b.text||'').join('').trim();
+    const safeReply = reply.replace(/</g,'&lt;');
+    S._briefHistory.push({role:'assistant', content: reply});
+    const think = document.getElementById(thinkId);
+    if (think) think.outerHTML = `<div class="coach-msg-coach">${safeReply}</div>`;
+  } catch(e) {
+    const think = document.getElementById(thinkId);
+    if (think) think.outerHTML = `<div class="coach-msg-coach" style="color:var(--red)">Couldn't reach Byron. Try again.</div>`;
+  }
+  thread.scrollTop = thread.scrollHeight;
+}
 function bailOut() {
   if (!confirm('Abandon this round? All data for this round will be deleted.\n\nThis cannot be undone.')) return;
   saveWIP(null);
