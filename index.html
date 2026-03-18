@@ -563,7 +563,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.3.6 · Mar 17, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.3.7 · Mar 17, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -4927,6 +4927,7 @@ async function manualSync() {
     const count = getRounds().length;
     setSettingsStatus(`✓ Synced · ${count} round${count!==1?'s':''}${count===0?' — no rounds yet':''}`,'ok',true);
     loadGHSettingsForm();
+    checkRemoteWIP();
   } catch(e) {
     setSettingsStatus(`Sync failed: ${e.message}`,'err',false);
   }
@@ -5513,6 +5514,16 @@ renderHome();
 syncWithGitHub(true);
 // HALF TIME: check for paused round on any device
 checkRemoteWIP();
+// AUTO PAUSE: push WIP to GitHub whenever app is backgrounded
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' && S.currentRound && ghConfigured() && navigator.onLine) {
+    const round = S.currentRound;
+    saveWIP(round);
+    ghGetWIP().then(({sha}) => {
+      ghPutWIP({...round, _wip:true, _paused: new Date().toISOString()}, sha).catch(()=>{});
+    }).catch(()=>{});
+  }
+});
 </script>
 </body>
 </html>
