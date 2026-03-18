@@ -491,6 +491,13 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 .cf-cf{background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:3px 9px;font-size:10px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif}
 .cf-cf.on.thin{background:rgba(200,64,64,.12);border-color:rgba(200,64,64,.4);color:#e07070}
 .cf-cf.on.fat{background:rgba(192,112,80,.12);border-color:rgba(192,112,80,.4);color:#c07050}
+.cf-strip{font-size:clamp(11px,1.4vw,13px);display:flex;flex-wrap:wrap;gap:4px;justify-content:center;padding:0 0 8px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:2px}
+.cf-strip-aim{color:#6baadf}
+.cf-strip-result{color:var(--gold)}
+.cf-strip-dir{color:#e8994a}
+.cf-strip-surface{color:#5ec85e}
+.cf-strip-sep{color:var(--chalk3);opacity:.4}
+.cf-cip-count{font-size:clamp(10px,1.3vw,12px);color:var(--chalk3);margin-left:auto;letter-spacing:.3px;align-self:flex-end;padding-bottom:2px}
 </style>
 </head>
 <body>
@@ -551,7 +558,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.2.1 · Mar 17, 2026</div>
+    <div style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.2.2 · Mar 17, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -1730,6 +1737,36 @@ const cfWedge = c => cfCat(c)==='wedge'; // true wedges only — PW/GW/56/58; ex
 const CF_TYPE_LBL = {Tee:'Tee Shot',Approach:'Approach',Pitch:'Pitch',Layup:'Layup',
   Chip:'Chip',Sand:'Sand',Recovery:'Recovery',Flub:'Flub',Penalty:'Penalty',Putt:'Putt'};
 const CF_ALL_TYPES = ['Approach','Pitch','Layup','Chip','Sand','Recovery','Flub','Penalty'];
+const CF_Q_COLORS = {
+  teeAimed:'aim',approachAimed:'aim',layupAimed:'aim',
+  teeShape:'dir',approachSide:'dir',layupSide:'dir',chipSide:'dir',recoveryLanded:'dir',approachZone:'dir',
+  teeLanded:'result',approachDist:'result',layupDist:'result',sandGotOut:'result',gotOut:'result',chipProx:'result',sandProx:'result',puttSpeed:'result',
+  lie:'surface',bladedLie:'surface'
+};
+function cfStripDisplay(key, val) {
+  if(!val&&val!==0) return null;
+  const v = String(val);
+  if(key==='approachDist'||key==='layupDist') return ({On:'on green',PH:'pin high',Short:'short',Long:'long'})[v]||v.toLowerCase();
+  if(key==='gotOut'||key==='sandGotOut') return v==='Yes'?'got out':'no out';
+  if(key==='approachZone') return v.replace(/-/g,' ');
+  if(key==='teeLanded') return 'landed '+v.replace(/-/g,' ');
+  if(key==='recoveryLanded') return v.replace(/-/g,' ');
+  if(key==='teeAimed'||key==='approachAimed'||key==='layupAimed') return 'aimed '+v.toLowerCase();
+  return v.toLowerCase();
+}
+function cfBuildStory(sh, qs) {
+  const tokens = [];
+  qs.forEach(q=>{
+    const val = sh[q.key];
+    if(val===null||val===undefined||val==='') return;
+    const display = cfStripDisplay(q.key, val);
+    if(!display) return;
+    const cat = CF_Q_COLORS[q.key]||'result';
+    tokens.push(`<span class="cf-strip-${cat}">${display}</span>`);
+  });
+  if(!tokens.length) return '';
+  return tokens.join('<span class="cf-strip-sep"> · </span>');
+}
 
 function cfInferAll(clubs, par) {
   const n = clubs.length;
@@ -1892,8 +1929,8 @@ function cfGetQs(sh, par) {
   if(sh.type==='Layup')return[
     {key:'layupAimed',q:'Layup — where did you aim?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
     {key:'layupDist',q:'Layup — distance result?',opts:[{lbl:'Short',cls:'r'},{lbl:'On Target',cls:'g',def:true},{lbl:'Long',cls:'r'}]},
-    {key:'lie',q:'Layup — where did it finish?',opts:[{lbl:'Fairway',cls:'g'},{lbl:'Rough',cls:'r'},{lbl:'Fringe',cls:'s'},{lbl:'Sand',cls:'r'},{lbl:'Jail',cls:'r'},{lbl:'Penalty',cls:'r'}]},
-    {key:'layupSide',q:'Layup — which side?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]}
+    {key:'layupSide',q:'Layup — which side?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
+    {key:'lie',q:'Layup — where did it finish?',opts:[{lbl:'Fairway',cls:'g'},{lbl:'Rough',cls:'r'},{lbl:'Fringe',cls:'s'},{lbl:'Sand',cls:'r'},{lbl:'Jail',cls:'r'},{lbl:'Penalty',cls:'r'}]}
   ];
   if(isTeeP45)return[
     {key:'teeAimed',q:'Tee shot — where did you aim?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
@@ -2059,12 +2096,14 @@ function cfNextQ() {
   if(_cfPopIdx >= _cfShots.length) { cfShowSummary(); return; }
   const sh = _cfShots[_cfPopIdx];
   const qs = cfGetQs(sh, par);
+  let qNum = 0;
   for(let k=0;k<qs.length;k++){
     const q=qs[k];
     if(q.skipIf&&q.skipIf(sh)) continue;
+    qNum++;
     if(sh[q.key]===null||sh[q.key]===undefined){
       cfUpdateCIP(sh, k, qs.length);
-      cfShowPopup(q);
+      cfShowPopup(q, sh, qs, qNum, qs.length);
       return;
     }
   }
@@ -2088,11 +2127,11 @@ function cfUpdateCIP(sh, stepK, totalK) {
   document.getElementById('cf-prog-lbl').textContent = `Shot ${_cfPopIdx+1} of ${_cfShots.length} · ${cfUpdateCIP._club}`;
 }
 
-function cfShowPopup(q) {
+function cfShowPopup(q, sh, qs, qNum, qTotal) {
   const area = document.getElementById('cf-pop-area');
   const card = document.createElement('div'); card.className='cf-popup';
 
-  // CIP folded into card as header
+  // CIP header
   const cip = document.createElement('div'); cip.className='cf-card-cip';
   const cipHole = document.createElement('div'); cipHole.className='cf-cip-hole';
   cipHole.textContent = cfUpdateCIP._hole||'';
@@ -2101,8 +2140,22 @@ function cfShowPopup(q) {
   const cipType = document.createElement('div'); cipType.className='cf-cip-type';
   cipType.textContent = cfUpdateCIP._type||'—';
   cip.appendChild(cipHole); cip.appendChild(cipClub); cip.appendChild(cipType);
-  cip.appendChild(cipClub); cip.appendChild(cipType);
+  if(qNum&&qTotal) {
+    const cnt = document.createElement('div'); cnt.className='cf-cip-count';
+    cnt.textContent = `${qNum}/${qTotal}`;
+    cip.appendChild(cnt);
+  }
   card.appendChild(cip);
+
+  // Story strip — color-coded running summary of answers so far
+  if(sh && qs) {
+    const storyHTML = cfBuildStory(sh, qs);
+    if(storyHTML) {
+      const strip = document.createElement('div'); strip.className='cf-strip';
+      strip.innerHTML = storyHTML;
+      card.appendChild(strip);
+    }
+  }
 
   const qq = document.createElement('div'); qq.className='cf-pq'; qq.textContent=q.q;
   card.appendChild(qq);
