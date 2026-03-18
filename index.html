@@ -563,7 +563,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.3.5 · Mar 17, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.3.6 · Mar 17, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -1851,70 +1851,66 @@ function cfInferSeg(clubs,par,afterPen){
   const lastShort=['wedge','short-iron'].includes(lastCat);
   const lastMid=lastCat==='mid-iron';
   const lastLong=['long-iron','hybrid','wood','driver'].includes(lastCat);
-  // Consecutive wedge pre-check — true wedges only (PW/GW/56/58), NOT 8i/9i
-  if(n===2&&cfWedge(clubs[0])&&cfWedge(clubs[1]))return[A('Chip'),A('Chip')];
-  if(n===3&&cfWedge(clubs[1])&&cfWedge(clubs[2])){
-    if(afterPen)return[G('Approach'),A('Chip'),A('Chip')];
-    if(cfLong(clubs[0]))return[G('Approach'),A('Chip'),A('Chip')];
-    return[A('Approach'),A('Chip'),A('Chip')];
-  }
+  const isW=c=>['PW','GW','54','58'].includes(c);
+  // Consecutive wedge pre-check — only valid on par 3, NOT par 4/5 where shot[0] is always an approach
   if(par===3){
+    if(n===2&&cfWedge(clubs[0])&&cfWedge(clubs[1]))return[A('Chip'),A('Chip')];
+    if(n===3&&cfWedge(clubs[1])&&cfWedge(clubs[2])){
+      if(afterPen)return[G('Approach'),A('Chip'),A('Chip')];
+      if(cfLong(clubs[0]))return[G('Approach'),A('Chip'),A('Chip')];
+      return[A('Approach'),A('Chip'),A('Chip')];
+    }
     if(afterPen){if(n===1)return[G('Approach')];if(n===2)return[A('Approach'),A('Chip')];}
     if(n===1)return[A('Chip')];
     if(n===2)return[A('Recovery'),A('Chip')];
     return clubs.map(R);
   }
+  // Par 4 — shot[0] in segment is shot 2 on hole = always Approach
   if(par===4){
     if(afterPen){
-      // RETEE: driver/wood after penalty on par 4 = re-tee (stroke & distance)
       const isReTee = cfCat(clubs[0])==='driver'||cfCat(clubs[0])==='wood';
       if(n===1&&isReTee)return[A('Tee')];
       if(n===1)return[G('Approach')];
       if(n===2&&isReTee&&cfShort(clubs[1]))return[A('Tee'),A('Approach')];
       if(n===2&&isReTee)return[A('Tee'),A('Approach')];
-      if(n===2&&cfShort(clubs[1]))return[G('Approach'),A('Chip')];
+      if(n===2&&isW(clubs[1]))return[G('Approach'),A('Chip')];
       if(n===2)return[G('Approach'),A('Approach')];
-      if(n===3&&cfShort(clubs[1])&&cfShort(clubs[2]))return[G('Approach'),A('Chip'),A('Chip')];
-      if(n===3&&cfShort(clubs[2]))return[G('Approach'),A('Approach'),A('Chip')];
+      if(n===3&&isW(clubs[1])&&isW(clubs[2]))return[G('Approach'),A('Chip'),A('Chip')];
+      if(n===3&&isW(clubs[2]))return[G('Approach'),A('Approach'),A('Chip')];
       return[G('Approach'),...clubs.slice(1).map(R)];
     }
     if(n===1)return[G('Approach')];
     if(n===2){
-      const isW=c=>['PW','GW','54','58'].includes(c);
-      if(cfShort(clubs[0])&&cfShort(clubs[1]))return[A('Chip'),A('Chip')];
-      if(isW(clubs[1])&&cfLong(clubs[0]))return[G('Approach'),A('Chip')];
-      if(isW(clubs[1])&&cfMid(clubs[0]))return[A('Approach'),A('Chip')];
-      if(isW(clubs[1])&&cfShort(clubs[0]))return[A('Approach'),A('Chip')];
-      if(cfMid(clubs[0])&&cfMid(clubs[1]))return[A('Flub'),A('Approach')];
-      if(cfMid(clubs[0])&&cfShort(clubs[1]))return[A('Flub'),A('Approach')];
-      if(cfCat(clubs[0])===cfCat(clubs[1]))return[A('Flub'),G('Approach')];
-      if(lastMid||lastLong)return[A('Flub'),A('Approach')];
-      return[G('Approach'),A('Chip')];
+      // Shot 2 on par 4 is always Approach — only shot 3 (clubs[1]) can be Chip if it's a wedge
+      if(cfLong(clubs[0]))return[G('Approach'),isW(clubs[1])?A('Chip'):A('Approach')];
+      if(cfMid(clubs[0]))return[A('Approach'),isW(clubs[1])?A('Chip'):A('Approach')];
+      // Two short clubs: first is approach, second is chip only if true wedge
+      return[A('Approach'),isW(clubs[1])?A('Chip'):A('Approach')];
     }
     if(n===3){if(lastShort)return[A('Flub'),A('Approach'),A('Chip')];return[A('Flub'),A('Flub'),A('Approach')];}
     if(n===4&&lastShort)return[A('Flub'),A('Flub'),A('Approach'),A('Chip')];
     return clubs.map(R);
   }
+  // Par 5 — shot[0] is shot 2 on hole = Layup or Approach based on club length
   if(par===5){
     if(afterPen){
-      // RETEE: driver/wood after penalty on par 5 = re-tee (stroke & distance)
       const isReTee5 = cfCat(clubs[0])==='driver'||cfCat(clubs[0])==='wood';
       if(n===1&&isReTee5)return[A('Tee')];
       if(n===1)return[G('Approach')];
       if(n===2&&isReTee5&&!cfShort(clubs[1]))return[A('Tee'),A('Layup')];
       if(n===2&&isReTee5&&cfShort(clubs[1]))return[A('Tee'),A('Approach')];
-      if(n===2&&cfShort(clubs[1]))return[G('Approach'),A('Chip')];
+      if(n===2&&isW(clubs[1]))return[G('Approach'),A('Chip')];
       if(n===2)return[A('Layup'),G('Approach')];
-      if(n===3&&cfShort(clubs[1])&&cfShort(clubs[2]))return[G('Approach'),A('Chip'),A('Chip')];
-      if(n===3&&cfShort(clubs[2]))return[G('Approach'),A('Approach'),A('Chip')];
+      if(n===3&&isW(clubs[1])&&isW(clubs[2]))return[G('Approach'),A('Chip'),A('Chip')];
+      if(n===3&&isW(clubs[2]))return[G('Approach'),A('Approach'),A('Chip')];
       return[G('Approach'),...clubs.slice(1).map(R)];
     }
     if(n===1)return[G('Approach')];
     if(n===2){
-      if(cfShort(clubs[0])&&cfShort(clubs[1]))return[A('Chip'),A('Chip')];
-      if(cfLong(clubs[0])&&!lastShort)return[G('Layup'),A('Approach')]; // amber — might be 2nd layup
-      if(cfLong(clubs[0])&&lastShort)return[G('Layup'),A('Chip')];
-      if(!cfLong(clubs[0])&&lastShort)return[A('Approach'),A('Chip')];
+      if(cfLong(clubs[0])&&!lastShort)return[G('Layup'),A('Approach')];
+      if(cfLong(clubs[0])&&isW(clubs[1]))return[G('Layup'),A('Chip')];
+      if(cfLong(clubs[0])&&lastShort)return[G('Layup'),A('Approach')];
+      if(!cfLong(clubs[0])&&isW(clubs[1]))return[A('Approach'),A('Chip')];
       return[A('Layup'),A('Approach')];
     }
     if(n===3){
@@ -2142,6 +2138,14 @@ function cfNextQ() {
   const par = S.currentRound.pars[_cfHoleIdx];
   if(_cfPopIdx >= _cfShots.length) { cfShowSummary(); return; }
   const sh = _cfShots[_cfPopIdx];
+
+  // AUTO ON GREEN: if this shot could have approachDist and the very next shot is a counted putt, auto-set On and skip
+  const nextSh = _cfShots[_cfPopIdx + 1];
+  const canHaveApproachDist = ['Approach','Pitch'].includes(sh.type) || (sh.type==='Tee' && par===3);
+  if(canHaveApproachDist && nextSh && nextSh.type==='Putt' && !nextSh.isTW && sh.approachDist===null) {
+    sh.approachDist = 'On';
+  }
+
   const qs = cfGetQs(sh, par);
   // Compute putt context for labeling
   let puttNum = 0, puttTotal = 0;
