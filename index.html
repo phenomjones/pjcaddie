@@ -563,7 +563,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.4.1 · Mar 18, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.4.3 · Mar 19, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -883,9 +883,22 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     </div>
     <div class="coach-body" id="coach-body">
       <div class="coach-loading" id="coach-loading">
-        <div class="coach-spinner"></div>
-        <div style="font-size:14px">Byron is studying your round…</div>
-        <div style="font-size:12px;opacity:.5">This takes about 20 seconds</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:18px;padding:20px 0">
+          <div style="display:flex;align-items:center;gap:0">
+            <div id="bp-dot-1" style="width:14px;height:14px;border-radius:50%;background:var(--gold);flex-shrink:0"></div>
+            <div id="bp-line-1" style="width:52px;height:2px;background:var(--border);opacity:.4"></div>
+            <div id="bp-dot-2" style="width:14px;height:14px;border-radius:50%;background:var(--border);opacity:.4;flex-shrink:0"></div>
+            <div id="bp-line-2" style="width:52px;height:2px;background:var(--border);opacity:.4"></div>
+            <div id="bp-dot-3" style="width:14px;height:14px;border-radius:50%;background:var(--border);opacity:.4;flex-shrink:0"></div>
+          </div>
+          <div style="display:flex;gap:0;width:146px">
+            <div id="bp-lbl-1" style="flex:1;text-align:left;font-size:10px;color:var(--gold);letter-spacing:.5px;line-height:1.4">Reading<br>round</div>
+            <div id="bp-lbl-2" style="flex:1;text-align:center;font-size:10px;color:var(--chalk3);opacity:.4;letter-spacing:.5px;line-height:1.4">Patterns &amp;<br>decisions</div>
+            <div id="bp-lbl-3" style="flex:1;text-align:right;font-size:10px;color:var(--chalk3);opacity:.4;letter-spacing:.5px;line-height:1.4">Game<br>plan</div>
+          </div>
+          <div id="bp-msg" style="font-size:14px;color:var(--chalk2)">Byron is reading your round…</div>
+          <div style="font-size:11px;opacity:.4">~45–60 seconds</div>
+        </div>
       </div>
       <div id="coach-content" style="display:none">
         <div id="coach-tab-round"></div>
@@ -1018,6 +1031,15 @@ function safeBase64Encode(str) {
 
 const ZONE_LABELS = {'long-left':'Long L','long-center':'Long','long-right':'Long R','back-left':'Back-L','back-center':'Back','back-right':'Back-R','left':'Left','green':'On Green','right':'Right','ph-left':'PH Left','ph-center':'PH','ph-right':'PH Right','front-left':'Front-L','front-center':'Front','front-right':'Front-R','short-left':'Short L','short-center':'Short','short-right':'Short R'};
 const ZONE_COLORS = {'green':'#5ec85e','left':'#e0a870','right':'#e0a870','back-left':'#c07050','back-center':'var(--red)','back-right':'#c07050','front-left':'#c07050','front-center':'#c07050','front-right':'#c07050','long-left':'#9060b0','long-center':'#9060b0','long-right':'#9060b0','short-left':'#5090c0','short-center':'#5090c0','short-right':'#5090c0'};
+
+// Byron persona — injected into all four Byron prompts
+const BYRON_PERSONA = `IDENTITY: You are Byron — elite caddie and data analyst. Your voice draws from four sources: Cory Jez / TourIQ (reads and synthesizes shot data into caddie intelligence), Scott Fawcett / DECADE (dispersion-based targets, probability framework, aim away from the big number), Jon Sherman / Practical Golf (tone calibration for 18-handicap reality, no false hope), and your own voice (direct, specific, dry, never preachy).
+
+WHAT YOU ARE NOT: You are not a swing instructor. Never give swing tips, mechanics advice, or range drills. Your job is course management, not technique.
+
+TONE: Direct. Specific. Dry when warranted. Never generic. Never preachy. Every insight must cite a hole, club, yardage, miss direction, or data point. If the data doesn't support a claim, don't make it.
+
+18-HANDICAP REALITY: Bogey is a good score on a hard hole. Double bogey is acceptable on the hardest holes. Scoring zones: PARITY TARGET (realistic par opportunity), DAMAGE CONTROL (bogey is fine, avoid doubles), SURVIVAL (bogey/double acceptable — just get out clean). Never chase scores that aren't there.`;
 
 // New model: approachDist==='On' on any approach/pitch/par3-tee shot
 // Legacy fallback: approachFinish==='green' or par3 first shot result==='O'
@@ -3745,7 +3767,9 @@ async function sendCoachChat() {
 
   const analysisFull = analysis ? JSON.stringify(analysis) : '';
 
-  const systemPrompt = `You are Byron, an elite caddie and data analyst. You already ran a full analysis of this round. The player is asking follow-up questions. Be concise, direct, and specific. No more than 3 paragraphs per response.
+  const systemPrompt = `${BYRON_PERSONA}
+
+You already ran a full analysis of this round. The player is asking follow-up questions. Be concise, direct, and specific. No more than 3 paragraphs per response.
 
 CRITICAL RULE: Never invent terrain, elevation, wind, slope, or lie conditions that are not explicitly stated in the data below. If you cannot explain WHY a pattern exists from the data alone, say so directly. Never fabricate plausible-sounding golf reasons to fill gaps.
 
@@ -3790,222 +3814,310 @@ ${analysisFull ? 'FULL ANALYSIS DATA:\n' + analysisFull : ''}`;
 }
 
 async function runCoachAnalysis(round) {
-  // Build raw shot-by-shot data
+  // ── Build shared data ──────────────────────────────────────────────
   const scores = round.scores.filter(s=>s&&s.shots&&s.shots.length>0);
   const total = scores.reduce((a,s)=>a+s.strokes,0);
-  const par = scores.reduce((a,s)=>a+s.par,0);
+  const par   = scores.reduce((a,s)=>a+s.par,0);
 
   const holeData = scores.map(s=>({
-    hole: s.hole, par: s.par, yds: s.yds,
-    strokes: s.strokes, putts: s.putts, penalties: s.penalties||0,
-    gir: isGIR(s), pinLocation: s.pinLocation||null,
-    shots: (s.shots||[]).map(sh=>({
-      club: sh.club, type: sh.type,
-      contact: sh.contact||null,
-      teeShape: sh.teeShape||null,
-      teeLanded: sh.teeLanded||null,
-      teeAimed: sh.teeAimed||null,
-      approachAimed: sh.approachAimed||null,
-      approachDist: sh.approachDist||null,
-      approachSide: sh.approachSide||null,
-      approachZone: sh.approachZone||null,
-      layupAimed: sh.layupAimed||null,
-      layupDist: sh.layupDist||null,
-      layupSide: sh.layupSide||null,
-      gotOut: sh.gotOut||null,
-      recoveryLanded: sh.recoveryLanded||null,
-      sandGotOut: sh.sandGotOut||null,
-      sandProx: sh.sandProx||null,
-      chipProx: sh.chipProx||null,
-      chipSide: sh.chipSide||null,
-      puttSpeed: sh.puttSpeed||null,
-      lie: sh.lie||null,
-      rating: sh.rating||null
+    hole:s.hole, par:s.par, yds:s.yds,
+    strokes:s.strokes, putts:s.putts, penalties:s.penalties||0,
+    gir:isGIR(s), pinLocation:s.pinLocation||null,
+    shots:(s.shots||[]).map(sh=>({
+      club:sh.club, type:sh.type,
+      contact:sh.contact||null, teeShape:sh.teeShape||null,
+      teeLanded:sh.teeLanded||null, teeAimed:sh.teeAimed||null,
+      approachAimed:sh.approachAimed||null, approachDist:sh.approachDist||null,
+      approachSide:sh.approachSide||null, approachZone:sh.approachZone||null,
+      layupAimed:sh.layupAimed||null, layupDist:sh.layupDist||null,
+      layupSide:sh.layupSide||null, gotOut:sh.gotOut||null,
+      recoveryLanded:sh.recoveryLanded||null, sandGotOut:sh.sandGotOut||null,
+      sandProx:sh.sandProx||null, chipProx:sh.chipProx||null,
+      chipSide:sh.chipSide||null, puttSpeed:sh.puttSpeed||null,
+      lie:sh.lie||null, rating:sh.rating||null
     })),
-    roundNote: s.notes||null
+    roundNote:s.notes||null
   }));
 
-
-  const playerNotes = localStorage.getItem('caddie_player_notes') || '';
-  const courseNotesKey = 'caddie_course_notes_' + (round.courseId || '');
-  const courseNotes = localStorage.getItem(courseNotesKey) || '';
-  // NOTE COACH: gather per-hole notes + green notes
-  const holeNotes = {};
-  const greenNotes = {};
-  const cid = round.courseId || '';
-  for (let h = 1; h <= 18; h++) {
-    const hn = localStorage.getItem('caddie_hole_notes_' + cid + '_' + h) || '';
-    const gn = localStorage.getItem('caddie_hole_green_notes_' + cid + '_' + h) || '';
-    if (hn.trim()) holeNotes[h] = hn.trim();
-    if (gn.trim()) greenNotes[h] = gn.trim();
+  const playerNotes  = localStorage.getItem('caddie_player_notes') || '';
+  const courseNotes  = localStorage.getItem('caddie_course_notes_' + (round.courseId||'')) || '';
+  const roundNotes   = round.roundNotes || '';
+  const holeNotes={}, greenNotes={};
+  const cid = round.courseId||'';
+  for (let h=1;h<=18;h++) {
+    const hn = localStorage.getItem('caddie_hole_notes_'+cid+'_'+h)||'';
+    const gn = localStorage.getItem('caddie_hole_green_notes_'+cid+'_'+h)||'';
+    if (hn.trim()) holeNotes[h]=hn.trim();
+    if (gn.trim()) greenNotes[h]=gn.trim();
   }
   const holeNotesText = Object.keys(holeNotes).length
-    ? '\nPER-HOLE CADDIE NOTES (pre-round strategy, aim points, smart misses):\n' + Object.entries(holeNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n')
-    : '';
+    ? '\nPER-HOLE CADDIE NOTES (pre-round strategy, aim points, smart misses):\n'+Object.entries(holeNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n') : '';
   const greenNotesText = Object.keys(greenNotes).length
-    ? '\nPER-HOLE GREEN NOTES (slope, break, false fronts, pin tendencies):\n' + Object.entries(greenNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n')
-    : '';
-  const roundNotes = round.roundNotes || '';
+    ? '\nPER-HOLE GREEN NOTES (slope, break, false fronts, pin tendencies):\n'+Object.entries(greenNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n') : '';
 
-  const prompt = `You are Byron, an elite caddie and data analyst in the model of Cory Jez / TourIQ. You are NOT a swing instructor — you never give swing tips, mechanics advice, or range drills. Your job is to read shot data, identify patterns, and tell the player exactly how to manage their game better ON THE COURSE: smarter targets, better club choices for their actual tendencies, risk/reward decisions, and mental/pressure patterns.
+  const roundHeader = `Course: ${round.courseName} (${round.teeName}) | Date: ${round.date}
+Score: ${total} (${total-par>=0?'+':''}${total-par} vs par ${par}) | Holes: ${round.holes}${roundNotes?'\nROUND NOTES: '+roundNotes:''}${playerNotes?'\nPLAYER PROFILE & GAPPING:\n'+playerNotes:''}${courseNotes?'\nCOURSE KNOWLEDGE:\n'+courseNotes:''}${holeNotesText}${greenNotesText}`;
 
-CORE PHILOSOPHY:
-- Play to your tendencies, don't fight them. If the player fades it 70% of the time, aim left — don't tell them to stop fading.
-- Every recommendation must be actionable on the first tee, not the driving range.
-- Decision quality is independent of outcome. Aiming right with a known pull tendency is correct strategy even if it still pulls left.
-- Course management is about eliminating the BIG number, not optimizing for birdie.
+  const dataRef = `DATA REFERENCE:
+- teeAimed: Left/Center/Right | teeShape: Draw/Straight/Fade/Hook/Pull/Push/Slice/Fat/Top/Thin
+- teeLanded: fairway/rough-left/rough-right/bunker/ob-left/ob-right/oop-left/oop-right/short
+- approachAimed: Left/Center/Right | approachDist: Short/PH/On/Long (On=GIR)
+- approachSide: Left/Center/Right (lateral miss) | approachZone: 9-zone grid when On
+- layupAimed/layupDist/layupSide | contact: Thin/Fat (blank=solid)
+- lie: WHERE BALL ENDED UP — Fairway/Rough/Fringe/Green/Sand/Jail/Penalty
+- gotOut: Yes/No | sandGotOut/sandProx | chipProx: Tap-in/Close/Medium/Far/Bladed/Chunked
+- puttSpeed: Short/Long (only logged on speed error) | rating: 👎/😐/👍
+- roundNote: player field note for this hole — treat as primary context`;
 
-CRITICAL ANALYSIS MANDATE:
-- Find cross-hole patterns, not hole-by-hole descriptions
-- Identify cause-and-effect chains (e.g. tee shot trouble leads to bogey 70% of the time)
-- Surface miss quadrants (short-left, long-right, etc.) per club — for course management purposes
-- Flag contact trends (thin/fat clustering) as DATA OBSERVATIONS only — never as swing cues. MINIMUM THRESHOLD: only flag a contact pattern if 3+ shots with the same club show the same miss type. 1-2 bad contacts is noise, not a pattern.
-- Identify decision quality issues (wrong target given tendencies, unnecessary risk, wrong club for the lie)
-- AIM-VS-RESULT ANALYSIS (mandatory): For every hole where teeAimed or approachAimed is logged, compare the intended aim direction against the actual result direction (teeLanded, approachSide, approachDist). Classify each divergence as either (a) EXECUTION ERROR — correct aim given tendencies, poor execution, or (b) DECISION ERROR — wrong aim given the player's established miss pattern. A correct aim decision that produces a bad shot is NOT the same as a wrong aim decision. Flag decision errors explicitly in decisionFlags. If the player consistently aims center but misses right, and they aimed center again — that is a decision error, not an execution error. Course management improvement requires fixing decisions, not execution.
-- Rate calibration: compare player's 👍/👎 ratings against actual results
-- Scoring root causes: of all over-par holes, what 2-3 root causes dominate?
-- STRENGTHS QUALITY RULE: Strengths must be cross-dimensional patterns or conditional correlations the player could NOT have noticed themselves (e.g. "GIR doubles when tee shot stays in play"). Single-round small-sample counts (3/3 sand saves, 2/2 up-and-downs) are NOT insights — the player was there and already knows. Never list a strength that is just a count of successful outcomes from a small sample.
-- Front vs Back 9 trends, momentum patterns, pressure signatures
-- DO NOT describe what is visible on shot maps — synthesize and explain WHY and WHAT IT MEANS FOR NEXT TIME ON THIS COURSE
-- topFindings and scoringRootCauses MUST contain different insights. topFindings = patterns, momentum, pressure, aim/result gaps. scoringRootCauses = error category breakdown by hole count. Never say the same thing in both.
+  const rawData = JSON.stringify(holeData, null, 2);
 
-ABSOLUTE BAN — NEVER write any of the following:
-- Any swing instruction, mechanics tip, or range drill — BANNED entirely
-- \"Practice your driver alignment\" / \"Work on ball position\" / \"Fix your face angle\" — BANNED
-- Generic contact phrases: \"Focus on contact quality\" / \"Focus on solid contact\" — BANNED. Contact data findings ARE required when warranted (e.g. \"7 of 9 iron shots were thin\" is a valid observation — never a swing cue)
-- \"Trust your swing\" / \"Stay committed\" / \"Take your time\"
-- \"Hit it straighter\" / \"Be more consistent\"
-- Any advice that does not reference a specific hole, club, yardage, miss direction, or data point
-- Any suggestion that belongs on a range instead of a course
+  // ── Progress bar helper ─────────────────────────────────────────────
+  function setByronProgress(step, msg) {
+    [1,2,3].forEach(i => {
+      const dot  = document.getElementById('bp-dot-'+i);
+      const line = document.getElementById('bp-line-'+i);
+      const lbl  = document.getElementById('bp-lbl-'+i);
+      if (!dot) return;
+      const done    = i < step;
+      const active  = i === step;
+      const pending = i > step;
+      dot.style.background = (done||active) ? 'var(--gold)' : 'var(--border)';
+      dot.style.opacity     = pending ? '.4' : '1';
+      if (line) { line.style.background=(done)?'var(--gold)':'var(--border)'; line.style.opacity=done?'1':'.4'; }
+      if (lbl)  { lbl.style.color=(done||active)?'var(--gold)':'var(--chalk3)'; lbl.style.opacity=pending?'.4':'1'; }
+    });
+    const msgEl = document.getElementById('bp-msg');
+    if (msgEl && msg) msgEl.textContent = msg;
+  }
 
-Every recommendation in holesTab.suggestion and holesTab.courseManagement MUST cite specific data: hole number, club name, yardage, miss direction, lie, or gapping number. Suggestions must be ON-COURSE decisions — never range work or swing tips. If the data is insufficient for a specific recommendation, say exactly what information would enable better advice.
+  const antKey = localStorage.getItem('caddie_ant_key');
+  if (!antKey) {
+    document.getElementById('coach-loading').style.display='none';
+    document.getElementById('coach-content').style.display='block';
+    document.getElementById('coach-content').innerHTML=`<div class="coach-error"><div style="font-size:40px;margin-bottom:14px">⚠️</div><div style="font-size:15px;color:var(--chalk2);margin-bottom:8px">Byron unavailable</div><div style="font-size:13px;opacity:.6">No API key — go to Settings.</div></div>`;
+    return;
+  }
 
-ROUND DATA:
-Course: ${round.courseName} (${round.teeName}) | Date: ${round.date}
-Score: ${total} (${total-par>=0?'+':''}${total-par} vs par ${par}) | Holes: ${round.holes}
-${roundNotes ? `\nROUND NOTES: ${roundNotes}` : ''}
-${playerNotes ? `\nPLAYER PROFILE & GAPPING:\n${playerNotes}` : ''}
-${courseNotes ? `\nCOURSE KNOWLEDGE:\n${courseNotes}` : ''}${holeNotesText}${greenNotesText}
+  async function byronCall(prompt, maxTokens) {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':antKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6', max_tokens:maxTokens, messages:[{role:'user',content:prompt}]})
+    });
+    const data = await response.json();
+    if (!response.ok || !data.content || !Array.isArray(data.content))
+      throw new Error(data.error?.message || `API error ${response.status}`);
+    if (data.stop_reason==='max_tokens')
+      throw new Error('Response truncated — tap Re-run Byron to retry.');
+    const raw = data.content.map(c=>c.text||'').join('');
+    return JSON.parse(raw.replace(/```json|```/g,'').trim());
+  }
 
-DATA REFERENCE:
-- teeAimed: Left/Center/Right (intended aim on tee shots)
-- teeShape: Draw/Straight/Fade/Hook/Pull/Push/Slice/Fat/Top/Thin (tee shot shape)
-- teeLanded: fairway/rough-left/rough-right/bunker/ob-left/ob-right/oop-left/oop-right/short. PRIMARY METRIC: In Play = fairway+rough-left+rough-right vs par. Trouble = bunker+ob+oop+Flub-type-shot-1. FIR = fairway only (secondary).
-- approachAimed: Left/Center/Right (intended target line for approach/pitch/par3)
-- approachDist: Short/PH/On/Long (distance result — On = GIR)
-- approachSide: Left/Center/Right (lateral miss when not On)
-- approachZone: back-left/back-center/back-right/mid-left/mid-center/mid-right/front-left/front-center/front-right (green zone when On)
-- layupAimed/layupDist/layupSide: layup shot targeting data
-- contact: Thin / Fat (blank = solid). Tracked on Tee, Approach, Layup, Pitch, Chip shots.
-- rating: 👎 / 😐 / 👍 (player's feel rating)
-- lie: WHERE THE BALL ENDED UP after the shot (Fairway/Rough/Fringe/Green/Sand/Jail/Penalty). Jail = trees, bushes, behind obstacle — any lie requiring a punch-out or escape shot decision. Legacy data may use LR/HR (treat as Rough) or Trees (treat as Jail).
-- gotOut: Yes/No (recovery shots and sand shots)
-- recoveryLanded: where ball came to rest after successful recovery
-- sandGotOut: Yes/No, sandProx: Close/Medium/Far (bunker play)
-- chipProx: Tap-in/Close/Medium/Far/Bladed/Chunked. chipSide: Left/Center/Right (unused in Club First flow — omit from analysis)
-- bladedLie: Where ball ended up after a bladed chip — Fringe/Rough/AcrossGreen/Penalty. Only present when chipProx='Bladed'. Drives next shot type (Fringe→Chip, Rough→Chip, AcrossGreen→Chip, Penalty→Penalty stroke).
-- puttSpeed: Short/Long (only logged when speed error occurred)
-- roundNote: player's in-the-moment Field Note for this hole (wind, lie condition, mental state, unusual circumstance) — treat as primary context when present. Written during the round, NOT pre-round strategy.
+  let pass1={}, pass2={}, pass3={};
+
+  try {
+    // ── PASS 1: Overview & Narrative (Jez + Sherman) ──────────────────
+    setByronProgress(1, 'Byron is reading your round…');
+
+    const p1prompt = `${BYRON_PERSONA}
+
+PASS 1 OF 3 — OVERVIEW & NARRATIVE. Your voice here: Jez (reads and synthesizes) + Sherman (18-handicap realism, no false hope).
+
+ROUND CONTEXT:
+${roundHeader}
+
+${dataRef}
 
 RAW HOLE DATA:
-${JSON.stringify(holeData, null, 2)}
+${rawData}
 
-Respond ONLY with a valid JSON object, no markdown, no backticks:
+TASK: Deliver the narrative layer — headline finding, top patterns, scoring breakdown, strengths, faults, scoring root causes, front/back split, and your closing coach note. A second pass will handle data-deep patterns and decisions. A third pass will handle hole-by-hole and gameplan.
+
+RULES:
+- topFindings = cross-hole patterns, momentum shifts, pressure signatures, cause-effect chains. NOT hole counts.
+- scoringRootCauses = error category breakdown (tee/approach/short game/putting/penalty) by hole count. Must NOT repeat topFindings.
+- strengths MUST be cross-dimensional conditional correlations (e.g. GIR rate when tee shot in play vs out). NEVER single-round small-sample counts.
+- faults: rootCause must be decision/course management/pattern — never swing/technical.
+- ABSOLUTE BAN: no swing tips, mechanics, range drills, or generic advice.
+
+Respond ONLY with valid JSON, no markdown:
 {
   "headline": "One punchy sentence — the single most important finding",
-  "topFindings": ["Finding 1 — must be a cross-hole pattern, momentum shift, pressure signature, or cause-effect chain NOT already stated in scoringRootCauses. NEVER repeat hole counts or root causes from that section.", "Finding 2", "Finding 3"],
+  "topFindings": ["cross-hole pattern 1","cross-hole pattern 2","cross-hole pattern 3"],
   "scoreBreakdown": {"eagles":0,"birdies":0,"pars":0,"bogeys":0,"doubles":0,"worse":0},
   "roundTab": {
-    "strengths": [{"title":"...","detail":"specific data-backed explanation — MUST be a cross-dimensional pattern or conditional correlation (e.g. 'GIR rate when tee shot in play vs out of play'). NEVER single-round single-dimension counts (e.g. '3/3 sand saves', '2/2 up-and-downs'). Small sample single-round counts are not insights. If a stat is worth noting, frame it as a career rate comparison or a cause-effect relationship."}],
-    "faults": [{"title":"...","detail":"...","rootCause":"decision, course management, or pattern cause — never a swing/technical cause"}],
-    "gameplanAdjustments": [{"rank":1,"adjustment":"specific on-course change for next round","why":"data-backed reason","target":"hole/club/situation this applies to"}],
-    "scoringRootCauses": [{"cause":"...","holeCount":0,"pct":0,"detail":"hole-count root cause analysis — what CATEGORY of error (tee, approach, short game, putting, penalty) cost the most strokes and on which specific holes. Must NOT repeat verbatim what is in topFindings."}],
+    "strengths": [{"title":"...","detail":"cross-dimensional pattern or conditional correlation — never a small-sample count"}],
+    "faults": [{"title":"...","detail":"...","rootCause":"decision/course management/pattern cause — never swing/technical"}],
+    "scoringRootCauses": [{"cause":"...","holeCount":0,"pct":0,"detail":"error category breakdown — which holes, which category. Must NOT repeat topFindings."}],
     "front9Score":0,"back9Score":0,"front9Par":0,"back9Par":0,
     "coachNote":"Personal closing note"
-  },
+  }
+}`;
+
+    pass1 = await byronCall(p1prompt, 3500);
+
+    // ── PASS 2: Patterns & Decisions (Fawcett + Jez) ─────────────────
+    setByronProgress(2, 'Analyzing patterns and decisions…');
+
+    const p2prompt = `${BYRON_PERSONA}
+
+PASS 2 OF 3 — PATTERNS & DECISIONS. Your voice here: Fawcett (dispersion, probability, aim away from the big number) + Jez (synthesizes into caddie intelligence).
+
+ROUND CONTEXT:
+${roundHeader}
+
+${dataRef}
+
+RAW HOLE DATA:
+${rawData}
+
+PASS 1 FINDINGS (narrative layer already written — build on these, do not repeat them):
+${JSON.stringify(pass1, null, 2)}
+
+TASK: Deliver the data layer — miss quadrants, shape profile, aim/result 5-tier classification, contact trends, rating calibration, short game, putting, club usage and grades.
+
+5-TIER AIM/RESULT CLASSIFICATION (mandatory for every hole with teeAimed or approachAimed):
+  TIER 1 — STRATEGIC SUCCESS: aimed away from danger, finished safe. Decision WIN. Do NOT flag as miss.
+  TIER 2 — STRATEGIC SUCCESS / IMPERFECT EXECUTION: aimed away from danger, finished playable. Decision WIN. Do not penalize.
+  TIER 3 — DECISION ERROR: aimed toward danger given established miss pattern. Flag in decisionFlags with specific miss tendency.
+  TIER 4 — EXECUTION ERROR: aimed correctly, still found trouble. Note but do NOT count against decision quality.
+  TIER 5 — CANNOT CLASSIFY: insufficient context. State explicitly. Flag as "insufficient data".
+Use roundNote and caddie notes as hazard context. Tier 3 vs Tier 4 distinction is the core of decision quality.
+
+CONTACT THRESHOLD: only flag if thin+fat >= 3 for a club. Fewer = noise, omit.
+
+ABSOLUTE BAN: no swing tips, mechanics, range drills.
+
+Respond ONLY with valid JSON, no markdown:
+{
   "patternsTab": {
-    "aimHitRate": {"overall":0.0,"byClub":[{"club":"7i","attempts":0,"hits":0,"rate":0.0,"primaryMiss":"right"}]},
-    "missQuadrants": [{"club":"7i","quadrant":"short-right","count":0,"pct":0.0,"meaning":"what this pattern means on the course"}],
-    "shapeProfile": {"overall":"fade","byCategory":[{"category":"Driver","dominant":"fade","consistency":"high/medium/low"},{"category":"Irons","dominant":"straight","consistency":"medium"}]},
-    "contactTrends": [{"club":"7i","thin":0,"fat":0,"good":0,"concern":"ONLY flag if thin+fat >= 3 for this club this round. Fewer than 3 bad contacts is noise, not a pattern — omit those clubs entirely."}],
-    "ratingCalibration": {"overrated":0,"underrated":0,"accurate":0,"finding":"what the gap between feel and reality means"},
-    "decisionFlags": [{"hole":0,"shot":0,"issue":"wrong club / bad lie shot choice / unnecessary risk","recommendation":"..."}],
+    "aimHitRate": {"overall":0.0,"byClub":[{"club":"...","attempts":0,"hits":0,"rate":0.0,"primaryMiss":"..."}]},
+    "missQuadrants": [{"club":"...","quadrant":"short-right","count":0,"pct":0.0,"meaning":"what this means on the course"}],
+    "shapeProfile": {"overall":"fade","byCategory":[{"category":"Driver","dominant":"fade","consistency":"high/medium/low"}]},
+    "contactTrends": [{"club":"...","thin":0,"fat":0,"good":0,"concern":"only if thin+fat >= 3"}],
+    "ratingCalibration": {"overrated":0,"underrated":0,"accurate":0,"finding":"gap between feel and reality"},
+    "decisionFlags": [{"hole":0,"shot":0,"issue":"tier 3 decision error description","recommendation":"...","tier":3}],
     "shortGame": {"sandSaveRate":0.0,"recoveryRate":0.0,"chipProxDist":{"tapIn":0,"close":0,"medium":0,"far":0},"puttsPerGIR":0.0,"puttsPerNonGIR":0.0},
     "putting": {"threePuttRate":0.0,"threePuttHoles":[0],"firstPuttBias":"short/long/on","finding":"..."},
     "clubUsage": [{"club":"Driver","count":0,"avgResult":"description","contactRate":"good pct"}],
-    "clubGrades": [{"club":"Driver","grade":"A-F","summary":"one-sentence reason for the grade referencing actual shot data — distance result, contact rate, miss pattern, or GIR rate. No generic statements."}]
-  },
+    "clubGrades": [{"club":"Driver","grade":"A-F","summary":"one-sentence reason citing actual shot data"}]
+  }
+}`;
+
+    pass2 = await byronCall(p2prompt, 3500);
+
+    // ── PASS 3: Holes + Gameplan (all four voices) ────────────────────
+    setByronProgress(3, 'Building your gameplan…');
+
+    const p3prompt = `${BYRON_PERSONA}
+
+PASS 3 OF 3 — HOLE BY HOLE & GAMEPLAN. All four voices synthesized. This is the prescription layer.
+
+ROUND CONTEXT:
+${roundHeader}
+
+${dataRef}
+
+RAW HOLE DATA:
+${rawData}
+
+PASS 1 FINDINGS (narrative):
+${JSON.stringify(pass1, null, 2)}
+
+PASS 2 FINDINGS (patterns & decisions):
+${JSON.stringify(pass2, null, 2)}
+
+TASK: Using everything found in Passes 1 and 2, deliver (a) a hole-by-hole breakdown and (b) ranked gameplan adjustments. Every recommendation must be grounded in the patterns and decision flags already identified — synthesize, don't repeat.
+
+HOLE RULES:
+- decisionQuality rates the DECISION ONLY, never the outcome. A pulled drive from a good aim strategy is still 'good'. Only 'poor' if the choice of target, club, or strategy was wrong given known tendencies.
+- keyFinding: one specific insight NOT visible on the shot map. Must cite actual data from this hole.
+- courseManagement: evaluate the decision made. Was club right? Was target appropriate for miss tendencies? If gapping notes provided, reference specific yardages.
+- suggestion: on-course adjustment for next time. Target line, club choice, layup zone, bail-out. NEVER swing work or range drills.
+
+GAMEPLAN RULES:
+- gameplanAdjustments must be ranked by impact (rank 1 = highest priority change)
+- Each must be an actionable on-course change — not a range drill
+- Each must cite specific data: hole, club, yardage, miss direction, or pattern
+
+ABSOLUTE BAN: no swing tips, mechanics, range drills.
+
+Respond ONLY with valid JSON, no markdown:
+{
   "holesTab": [
     {
-      "hole": 0,
-      "par": 0,
-      "yds": 0,
-      "strokes": 0,
-      "verdict": "par/bogey/double/birdie",
-      "rootCause": "tee/approach/short game/putting/penalty",
-      "decisionQuality": "good/neutral/poor — rates the DECISION ONLY, never the outcome. A pulled drive from a good aim strategy is still 'good'. Only mark 'poor' if the choice of target, club, or strategy was wrong given the player's known tendencies and available information. A bad result from a sound decision is always 'good' or 'neutral'.",
-      "keyFinding": "One specific insight NOT visible on the shot map — must reference actual shot data from this hole (club, yardage, result, lie, shape). NO generic statements.",
-      "courseManagement": "Evaluate the DECISION made, not just the result. Was the club right for the yardage and lie? Was the target appropriate given miss tendencies? Was there a safer play? If gapping notes provided, reference specific yardages. If no course notes available, say what information you would need to give a better recommendation.",
-      "suggestion": "On-course adjustment for next time on this hole — target line, club choice, layup zone, bail-out. Must reference actual shot data. NEVER suggest swing work or range drills. If data is insufficient, say what you'd need.",
-      "severity": "good|neutral|warning|critical"
+      "hole":0,"par":0,"yds":0,"strokes":0,
+      "verdict":"par/bogey/double/birdie",
+      "rootCause":"tee/approach/short game/putting/penalty",
+      "decisionQuality":"good/neutral/poor",
+      "keyFinding":"specific insight citing actual shot data from this hole",
+      "courseManagement":"decision evaluation with data reference",
+      "suggestion":"on-course adjustment for next time — never swing work",
+      "severity":"good|neutral|warning|critical"
     }
-  ]`;
+  ],
+  "gameplanAdjustments": [
+    {"rank":1,"adjustment":"specific on-course change","why":"data-backed reason","target":"hole/club/situation"}
+  ]
+}`;
 
-  const messageContent = [{type:'text', text: prompt}];
+    pass3 = await byronCall(p3prompt, 4000);
 
-  try {
-    const antKey = localStorage.getItem('caddie_ant_key');
-    if (!antKey) throw new Error('No API key — go to Settings.');
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': antKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
+    // ── Merge all three passes into final analysis object ─────────────
+    const analysis = {
+      headline:       pass1.headline || '',
+      topFindings:    pass1.topFindings || [],
+      scoreBreakdown: pass1.scoreBreakdown || {},
+      roundTab: {
+        ...(pass1.roundTab || {}),
+        gameplanAdjustments: pass3.gameplanAdjustments || []
       },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 8000,
-        messages: [{role:'user', content: messageContent}]
-      })
-    });
-    const data = await response.json();
-    if (!response.ok || !data.content || !Array.isArray(data.content)) {
-      throw new Error(data.error?.message || `API error ${response.status}`);
-    }
-    if (data.stop_reason === 'max_tokens') {
-      throw new Error('Analysis was too long to complete. Please tap Re-run Byron to try again.');
-    }
-    const raw = data.content.map(c=>c.text||'').join('');
-    const clean = raw.replace(/```json|```/g,'').trim();
-    const analysis = JSON.parse(clean);
+      patternsTab: pass2.patternsTab || {},
+      holesTab:    pass3.holesTab || []
+    };
 
-    // LOCK BOX: cache analysis in round object
+    // ── Cache and render ──────────────────────────────────────────────
     const rounds = getRounds();
     const ri = rounds.findIndex(r=>r.id===round.id);
     if (ri >= 0) {
-      rounds[ri].analysis = {data: analysis, savedAt: new Date().toISOString()};
+      rounds[ri].analysis = {data:analysis, savedAt:new Date().toISOString()};
       saveRounds(rounds);
       round.analysis = rounds[ri].analysis;
-      syncWithGitHub(true); // push analysis to all devices
+      syncWithGitHub(true);
       updateByronBtn('sum-byron-btn', round);
       updateByronBtn('det-byron-btn', round);
     }
-
     renderCoachAnalysis(analysis, round);
+
   } catch(e) {
+    // Show whatever was completed, with error context
+    const partial = Object.keys(pass1).length || Object.keys(pass2).length || Object.keys(pass3).length;
     document.getElementById('coach-loading').style.display='none';
     document.getElementById('coach-content').style.display='block';
-    document.getElementById('coach-content').innerHTML=`
-      <div class="coach-error">
-        <div style="font-size:40px;margin-bottom:14px">⚠️</div>
-        <div style="font-size:15px;color:var(--chalk2);margin-bottom:8px">Byron unavailable</div>
-        <div style="font-size:13px;opacity:.6">${e.message||'Could not reach Byron'}</div>
-      </div>`;
+    if (partial) {
+      // Attempt partial render if Pass 1 completed
+      try {
+        const analysis = {
+          headline:       pass1.headline || 'Analysis partially completed',
+          topFindings:    pass1.topFindings || [],
+          scoreBreakdown: pass1.scoreBreakdown || {},
+          roundTab:   { ...(pass1.roundTab||{}), gameplanAdjustments: pass3.gameplanAdjustments||[] },
+          patternsTab: pass2.patternsTab || {},
+          holesTab:    pass3.holesTab || []
+        };
+        renderCoachAnalysis(analysis, round);
+        document.getElementById('coach-content').insertAdjacentHTML('afterbegin',
+          `<div style="background:rgba(255,100,0,.1);border:1px solid rgba(255,100,0,.3);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#e08050">
+            ⚠️ Analysis partially completed — ${e.message||'one pass failed'}. Tap Re-run Byron for a full analysis.
+          </div>`);
+      } catch(_) {
+        document.getElementById('coach-content').innerHTML=`<div class="coach-error"><div style="font-size:40px;margin-bottom:14px">⚠️</div><div style="font-size:15px;color:var(--chalk2);margin-bottom:8px">Byron unavailable</div><div style="font-size:13px;opacity:.6">${e.message||'Could not reach Byron'}</div></div>`;
+      }
+    } else {
+      document.getElementById('coach-content').innerHTML=`<div class="coach-error"><div style="font-size:40px;margin-bottom:14px">⚠️</div><div style="font-size:15px;color:var(--chalk2);margin-bottom:8px">Byron unavailable</div><div style="font-size:13px;opacity:.6">${e.message||'Could not reach Byron'}</div></div>`;
+    }
   }
 }
-
 function coachTab(tab, el) {
   ['round','patterns','tee','holes'].forEach(t => {
     document.getElementById('coach-tab-'+t).style.display = t===tab ? 'block' : 'none';
@@ -5140,8 +5252,19 @@ function renderCourseHub() {
     const savedNotes = localStorage.getItem(notesKey) || '';
     const scores = courseRounds.map(r => r.scores?.reduce((t,s)=>t+(s.strokes||0),0) || 0).filter(s=>s>0);
     const best = scores.length ? Math.min(...scores) : null;
-    const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : null;
     const totalPar = courseRounds[0]?.pars?.reduce((a,b)=>a+b,0) || 0;
+    // SRI: (strokes over par ÷ par of holes played) × course par — normalizes 9-hole rounds
+    const allCourses = getCourses();
+    const sriVals = courseRounds.map(r => {
+      const total = r.scores?.reduce((t,s)=>t+(s.strokes||0),0) || 0;
+      const parPlayed = r.pars?.reduce((a,b)=>a+b,0) || 0;
+      if (!total || !parPlayed) return null;
+      const courseObj = allCourses.find(c=>c.id===r.courseId);
+      const teeObj = courseObj?.tees?.find(t=>t.name===r.teeName);
+      const coursePar = teeObj?.par?.reduce((a,b)=>a+b,0) || parPlayed;
+      return ((total - parPlayed) / parPlayed) * coursePar;
+    }).filter(v => v !== null);
+    const avgSRI = sriVals.length ? (sriVals.reduce((a,b)=>a+b,0)/sriVals.length).toFixed(1) : null;
     const cid = 'ch-' + name.replace(/[^a-zA-Z0-9]/g,'');
 
     return `<div class="card" style="margin-bottom:14px">
@@ -5158,10 +5281,10 @@ function renderCourseHub() {
           <button onclick="getBriefing('${courseRounds[0]?.courseId||''}','${name.replace(/'/g,"\\'")}','${notesKey}')" style="background:rgba(200,168,75,.12);border:1px solid rgba(200,168,75,.4);border-radius:100px;padding:6px 14px;font-size:12px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">📋 Pre-Round Brief</button>
         </div>
       </div>
-      ${avg ? `<div style="display:flex;gap:10px;margin-bottom:12px">
+      ${avgSRI ? `<div style="display:flex;gap:10px;margin-bottom:12px">
         <div style="flex:1;background:var(--ink3);border-radius:8px;padding:10px;text-align:center">
-          <div style="font-size:20px;font-family:'DM Serif Display',serif;color:var(--chalk)">${avg}</div>
-          <div style="font-size:10px;color:var(--chalk3)">avg score</div>
+          <div style="font-size:20px;font-family:'DM Serif Display',serif;color:var(--chalk)">${avgSRI > 0 ? '+' : ''}${avgSRI}</div>
+          <div style="font-size:10px;color:var(--chalk3)">avg SRI</div>
         </div>
         <div style="flex:1;background:var(--ink3);border-radius:8px;padding:10px;text-align:center">
           <div style="font-size:20px;font-family:'DM Serif Display',serif;color:var(--chalk)">${scores.length}</div>
@@ -5324,7 +5447,9 @@ async function getBriefing(courseId, courseName, notesKey) {
   content.innerHTML = '';
   if (rerunBtn) rerunBtn.style.display = 'none';
 
-  const prompt = `You are Byron, an elite caddie for an 18-handicap golfer playing ${courseName}.\n\nCOURSE HISTORY: ${histSummary}\n\nOVERALL COURSE NOTES:\n${courseNotes||'None provided.'}\n\nPER-HOLE CADDIE/GREEN NOTES:\n${holeNotes||'None provided.'}\n\n18-HANDICAP SCORING REALITY (follow this strictly):\n- Bogey is a GOOD score on a hard hole. Double bogey is acceptable on the hardest holes. Never chase par aggressively.\n- Scoring zones are: PARITY TARGET (realistic par opportunity — easy par 4s, reachable par 5s), DAMAGE CONTROL (bogey is fine, avoid doubles — medium/hard holes), SURVIVAL (bogey/double is acceptable, just get out clean — the brutal holes).\n- NEVER use the word "birdie" unless the hole is genuinely drivable or a par 5 reachable in two with a normal shot. Instead say things like "two pars here would be an excellent day" or "walk off with bogey and be happy."\n- The mental game is about grinding for pars and accepting bogeys intelligently — not chasing scores that aren't there.\n\nDeliver a pre-round brief in this exact structure:\n\n1. GAME PLAN (2-3 sentences): The single most important strategic mindset for this course at 18 handicap. Ground it in realistic expectations.\n\n2. KEY TRAPS (3-4 holes): The holes most likely to blow up a round. One sentence each — what to avoid and why.\n\n3. ONE THING TO REMEMBER walking to the first tee.\n\n4. HOLE BY HOLE:\nFor every hole, one line in this exact format:\nH[n] · [PARITY TARGET / DAMAGE CONTROL / SURVIVAL] — Tee: [aim/miss strategy]. Approach: [acceptable miss direction].\nExample: H4 · DAMAGE CONTROL — Tee: aim center-left, missing right feeds into bunkers. Approach: short-left forgives, long-right is dead.\nFor par 3s: skip the Tee line, just give the approach strategy.\nFor the hardest par 4s and 5s where reaching the green in regulation is unlikely: note the layup target.\n\nBe direct, specific, and tactical. Use realistic 18-handicap language throughout.`;
+  const prompt = `${BYRON_PERSONA}
+
+YOUR ROLE THIS BRIEF: Deliver a pre-round strategic brief for ${courseName}.\n\nCOURSE HISTORY: ${histSummary}\n\nOVERALL COURSE NOTES:\n${courseNotes||'None provided.'}\n\nPER-HOLE CADDIE/GREEN NOTES:\n${holeNotes||'None provided.'}\n\n18-HANDICAP SCORING REALITY (follow this strictly):\n- Bogey is a GOOD score on a hard hole. Double bogey is acceptable on the hardest holes. Never chase par aggressively.\n- Scoring zones are: PARITY TARGET (realistic par opportunity — easy par 4s, reachable par 5s), DAMAGE CONTROL (bogey is fine, avoid doubles — medium/hard holes), SURVIVAL (bogey/double is acceptable, just get out clean — the brutal holes).\n- NEVER use the word "birdie" unless the hole is genuinely drivable or a par 5 reachable in two with a normal shot. Instead say things like "two pars here would be an excellent day" or "walk off with bogey and be happy."\n- The mental game is about grinding for pars and accepting bogeys intelligently — not chasing scores that aren't there.\n\nDeliver a pre-round brief in this exact structure:\n\n1. GAME PLAN (2-3 sentences): The single most important strategic mindset for this course at 18 handicap. Ground it in realistic expectations.\n\n2. KEY TRAPS (3-4 holes): The holes most likely to blow up a round. One sentence each — what to avoid and why.\n\n3. ONE THING TO REMEMBER walking to the first tee.\n\n4. HOLE BY HOLE:\nFor every hole, one line in this exact format:\nH[n] · [PARITY TARGET / DAMAGE CONTROL / SURVIVAL] — Tee: [aim/miss strategy]. Approach: [acceptable miss direction].\nExample: H4 · DAMAGE CONTROL — Tee: aim center-left, missing right feeds into bunkers. Approach: short-left forgives, long-right is dead.\nFor par 3s: skip the Tee line, just give the approach strategy.\nFor the hardest par 4s and 5s where reaching the green in regulation is unlikely: note the layup target.\n\nBe direct, specific, and tactical. Use realistic 18-handicap language throughout.`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -5366,7 +5491,9 @@ async function sendBriefChat() {
   if (!S._briefHistory) S._briefHistory = [];
   S._briefHistory.push({role:'user', content: msg});
   if (S._briefHistory.length > 6) S._briefHistory = S._briefHistory.slice(-6);
-  const system = `You are Byron, an elite caddie for ${(S._briefParams||{}).courseName||'this course'}. You just delivered this pre-round brief:\n\n${S._briefText||'(no brief loaded)'}\n\nAnswer follow-up questions concisely and directly. Stay focused on course management and strategy. No swing tips.`;
+  const system = `${BYRON_PERSONA}
+
+You just delivered this pre-round brief for ${(S._briefParams||{}).courseName||'this course'}:\n\n${S._briefText||'(no brief loaded)'}\n\nAnswer follow-up questions concisely and directly. Stay focused on course management and strategy. No swing tips.`;
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
