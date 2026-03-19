@@ -563,7 +563,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.3.8 · Mar 17, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.4.1 · Mar 18, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -791,8 +791,8 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
       <button class="btn btn-gold" id="nav-next" onclick="goNext()" style="flex:1">Next Hole →</button>
     </div>
     <div style="display:flex;justify-content:center;gap:20px">
-      <button onclick="savePause()" style="background:none;border:none;font-size:11px;color:var(--chalk3);cursor:pointer;letter-spacing:.5px;opacity:.7;font-family:'DM Sans',sans-serif">⏸ Save & Pause</button>
-      <button onclick="bailOut()" style="background:none;border:none;font-size:11px;color:rgba(201,64,64,.6);cursor:pointer;letter-spacing:.5px;font-family:'DM Sans',sans-serif">✕ Abandon Round</button>
+      <button onclick="savePause()" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:100px;padding:6px 14px;font-size:13px;color:var(--chalk3);cursor:pointer;letter-spacing:.5px;font-family:'DM Sans',sans-serif">⏸ Save & Pause</button>
+      <button onclick="bailOut()" style="background:rgba(201,64,64,.08);border:1px solid rgba(201,64,64,.25);border-radius:100px;padding:6px 14px;font-size:13px;color:rgba(201,64,64,.7);cursor:pointer;letter-spacing:.5px;font-family:'DM Sans',sans-serif">✕ Abandon Round</button>
     </div>
   </div>
 </div>
@@ -1137,9 +1137,10 @@ function renderHome() {
 }
 
 function roundRowHTML(r, origin='history') {
-  const played = r.scores.length;
-  const total = r.scores.reduce((a,s)=>a+s.strokes,0);
-  const parPlayed = r.scores.reduce((a,s)=>a+s.par,0);
+  const scored = r.scores.filter(s=>s&&s.shots&&s.shots.length>0);
+  const played = scored.length;
+  const total = scored.reduce((a,s)=>a+s.strokes,0);
+  const parPlayed = scored.reduce((a,s)=>a+s.par,0);
   const rel = total - parPlayed;
   const relStr = rel===0?'E':rel>0?`+${rel}`:`${rel}`;
   const relCls = rel<0?'c-under':rel>0?'c-over':'c-even';
@@ -1291,7 +1292,10 @@ function resumeRound() {
   if (!wip) return;
   S.currentRound = migrateRound(wip);
   // GHOST HOLE: resume at first hole with no shots logged, not just scores.length
-  const resumeHole = S.currentRound.scores.filter(s=>s.shots&&s.shots.length>0).length;
+  const resumeHole = Math.min(
+    S.currentRound.scores.filter(s=>s.shots&&s.shots.length>0).length,
+    S.currentRound.holes - 1
+  );
   S.currentHole = resumeHole;
   if (!S.activeBag || !S.activeBag.length) S.activeBag = [...CLUBS];
   showView('scoring');
@@ -1709,6 +1713,7 @@ function goNext() {
       }
     }
     saveWIP(null);
+    if (ghConfigured() && navigator.onLine) ghClearWIP(null).catch(()=>{});
     showView('summary');
     renderSummary(round);
   } else {
@@ -1962,7 +1967,7 @@ function cfGetQs(sh, par) {
     ],skipIf:s=>s.gotOut!=='Yes'}
   ];
   if(sh.type==='Chip')return[
-    {key:'chipProx',q:'Chip — result?',opts:[
+    {key:'chipProx',q:'Chip — how close? (or mishit)',opts:[
       {lbl:'Tap-in',cls:'g'},{lbl:'Close',cls:'g'},{lbl:'Medium',cls:'s'},{lbl:'Far',cls:'r'},
       {lbl:'Bladed',val:'Bladed',cls:'r'},{lbl:'Chunked',val:'Chunked',cls:'r'}
     ]},
@@ -1973,7 +1978,7 @@ function cfGetQs(sh, par) {
   if(sh.type==='Layup')return[
     {key:'layupAimed',q:'Layup — where did you aim?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
     {key:'layupDist',q:'Layup — distance result?',opts:[{lbl:'Short',cls:'r'},{lbl:'On Target',cls:'g',def:true},{lbl:'Long',cls:'r'}]},
-    {key:'layupSide',q:'Layup — which side?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
+    {key:'layupSide',q:'Layup — missed which side of aim?',opts:[{lbl:'← Left',val:'Left'},{lbl:'On Line',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
     {key:'lie',q:'Layup — where did it finish?',opts:[{lbl:'Fairway',cls:'g'},{lbl:'Rough',cls:'r'},{lbl:'Fringe',cls:'s'},{lbl:'Sand',cls:'r'},{lbl:'Jail',cls:'r'},{lbl:'Penalty',cls:'r'}]}
   ];
   if(isTeeP45)return[
@@ -1985,15 +1990,15 @@ function cfGetQs(sh, par) {
     {key:'teeLanded',q:'Tee shot — where did it land?',grid:'tee'}
   ];
   if(isAppr){
-    const pfx = isTeeP3 ? 'Tee shot' : 'Approach';
+    const pfx = isTeeP3 ? 'Tee shot' : sh.type === 'Pitch' ? 'Pitch' : 'Approach';
     const q = [
-    {key:'approachAimed',q:`${pfx} — where did you aim?`,opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
+    {key:'approachAimed',q:`${pfx} — aimed at flag, or off-center?`,opts:[{lbl:'← Left',val:'Left'},{lbl:'At Flag',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
     {key:'approachDist',q:`${pfx} — distance result?`,opts:[
       {lbl:'Short',val:'Short',cls:'r'},{lbl:'Pin High',val:'PH',cls:'s'},
       {lbl:'On Green ✓',val:'On',cls:'g'},{lbl:'Long',val:'Long',cls:'r'}
     ]},
     {key:'approachZone',q:`${pfx} — finished where on the green?`,grid:'zone',skipIf:s=>s.approachDist!=='On'},
-    {key:'approachSide',q:`${pfx} — finished which side?`,opts:[{lbl:'← Left',val:'Left',cls:'r'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right',cls:'r'}],skipIf:s=>s.approachDist==='On'||!s.approachDist},
+    {key:'approachSide',q:`${pfx} — missed which side of flag?`,opts:[{lbl:'← Left',val:'Left',cls:'r'},{lbl:'At Flag',val:'Center',def:true},{lbl:'Right →',val:'Right',cls:'r'}],skipIf:s=>s.approachDist==='On'||!s.approachDist},
     {key:'lie',q:`${pfx} — where did it finish?`,opts:[{lbl:'Fairway',cls:'g'},{lbl:'Rough',cls:'r'},{lbl:'Fringe',cls:'s'},{lbl:'Sand',cls:'r'},{lbl:'Jail',cls:'r'},{lbl:'Penalty',cls:'r'}],skipIf:s=>s.approachDist==='On'||!s.approachDist}
     ];
     if(isTeeP3) q.unshift({key:'par3PlayingYds',q:'Playing yardage?',grid:'calc'});
@@ -2789,7 +2794,7 @@ function renderShotBlocks(i) {
       const showSide = distOn && distOn !== 'On';
 
       const aimedRow = `${LBL('I Aimed')}<div class="sg-row">
-        ${[['← Left','Left'],['Center','Center'],['Right →','Right']].map(([lbl,val])=>{
+        ${[['← Left','Left'],['At Flag','Center'],['Right →','Right']].map(([lbl,val])=>{
           const on=shot.approachAimed===val;
           return `<button class="sg-btn ${on?'on':''}" onclick="setShotAttr(${i},${idx},'approachAimed','${val}')">${lbl}</button>`;
         }).join('')}
@@ -2802,8 +2807,8 @@ function renderShotBlocks(i) {
         }).join('')}
       </div>`;
 
-      const sideRow = showSide ? `<div class="sg-divider"></div>${LBL('Side')}<div class="sg-row">
-        ${[['← Left','Left'],['Center','Center'],['Right →','Right']].map(([lbl,val])=>{
+      const sideRow = showSide ? `<div class="sg-divider"></div>${LBL('Miss Side')}<div class="sg-row">
+        ${[['← Left','Left'],['At Flag','Center'],['Right →','Right']].map(([lbl,val])=>{
           const on=shot.approachSide===val;
           return `<button class="sg-btn ${on?'on':''}" onclick="setShotAttr(${i},${idx},'approachSide','${val}')">${lbl}</button>`;
         }).join('')}
@@ -2912,8 +2917,8 @@ function renderShotBlocks(i) {
       <div class="sg-row">
         ${['Sand','Jail','Penalty'].map(val=>`<button class="sg-btn ${shot.lie===val?'on':''}" onclick="setShotAttr(${i},${idx},'lie','${val}')">${val}</button>`).join('')}
       </div>
-      <div class="sg-divider"></div>${LBL('Side')}<div class="sg-row">
-        ${[['← Left','Left'],['Center','Center'],['Right →','Right']].map(([lbl,val])=>`<button class="sg-btn ${shot.layupSide===val?'on':''}" onclick="setShotAttr(${i},${idx},'layupSide','${val}')">${lbl}</button>`).join('')}
+      <div class="sg-divider"></div>${LBL('Miss Side')}<div class="sg-row">
+        ${[['← Left','Left'],['On Line','Center'],['Right →','Right']].map(([lbl,val])=>`<button class="sg-btn ${shot.layupSide===val?'on':''}" onclick="setShotAttr(${i},${idx},'layupSide','${val}')">${lbl}</button>`).join('')}
       </div>
     `) : '';
 
@@ -3257,7 +3262,12 @@ function scorecardHTML(round) {
     const th = (t, w='') => `<th style="padding:5px 3px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:500;text-align:center;white-space:nowrap;${w?'width:'+w:''}border-bottom:1px solid var(--border)">${t}</th>`;
     const td = (t, s='') => `<td style="padding:6px 3px;text-align:center;${s}">${t}</td>`;
 
-    const holeHeaders = arr.map(s=>th(s.hole)).join('') + th(totLabel);
+    const holeHeaders = arr.map(s=>{
+      const note = (s.notes||'').trim();
+      const noteIndicator = note ? `<div style="font-size:7px;color:var(--gold);line-height:1;margin-top:2px">●</div>` : `<div style="font-size:7px;line-height:1;margin-top:2px">&nbsp;</div>`;
+      const clickAttr = note ? ` onclick="showCardNote('${note.replace(/'/g,"\\'").replace(/\n/g,' ')}',${s.hole})" style="cursor:pointer"` : '';
+      return `<th${clickAttr} style="padding:5px 3px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:500;text-align:center;white-space:nowrap;border-bottom:1px solid var(--border)">${s.hole}${noteIndicator}</th>`;
+    }).join('') + th(totLabel);
     const ydsRow  = '<tr>' + td('Yds','font-size:10px;color:var(--gold);font-weight:600') +
       arr.map(s=>td(s.yds||'—','font-size:10px;color:var(--chalk3)')).join('') +
       td(arr.reduce((a,s)=>a+(s.yds||0),0),'font-size:10px;color:var(--chalk3);font-weight:600') + '</tr>';
@@ -3270,10 +3280,7 @@ function scorecardHTML(round) {
       arr.map(s=>{
         const rel=s.strokes-s.par;
         const penMarks = s.penalties>0 ? `<span style="font-size:8px;color:var(--red);letter-spacing:0px;vertical-align:super;line-height:1;margin-left:2px">${'✕'.repeat(s.penalties)}</span>` : '';
-        const fieldNote = (s.notes||'').trim();
-        const noteDot = fieldNote ? `<span style="display:block;font-size:9px;color:var(--gold);line-height:1;margin-top:2px;opacity:1" title="${fieldNote.replace(/"/g,'&quot;')}">●</span>` : '';
-        const titleAttr = fieldNote ? ` title="${fieldNote.replace(/"/g,'&quot;')}"` : '';
-        return `<td style="padding:5px 2px;text-align:center;white-space:nowrap"${titleAttr}><div style="display:inline-flex;align-items:flex-start;gap:1px"><div style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;${scoreBadgeStyle(rel)}">${s.strokes}</div>${penMarks}</div>${noteDot}</td>`;
+        return `<td style="padding:5px 2px;text-align:center;white-space:nowrap"><div style="display:inline-flex;align-items:flex-start;gap:1px"><div style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;${scoreBadgeStyle(rel)}">${s.strokes}</div>${penMarks}</div></td>`;
       }).join('') +
       `<td style="padding:5px 2px;text-align:center"><div style="font-family:'DM Serif Display',serif;font-size:18px;color:${relColor};font-weight:700">${totalStr}</div><div style="font-size:10px;color:${relColor}">${relStr}</div></td>` + '</tr>';
 
@@ -3959,13 +3966,16 @@ Respond ONLY with a valid JSON object, no markdown, no backticks:
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 6000,
+        max_tokens: 8000,
         messages: [{role:'user', content: messageContent}]
       })
     });
     const data = await response.json();
     if (!response.ok || !data.content || !Array.isArray(data.content)) {
       throw new Error(data.error?.message || `API error ${response.status}`);
+    }
+    if (data.stop_reason === 'max_tokens') {
+      throw new Error('Analysis was too long to complete. Please tap Re-run Byron to try again.');
     }
     const raw = data.content.map(c=>c.text||'').join('');
     const clean = raw.replace(/```json|```/g,'').trim();
@@ -5375,10 +5385,25 @@ async function sendBriefChat() {
   }
   thread.scrollTop = thread.scrollHeight;
 }
+function showCardNote(text, hole) {
+  const existing = document.getElementById('card-note-overlay');
+  if (existing) existing.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'card-note-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px';
+  overlay.innerHTML = `<div style="background:var(--ink2);border:1px solid var(--border);border-radius:14px;padding:20px;max-width:320px;width:100%">
+    <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:8px">Hole ${hole} \u2014 Field Note</div>
+    <div style="font-size:14px;color:var(--chalk2);line-height:1.6">${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+    <div style="font-size:11px;color:var(--chalk3);margin-top:14px;text-align:center">Tap anywhere to close</div>
+  </div>`;
+  overlay.onclick = () => overlay.remove();
+  document.body.appendChild(overlay);
+}
 function bailOut() {
   if (!confirm('Abandon this round? All data for this round will be deleted.\n\nThis cannot be undone.')) return;
   saveWIP(null);
   S.currentRound = null;
+  if (ghConfigured() && navigator.onLine) ghClearWIP(null).catch(()=>{});
   showView('home');
   renderHome();
 }
@@ -5421,19 +5446,20 @@ async function checkRemoteWIP() {
     const hole = (wip.scores||[]).filter(s=>s.shots&&s.shots.length>0).length + 1;
     const paused = wip._paused ? new Date(wip._paused).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : '';
     bar.style.display = 'block';
-    bar.innerHTML = `⏸ Paused: ${course} — Hole ${hole}${paused?' · '+paused:''} &nbsp;<button onclick="resumeRemoteWIP('${sha}')" style="background:rgba(200,168,75,.2);border:1px solid var(--gold);border-radius:6px;padding:4px 12px;font-size:12px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif">Resume</button> <button onclick="dismissRemoteWIP()" style="background:none;border:none;font-size:13px;color:var(--chalk3);cursor:pointer;margin-left:4px">✕</button>`;
+    bar.innerHTML = `⏸ Paused: ${course} — Hole ${hole}${paused?' · '+paused:''} &nbsp;<button onclick="resumeRemoteWIP()" style="background:rgba(200,168,75,.2);border:1px solid var(--gold);border-radius:6px;padding:4px 12px;font-size:12px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif">Resume</button> <button onclick="dismissRemoteWIP()" style="background:none;border:none;font-size:13px;color:var(--chalk3);cursor:pointer;margin-left:4px">✕</button>`;
   } catch(e) { /* silent fail */ }
 }
 
-async function resumeRemoteWIP(sha) {
+async function resumeRemoteWIP() {
   if (!ghConfigured() || !navigator.onLine) return;
   try {
-    const { wip } = await ghGetWIP();
+    const { wip, sha } = await ghGetWIP();
     if (!wip) return;
     saveWIP(wip);
-    await ghClearWIP(sha);
     document.getElementById('wip-resume-bar').style.display = 'none';
     resumeRound();
+    // Clear remote after round is open — best effort, non-blocking
+    if (sha) ghClearWIP(sha).catch(()=>{});
   } catch(e) {
     alert(`Could not resume: ${e.message}`);
   }
@@ -5508,11 +5534,21 @@ function doImport() {
     }
   } catch(e) { console.error('Migration error:', e); }
 })();
-renderHome();
+try {
+  renderHome();
+} catch(e) {
+  console.error('Startup error:', e);
+  const el = document.getElementById('home-rounds');
+  if (el) el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--chalk3)">
+    <div style="font-size:18px;margin-bottom:8px">⚠️</div>
+    <div style="font-size:14px;margin-bottom:6px">Something went wrong loading your rounds.</div>
+    <div style="font-size:12px;opacity:.7">Your data is safe. Try refreshing the page.<br>If the problem persists, go to Settings → clear app data.</div>
+  </div>`;
+}
 // VAULT GUARD: sync immediately on load to protect data
-syncWithGitHub(true);
+try { syncWithGitHub(true); } catch(e) { console.error('Sync error:', e); }
 // HALF TIME: check for paused round on any device
-checkRemoteWIP();
+try { checkRemoteWIP(); } catch(e) { console.error('WIP check error:', e); }
 // WIP PUSH helper — silent background push after each hole
 function pushWIPToGitHub() {
   if (!S.currentRound || !ghConfigured() || !navigator.onLine) return;
