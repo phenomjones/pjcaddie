@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v5.5.6 · Mar 20, 2026 -->
+<!-- PJ Caddie v5.5.7 · Mar 20, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -33,6 +33,22 @@
   --border2: rgba(242,237,216,0.1);
   --r: 14px;
   --rs: 10px;
+}
+html.sun-mode {
+  --ink: #f5f5f0;
+  --ink2: #e8e8e0;
+  --ink3: #d8d8cc;
+  --fairway: #2a5a2a;
+  --gold: #8a6a00;
+  --gold2: #6a5000;
+  --chalk: #111111;
+  --chalk2: #333333;
+  --chalk3: #555555;
+  --border: rgba(0,0,0,0.15);
+  --border2: rgba(0,0,0,0.08);
+  --red: #b02020;
+  --red2: #801010;
+  --sky: #1a6abf;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--chalk);font-family:'DM Sans',sans-serif;font-size:16px}
@@ -564,7 +580,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.5.6 · Mar 20, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.5.7 · Mar 20, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -679,6 +695,14 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
       </div>
     </div>
     <div style="height:1px;background:var(--border);margin:24px 0"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div>
+        <div class="eyebrow" style="margin-bottom:4px">Display Mode</div>
+        <div style="font-size:13px;color:var(--chalk3)">Sun Mode for on-course use</div>
+      </div>
+      <button id="sun-mode-btn" onclick="toggleSunMode()" style="background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:8px 18px;font-size:14px;color:var(--chalk2);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;min-width:100px;text-align:center"></button>
+    </div>
+    <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
     <div class="eyebrow" style="margin-bottom:12px">My Game Notes</div>
     <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Tell Byron about your game — club gapping, tendencies, physical limitations, goals. This is included in every Byron Analysis.</div>
     <textarea id="player-notes" style="width:100%;min-height:160px;background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="e.g. Club gapping: Driver 220, 3W 195, 5W 180, 4H 165, 5i 158, 6i 150, 7i 140, 8i 130, 9i 118, PW 105, GW 90&#10;&#10;Tendencies: slice with driver under pressure, tend to chunk chips when nervous&#10;&#10;Goals: break 90, improve course management" oninput="savePlayerNotes()"></textarea>
@@ -1121,7 +1145,7 @@ function showView(id) {
   if (id==='home') renderHome();
   if (id==='history') renderHistory();
   if (id==='setup') initSetup();
-  if (id==='settings') { loadGHSettingsForm(); loadNotesSettings(); }
+  if (id==='settings') { loadGHSettingsForm(); loadNotesSettings(); updateSunModeBtn(); }
 }
 
 // HOME
@@ -3172,6 +3196,27 @@ function saveRoundNotes() {
   const alreadySaved = getRounds().some(r => r.id === S.currentRound.id);
   if (!alreadySaved || S._editingRoundId) saveWIP(S.currentRound);
 }
+function toggleSunMode() {
+  const isSun = document.documentElement.classList.toggle('sun-mode');
+  localStorage.setItem('caddie_sun_mode', isSun ? '1' : '0');
+  updateSunModeBtn();
+}
+function updateSunModeBtn() {
+  const btn = document.getElementById('sun-mode-btn');
+  if (!btn) return;
+  const isSun = document.documentElement.classList.contains('sun-mode');
+  btn.textContent = isSun ? '☀️ Sun Mode' : '🌙 Dark Mode';
+  btn.style.background = isSun ? 'rgba(0,0,0,0.1)' : 'var(--ink3)';
+  btn.style.color = isSun ? 'var(--chalk)' : 'var(--chalk2)';
+}
+
+// Load sun mode preference on startup
+(function loadSunMode() {
+  if (localStorage.getItem('caddie_sun_mode') === '1') {
+    document.documentElement.classList.add('sun-mode');
+  }
+})();
+
 function saveAntKey() {
   const val = document.getElementById('ant-token')?.value.trim();
   const statusEl = document.getElementById('ant-key-status');
