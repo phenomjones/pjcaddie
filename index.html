@@ -563,7 +563,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.5.0 · Mar 19, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.5.3 · Mar 20, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -887,15 +887,18 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
           <div style="font-size:10px;letter-spacing:2px;color:var(--gold);opacity:.5;font-family:'DM Sans',sans-serif" id="byron-version-load"></div>
           <div style="display:flex;align-items:center;gap:0">
             <div id="bp-dot-1" style="width:14px;height:14px;border-radius:50%;background:var(--gold);flex-shrink:0"></div>
-            <div id="bp-line-1" style="width:52px;height:2px;background:var(--border);opacity:.4"></div>
+            <div id="bp-line-1" style="width:36px;height:2px;background:var(--border);opacity:.4"></div>
             <div id="bp-dot-2" style="width:14px;height:14px;border-radius:50%;background:var(--border);opacity:.4;flex-shrink:0"></div>
-            <div id="bp-line-2" style="width:52px;height:2px;background:var(--border);opacity:.4"></div>
+            <div id="bp-line-2" style="width:36px;height:2px;background:var(--border);opacity:.4"></div>
             <div id="bp-dot-3" style="width:14px;height:14px;border-radius:50%;background:var(--border);opacity:.4;flex-shrink:0"></div>
+            <div id="bp-line-3" style="width:36px;height:2px;background:var(--border);opacity:.4"></div>
+            <div id="bp-dot-4" style="width:14px;height:14px;border-radius:50%;background:var(--border);opacity:.4;flex-shrink:0"></div>
           </div>
           <div style="display:flex;gap:0;width:146px">
-            <div id="bp-lbl-1" style="flex:1;text-align:left;font-size:10px;color:var(--gold);letter-spacing:.5px;line-height:1.4">Reading<br>round</div>
-            <div id="bp-lbl-2" style="flex:1;text-align:center;font-size:10px;color:var(--chalk3);opacity:.4;letter-spacing:.5px;line-height:1.4">Patterns &amp;<br>decisions</div>
-            <div id="bp-lbl-3" style="flex:1;text-align:right;font-size:10px;color:var(--chalk3);opacity:.4;letter-spacing:.5px;line-height:1.4">Game<br>plan</div>
+            <div id="bp-lbl-1" style="flex:1;text-align:left;font-size:12px;color:var(--gold);letter-spacing:.5px;line-height:1.4">Reading<br>round</div>
+            <div id="bp-lbl-2" style="flex:1;text-align:center;font-size:12px;color:var(--chalk3);opacity:.4;letter-spacing:.5px;line-height:1.4">Patterns &amp;<br>decisions</div>
+            <div id="bp-lbl-3" style="flex:1;text-align:center;font-size:12px;color:var(--chalk3);opacity:.4;letter-spacing:.5px;line-height:1.4">Front<br>9</div>
+            <div id="bp-lbl-4" style="flex:1;text-align:right;font-size:12px;color:var(--chalk3);opacity:.4;letter-spacing:.5px;line-height:1.4">Back<br>9</div>
           </div>
           <div id="bp-msg" style="font-size:14px;color:var(--chalk2)">Byron is reading your round…</div>
           <div style="font-size:11px;opacity:.4">~45–60 seconds</div>
@@ -1182,7 +1185,7 @@ function roundRowHTML(r, origin='history') {
   return `<div class="round-row" style="position:relative${isArchived?';opacity:.7':''}" ${r.locked?'':` onclick="showDetail('${r.id}','${origin}')"`}>
     <div style="display:flex;align-items:center;flex:1;${lockedStyle}">
       <div class="rr-info" style="flex:1">
-        <div class="rr-course">${r.courseName}${isArchived?' <span style="font-size:10px;color:var(--chalk3);opacity:.6">ARCHIVED</span>':''}</div>
+        <div class="rr-course">${r.courseName}${isArchived?' <span style="font-size:13px;color:var(--chalk3);opacity:.6">ARCHIVED</span>':''}</div>
         <div class="rr-meta">${date} · ${r.teeName}${incomplete}</div>
       </div>
       <div class="rr-score">
@@ -1785,15 +1788,21 @@ let _cfPopHist = [];   // [{shotIdx, key}] for back
 
 function setCFMode(clubFirst, holeIdx) {
   localStorage.setItem('caddie_entry_mode', clubFirst ? 'clubfirst' : 'classic');
-  // Rebuild the swipe page for this hole
+  // Rebuild current hole page
   const page = document.getElementById(`hole-page-${holeIdx}`);
   if (page) page.innerHTML = holePageHTML(holeIdx);
-  // Re-apply live state
+  // Re-apply live state for current hole
   calcScore(holeIdx);
   setPinUI(holeIdx, (S.currentRound.scores[holeIdx]||{}).pinLocation||null);
   const n = document.getElementById(`notes-${holeIdx}`);
   if (n) n.value = (S.currentRound.scores[holeIdx]||{}).notes||'';
   if (clubFirst) cfRestoreLog(holeIdx);
+  // MODE STICK: rebuild all subsequent hole pages so mode persists forward
+  const totalHoles = S.currentRound?.holes || 0;
+  for (let i = holeIdx + 1; i < totalHoles; i++) {
+    const p = document.getElementById(`hole-page-${i}`);
+    if (p) p.innerHTML = holePageHTML(i);
+  }
 }
 
 const CF_CAT = {
@@ -2015,15 +2024,15 @@ function cfGetQs(sh, par) {
   if(isTeeP45)return[
     {key:'teeAimed',q:'Tee shot — where did you aim?',opts:[{lbl:'← Left',val:'Left'},{lbl:'Center',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
     {key:'teeShape',q:'Tee shot — shape?',grid:'shape',opts:[
-      {lbl:'← Draw',val:'Draw',cls:'g'},{lbl:'↑ Straight',val:'Straight',cls:'g'},{lbl:'Fade →',val:'Fade',cls:'s'},
-      {lbl:'←← Hook',val:'Hook',cls:'r'},{lbl:'← Pull',val:'Pull',cls:'r'},{lbl:'Push →',val:'Push',cls:'r'},{lbl:'Slice →→',val:'Slice',cls:'r'}
+      {lbl:'\u2199 Draw',val:'Draw',cls:'g'},{lbl:'\u2191 Straight',val:'Straight',cls:'g'},{lbl:'Fade \u2198',val:'Fade',cls:'s'},
+      {lbl:'\u21a9 Hook',val:'Hook',cls:'r'},{lbl:'\u2190 Pull',val:'Pull',cls:'r'},{lbl:'Push \u2192',val:'Push',cls:'r'},{lbl:'Slice \u21aa',val:'Slice',cls:'r'}
     ]},
     {key:'teeLanded',q:'Tee shot — where did it land?',grid:'tee'}
   ];
   if(isAppr){
     const pfx = isTeeP3 ? 'Tee shot' : sh.type === 'Pitch' ? 'Pitch' : 'Approach';
     const q = [
-    {key:'approachAimed',q:`${pfx} — aimed at flag, or off-center?`,opts:[{lbl:'← Left',val:'Left'},{lbl:'At Flag',val:'Center',def:true},{lbl:'Right →',val:'Right'}]},
+    {key:'approachAimed',q:`${pfx} — where did you aim relative to the flag?`,opts:[{lbl:'← Left of Flag',val:'Left'},{lbl:'At the Flag',val:'Center',def:true},{lbl:'Right of Flag →',val:'Right'}]},
     {key:'approachDist',q:`${pfx} — distance result?`,opts:[
       {lbl:'Short',val:'Short',cls:'r'},{lbl:'Pin High',val:'PH',cls:'s'},
       {lbl:'On Green ✓',val:'On',cls:'g'},{lbl:'Long',val:'Long',cls:'r'}
@@ -2346,7 +2355,7 @@ function cfAns(key, val) {
   }
   if(key==='teeLanded'){
     const m={fairway:'Fairway','rough-left':'Rough','rough-right':'Rough',bunker:'Sand',
-      'ob-left':'Penalty','ob-right':'Penalty','oop-left':'Penalty','oop-right':'Penalty'};
+      'ob-left':'Penalty','ob-right':'Penalty','oop-left':'Jail','oop-right':'Jail'};
     if(m[val]) _cfShots[_cfPopIdx].lie=m[val];
   }
   if(key==='approachDist'&&val==='On') _cfShots[_cfPopIdx].lie='Green';
@@ -2837,8 +2846,8 @@ function renderShotBlocks(i) {
       const showZone = distOn === 'On';
       const showSide = distOn && distOn !== 'On';
 
-      const aimedRow = `${LBL('I Aimed')}<div class="sg-row">
-        ${[['← Left','Left'],['At Flag','Center'],['Right →','Right']].map(([lbl,val])=>{
+      const aimedRow = `${LBL('Aimed (relative to flag)')}<div class="sg-row">
+        ${[['← Left of Flag','Left'],['At the Flag','Center'],['Right of Flag →','Right']].map(([lbl,val])=>{
           const on=shot.approachAimed===val;
           return `<button class="sg-btn ${on?'on':''}" onclick="setShotAttr(${i},${idx},'approachAimed','${val}')">${lbl}</button>`;
         }).join('')}
@@ -3813,6 +3822,8 @@ async function sendCoachChat() {
 
 You already ran a full analysis of this round. The player is asking follow-up questions. Be concise, direct, and specific. No more than 3 paragraphs per response.
 
+CRITICAL DATA RULE: ob-left/ob-right = OB — stroke and distance penalty (ball replayed, stroke added). oop-left/oop-right = out of position — ball is IN PLAY, no penalty stroke. Never count OOP as a penalty in scoring analysis.
+
 CRITICAL RULE: Never invent terrain, elevation, wind, slope, or lie conditions that are not explicitly stated in the data below. If you cannot explain WHY a pattern exists from the data alone, say so directly. Never fabricate plausible-sounding golf reasons to fill gaps.
 
 ${roundSummary}
@@ -3902,7 +3913,7 @@ Score: ${total} (${total-par>=0?'+':''}${total-par} vs par ${par}) | Holes: ${ro
 
   const dataRef = `DATA REFERENCE:
 - teeAimed: Left/Center/Right | teeShape: Draw/Straight/Fade/Hook/Pull/Push/Slice/Fat/Top/Thin
-- teeLanded: fairway/rough-left/rough-right/bunker/ob-left/ob-right/oop-left/oop-right/short
+- teeLanded: fairway/rough-left/rough-right/bunker/ob-left/ob-right/oop-left/oop-right/short. CRITICAL: ob-left/ob-right = OB — stroke and distance penalty. oop-left/oop-right = out of position — ball IN PLAY, no penalty stroke. Never conflate OOP with a penalty.
 - approachAimed: Left/Center/Right | approachDist: Short/PH/On/Long (On=GIR)
 - approachSide: Left/Center/Right (lateral miss) | approachZone: 9-zone grid when On
 - layupAimed/layupDist/layupSide | contact: Thin/Fat (blank=solid)
@@ -3915,7 +3926,7 @@ Score: ${total} (${total-par>=0?'+':''}${total-par} vs par ${par}) | Holes: ${ro
 
   // ── Progress bar helper ─────────────────────────────────────────────
   function setByronProgress(step, msg) {
-    [1,2,3].forEach(i => {
+    [1,2,3,4].forEach(i => {
       const dot  = document.getElementById('bp-dot-'+i);
       const line = document.getElementById('bp-line-'+i);
       const lbl  = document.getElementById('bp-lbl-'+i);
@@ -4046,20 +4057,20 @@ Respond ONLY with valid JSON, no markdown:
 
     pass2 = await byronCall(p2prompt, 6000);
 
-    // ── PASS 3: Holes + Gameplan (all four voices) ────────────────────
-    setByronProgress(3, 'Building your gameplan…');
+    // ── PASS 3a: Front 9 holes (all four voices) ─────────────────────
+    setByronProgress(3, 'Analyzing front 9…');
 
-    const p3prompt = `${BYRON_PERSONA}
+    const front9Data = holeData.filter(h => h.hole <= 9);
+    const back9Data  = holeData.filter(h => h.hole > 9);
 
-PASS 3 OF 3 — HOLE BY HOLE & GAMEPLAN. All four voices synthesized. This is the prescription layer.
+    const holePromptBase = (holesSlice, passLabel) => `${BYRON_PERSONA}
+
+${passLabel} — HOLE BY HOLE. All four voices synthesized. Prescription layer.
 
 ROUND CONTEXT:
 ${roundHeader}
 
 ${dataRef}
-
-RAW HOLE DATA:
-${rawData}
 
 PASS 1 FINDINGS (narrative):
 ${JSON.stringify(pass1, null, 2)}
@@ -4067,18 +4078,16 @@ ${JSON.stringify(pass1, null, 2)}
 PASS 2 FINDINGS (patterns & decisions):
 ${JSON.stringify(pass2, null, 2)}
 
-TASK: Using everything found in Passes 1 and 2, deliver (a) a hole-by-hole breakdown and (b) ranked gameplan adjustments. Every recommendation must be grounded in the patterns and decision flags already identified — synthesize, don't repeat.
+RAW HOLE DATA FOR THIS PASS:
+${JSON.stringify(holesSlice, null, 2)}
+
+TASK: Deliver a hole-by-hole breakdown for ONLY the holes in this data set. Ground every recommendation in the patterns and flags from Passes 1 and 2 — synthesize, don't repeat.
 
 HOLE RULES:
-- decisionQuality rates the DECISION ONLY, never the outcome. A pulled drive from a good aim strategy is still 'good'. Only 'poor' if the choice of target, club, or strategy was wrong given known tendencies.
-- keyFinding: one specific insight NOT visible on the shot map. Must cite actual data from this hole.
-- courseManagement: evaluate the decision made. Was club right? Was target appropriate for miss tendencies? If gapping notes provided, reference specific yardages.
-- suggestion: on-course adjustment for next time. Target line, club choice, layup zone, bail-out. NEVER swing work or range drills.
-
-GAMEPLAN RULES:
-- gameplanAdjustments must be ranked by impact (rank 1 = highest priority change)
-- Each must be an actionable on-course change — not a range drill
-- Each must cite specific data: hole, club, yardage, miss direction, or pattern
+- decisionQuality rates the DECISION ONLY, never the outcome. Only 'poor' if the choice of target, club, or strategy was wrong given known tendencies.
+- keyFinding: one specific insight NOT visible on the shot map. Must cite actual data from this hole. MAX 2 sentences.
+- courseManagement: evaluate the decision made. Was club right? Was target appropriate? MAX 2 sentences.
+- suggestion: on-course adjustment for next time. Target line, club choice, layup zone, bail-out. NEVER swing work. MAX 2 sentences.
 
 ABSOLUTE BAN: no swing tips, mechanics, range drills.
 
@@ -4090,9 +4099,62 @@ Respond ONLY with valid JSON, no markdown:
       "verdict":"par/bogey/double/birdie",
       "rootCause":"tee/approach/short game/putting/penalty",
       "decisionQuality":"good/neutral/poor",
-      "keyFinding":"specific insight citing actual shot data from this hole",
-      "courseManagement":"decision evaluation with data reference",
-      "suggestion":"on-course adjustment for next time — never swing work",
+      "keyFinding":"specific insight — MAX 2 sentences",
+      "courseManagement":"decision evaluation — MAX 2 sentences",
+      "suggestion":"on-course adjustment — MAX 2 sentences, never swing work",
+      "severity":"good|neutral|warning|critical"
+    }
+  ]
+}`;
+
+    const pass3a = front9Data.length ? await byronCall(holePromptBase(front9Data, 'PASS 3a OF 4 — FRONT 9'), 5000) : {holesTab:[]};
+
+    // ── PASS 3b: Back 9 holes + Gameplan ─────────────────────────────
+    setByronProgress(4, 'Analyzing back 9 and gameplan…');
+
+    const p3bPrompt = `${BYRON_PERSONA}
+
+PASS 4 OF 4 — BACK 9 + GAMEPLAN. All four voices synthesized. Final pass.
+
+ROUND CONTEXT:
+${roundHeader}
+
+${dataRef}
+
+PASS 1 FINDINGS (narrative):
+${JSON.stringify(pass1, null, 2)}
+
+PASS 2 FINDINGS (patterns & decisions):
+${JSON.stringify(pass2, null, 2)}
+
+FRONT 9 HOLES ALREADY ANALYZED:
+${JSON.stringify(pass3a.holesTab||[], null, 2)}
+
+RAW HOLE DATA FOR BACK 9:
+${JSON.stringify(back9Data, null, 2)}
+
+TASK: (a) Hole-by-hole for back 9 only. (b) Ranked gameplan adjustments for the full round — draw on ALL four passes.
+
+HOLE RULES: Same as front 9. MAX 2 sentences per field.
+
+GAMEPLAN RULES:
+- Ranked by impact (rank 1 = highest priority)
+- Actionable on-course changes only — never range drills
+- Must cite specific data: hole, club, yardage, miss direction, or pattern
+
+ABSOLUTE BAN: no swing tips, mechanics, range drills.
+
+Respond ONLY with valid JSON, no markdown:
+{
+  "holesTab": [
+    {
+      "hole":0,"par":0,"yds":0,"strokes":0,
+      "verdict":"par/bogey/double/birdie",
+      "rootCause":"tee/approach/short game/putting/penalty",
+      "decisionQuality":"good/neutral/poor",
+      "keyFinding":"specific insight — MAX 2 sentences",
+      "courseManagement":"decision evaluation — MAX 2 sentences",
+      "suggestion":"on-course adjustment — MAX 2 sentences, never swing work",
       "severity":"good|neutral|warning|critical"
     }
   ],
@@ -4101,9 +4163,10 @@ Respond ONLY with valid JSON, no markdown:
   ]
 }`;
 
-    pass3 = await byronCall(p3prompt, 8000);
+    const pass3b = back9Data.length ? await byronCall(p3bPrompt, 5000) : {holesTab:[], gameplanAdjustments:[]};
+    pass3 = { holesTab: [...(pass3a.holesTab||[]), ...(pass3b.holesTab||[])], gameplanAdjustments: pass3b.gameplanAdjustments||[] };
 
-    // ── Merge all three passes into final analysis object ─────────────
+    // ── Merge all passes into final analysis object ───────────────────
     const analysis = {
       headline:       pass1.headline || '',
       topFindings:    pass1.topFindings || [],
@@ -4206,7 +4269,7 @@ function renderCoachAnalysis(a, round) {
 
   const topHTML = (a.topFindings||[]).map((f,i)=>`
     <div style="background:var(--ink3);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:10px">
-      <div style="font-size:10px;letter-spacing:1.5px;color:var(--gold);opacity:.7;margin-bottom:5px;font-weight:600">FINDING ${i+1}</div>
+      <div style="font-size:12px;letter-spacing:1.5px;color:var(--gold);opacity:.7;margin-bottom:5px;font-weight:600">FINDING ${i+1}</div>
       <div style="font-size:15px;color:var(--chalk2);line-height:1.75">${f}</div>
     </div>`).join('');
 
@@ -4215,14 +4278,14 @@ function renderCoachAnalysis(a, round) {
   const hasBack9 = b9 > 0 || b9p > 0;
   const nine9HTML = f9 ? `
     <div class="coach-section"><div class="coach-section-title">Front vs Back 9</div>
-      <div style="display:grid;grid-template-columns:${hasBack9?'1fr 1fr':'1fr'};gap:10px;${hasBack9?'':'max-width:180px;margin:0 auto'}">
-        <div class="card" style="text-align:center;padding:14px 10px">
-          <div style="font-size:11px;letter-spacing:2px;color:var(--chalk3);margin-bottom:4px">FRONT 9</div>
+      <div style="display:grid;grid-template-columns:${hasBack9?'1fr 1fr':'1fr'};gap:10px;align-items:stretch;${hasBack9?'':'max-width:180px;margin:0 auto'}">
+        <div style="text-align:center;padding:14px 10px;background:var(--ink2);border:1px solid var(--border);border-radius:12px;min-height:82px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-size:13px;letter-spacing:2px;color:var(--chalk3);margin-bottom:4px">FRONT 9</div>
           <div style="font-size:26px;font-family:'DM Serif Display',serif;color:var(--chalk)">${f9}</div>
           <div style="font-size:12px;color:${f9-f9p>0?'var(--red)':'#6bc96b'}">${f9-f9p>=0?'+':''}${f9-f9p}</div>
         </div>
-        ${hasBack9?`<div class="card" style="text-align:center;padding:14px 10px">
-          <div style="font-size:11px;letter-spacing:2px;color:var(--chalk3);margin-bottom:4px">BACK 9</div>
+        ${hasBack9?`<div style="text-align:center;padding:14px 10px;background:var(--ink2);border:1px solid var(--border);border-radius:12px;min-height:82px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-size:13px;letter-spacing:2px;color:var(--chalk3);margin-bottom:4px">BACK 9</div>
           <div style="font-size:26px;font-family:'DM Serif Display',serif;color:var(--chalk)">${b9}</div>
           <div style="font-size:12px;color:${b9-b9p>0?'var(--red)':'#6bc96b'}">${b9-b9p>=0?'+':''}${b9-b9p}</div>
         </div>`:''}
@@ -4315,18 +4378,25 @@ function renderCoachAnalysis(a, round) {
     if (!mq.length) return '';
     return `<div class="pat-block">
       <div class="pat-block-hdr">📍 Miss Quadrants</div>
-      <div style="font-size:11px;color:var(--chalk3);margin-bottom:10px">Where shots land relative to target — the pattern you can't see hole-to-hole</div>
+      <div style="font-size:13px;color:var(--chalk3);margin-bottom:10px">Where shots land relative to target — the pattern you can't see hole-to-hole</div>
       ${mq.map(m => {
         const pct = Math.round(normPct(m.pct));
         const quad = m.quadrant || '';
         const isLeft = quad.includes('left'), isRight = quad.includes('right');
         const isShort = quad.includes('short'), isLong = quad.includes('long');
         const dotColor = isShort||isRight ? 'var(--red)' : isLong ? 'var(--gold)' : '#6bc96b';
+        const dirGlyph = ({
+          'short-left':'\u2199','short-center':'\u2193','short-right':'\u2198',
+          'long-left':'\u2196','long-center':'\u2191','long-right':'\u2197',
+          'left':'\u2190','right':'\u2192','center':'\u25cb'
+        }[quad]||'');
+        const quadLabel = quad.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
         return `<div style="background:var(--ink3);border-radius:10px;padding:12px 14px;margin-bottom:8px;border-left:3px solid ${dotColor}">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
             <div style="font-size:13px;font-weight:600;color:var(--chalk)">${m.club}</div>
             <div style="display:flex;align-items:center;gap:8px">
-              <div style="font-size:12px;font-weight:700;color:${dotColor}">${quad}</div>
+              <div style="font-size:16px;color:${dotColor};line-height:1">${dirGlyph}</div>
+              <div style="font-size:12px;font-weight:700;color:${dotColor}">${quadLabel}</div>
               <div style="font-size:11px;color:var(--chalk3)">${m.count}x · ${pct}%</div>
             </div>
           </div>
@@ -4340,23 +4410,28 @@ function renderCoachAnalysis(a, round) {
     const sp = pt.shapeProfile;
     if (!sp) return '';
     const consistencyColor = {high:'#6bc96b', medium:'var(--gold)', low:'var(--red)'};
+    const shapeGlyph = s => ({Draw:'\u2199',Straight:'\u2191',Fade:'\u2198',Hook:'\u21a9',Pull:'\u2190',Push:'\u2192',Slice:'\u21aa',Fat:'\u2193',Top:'\u2193',Thin:'\u2193'}[s]||'');
+    const shapeColor = s => ({Draw:'#6bc96b',Straight:'#6bc96b',Fade:'#e0a870',Hook:'var(--red)',Pull:'var(--red)',Push:'#e0a870',Slice:'var(--red)'}[s]||'var(--chalk2)');
     const cats = (sp.byCategory||[]).map(c => `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
-        <span style="font-size:13px;color:var(--chalk2)">${c.category}</span>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:13px;font-weight:600;color:var(--chalk)">${c.dominant}</span>
-          <span style="font-size:10px;padding:2px 7px;border-radius:100px;background:rgba(255,255,255,.06);color:${consistencyColor[c.consistency]||'var(--chalk3)'}">${c.consistency}</span>
+      <div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:10px">
+        <div style="width:64px;font-size:13px;color:var(--chalk3);flex-shrink:0">${c.category}</div>
+        <div style="flex:1;display:flex;align-items:center;gap:6px">
+          <span style="font-size:18px;color:${shapeColor(c.dominant)};line-height:1">${shapeGlyph(c.dominant)}</span>
+          <span style="font-size:14px;font-weight:600;color:var(--chalk)">${c.dominant||'\u2014'}</span>
         </div>
+        <div style="font-size:10px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,.06);color:${consistencyColor[c.consistency]||'var(--chalk3)'};flex-shrink:0">${c.consistency}</div>
       </div>`).join('');
+    const overall = sp.overall || 'Mixed';
     return `<div class="pat-block">
       <div class="pat-block-hdr">🌀 Shot Shape Profile</div>
-      <div style="display:flex;align-items:center;gap:12px;padding:12px 0 8px">
-        <div style="text-align:center;flex-shrink:0;min-width:80px">
-          <div style="font-size:20px;font-family:'DM Serif Display',serif;color:var(--chalk)">${sp.overall||'Mixed'}</div>
-          <div style="font-size:10px;color:var(--chalk3);letter-spacing:.5px">DOMINANT</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 0 10px;border-bottom:1px solid var(--border);margin-bottom:4px">
+        <span style="font-size:28px;color:${shapeColor(overall)};line-height:1">${shapeGlyph(overall)}</span>
+        <div>
+          <div style="font-size:18px;font-family:'DM Serif Display',serif;color:var(--chalk);line-height:1.2">${overall}</div>
+          <div style="font-size:10px;color:var(--chalk3);letter-spacing:1px;margin-top:2px">DOMINANT SHAPE</div>
         </div>
-        <div style="flex:1">${cats}</div>
       </div>
+      ${cats}
     </div>`;
   })();
 
@@ -4365,7 +4440,7 @@ function renderCoachAnalysis(a, round) {
     if (!ct.length) return '';
     return `<div class="pat-block">
       <div class="pat-block-hdr">⚡ Contact Trends</div>
-      <div style="font-size:11px;color:var(--chalk3);margin-bottom:10px">Mis-hits by club — reveals swing consistency patterns</div>
+      <div style="font-size:13px;color:var(--chalk3);margin-bottom:10px">Mis-hits by club — reveals swing consistency patterns</div>
       ${ct.map(c => {
         const t = (c.thin||0)+(c.fat||0)+(c.good||0)||1;
         const badPct = Math.round(((c.thin||0)+(c.fat||0))/t*100);
@@ -4395,7 +4470,7 @@ function renderCoachAnalysis(a, round) {
     if (!df.length) return '';
     return `<div class="pat-block">
       <div class="pat-block-hdr">⚠️ Course Management Flags</div>
-      <div style="font-size:11px;color:var(--chalk3);margin-bottom:10px">Decisions where the data suggests a different choice would have helped</div>
+      <div style="font-size:13px;color:var(--chalk3);margin-bottom:10px">Decisions where the data suggests a different choice would have helped</div>
       ${df.map(d=>`
         <div style="border:1px solid rgba(201,64,64,.25);border-left:3px solid var(--red);border-radius:8px;padding:10px 12px;margin-bottom:8px">
           <div style="font-size:12px;font-weight:600;color:var(--chalk);margin-bottom:4px">Hole ${d.hole}, Shot ${d.shot} — ${d.issue}</div>
@@ -4532,11 +4607,11 @@ function renderCoachAnalysis(a, round) {
       </div>
       <div class="coach-hole-body">
         <div style="padding-top:10px">
-          ${h.keyFinding?`<div style="font-size:11px;font-weight:600;color:var(--chalk3);letter-spacing:.5px;margin-bottom:4px">KEY FINDING</div>
+          ${h.keyFinding?`<div style="font-size:13px;font-weight:600;color:var(--chalk3);letter-spacing:.5px;margin-bottom:4px">KEY FINDING</div>
           <div style="font-size:15px;color:var(--chalk2);line-height:1.7;margin-bottom:12px;padding:10px 12px;background:var(--ink3);border-radius:8px">${h.keyFinding}</div>`:''}
-          ${h.courseManagement?`<div style="font-size:11px;font-weight:600;color:var(--chalk3);letter-spacing:.5px;margin-bottom:4px">COURSE MANAGEMENT</div>
+          ${h.courseManagement?`<div style="font-size:13px;font-weight:600;color:var(--chalk3);letter-spacing:.5px;margin-bottom:4px">COURSE MANAGEMENT</div>
           <div style="font-size:15px;color:var(--chalk2);line-height:1.7;margin-bottom:12px;padding:10px 12px;background:var(--ink3);border-radius:8px;border-left:3px solid var(--gold)">${h.courseManagement}</div>`:''}
-          ${h.suggestion?`<div style="font-size:11px;font-weight:600;color:var(--chalk3);letter-spacing:.5px;margin-bottom:4px">NEXT TIME</div>
+          ${h.suggestion?`<div style="font-size:13px;font-weight:600;color:var(--chalk3);letter-spacing:.5px;margin-bottom:4px">NEXT TIME</div>
           <div style="font-size:13px;color:var(--chalk2);line-height:1.5;padding:8px 10px;background:var(--ink3);border-radius:8px;border-left:3px solid #6bc96b">${h.suggestion}</div>`:''}
         </div>
       </div>
@@ -4603,8 +4678,8 @@ function renderTeeTab(round) {
   };
   const catColor = c => ({fairway:'#5ec85e',rough:'#e0a870',trouble:'#e07070',ob:'var(--red)',unknown:'var(--chalk3)'}[c]||'var(--chalk3)');
   const catLabel = c => ({fairway:'Fairway',rough:'Rough',trouble:'Trouble',ob:'OB',unknown:'\u2014'}[c]||c);
-  const shapeArrow = s => ({Draw:'\u2190 Draw',Straight:'\u2191 Straight',Fade:'Fade \u2192',Hook:'\u2190\u2190 Hook',Pull:'\u2190 Pull',Push:'Push \u2192',Slice:'Slice \u2192\u2192'}[s]||s||'\u2014');
-  const aimLabel  = s => ({Left:'\u2190 Left',Center:'Center',Right:'Right \u2192'}[s]||s||'\u2014');
+  const shapeArrow = s => ({Draw:'\u2199 Draw',Straight:'\u2191 Straight',Fade:'Fade \u2198',Hook:'\u21a9 Hook',Pull:'\u2190 Pull',Push:'Push \u2192',Slice:'Slice \u21aa'}[s]||s||'\u2014');
+  const aimLabel  = s => ({Left:'\u2190 Left of Flag',Center:'\u25cb At Flag',Right:'Right of Flag \u2192'}[s]||s||'\u2014');
   const distLabel = d => ({Short:'Short \u2193',PH:'Pin High',On:'On Green \u2713',Long:'Long \u2191'}[d]||d||'\u2014');
   const distColor = d => ({Short:'var(--sky)',PH:'var(--chalk2)',On:'#5ec85e',Long:'#9060b0'}[d]||'var(--chalk3)');
 
@@ -4644,7 +4719,7 @@ function renderTeeTab(round) {
       ${[['Fairway',fw,'#5ec85e'],['Rough',ip-fw,'#e0a870'],['Trouble',tr,'#e07070'],['OB',ob,'var(--red)']].map(([lbl,v,col])=>`
         <div style="text-align:center;background:var(--ink3);border-radius:8px;padding:8px 4px">
           <div style="font-size:18px;font-weight:700;color:${col}">${v}</div>
-          <div style="font-size:10px;color:var(--chalk3);margin-top:2px">${lbl}</div>
+          <div style="font-size:13px;color:var(--chalk3);margin-top:2px">${lbl}</div>
         </div>`).join('')}
     </div>
     ${avgIP!=='\u2014'||avgOut!=='\u2014'?`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--chalk3);padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:10px">
@@ -4659,14 +4734,15 @@ function renderTeeTab(round) {
       if (!s.length) return '';
       const ip = s.filter(d => IN_PLAY.includes(d.landed)).length;
       const tr = s.filter(d => TROUBLE.includes(d.landed)||OB_VALS.includes(d.landed)).length;
-      return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)">
-        <div style="width:68px;font-size:12px;color:var(--chalk3)">${aimLabel(aim)}</div>
-        <div style="width:26px;font-size:11px;color:var(--chalk3)">${s.length}\u00d7</div>
-        <div style="flex:1;background:rgba(255,255,255,.05);border-radius:4px;height:8px;overflow:hidden">
-          <div style="height:100%;width:${Math.round(ip/s.length*100)}%;background:#5ec85e;border-radius:4px"></div>
+      const pct = Math.round(ip/s.length*100);
+      return `<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <span style="font-size:13px;color:var(--chalk2);font-weight:500">${aimLabel(aim)}</span>
+          <span style="font-size:11px;color:var(--chalk3)">${s.length}\u00d7&nbsp;&nbsp;<span style="color:#5ec85e">${pct}% IP</span>${tr?`&nbsp;&nbsp;<span style="color:var(--red)">${tr} bad</span>`:''}</span>
         </div>
-        <div style="width:40px;font-size:11px;color:#5ec85e;text-align:right">${Math.round(ip/s.length*100)}% IP</div>
-        ${tr?`<div style="width:32px;font-size:11px;color:var(--red);text-align:right">${tr} bad</div>`:'<div style="width:32px"></div>'}
+        <div style="background:rgba(255,255,255,.05);border-radius:4px;height:8px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:#5ec85e;border-radius:4px"></div>
+        </div>
       </div>`;
     }).join('');
     return rows ? `<div class="eyebrow" style="margin-bottom:6px;margin-top:4px">Aim Accuracy</div>${rows}` : '';
@@ -4733,7 +4809,7 @@ function renderTeeTab(round) {
         ${[['In Play',Math.round(cIP/cN*100)+'%','#5ec85e'],['Fairway',Math.round(cFW/cN*100)+'%','#5ec85e'],['OB',Math.round(cOB/cN*100)+'%','var(--red)']].map(([l,v,c])=>`
           <div style="text-align:center;background:var(--ink3);border-radius:8px;padding:10px 4px">
             <div style="font-size:20px;font-weight:700;color:${c}">${v}</div>
-            <div style="font-size:10px;color:var(--chalk3);margin-top:2px">${l}</div>
+            <div style="font-size:13px;color:var(--chalk3);margin-top:2px">${l}</div>
           </div>`).join('')}
       </div>
       <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--chalk3);padding-top:8px;border-top:1px solid var(--border)">
@@ -4771,7 +4847,7 @@ function renderTeeTab(round) {
         ${[['GIR',girN,'#5ec85e'],['Pin High',phN,'var(--sky)'],['Missed',missN,'#e0a870']].map(([l,v,c])=>`
           <div style="text-align:center;background:var(--ink3);border-radius:8px;padding:8px 4px">
             <div style="font-size:18px;font-weight:700;color:${c}">${v}</div>
-            <div style="font-size:10px;color:var(--chalk3);margin-top:2px">${l}</div>
+            <div style="font-size:13px;color:var(--chalk3);margin-top:2px">${l}</div>
           </div>`).join('')}
       </div>
       ${girN||missN?`<div style="display:flex;justify-content:space-between;font-size:12px;color:var(--chalk3);padding:8px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:10px">
@@ -5309,8 +5385,8 @@ function pjIndexHTML(pj, compact) {
     // Normalize to a visual bar: ceiling is left anchor, floor is right
     return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <div style="font-size:10px;letter-spacing:1px;color:var(--gold);opacity:.7">POTENTIAL RANGE</div>
-        <div style="font-size:10px;color:var(--chalk3);opacity:.6">${potRange.holes} holes</div>
+        <div style="font-size:13px;letter-spacing:1px;color:var(--gold);opacity:.7">POTENTIAL RANGE</div>
+        <div style="font-size:13px;color:var(--chalk3);opacity:.6">${potRange.holes} holes</div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--chalk3);margin-bottom:4px">
         <span style="color:#5ec85e">Ceiling ${cStr}/hole</span>
@@ -5323,17 +5399,17 @@ function pjIndexHTML(pj, compact) {
   })() : '';
 
   return `<div style="background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px">
-    <div style="font-size:10px;letter-spacing:1px;color:var(--gold);opacity:.7;margin-bottom:10px">PJ INDEX</div>
+    <div style="font-size:13px;letter-spacing:1px;color:var(--gold);opacity:.7;margin-bottom:10px">PJ INDEX</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div style="text-align:center">
         <div style="font-size:24px;font-family:'DM Serif Display',serif;color:${cmrColor}">${cmrDisplay}</div>
-        <div style="font-size:10px;color:var(--chalk3);margin-top:2px">${cmrLabel}${partialNote}</div>
-        <div style="font-size:9px;color:var(--chalk3);opacity:.6;margin-top:1px">Course Mgmt</div>
+        <div style="font-size:13px;color:var(--chalk3);margin-top:2px">${cmrLabel}${partialNote}</div>
+        <div style="font-size:12px;color:var(--chalk3);opacity:.6;margin-top:1px">Course Mgmt</div>
       </div>
       <div style="text-align:center">
         <div style="font-size:24px;font-family:'DM Serif Display',serif;color:${dciColor}">${dciDisplay}</div>
-        <div style="font-size:10px;color:var(--chalk3);margin-top:2px">DCI</div>
-        <div style="font-size:9px;color:var(--chalk3);opacity:.6;margin-top:1px">Damage Control</div>
+        <div style="font-size:13px;color:var(--chalk3);margin-top:2px">DCI</div>
+        <div style="font-size:12px;color:var(--chalk3);opacity:.6;margin-top:1px">Damage Control</div>
       </div>
     </div>
     ${rangeBlock}
@@ -5370,7 +5446,7 @@ function renderCourseHub() {
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
       <div>
         <div style="font-size:12px;font-weight:600;color:var(--chalk);letter-spacing:.3px">📒 Notes Backup</div>
-        <div id="vault-last-backup" style="font-size:10px;color:var(--chalk3);margin-top:2px"></div>
+        <div id="vault-last-backup" style="font-size:13px;color:var(--chalk3);margin-top:2px"></div>
       </div>
       <div style="display:flex;gap:8px">
         <button id="vault-backup-btn" onclick="backupNotes()" style="background:var(--gold);border:none;border-radius:100px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">↑ Backup Notes</button>
@@ -5436,7 +5512,7 @@ function renderCourseHub() {
       </div>` : ''}
       ${pjIndexHTML(pjData)}
       <div style="margin-bottom:12px">
-        <div style="font-size:10px;letter-spacing:1px;color:var(--gold);opacity:.7;margin-bottom:6px">ROUND HISTORY</div>
+        <div style="font-size:13px;letter-spacing:1px;color:var(--gold);opacity:.7;margin-bottom:6px">ROUND HISTORY</div>
         ${courseRounds.map(r => {
           const total = r.scores?.reduce((t,s)=>t+(s.strokes||0),0) || 0;
           const par = r.pars?.reduce((a,b)=>a+b,0) || 0;
