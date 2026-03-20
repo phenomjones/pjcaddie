@@ -563,7 +563,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.4.6 · Mar 19, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.4.7 · Mar 19, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -1500,6 +1500,7 @@ function holePageHTML(i) {
     </div>
     <!-- CLUB GRID -->
     <div class="cf-grid" id="cf-grid-${i}">${clubBtns}</div>
+    <button onclick="cfAddPenalty(${i})" style="width:100%;background:rgba(201,64,64,.08);border:1px solid rgba(201,64,64,.35);border-radius:9px;padding:11px;font-size:13px;color:#e07070;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:4px;letter-spacing:.3px">⚠️ Add Penalty Stroke</button>
     <button class="cf-done" id="cf-done-btn-${i}" disabled onclick="cfShowReview(${i})">Review shots →</button>
     <!-- SHOT LOG (filled after Save Hole) -->
     <div id="cf-log-${i}" style="margin-top:12px"></div>
@@ -2044,6 +2045,14 @@ function cfAddClub(holeIdx, club) {
   if(btn) btn.disabled = false;
 }
 
+function cfAddPenalty(holeIdx) {
+  _cfHoleIdx = holeIdx;
+  _cfSeq.push('Penalty');
+  cfRenderStrip(holeIdx);
+  const btn = document.getElementById(`cf-done-btn-${holeIdx}`);
+  if(btn) btn.disabled = false;
+}
+
 function cfRemoveClub(i, holeIdx) {
   _cfSeq.splice(i,1);
   cfRenderStrip(holeIdx);
@@ -2064,7 +2073,12 @@ function cfRenderStrip(holeIdx) {
   _cfSeq.forEach((c,i)=>{
     const ch = document.createElement('span');
     ch.className = 'cf-chip';
-    ch.innerHTML = `${c} <span class="cf-chip-rm" onclick="cfRemoveClub(${i},${holeIdx})">✕</span>`;
+    if (c === 'Penalty') {
+      ch.style.cssText = 'background:rgba(201,64,64,.15);border-color:rgba(201,64,64,.5);color:#e07070';
+      ch.innerHTML = `⚠️ Penalty <span class="cf-chip-rm" onclick="cfRemoveClub(${i},${holeIdx})">✕</span>`;
+    } else {
+      ch.innerHTML = `${c} <span class="cf-chip-rm" onclick="cfRemoveClub(${i},${holeIdx})">✕</span>`;
+    }
     strip.appendChild(ch);
   });
 }
