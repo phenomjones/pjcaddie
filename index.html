@@ -563,7 +563,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.4.7 · Mar 19, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.5.0 · Mar 19, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -3239,6 +3239,10 @@ function overviewHTML(round) {
   const relCls=rel<0?'c-under':rel>0?'c-over':'c-even';
   const date=new Date(round.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric',year:'numeric'});
 
+  // PJ INDEX for this round's course/tee
+  const _pjRound = calcPJIndex(getRounds(), round.courseId||'', round.teeName||'');
+  const _pjBlock = pjIndexHTML(_pjRound);
+
   return `
   <div style="font-size:12px;color:var(--chalk3);margin-bottom:14px">${date}</div>
   <div class="stat-g2">
@@ -3257,6 +3261,7 @@ function overviewHTML(round) {
     <div class="stat-box"><div class="stat-n sm">${Math.round(gir/scores.length*100)}%</div><div class="stat-l">GIR</div></div>
   </div>
   ${firHoles?`<div style="text-align:center;font-size:11px;color:var(--chalk3);margin:-2px 0 8px">FIR: ${fir}/${firHoles} fairways (${Math.round(fir/firHoles*100)}%)</div>`:''}
+  ${_pjBlock}
   <div class="card">
     <div class="eyebrow" style="margin-bottom:12px">Score Distribution</div>
     ${distBar('Eagles / Better', eagles, scores.length, 'var(--gold)')}
@@ -5216,6 +5221,126 @@ async function ghClearWIP(sha) {
   });
 }
 
+
+// ── PJ INDEX ─────────────────────────────────────────────────────────
+// CMR: decision quality % from Byron data (good+neutral / total holes with data)
+// DCI: damage control % — how well blowup holes (double+) are contained
+// Potential Range: ceiling (top 20% holes) and floor (median) over last 90 holes
+
+function calcPJIndex(rounds, courseId, teeName) {
+  // Filter to matching course/tee, sorted newest first
+  const cr = rounds
+    .filter(r => r.courseId === courseId && r.teeName === teeName)
+    .sort((a,b) => (b.date||'').localeCompare(a.date||''));
+
+  if (!cr.length) return null;
+
+  // ── CMR ──────────────────────────────────────────────────────────
+  let cmrGood = 0, cmrTotal = 0, cmrPartial = false;
+  cr.forEach(r => {
+    const ht = r.analysis?.data?.holesTab;
+    if (!ht || !ht.length) { cmrPartial = true; return; }
+    ht.forEach(h => {
+      if (!h.decisionQuality || h.decisionQuality === 'neutral') { cmrGood++; cmrTotal++; }
+      else if (h.decisionQuality === 'good') { cmrGood++; cmrTotal++; }
+      else if (h.decisionQuality === 'poor') { cmrTotal++; }
+    });
+  });
+  const cmr = cmrTotal >= 9 ? Math.round(cmrGood / cmrTotal * 100) : null;
+
+  // ── DCI ──────────────────────────────────────────────────────────
+  let totalOverPar = 0, blowupOverPar = 0;
+  cr.forEach(r => {
+    (r.scores||[]).forEach(s => {
+      const over = (s.strokes||0) - (Number(s.par)||0);
+      if (over > 0) {
+        totalOverPar += over;
+        if (over >= 2) blowupOverPar += over; // double bogey or worse
+      }
+    });
+  });
+  const dci = totalOverPar > 0 ? Math.round((1 - blowupOverPar / totalOverPar) * 100) : null;
+
+  // ── POTENTIAL RANGE ───────────────────────────────────────────────
+  // Flatten hole scores newest-first, take last 90
+  const allHoles = [];
+  cr.forEach(r => {
+    (r.scores||[]).forEach(s => {
+      const over = (s.strokes||0) - (Number(s.par)||0);
+      if (s.strokes && s.par) allHoles.push(over);
+    });
+  });
+  const recentHoles = allHoles.slice(0, 90);
+  let potRange = null;
+  if (recentHoles.length >= 27) {
+    const sorted = [...recentHoles].sort((a,b) => a-b);
+    const ceilIdx = Math.floor(sorted.length * 0.20); // top 20% = below this index
+    const ceiling = sorted.slice(0, Math.max(1, ceilIdx));
+    const ceilAvg = ceiling.reduce((a,b)=>a+b,0) / ceiling.length;
+    const mid = Math.floor(sorted.length / 2);
+    const floor = sorted.length % 2 ? sorted[mid] : (sorted[mid-1]+sorted[mid])/2;
+    potRange = {
+      ceiling: Math.round(ceilAvg * 10) / 10,
+      floor: Math.round(floor * 10) / 10,
+      holes: recentHoles.length
+    };
+  }
+
+  return { cmr, dci, cmrPartial, cmrTotal, potRange };
+}
+
+function pjIndexHTML(pj, compact) {
+  if (!pj) return '';
+  const { cmr, dci, cmrPartial, potRange } = pj;
+  if (cmr === null && dci === null && !potRange) return '';
+
+  const cmrColor = cmr === null ? 'var(--chalk3)' : cmr >= 75 ? '#5ec85e' : cmr >= 55 ? 'var(--gold)' : 'var(--red)';
+  const dciColor = dci === null ? 'var(--chalk3)' : dci >= 70 ? '#5ec85e' : dci >= 50 ? 'var(--gold)' : 'var(--red)';
+
+  const cmrDisplay = cmr !== null ? cmr + '%' : '—';
+  const dciDisplay = dci !== null ? dci + '%' : '—';
+  const cmrLabel = 'CMR' + (cmrPartial && cmr !== null ? ' ·' : '');
+  const partialNote = cmrPartial && cmr !== null ? `<span style="font-size:9px;color:var(--chalk3);opacity:.6"> partial</span>` : '';
+
+  const rangeBlock = potRange ? (() => {
+    const cStr = potRange.ceiling <= 0 ? potRange.ceiling : '+' + potRange.ceiling;
+    const fStr = potRange.floor <= 0 ? potRange.floor : '+' + potRange.floor;
+    const rangeWidth = Math.max(0, potRange.floor - potRange.ceiling);
+    // Normalize to a visual bar: ceiling is left anchor, floor is right
+    return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div style="font-size:10px;letter-spacing:1px;color:var(--gold);opacity:.7">POTENTIAL RANGE</div>
+        <div style="font-size:10px;color:var(--chalk3);opacity:.6">${potRange.holes} holes</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--chalk3);margin-bottom:4px">
+        <span style="color:#5ec85e">Ceiling ${cStr}/hole</span>
+        <span>Floor ${fStr}/hole</span>
+      </div>
+      <div style="height:6px;background:var(--ink3);border-radius:3px;overflow:hidden;position:relative">
+        <div style="position:absolute;left:0;top:0;height:100%;width:40%;background:linear-gradient(90deg,#5ec85e,var(--gold));border-radius:3px;opacity:.7"></div>
+      </div>
+    </div>`;
+  })() : '';
+
+  return `<div style="background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px">
+    <div style="font-size:10px;letter-spacing:1px;color:var(--gold);opacity:.7;margin-bottom:10px">PJ INDEX</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="text-align:center">
+        <div style="font-size:24px;font-family:'DM Serif Display',serif;color:${cmrColor}">${cmrDisplay}</div>
+        <div style="font-size:10px;color:var(--chalk3);margin-top:2px">${cmrLabel}${partialNote}</div>
+        <div style="font-size:9px;color:var(--chalk3);opacity:.6;margin-top:1px">Course Mgmt</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:24px;font-family:'DM Serif Display',serif;color:${dciColor}">${dciDisplay}</div>
+        <div style="font-size:10px;color:var(--chalk3);margin-top:2px">DCI</div>
+        <div style="font-size:9px;color:var(--chalk3);opacity:.6;margin-top:1px">Damage Control</div>
+      </div>
+    </div>
+    ${rangeBlock}
+  </div>`;
+}
+// ── END PJ INDEX ──────────────────────────────────────────────────────
+
 // COURSE HUB
 function showCourseHub() {
   renderCourseHub();
@@ -5274,6 +5399,15 @@ function renderCourseHub() {
       return ((total - parPlayed) / parPlayed) * coursePar;
     }).filter(v => v !== null);
     const avgSRI = sriVals.length ? (sriVals.reduce((a,b)=>a+b,0)/sriVals.length).toFixed(1) : null;
+
+    // PJ INDEX — per course/tee (use most common tee for this course grouping)
+    const allRounds = getRounds();
+    const teeGroups = {};
+    courseRounds.forEach(r => { if (r.teeName) teeGroups[r.teeName] = (teeGroups[r.teeName]||0)+1; });
+    const dominantTee = Object.entries(teeGroups).sort((a,b)=>b[1]-a[1])[0]?.[0] || '';
+    const courseId0 = courseRounds[0]?.courseId || '';
+    const pjData = calcPJIndex(allRounds, courseId0, dominantTee);
+
     const cid = 'ch-' + name.replace(/[^a-zA-Z0-9]/g,'');
 
     return `<div class="card" style="margin-bottom:14px">
@@ -5300,6 +5434,7 @@ function renderCourseHub() {
           <div style="font-size:10px;color:var(--chalk3)">rounds played</div>
         </div>
       </div>` : ''}
+      ${pjIndexHTML(pjData)}
       <div style="margin-bottom:12px">
         <div style="font-size:10px;letter-spacing:1px;color:var(--gold);opacity:.7;margin-bottom:6px">ROUND HISTORY</div>
         ${courseRounds.map(r => {
