@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- PJ Caddie v5.5.6 · Mar 20, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -563,7 +564,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.5.5 · Mar 20, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.5.6 · Mar 20, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -622,45 +623,61 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="title">Settings</div>
   </div>
   <div class="scroll-body pad pad-b">
-    <div class="eyebrow" style="margin-bottom:12px">Byron — AI Coach</div>
-    <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Your Anthropic API key powers Byron, your AI caddie coach. Get one at <span style="color:var(--gold)">console.anthropic.com</span> → API Keys. Costs fractions of a cent per analysis.</div>
-    <div class="inp-grp">
-      <label class="inp-label">Anthropic API Key</label>
-      <input class="inp" id="ant-token" type="password" placeholder="sk-ant-..." autocapitalize="none" autocorrect="off">
-    </div>
-    <button onclick="saveAntKey()" class="btn btn-gold" style="margin-bottom:20px">Save API Key</button>
-    <div id="ant-key-status" style="font-size:12px;min-height:16px;margin-top:-14px;margin-bottom:16px;color:var(--chalk3)"></div>
 
-    <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
-    <div class="eyebrow" style="margin-bottom:12px">GitHub Sync</div>
-    <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:16px">Sync rounds automatically to a private GitHub repo. Rounds merge by ID — no data is ever overwritten.</div>
-
-    <div class="inp-grp">
-      <label class="inp-label">GitHub Username</label>
-      <input class="inp" id="gh-owner" type="text" placeholder="e.g. phenomjones" autocapitalize="none" autocorrect="off">
-    </div>
-    <div class="inp-grp">
-      <label class="inp-label">Private Data Repo</label>
-      <input class="inp" id="gh-repo" type="text" placeholder="e.g. pjcaddie-data" autocapitalize="none" autocorrect="off">
-    </div>
-    <div class="inp-grp">
-      <label class="inp-label">Personal Access Token</label>
-      <input class="inp" id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxx" autocapitalize="none" autocorrect="off">
-      <div style="font-size:10px;color:var(--chalk3);margin-top:4px;opacity:.7">GitHub → Settings → Developer Settings → Personal Access Tokens → Fine-grained → Contents: Read & Write</div>
+    <!-- ANTHROPIC SECTION -->
+    <div id="ant-section" style="margin-bottom:4px">
+      <button onclick="toggleSettingsSection('ant')" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:10px 0;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:'DM Sans',sans-serif">
+        <span class="eyebrow" style="margin:0">Byron — AI Coach</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span id="ant-status-badge" style="font-size:13px;color:var(--chalk3)"></span>
+          <span id="ant-chevron" style="font-size:16px;color:var(--chalk3);transition:transform .2s">›</span>
+        </span>
+      </button>
+      <div id="ant-body" style="display:none;padding-top:14px">
+        <div style="font-size:13px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Your Anthropic API key powers Byron, your AI caddie coach. Get one at <span style="color:var(--gold)">console.anthropic.com</span> → API Keys. Costs fractions of a cent per analysis.</div>
+        <div class="inp-grp">
+          <label class="inp-label">Anthropic API Key</label>
+          <input class="inp" id="ant-token" type="password" placeholder="sk-ant-..." autocapitalize="none" autocorrect="off">
+        </div>
+        <button onclick="saveAntKey()" class="btn btn-gold" style="margin-bottom:20px">Save API Key</button>
+        <div id="ant-key-status" style="font-size:13px;min-height:16px;margin-top:-14px;margin-bottom:16px;color:var(--chalk3)"></div>
+      </div>
     </div>
 
-    <div id="settings-status" style="font-size:12px;min-height:18px;margin:10px 0;color:var(--chalk3)"></div>
-    <div id="sync-log" style="font-size:11px;color:var(--chalk3);opacity:.6;margin-bottom:8px;min-height:14px"></div>
-
-    <button onclick="saveGHSettings()" class="btn btn-gold" style="margin-bottom:10px">Save & Test Connection</button>
-    <button onclick="manualSync()" class="btn btn-outline" style="margin-bottom:4px">↺ Sync Now</button>
-    <div style="font-size:11px;color:var(--chalk3);opacity:.6;margin-bottom:10px;line-height:1.5">Uploads your rounds to GitHub. If rounds exist in the repo that aren't on this device, they'll merge down too.</div>
-    <div id="dev-tap-zone" onclick="devTap()" style="height:12px;cursor:default;margin-bottom:6px" title=""></div>
-    <div id="debug-out" style="font-size:10px;color:var(--chalk3);font-family:monospace;background:rgba(0,0,0,.3);border-radius:8px;padding:8px;display:none;word-break:break-all;margin-bottom:8px"></div>
-    <button onclick="clearGHSettings()" style="width:100%;background:none;border:none;font-size:13px;color:rgba(201,64,64,.6);cursor:pointer;padding:8px;font-family:'DM Sans',sans-serif">Clear GitHub Settings</button>
-
-
-    <!-- PLAYER CARD -->
+    <!-- GITHUB SECTION -->
+    <div id="gh-section" style="margin-bottom:4px">
+      <button onclick="toggleSettingsSection('gh')" style="width:100%;background:none;border:none;border-bottom:1px solid var(--border);padding:10px 0;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-family:'DM Sans',sans-serif">
+        <span class="eyebrow" style="margin:0">GitHub Sync</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span id="gh-status-badge" style="font-size:13px;color:var(--chalk3)"></span>
+          <span id="gh-chevron" style="font-size:16px;color:var(--chalk3);transition:transform .2s">›</span>
+        </span>
+      </button>
+      <div id="gh-body" style="display:none;padding-top:14px">
+        <div style="font-size:13px;color:var(--chalk3);line-height:1.6;margin-bottom:16px">Sync rounds automatically to a private GitHub repo. Rounds merge by ID — no data is ever overwritten.</div>
+        <div class="inp-grp">
+          <label class="inp-label">GitHub Username</label>
+          <input class="inp" id="gh-owner" type="text" placeholder="e.g. phenomjones" autocapitalize="none" autocorrect="off">
+        </div>
+        <div class="inp-grp">
+          <label class="inp-label">Private Data Repo</label>
+          <input class="inp" id="gh-repo" type="text" placeholder="e.g. pjcaddie-data" autocapitalize="none" autocorrect="off">
+        </div>
+        <div class="inp-grp">
+          <label class="inp-label">Personal Access Token</label>
+          <input class="inp" id="gh-token" type="password" placeholder="ghp_xxxxxxxxxxxx" autocapitalize="none" autocorrect="off">
+          <div style="font-size:13px;color:var(--chalk3);margin-top:4px;opacity:.7">GitHub → Settings → Developer Settings → Personal Access Tokens → Fine-grained → Contents: Read &amp; Write</div>
+        </div>
+        <div id="settings-status" style="font-size:13px;min-height:18px;margin:10px 0;color:var(--chalk3)"></div>
+        <div id="sync-log" style="font-size:13px;color:var(--chalk3);opacity:.6;margin-bottom:8px;min-height:14px"></div>
+        <button onclick="saveGHSettings()" class="btn btn-gold" style="margin-bottom:10px">Save &amp; Test Connection</button>
+        <button onclick="manualSync()" class="btn btn-outline" style="margin-bottom:4px">↺ Sync Now</button>
+        <div style="font-size:13px;color:var(--chalk3);opacity:.6;margin-bottom:10px;line-height:1.5">Uploads your rounds to GitHub. If rounds exist in the repo that aren't on this device, they'll merge down too.</div>
+        <div id="dev-tap-zone" onclick="devTap()" style="height:12px;cursor:default;margin-bottom:6px" title=""></div>
+        <div id="debug-out" style="font-size:13px;color:var(--chalk3);font-family:monospace;background:rgba(0,0,0,.3);border-radius:8px;padding:8px;display:none;word-break:break-all;margin-bottom:8px"></div>
+        <button onclick="clearGHSettings()" style="width:100%;background:none;border:none;font-size:13px;color:rgba(201,64,64,.6);cursor:pointer;padding:8px;font-family:'DM Sans',sans-serif">Clear GitHub Settings</button>
+      </div>
+    </div>
     <div style="height:1px;background:var(--border);margin:24px 0"></div>
     <div class="eyebrow" style="margin-bottom:12px">My Game Notes</div>
     <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Tell Byron about your game — club gapping, tendencies, physical limitations, goals. This is included in every Byron Analysis.</div>
@@ -3217,6 +3234,7 @@ function confirmHomeFromRound() {
 
 function saveRound() {
   const round=S.currentRound;
+  if (!round.completedAt) round.completedAt = new Date().toISOString();
   const rounds=getRounds();
   const ei=rounds.findIndex(r=>r.id===round.id);
   if(ei>=0) rounds[ei]=round; else rounds.push(round);
@@ -5081,14 +5099,27 @@ function mergeRounds(local, remote) {
   const map = {};
   // Index remote as base
   remote.forEach(r => { if (r && r.id) map[r.id] = r; });
-  // Local always wins — it has the freshest user intent (lock, archive, scores, notes)
+  // Merge local rounds in — with smart completion check
   local.forEach(r => {
     if (!r || !r.id) return;
     const rem = map[r.id];
     if (!rem) { map[r.id] = r; return; }
-    // Start with local as winner for all metadata
+    // SMART MERGE: completed always beats in-progress, regardless of local/remote
+    const localDone  = !!r.completedAt;
+    const remoteDone = !!rem.completedAt;
+    if (remoteDone && !localDone) {
+      // Remote is completed, local is stale in-progress — remote wins
+      map[r.id] = rem;
+      return;
+    }
+    if (localDone && !remoteDone) {
+      // Local is completed, remote is stale — local wins
+      map[r.id] = r;
+      return;
+    }
+    // Both completed or both in-progress — local wins for metadata,
+    // but pick whichever Byron analysis is newer
     const merged = { ...r };
-    // Analysis: pick whichever copy is newer
     const localTs  = r.analysis?.savedAt   ? new Date(r.analysis.savedAt).getTime()   : 0;
     const remoteTs = rem.analysis?.savedAt ? new Date(rem.analysis.savedAt).getTime() : 0;
     if (remoteTs > localTs) merged.analysis = rem.analysis;
@@ -5217,6 +5248,15 @@ function clearGHSettings() {
   setSyncStatus('', '');
 }
 
+function toggleSettingsSection(sec) {
+  const body = document.getElementById(sec + '-body');
+  const chevron = document.getElementById(sec + '-chevron');
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  if (chevron) chevron.style.transform = open ? '' : 'rotate(90deg)';
+}
+
 function loadGHSettingsForm() {
   const el = id => document.getElementById(id);
   const c = getGHConfig();
@@ -5231,6 +5271,21 @@ function loadGHSettingsForm() {
     antStatus.style.color = antKey ? '#5ec85e' : 'var(--chalk3)';
     antStatus.textContent = antKey ? '✓ Key saved' : 'No key saved — Byron unavailable';
   }
+  // Set Anthropic badge + collapse state
+  const antBadge = el('ant-status-badge');
+  const antBody  = el('ant-body');
+  const antChevron = el('ant-chevron');
+  if (antBadge) { antBadge.textContent = antKey ? '✓ configured' : '⚠ not set'; antBadge.style.color = antKey ? '#5ec85e' : 'var(--gold)'; }
+  if (antBody)  { antBody.style.display = antKey ? 'none' : 'block'; }
+  if (antChevron) antChevron.style.transform = antKey ? '' : 'rotate(90deg)';
+  // Set GitHub badge + collapse state
+  const ghConfigured = !!(c.owner && c.repo && c.token);
+  const ghBadge   = el('gh-status-badge');
+  const ghBody    = el('gh-body');
+  const ghChevron = el('gh-chevron');
+  if (ghBadge)  { ghBadge.textContent = ghConfigured ? '✓ configured' : '⚠ not set'; ghBadge.style.color = ghConfigured ? '#5ec85e' : 'var(--gold)'; }
+  if (ghBody)   { ghBody.style.display = ghConfigured ? 'none' : 'block'; }
+  if (ghChevron) ghChevron.style.transform = ghConfigured ? '' : 'rotate(90deg)';
   // SYNC LOG: show last sync time
   const logEl = el('sync-log');
   if (logEl) {
