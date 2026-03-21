@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v5.5.7 · Mar 20, 2026 -->
+<!-- PJ Caddie v5.5.10 · Mar 21, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -580,11 +580,12 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.5.7 · Mar 20, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.5.10 · Mar 21, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
     <div id="sync-status-bar" style="display:none;font-size:13px;padding:7px 12px;border-radius:8px;margin-bottom:10px;text-align:center"></div>
+    <div id="sync-fail-bar" style="display:none;font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:10px;background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.4);color:#e07070">⚠️ Last sync failed — your rounds may not be backed up. <button onclick="manualSync();document.getElementById('sync-fail-bar').style.display='none'" style="background:rgba(201,64,64,.2);border:1px solid rgba(201,64,64,.5);border-radius:100px;padding:3px 10px;font-size:13px;color:#e07070;cursor:pointer;font-family:'DM Sans',sans-serif;margin-left:8px">Retry</button></div>
     <div id="wip-resume-bar" style="display:none;font-size:12px;padding:10px 14px;border-radius:8px;margin-bottom:10px;background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.3);color:var(--gold)"></div>
     <div id="vault-guard-bar" style="display:none;font-size:13px;padding:7px 12px;border-radius:8px;margin-bottom:10px;text-align:center;background:rgba(201,64,64,.1);border:1px solid rgba(201,64,64,.3);color:#e07070"></div>
     <button class="btn btn-gold" style="margin-bottom:10px" onclick="showView('setup')">＋ New Round</button>
@@ -841,7 +842,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 <!-- ═══════════════ SUMMARY ═══════════════ -->
 <div class="view" id="view-summary">
   <div class="hdr">
-    <div class="eyebrow" id="sum-eyebrow">Round Complete</div>
+    <div class="eyebrow" id="sum-eyebrow">Post Round Review</div>
     <div class="title" id="sum-title">72</div>
   </div>
   <div class="tab-bar">
@@ -935,11 +936,11 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
             <div id="bp-line-3" style="width:36px;height:2px;background:var(--border);opacity:.4"></div>
             <div id="bp-dot-4" style="width:14px;height:14px;border-radius:50%;background:var(--border);opacity:.4;flex-shrink:0"></div>
           </div>
-          <div style="display:flex;gap:0;width:146px">
-            <div id="bp-lbl-1" style="flex:1;text-align:left;font-size:12px;color:var(--gold);letter-spacing:.5px;line-height:1.4">Reading<br>round</div>
-            <div id="bp-lbl-2" style="flex:1;text-align:center;font-size:12px;color:var(--chalk3);opacity:.4;letter-spacing:.5px;line-height:1.4">Patterns &amp;<br>decisions</div>
-            <div id="bp-lbl-3" style="flex:1;text-align:center;font-size:12px;color:var(--chalk3);opacity:.4;letter-spacing:.5px;line-height:1.4">Front<br>9</div>
-            <div id="bp-lbl-4" style="flex:1;text-align:right;font-size:12px;color:var(--chalk3);opacity:.4;letter-spacing:.5px;line-height:1.4">Back<br>9</div>
+          <div style="display:grid;grid-template-columns:14px 36px 14px 36px 14px 36px 14px;width:164px">
+            <div id="bp-lbl-1" style="grid-column:1;text-align:center;font-size:13px;color:var(--gold);letter-spacing:.3px;line-height:1.4;white-space:nowrap;transform:translateX(-50%);margin-left:7px">Reading<br>round</div>
+            <div id="bp-lbl-2" style="grid-column:3;text-align:center;font-size:13px;color:var(--chalk3);opacity:.4;letter-spacing:.3px;line-height:1.4;white-space:nowrap;transform:translateX(-50%);margin-left:7px">Patterns &amp;<br>decisions</div>
+            <div id="bp-lbl-3" style="grid-column:5;text-align:center;font-size:13px;color:var(--chalk3);opacity:.4;letter-spacing:.3px;line-height:1.4;white-space:nowrap;transform:translateX(-50%);margin-left:7px">Front<br>9</div>
+            <div id="bp-lbl-4" style="grid-column:7;text-align:center;font-size:13px;color:var(--chalk3);opacity:.4;letter-spacing:.3px;line-height:1.4;white-space:nowrap;transform:translateX(-50%);margin-left:7px">Back<br>9</div>
           </div>
           <div id="bp-msg" style="font-size:14px;color:var(--chalk2)">Byron is reading your round…</div>
           <div style="font-size:13px;opacity:.4">~45–60 seconds</div>
@@ -2690,7 +2691,8 @@ function setShotAttr(i, idx, attr, value) {
       if(tl==='fairway'||tl==='short') shot.lie='Fairway';
       else if(tl==='rough-left'||tl==='rough-right') shot.lie='Rough';
       else if(tl==='bunker') shot.lie='Sand';
-      else if(tl.startsWith('ob-')||tl.startsWith('oop-')) shot.lie='Penalty';
+      else if(tl.startsWith('ob-')) shot.lie='Penalty';
+      else if(tl.startsWith('oop-')) shot.lie='Jail';
     } else {
       shot.lie=null;
     }
@@ -3881,13 +3883,17 @@ async function sendCoachChat() {
   const chatCourseNotes = localStorage.getItem('caddie_course_notes_' + chatCid) || '';
   const chatHoleNotes = {}; const chatGreenNotes = {};
   for (let h=1;h<=18;h++) {
-    const hn = localStorage.getItem('caddie_hole_notes_' + chatCid + '_' + h) || '';
+    const tn = localStorage.getItem('caddie_hole_tee_notes_' + chatCid + '_' + h) || localStorage.getItem('caddie_hole_notes_' + chatCid + '_' + h) || '';
+    const an = localStorage.getItem('caddie_hole_approach_notes_' + chatCid + '_' + h) || '';
     const gn = localStorage.getItem('caddie_hole_green_notes_' + chatCid + '_' + h) || '';
-    if (hn.trim()) chatHoleNotes[h] = hn.trim();
+    const parts = [];
+    if (tn.trim()) parts.push(`Tee: ${tn.trim()}`);
+    if (an.trim()) parts.push(`Approach: ${an.trim()}`);
+    if (parts.length) chatHoleNotes[h] = parts.join(' | ');
     if (gn.trim()) chatGreenNotes[h] = gn.trim();
   }
   const chatHoleNotesText = Object.keys(chatHoleNotes).length
-    ? 'PER-HOLE CADDIE NOTES:\n' + Object.entries(chatHoleNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n') : '';
+    ? 'PER-HOLE CADDIE NOTES (Tee and Approach are separate):\n' + Object.entries(chatHoleNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n') : '';
   const chatGreenNotesText = Object.keys(chatGreenNotes).length
     ? 'PER-HOLE GREEN NOTES:\n' + Object.entries(chatGreenNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n') : '';
 
@@ -3895,11 +3901,19 @@ async function sendCoachChat() {
 
   const systemPrompt = `${BYRON_PERSONA}
 
-You already ran a full analysis of this round. The player is asking follow-up questions. Be concise, direct, and specific. No more than 3 paragraphs per response.
+You already ran a full analysis of this round. The player is asking follow-up questions.
 
-CRITICAL DATA RULE: ob-left/ob-right = OB — stroke and distance penalty (ball replayed, stroke added). oop-left/oop-right = out of position — ball is IN PLAY, no penalty stroke. Never count OOP as a penalty in scoring analysis.
+YOUR ROLE IS CADDIE AND PATTERN ANALYST — NOT SWING COACH.
+You can discuss: what the data shows, what patterns it reveals, strategic adjustments for next round, club selection, aim points, course management decisions, scoring trends.
+You CANNOT discuss: why a swing produced a certain shape, what happened mechanically, swing path, face angle, body position, or any diagnosis of what caused a miss physically. If asked about swing mechanics, say directly: "I can see where the ball went but not why your swing did it — that's for your teaching pro. What I can tell you is what the pattern looks like in the data."
 
-CRITICAL RULE: Never invent terrain, elevation, wind, slope, or lie conditions that are not explicitly stated in the data below. If you cannot explain WHY a pattern exists from the data alone, say so directly. Never fabricate plausible-sounding golf reasons to fill gaps.
+NON-OBVIOUS RULE: Only state findings the player could NOT have inferred from their scorecard alone. Never restate cause-and-effect that is self-evident (e.g. "you made doubles on holes where you took penalties"). Instead surface conversion rates, conditional correlations, and cross-hole patterns.
+
+SCOPE RULE: If you cannot explain something from the data alone, say so. Never fabricate plausible-sounding golf reasons to fill gaps. Never invent terrain, elevation, wind, or lie conditions not in the data.
+
+OOP vs OB: oop-left/oop-right = ball in play, NO penalty stroke. ob-left/ob-right = OB, stroke and distance. Never count OOP as a penalty.
+
+Be concise, direct, specific. No more than 3 short paragraphs per response. Plain language — no metaphors that could confuse.
 
 ${roundSummary}
 ${chatPlayerNotes ? 'PLAYER PROFILE:\n' + chatPlayerNotes : ''}
@@ -3973,13 +3987,19 @@ async function runCoachAnalysis(round) {
   const holeNotes={}, greenNotes={};
   const cid = round.courseId||'';
   for (let h=1;h<=18;h++) {
-    const hn = localStorage.getItem('caddie_hole_notes_'+cid+'_'+h)||'';
+    const tn = localStorage.getItem('caddie_hole_tee_notes_'+cid+'_'+h)||'';
+    const an = localStorage.getItem('caddie_hole_approach_notes_'+cid+'_'+h)||'';
+    const hn = localStorage.getItem('caddie_hole_notes_'+cid+'_'+h)||''; // legacy fallback
     const gn = localStorage.getItem('caddie_hole_green_notes_'+cid+'_'+h)||'';
-    if (hn.trim()) holeNotes[h]=hn.trim();
+    const teeNote = tn.trim() || hn.trim(); // tee note falls back to legacy caddie note
+    const apprNote = an.trim();
+    if (teeNote || apprNote || gn.trim()) {
+      holeNotes[h] = [teeNote?`Tee: ${teeNote}`:'', apprNote?`Approach: ${apprNote}`:''].filter(Boolean).join(' | ');
+    }
     if (gn.trim()) greenNotes[h]=gn.trim();
   }
   const holeNotesText = Object.keys(holeNotes).length
-    ? '\nPER-HOLE CADDIE NOTES (pre-round strategy, aim points, smart misses):\n'+Object.entries(holeNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n') : '';
+    ? '\nPER-HOLE CADDIE NOTES (pre-round strategy — TEE and APPROACH are separate):\n'+Object.entries(holeNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n') : '';
   const greenNotesText = Object.keys(greenNotes).length
     ? '\nPER-HOLE GREEN NOTES (slope, break, false fronts, pin tendencies):\n'+Object.entries(greenNotes).map(([h,n])=>`Hole ${h}: ${n}`).join('\n') : '';
 
@@ -4062,7 +4082,9 @@ ${rawData}
 TASK: Deliver the narrative layer — headline finding, top patterns, scoring breakdown, strengths, faults, scoring root causes, front/back split, and your closing coach note. A second pass will handle data-deep patterns and decisions. A third pass will handle hole-by-hole and gameplan.
 
 RULES:
-- topFindings = cross-hole patterns, momentum shifts, pressure signatures, cause-effect chains. NOT hole counts.
+- NON-OBVIOUS TEST: Every finding must pass this filter — could the player have inferred this directly from their scorecard? If yes, omit it. "Penalties caused doubles" fails. "Fairway hit rate converts to 75% GIR" passes. Surface conversion rates, conditional correlations, and cross-hole patterns only.
+- NO METAPHORS: No handicap metaphors, no "two different rounds" framings, no score-based comparisons that aren't grounded in shot data. Plain direct language only.
+- topFindings = cross-hole patterns, momentum shifts, pressure signatures, cause-effect chains. NOT hole counts. NOT self-evident scoring outcomes.
 - scoringRootCauses = error category breakdown (tee/approach/short game/putting/penalty) by hole count. Must NOT repeat topFindings.
 - strengths MUST be cross-dimensional conditional correlations (e.g. GIR rate when tee shot in play vs out). NEVER single-round small-sample counts.
 - faults: rootCause must be decision/course management/pattern — never swing/technical.
@@ -4114,6 +4136,8 @@ Use roundNote and caddie notes as hazard context. Tier 3 vs Tier 4 distinction i
 
 CONTACT THRESHOLD: only flag if thin+fat >= 3 for a club. Fewer = noise, omit.
 
+NON-OBVIOUS TEST: Every finding must pass — could the player infer this from their scorecard alone? If yes, omit. Surface rates, correlations, and patterns only.
+
 ABSOLUTE BAN: no swing tips, mechanics, range drills.
 
 Respond ONLY with valid JSON, no markdown:
@@ -4138,7 +4162,16 @@ Respond ONLY with valid JSON, no markdown:
     const front9Data = holeData.filter(h => h.hole <= 9);
     const back9Data  = holeData.filter(h => h.hole > 9);
 
-    const holePromptBase = (holesSlice, passLabel) => `${BYRON_PERSONA}
+    const holePromptBase = (holesSlice, passLabel) => {
+      const p1summary = pass1.headline ? `Headline: ${pass1.headline}\nTop findings: ${(pass1.topFindings||[]).join(' | ')}\nScore breakdown: ${JSON.stringify(pass1.scoreBreakdown||{})}` : 'Pass 1 unavailable';
+      const p2summary = (() => {
+        const pt = pass2.patternsTab||{};
+        const flags = (pt.decisionFlags||[]).map(f=>`H${f.hole} T${f.tier}: ${f.issue}`).join('; ');
+        const grades = (pt.clubGrades||[]).map(g=>`${g.club}:${g.grade}`).join(', ');
+        const misses = (pt.missQuadrants||[]).map(m=>`${m.club} ${m.quadrant} ${m.count}x`).join(', ');
+        return `Decision flags: ${flags||'none'} | Miss quadrants: ${misses||'none'} | Club grades: ${grades||'none'} | Shape: ${(pt.shapeProfile||{}).overall||'unknown'}`;
+      })();
+      return `${BYRON_PERSONA}
 
 ${passLabel} — HOLE BY HOLE. All four voices synthesized. Prescription layer.
 
@@ -4147,18 +4180,17 @@ ${roundHeader}
 
 ${dataRef}
 
-PASS 1 FINDINGS (narrative):
-${JSON.stringify(pass1, null, 2)}
-
-PASS 2 FINDINGS (patterns & decisions):
-${JSON.stringify(pass2, null, 2)}
+KEY FINDINGS FROM EARLIER PASSES:
+${p1summary}
+PATTERNS: ${p2summary}
 
 RAW HOLE DATA FOR THIS PASS:
 ${JSON.stringify(holesSlice, null, 2)}
 
-TASK: Deliver a hole-by-hole breakdown for ONLY the holes in this data set. Ground every recommendation in the patterns and flags from Passes 1 and 2 — synthesize, don't repeat.
+TASK: Deliver a hole-by-hole breakdown for ONLY the holes in this data set. Ground every recommendation in the patterns and flags above — synthesize, don't repeat.
 
 HOLE RULES:
+- NON-OBVIOUS TEST: keyFinding must be something the player could NOT see from the scorecard. "You made double after a penalty" fails. Cite a specific data point: conversion rate, aim vs result mismatch, pattern vs this hole's outcome.
 - decisionQuality rates the DECISION ONLY, never the outcome. Only 'poor' if the choice of target, club, or strategy was wrong given known tendencies.
 - keyFinding: one specific insight NOT visible on the shot map. Must cite actual data from this hole. MAX 2 sentences.
 - courseManagement: evaluate the decision made. Was club right? Was target appropriate? MAX 2 sentences.
@@ -4181,6 +4213,7 @@ Respond ONLY with valid JSON, no markdown:
     }
   ]
 }`;
+    };
 
     const pass3a = front9Data.length ? await byronCall(holePromptBase(front9Data, 'PASS 3a OF 4 — FRONT 9'), 5000) : {holesTab:[]};
 
@@ -4196,11 +4229,9 @@ ${roundHeader}
 
 ${dataRef}
 
-PASS 1 FINDINGS (narrative):
-${JSON.stringify(pass1, null, 2)}
-
-PASS 2 FINDINGS (patterns & decisions):
-${JSON.stringify(pass2, null, 2)}
+KEY FINDINGS FROM EARLIER PASSES:
+${pass1.headline ? `Headline: ${pass1.headline}\nTop findings: ${(pass1.topFindings||[]).join(' | ')}` : 'Pass 1 unavailable'}
+${(() => { const pt = pass2.patternsTab||{}; const flags = (pt.decisionFlags||[]).map(f=>`H${f.hole} T${f.tier}: ${f.issue}`).join('; '); return `Decision flags: ${flags||'none'} | Shape: ${(pt.shapeProfile||{}).overall||'unknown'} | Club grades: ${(pt.clubGrades||[]).map(g=>`${g.club}:${g.grade}`).join(', ')||'none'}`; })()}
 
 FRONT 9 HOLES ALREADY ANALYZED:
 ${JSON.stringify(pass3a.holesTab||[], null, 2)}
@@ -4666,6 +4697,30 @@ function renderCoachAnalysis(a, round) {
   const decisionColors = {good:'#6bc96b', neutral:'var(--chalk3)', poor:'#e0a870'};
   const decisionLabels = {good:'✓ good call', neutral:'', poor:'⚠ questionable'};
 
+  const CF_TYPE_SHORT = {Tee:'Tee',Approach:'Appr',Pitch:'Pitch',Layup:'Layup',Chip:'Chip',Sand:'Sand',Recovery:'Rcvy',Flub:'Flub',Penalty:'Pen',Putt:'Putt'};
+  const shotLogForHole = (hNum) => {
+    const score = (round.scores||[]).find(s=>s.hole===hNum);
+    if (!score || !(score.shots||[]).length) return '<div style="font-size:13px;color:var(--chalk3);padding:6px 0">No shots logged</div>';
+    return (score.shots||[]).map((sh,i) => {
+      if (sh.type==='Penalty') return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span style="font-size:11px;color:var(--chalk3);width:18px;text-align:center">${i+1}</span><span style="font-size:12px;color:#ffd700">⚠️ Penalty</span></div>`;
+      const parts = [];
+      if (sh.teeAimed) parts.push(`aimed ${sh.teeAimed}`);
+      if (sh.teeShape) parts.push(sh.teeShape);
+      if (sh.teeLanded) parts.push(`→ ${sh.teeLanded.replace(/-/g,' ')}`);
+      if (sh.approachAimed) parts.push(`aimed ${sh.approachAimed}`);
+      if (sh.approachDist) parts.push(sh.approachDist==='On'?'On Green ✓':sh.approachDist);
+      if (sh.approachSide && sh.approachDist!=='On') parts.push(`side ${sh.approachSide}`);
+      if (sh.approachZone) parts.push(sh.approachZone.replace(/-/g,' '));
+      if (sh.layupDist) parts.push(sh.layupDist);
+      if (sh.chipProx) parts.push(sh.chipProx);
+      if (sh.sandGotOut) parts.push(sh.sandGotOut==='Yes'?'got out':'no out');
+      if (sh.puttSpeed) parts.push(`speed ${sh.puttSpeed}`);
+      if (sh.contact) parts.push(`<span style="color:#e0a870">${sh.contact}</span>`);
+      if (sh.lie && sh.type!=='Putt') parts.push(`lie: ${sh.lie}`);
+      return `<div style="display:flex;align-items:baseline;gap:6px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span style="font-size:11px;color:var(--chalk3);width:18px;flex-shrink:0;text-align:center">${i+1}</span><span style="font-size:13px;color:var(--gold);font-weight:600;width:38px;flex-shrink:0">${sh.club||'?'}</span><span style="font-size:12px;color:var(--chalk3);width:34px;flex-shrink:0">${CF_TYPE_SHORT[sh.type]||sh.type||'?'}</span><span style="font-size:12px;color:var(--chalk2);flex:1;line-height:1.4">${parts.join(' · ')||'—'}</span></div>`;
+    }).join('');
+  };
+
   const holesHTML = (a.holesTab||[]).map(h=>`
     <div class="coach-hole-row">
       <div class="coach-hole-hdr" onclick="toggleHoleRow(this)">
@@ -4687,13 +4742,14 @@ function renderCoachAnalysis(a, round) {
           ${h.courseManagement?`<div style="font-size:13px;font-weight:600;color:var(--chalk3);letter-spacing:.5px;margin-bottom:4px">COURSE MANAGEMENT</div>
           <div style="font-size:15px;color:var(--chalk2);line-height:1.7;margin-bottom:12px;padding:10px 12px;background:var(--ink3);border-radius:8px;border-left:3px solid var(--gold)">${h.courseManagement}</div>`:''}
           ${h.suggestion?`<div style="font-size:13px;font-weight:600;color:var(--chalk3);letter-spacing:.5px;margin-bottom:4px">NEXT TIME</div>
-          <div style="font-size:13px;color:var(--chalk2);line-height:1.5;padding:8px 10px;background:var(--ink3);border-radius:8px;border-left:3px solid #6bc96b">${h.suggestion}</div>`:''}
+          <div style="font-size:13px;color:var(--chalk2);line-height:1.5;padding:8px 10px;background:var(--ink3);border-radius:8px;border-left:3px solid #6bc96b;margin-bottom:10px">${h.suggestion}</div>`:''}
+          <details><summary style="font-size:13px;color:var(--chalk3);cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;padding:6px 0;border-top:1px solid var(--border)">📋 Shot Log <span style="font-size:11px;opacity:.5">tap to verify</span></summary><div style="padding:6px 0 4px">${shotLogForHole(h.hole)}</div></details>
         </div>
       </div>
     </div>`).join('');
 
   document.getElementById('coach-tab-holes').innerHTML = holesHTML ||
-    '<div style="text-align:center;padding:40px 20px;color:var(--chalk3)">No hole data available</div>';
+    '<div style="text-align:center;padding:40px 20px;color:var(--chalk3)"><div style="font-size:28px;margin-bottom:12px">⚠️</div><div style="font-size:15px;color:var(--chalk2);margin-bottom:8px">Hole data unavailable</div><div style="font-size:13px;opacity:.7">The hole-by-hole pass did not complete.<br>Tap Re-run Byron for a full analysis.</div></div>';
 
   renderTeeTab(round);
 
@@ -5011,6 +5067,20 @@ async function ghPutFile(rounds, sha) {
     headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
+  // 409 = SHA conflict — re-fetch current SHA and retry once
+  if (res.status === 409) {
+    console.warn('GitHub 409 conflict — re-fetching SHA and retrying...');
+    const { sha: freshSha } = await ghGetFile();
+    const body2 = { message: `Sync rounds ${new Date().toISOString().slice(0,10)}`, content };
+    if (freshSha) body2.sha = freshSha;
+    const res2 = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/rounds.json`, {
+      method: 'PUT',
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body2)
+    });
+    if (!res2.ok) throw new Error(`GitHub write failed: ${res2.status}`);
+    return res2.json();
+  }
   if (!res.ok) throw new Error(`GitHub write failed: ${res.status}`);
   return res.json();
 }
@@ -5020,6 +5090,8 @@ function collectLocalNotes() {
   const notes = {};
   Object.keys(localStorage).forEach(k => {
     if (k.startsWith('caddie_hole_notes_') ||
+        k.startsWith('caddie_hole_tee_notes_') ||
+        k.startsWith('caddie_hole_approach_notes_') ||
         k.startsWith('caddie_hole_green_notes_') ||
         k.startsWith('caddie_course_notes_')) {
       const v = localStorage.getItem(k);
@@ -5211,12 +5283,18 @@ async function syncWithGitHub(silent) {
     } catch(ne) { /* notes sync failure is non-fatal */ }
     setSyncStatus(`✓ Synced · ${merged.length} round${merged.length!==1?'s':''}`, 'ok');
     localStorage.setItem('caddie_last_sync', new Date().toISOString());
+    localStorage.removeItem('caddie_sync_failed');
+    const failBar = document.getElementById('sync-fail-bar');
+    if (failBar) failBar.style.display = 'none';
     renderHome();
     if (S.currentRound) updateByronBtn('sum-byron-btn', S.currentRound);
     if (S.viewingId) updateByronBtn('det-byron-btn', getRounds().find(r=>r.id===S.viewingId));
     setTimeout(()=>setSyncStatus('',''), 3000);
   } catch(e) {
     setSyncStatus(`Sync failed: ${e.message}`, 'err');
+    localStorage.setItem('caddie_sync_failed', '1');
+    const failBar = document.getElementById('sync-fail-bar');
+    if (failBar) failBar.style.display = 'block';
     console.error('GitHub sync error:', e);
   }
 }
@@ -5671,25 +5749,31 @@ function renderCourseHub() {
             if (!par.length) return '<div style="font-size:12px;color:var(--chalk3)">No hole data found for this course.</div>';
             return par.map((p,i)=>{
               const h = i+1;
-              const hkey  = 'caddie_hole_notes_' + courseId + '_' + h;
+              const hkey  = 'caddie_hole_tee_notes_' + courseId + '_' + h;
+              const akey  = 'caddie_hole_approach_notes_' + courseId + '_' + h;
               const gkey  = 'caddie_hole_green_notes_' + courseId + '_' + h;
-              const hval  = (localStorage.getItem(hkey)  || '').replace(/</g,'&lt;');
+              const hval  = (localStorage.getItem(hkey)  || localStorage.getItem('caddie_hole_notes_' + courseId + '_' + h) || '').replace(/</g,'&lt;');
+              const aval  = (localStorage.getItem(akey)  || '').replace(/</g,'&lt;');
               const gval  = (localStorage.getItem(gkey)  || '').replace(/</g,'&lt;');
-              const hasNote = hval.trim().length > 0 || gval.trim().length > 0;
+              const hasNote = hval.trim().length > 0 || aval.trim().length > 0 || gval.trim().length > 0;
               return '<details style="background:var(--ink3);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;overflow:hidden"' + (hasNote?' open':'') + '>' +
-                '<summary style="padding:10px 14px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px">' +
-                  '<span style="color:var(--gold);font-weight:700;font-size:12px;width:22px">H'+h+'</span>' +
-                  '<span style="color:var(--chalk3);font-size:12px">Par '+p+' · '+yds[i]+' yds</span>' +
-                  (hasNote ? '<span style="margin-left:auto;font-size:10px;color:#5ec85e">✓</span>' : '<span style="margin-left:auto;font-size:10px;color:var(--chalk3)">+ add</span>') +
+                '<summary style="padding:12px 14px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px">' +
+                  '<span style="color:var(--gold);font-weight:700;font-size:15px;width:26px">H'+h+'</span>' +
+                  '<span style="color:var(--chalk2);font-size:15px;font-weight:500">Par '+p+' · '+yds[i]+' yds</span>' +
+                  (hasNote ? '<span style="margin-left:auto;font-size:13px;color:#5ec85e">✓</span>' : '<span style="margin-left:auto;font-size:13px;color:var(--chalk3)">+ add</span>') +
                 '</summary>' +
-                '<div style="padding:0 14px 12px;display:flex;flex-direction:column;gap:10px">' +
+                '<div style="padding:0 14px 14px;display:flex;flex-direction:column;gap:12px">' +
                   '<div>' +
-                    '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:5px">Caddie Notes</div>' +
-                    '<textarea data-hkey="'+hkey+'" oninput="saveHubHoleNote(this)" style="width:100%;min-height:65px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:\'DM Sans\',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Aim point, trouble, smart miss, layup target…">'+hval+'</textarea>' +
+                    '<div style="font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:6px">🏌️ Tee Shot</div>' +
+                    '<textarea data-hkey="'+hkey+'" oninput="saveHubHoleNote(this)" style="width:100%;min-height:60px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:\'DM Sans\',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Aim point, club selection, trouble left/right, miss window…">'+hval+'</textarea>' +
                   '</div>' +
                   '<div>' +
-                    '<div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:5px">Green Notes</div>' +
-                    '<textarea data-hkey="'+gkey+'" oninput="saveHubHoleNote(this)" style="width:100%;min-height:65px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:\'DM Sans\',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Slope, break, false fronts, pin tendencies…">'+gval+'</textarea>' +
+                    '<div style="font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:6px">🎯 Approach</div>' +
+                    '<textarea data-hkey="'+akey+'" oninput="saveHubHoleNote(this)" style="width:100%;min-height:60px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:\'DM Sans\',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Smart miss, layup target, acceptable distance…">'+aval+'</textarea>' +
+                  '</div>' +
+                  '<div>' +
+                    '<div style="font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:6px">🏳️ Green</div>' +
+                    '<textarea data-hkey="'+gkey+'" oninput="saveHubHoleNote(this)" style="width:100%;min-height:60px;background:var(--ink);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;color:var(--chalk2);font-family:\'DM Sans\',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="Slope, break, false fronts, pin tendencies…">'+gval+'</textarea>' +
                   '</div>' +
                 '</div>' +
               '</details>';
@@ -5760,9 +5844,15 @@ async function getBriefing(courseId, courseName, notesKey) {
   const yds = course ? course.tees[0].yds : [];
   const holeNotes = par.map((_,i) => {
     const h = i+1;
-    const cn = localStorage.getItem('caddie_hole_notes_'+courseId+'_'+h) || '';
+    const tn = localStorage.getItem('caddie_hole_tee_notes_'+courseId+'_'+h) || localStorage.getItem('caddie_hole_notes_'+courseId+'_'+h) || '';
+    const an = localStorage.getItem('caddie_hole_approach_notes_'+courseId+'_'+h) || '';
     const gn = localStorage.getItem('caddie_hole_green_notes_'+courseId+'_'+h) || '';
-    return (cn||gn) ? `Hole ${h} (Par ${par[i]}, ${yds[i]}y): ${cn}${gn?' | Green: '+gn:''}` : null;
+    if (!tn && !an && !gn) return null;
+    const parts = [];
+    if (tn) parts.push(`Tee: ${tn}`);
+    if (an) parts.push(`Approach: ${an}`);
+    if (gn) parts.push(`Green: ${gn}`);
+    return `Hole ${h} (Par ${par[i]}, ${yds[i]}y): ${parts.join(' | ')}`;
   }).filter(Boolean).join('\n');
   const rounds = getRounds().filter(r=>r.courseName===courseName);
   const scores = rounds.map(r=>r.scores?.reduce((t,s)=>t+(s.strokes||0),0)||0).filter(s=>s>0);
@@ -6008,6 +6098,11 @@ function doImport() {
 })();
 try {
   renderHome();
+  // Restore sync fail bar if last sync failed
+  if (localStorage.getItem('caddie_sync_failed') === '1') {
+    const failBar = document.getElementById('sync-fail-bar');
+    if (failBar) failBar.style.display = 'block';
+  }
 } catch(e) {
   console.error('Startup error:', e);
   const el = document.getElementById('home-rounds');
