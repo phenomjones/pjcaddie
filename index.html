@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v5.5.10 · Mar 21, 2026 -->
+<!-- PJ Caddie v5.5.12 · Mar 21, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -184,7 +184,7 @@ body{display:flex;flex-direction:column}
 .c-way-over{color:#ff4444}
 
 /* ── ROUND ROW ── */
-.round-row{display:flex;align-items:center;gap:14px;padding:15px 16px;background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:background .15s;margin-bottom:8px}
+.round-row{display:flex;flex-direction:column;align-items:stretch;padding:14px 16px;background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:background .15s;margin-bottom:8px}
 .round-row:active{background:var(--ink3)}
 .rr-info{flex:1;min-width:0}
 .rr-course{font-size:15px;font-weight:500;color:var(--chalk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -580,7 +580,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.5.10 · Mar 21, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v5.5.12 · Mar 21, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -1225,7 +1225,7 @@ function roundRowHTML(r, origin='history') {
   const lockedStyle = r.locked ? 'opacity:.5' : '';
   const isArchived = r.archived || false;
   return `<div class="round-row" style="position:relative${isArchived?';opacity:.7':''}" ${r.locked?'':` onclick="showDetail('${r.id}','${origin}')"`}>
-    <div style="display:flex;align-items:center;flex:1;${lockedStyle};padding-bottom:8px">
+    <div style="display:flex;align-items:center;${lockedStyle};padding-bottom:8px">
       <div class="rr-info" style="flex:1">
         <div class="rr-course">${r.courseName}${isArchived?' <span style="font-size:13px;color:var(--chalk3);opacity:.6">ARCHIVED</span>':''}</div>
         <div class="rr-meta">${date} · ${r.teeName}${incomplete}</div>
@@ -5996,6 +5996,13 @@ async function checkRemoteWIP() {
   try {
     const { wip, sha } = await ghGetWIP();
     if (!wip) return;
+    // STALE BANNER: if this round is already saved as completed locally, clear remote WIP silently
+    const saved = getRounds();
+    const alreadySaved = saved.find(r => r.id === wip.id && r.completedAt);
+    if (alreadySaved) {
+      ghClearWIP(sha).catch(()=>{});
+      return;
+    }
     const localWip = getInProgress();
     if (localWip && localWip.id === wip.id) {
       const localTs  = localWip._paused ? new Date(localWip._paused).getTime() : 0;
