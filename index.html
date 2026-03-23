@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.0.3 · Mar 22, 2026 -->
+<!-- PJ Caddie v6.0.4 · Mar 22, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -553,7 +553,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.3 · Mar 22, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.4 · Mar 22, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -4774,28 +4774,29 @@ async function backupNotes() {
 async function restoreNotes() {
   if (!ghConfigured()) { setVaultStatus('GitHub sync not configured — go to Settings.', 'err'); return; }
   if (!navigator.onLine) { setVaultStatus('Offline — cannot restore.', 'err'); return; }
-  if (!confirm('Restore notes from GitHub backup?\n\nThis will merge backed-up notes into your local notes. Nothing will be deleted — local notes always win if there is a conflict.')) return;
+  if (!confirm('Restore notes from GitHub backup?\n\nThis will overwrite all local notes with the backed-up versions.')) return;
   const btn = document.getElementById('vault-restore-btn');
   if (btn) { btn.disabled = true; btn.textContent = '↓ Restoring…'; }
   try {
     const { notes, savedAt } = await ghGetNotes();
     const count = Object.keys(notes).length;
     if (!count) { setVaultStatus('No backed-up notes found.', 'err'); return; }
-    // Merge-only: remote fills in keys not present locally
+    // Full overwrite — restore all keys from backup regardless of local state
     let restored = 0;
     Object.entries(notes).forEach(([k, v]) => {
-      if (!localStorage.getItem(k)) {
-        localStorage.setItem(k, v);
-        restored++;
-      }
+      localStorage.setItem(k, v);
+      restored++;
     });
+    // Refresh player notes textarea if visible
+    const pn = document.getElementById('player-notes');
+    if (pn) pn.value = localStorage.getItem('caddie_player_notes') || '';
     const d = savedAt ? new Date(savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : 'unknown date';
     setVaultStatus(`✓ Restored ${restored} note${restored!==1?'s':''} from backup (${d})`, 'ok');
     renderCourseHub();
   } catch(e) {
     setVaultStatus(`Restore failed: ${e.message}`, 'err');
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '↓ Restore Notes'; }
+    if (btn) { btn.disabled = false; btn.textContent = '↓ Restore'; }
   }
 }
 
