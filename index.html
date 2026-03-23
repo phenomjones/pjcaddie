@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.0.8 · Mar 23, 2026 -->
+<!-- PJ Caddie v6.0.9 · Mar 23, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -554,7 +554,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.8 · Mar 23, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.9 · Mar 23, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -2380,8 +2380,12 @@ function vSetup() {
 function vPhase1() {
   const h = curH();
   const locked = E.p1seq.length > 0;
-  const parHtml = locked
-    ? `<div style="display:flex;align-items:center;gap:7px"><div style="font-size:13px;font-weight:600;color:var(--gold)">Par ${h.par}</div><span class="par-edit" onclick="editPar()">change</span></div>`
+  // Pull par from round (authoritative) first, fall back to entry state
+  const roundPar = S.currentRound ? S.currentRound.pars[S.currentHole] : null;
+  const knownPar = roundPar || h.par;
+  if (roundPar && h.par !== roundPar) h.par = roundPar; // keep entry state in sync
+  const parHtml = knownPar
+    ? `<div style="font-size:13px;font-weight:600;color:var(--gold)">Par ${knownPar}</div>`
     : `<div class="par-row">${[3,4,5].map(p=>`<div class="pc ${h.par===p?'on':''}" onclick="setPar(${p})">Par ${p}</div>`).join('')}</div>`;
 
   const seqHtml = E.p1seq.length > 0
