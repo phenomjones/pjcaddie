@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.0.1 · Mar 22, 2026 -->
+<!-- PJ Caddie v6.0.3 · Mar 22, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -443,11 +443,11 @@ main{padding:14px}
 .cb:active{opacity:.7}
 .cb.dim{color:var(--chalk3)}
 .cb.wild{border-color:var(--chalk3);color:var(--chalk3)}
-.cb.cat-wood{color:#6baadf;border-color:rgba(107,170,223,.35)}
-.cb.cat-hybrid{color:#7ec87e;border-color:rgba(126,200,126,.35)}
+.cb.cat-wood{color:var(--sky);border-color:rgba(107,170,223,.35)}
+.cb.cat-hybrid{color:var(--green);border-color:rgba(126,200,126,.35)}
 .cb.cat-iron{color:var(--chalk2)}
-.cb.cat-wedge{color:#e8994a;border-color:rgba(232,153,74,.35)}
-.cb.cat-putter{color:#b48ef0;border-color:rgba(180,142,240,.35)}
+.cb.cat-wedge{color:var(--orange);border-color:rgba(232,153,74,.35)}
+.cb.cat-putter{color:var(--purple);border-color:rgba(180,142,240,.35)}
 /* Phase 1 sequence strip */
 .seq-strip{padding:10px 14px;border-bottom:1px solid var(--border);min-height:52px}
 .seq-lbl{font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
@@ -553,7 +553,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.1 · Mar 22, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.3 · Mar 22, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -2375,16 +2375,9 @@ function renderEntry() {
 
 // ── HOLE SETUP ──
 function vSetup() {
-  return hdr() + holeBar() + `
-  <main>
-    <div class="sect">Select par for hole ${E.hole}</div>
-    <div class="par-row" style="justify-content:center;gap:14px;margin-top:24px">
-      <div class="pc" style="font-size:20px;padding:16px 26px" onclick="setPar(3)">Par 3</div>
-      <div class="pc" style="font-size:20px;padding:16px 26px" onclick="setPar(4)">Par 4</div>
-      <div class="pc" style="font-size:20px;padding:16px 26px" onclick="setPar(5)">Par 5</div>
-    </div>
-    <div class="info-note" style="margin-top:20px">In the real app, par is loaded from the course scorecard automatically.</div>
-  </main>` + bnav() + `<div class="sp"></div>`;
+  // Par always comes from course data in loadHole() — redirect straight to phase1
+  E.view = 'phase1';
+  return vPhase1();
 }
 
 // ── PHASE 1 — CLUB SEQUENCE ──
@@ -5249,16 +5242,20 @@ function renderCourseHub() {
   const body = document.getElementById('coursehub-body');
   if (!body) return;
 
-  // Group rounds by courseName
+  // Seed courseMap from saved courses first
   const courseMap = {};
+  getCourses().forEach(course => {
+    if (!courseMap[course.name]) courseMap[course.name] = { rounds:[], courseId: course.id, notes:'' };
+  });
+  // Layer rounds on top
   rounds.forEach(r => {
     if (!r.courseName) return;
-    if (!courseMap[r.courseName]) courseMap[r.courseName] = { rounds:[], notes:'' };
+    if (!courseMap[r.courseName]) courseMap[r.courseName] = { rounds:[], courseId: r.courseId, notes:'' };
     courseMap[r.courseName].rounds.push(r);
   });
 
   if (!Object.keys(courseMap).length) {
-    body.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--chalk3)">No rounds recorded yet.</div>';
+    body.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--chalk3)">No courses set up yet.</div>';
     return;
   }
 
@@ -5278,7 +5275,7 @@ function renderCourseHub() {
 
   body.innerHTML = vaultBar + Object.entries(courseMap).map(([name, data]) => {
     const courseRounds = data.rounds.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
-    const notesKey = 'caddie_course_notes_' + (courseRounds[0]?.courseId || name.replace(/\s+/g,'_'));
+    const notesKey = 'caddie_course_notes_' + (data.courseId || courseRounds[0]?.courseId || name.replace(/\s+/g,'_'));
     const savedNotes = localStorage.getItem(notesKey) || '';
     const scores = courseRounds.map(r => r.scores?.reduce((t,s)=>t+(s.strokes||0),0) || 0).filter(s=>s>0);
     const best = scores.length ? Math.min(...scores) : null;
@@ -5301,7 +5298,7 @@ function renderCourseHub() {
     const teeGroups = {};
     courseRounds.forEach(r => { if (r.teeName) teeGroups[r.teeName] = (teeGroups[r.teeName]||0)+1; });
     const dominantTee = Object.entries(teeGroups).sort((a,b)=>b[1]-a[1])[0]?.[0] || '';
-    const courseId0 = courseRounds[0]?.courseId || '';
+    const courseId0 = data.courseId || courseRounds[0]?.courseId || '';
     const pjData = calcPJIndex(allRounds, courseId0, dominantTee);
 
     const cid = 'ch-' + name.replace(/[^a-zA-Z0-9]/g,'');
