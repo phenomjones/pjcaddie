@@ -677,6 +677,30 @@ main{padding:14px}
     <textarea id="player-notes" style="width:100%;min-height:160px;background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="e.g. Club gapping: Driver 220, 3W 195, 5W 180, 4H 165, 5i 158, 6i 150, 7i 140, 8i 130, 9i 118, PW 105, GW 90&#10;&#10;Tendencies: slice with driver under pressure, tend to chunk chips when nervous&#10;&#10;Goals: break 90, improve course management" oninput="savePlayerNotes()"></textarea>
     <div style="height:1px;background:var(--border);margin:24px 0"></div>
     <div style="font-size:12px;color:var(--chalk3);line-height:1.6">Course notes and hole-by-hole strategy are managed in the 🏌️ Course Hub.</div>
+    <div style="height:1px;background:var(--border);margin:24px 0"></div>
+    <div class="eyebrow" style="margin-bottom:8px;color:var(--red);opacity:.7">Danger Zone</div>
+    <div style="font-size:13px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Permanently delete all rounds from this device and GitHub. Cannot be undone.</div>
+    <button onclick="cleanSlatePrompt()" style="width:100%;background:rgba(201,64,64,.08);border:1px solid rgba(201,64,64,.3);border-radius:var(--rs);padding:13px;font-size:14px;color:rgba(201,64,64,.8);cursor:pointer;font-family:'DM Sans',sans-serif">🗑 Clean Slate — Delete All Rounds</button>
+    <div id="clean-slate-status" style="font-size:13px;min-height:16px;margin-top:10px;color:var(--chalk3);text-align:center"></div>
+  </div>
+</div>
+
+<!-- CLEAN SLATE CONFIRM OVERLAY -->
+<div id="clean-slate-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:300;align-items:center;justify-content:center;padding:28px">
+  <div style="background:var(--ink2);border:1px solid rgba(201,64,64,.4);border-radius:18px;padding:28px 24px;width:100%;max-width:420px">
+    <div style="font-size:28px;text-align:center;margin-bottom:12px">⚠️</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk);text-align:center;margin-bottom:10px">Delete All Rounds?</div>
+    <div id="cs-round-count" style="font-size:13px;color:var(--chalk3);text-align:center;line-height:1.7;margin-bottom:20px"></div>
+    <div style="background:rgba(201,64,64,.07);border:1px solid rgba(201,64,64,.2);border-radius:10px;padding:12px 14px;margin-bottom:20px">
+      <div style="font-size:12px;color:rgba(201,64,64,.8);line-height:1.6">This will permanently erase all rounds from localStorage <b>and</b> from your GitHub data repo. This cannot be undone.</div>
+    </div>
+    <div style="font-size:12px;color:var(--chalk3);margin-bottom:10px;text-align:center">Type <b style="color:var(--chalk)">DELETE</b> to confirm</div>
+    <input id="cs-confirm-input" type="text" placeholder="DELETE" autocapitalize="characters" autocorrect="off" style="width:100%;background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:16px;color:var(--chalk);font-family:'DM Sans',sans-serif;box-sizing:border-box;text-align:center;margin-bottom:14px;outline:none">
+    <div style="display:flex;gap:10px">
+      <button onclick="closeCleanSlate()" style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:13px;font-size:14px;color:var(--chalk2);cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
+      <button onclick="doCleanSlate()" style="flex:1;background:rgba(201,64,64,.15);border:1px solid rgba(201,64,64,.4);border-radius:var(--rs);padding:13px;font-size:14px;font-weight:600;color:#e07070;cursor:pointer;font-family:'DM Sans',sans-serif">Delete Everything</button>
+    </div>
+    <div id="cs-progress" style="font-size:12px;color:var(--chalk3);text-align:center;margin-top:12px;min-height:16px"></div>
   </div>
 </div>
 
@@ -5724,6 +5748,67 @@ function pushWIPToGitHub() {
     ghPutWIP({...round, _wip:true, _paused: new Date().toISOString()}, sha).catch(()=>{});
   }).catch(()=>{});
 }
+
+// ═══════════════════════════════════════════════
+// CLEAN SLATE
+// ═══════════════════════════════════════════════
+function cleanSlatePrompt() {
+  const rounds = getRounds();
+  const el = document.getElementById('cs-round-count');
+  if (el) {
+    const ghNote = ghConfigured() ? ' and from GitHub' : ' (GitHub not configured — local only)';
+    el.textContent = `You have ${rounds.length} round${rounds.length!==1?'s':''} stored. All will be deleted from this device${ghNote}.`;
+  }
+  const inp = document.getElementById('cs-confirm-input');
+  if (inp) inp.value = '';
+  const overlay = document.getElementById('clean-slate-overlay');
+  if (overlay) overlay.style.display = 'flex';
+}
+
+function closeCleanSlate() {
+  const overlay = document.getElementById('clean-slate-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+async function doCleanSlate() {
+  const inp = document.getElementById('cs-confirm-input');
+  if (!inp || inp.value.trim().toUpperCase() !== 'DELETE') {
+    inp.style.borderColor = 'rgba(201,64,64,.8)';
+    setTimeout(() => { inp.style.borderColor = ''; }, 1200);
+    return;
+  }
+  const prog = document.getElementById('cs-progress');
+  if (prog) prog.textContent = 'Clearing local data…';
+
+  // 1. Wipe localStorage
+  saveRounds([]);
+  saveWIP(null);
+  localStorage.removeItem('caddie_wip');
+
+  // 2. Push empty array to GitHub if configured
+  if (ghConfigured() && navigator.onLine) {
+    if (prog) prog.textContent = 'Pushing empty rounds to GitHub…';
+    try {
+      const { sha } = await ghGetFile();
+      await ghPutFile([], sha);
+      if (prog) prog.textContent = '✓ GitHub cleared';
+    } catch(e) {
+      if (prog) prog.textContent = '⚠️ Local cleared. GitHub push failed — sync manually.';
+    }
+  } else if (!ghConfigured()) {
+    if (prog) prog.textContent = '✓ Local data cleared (no GitHub configured)';
+  } else {
+    if (prog) prog.textContent = '✓ Local cleared. Offline — sync GitHub when back online.';
+  }
+
+  setTimeout(() => {
+    closeCleanSlate();
+    const statusEl = document.getElementById('clean-slate-status');
+    if (statusEl) statusEl.textContent = '✓ All rounds deleted';
+    renderHome();
+  }, 1200);
+}
+
 </script>
 </body>
 </html>
