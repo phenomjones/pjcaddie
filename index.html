@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.0.5 · Mar 22, 2026 -->
+<!-- PJ Caddie v6.0.6 · Mar 23, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -553,7 +553,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.5 · Mar 22, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.6 · Mar 23, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -2343,11 +2343,6 @@ function addMoreShots() {
   showEntryView('phase1');
 }
 
-function undoLast() {
-  curH().shots.pop();
-  renderEntry();
-}
-
 function setSandType(t) {
   E.sandType = t;
   E.p2qs = buildQs('Sand');
@@ -2726,27 +2721,6 @@ function puttArrows(key) {
   </div>`;
 }
 
-// ── HOLE SUMMARY ──
-function vSummary() {
-  const h = curH();
-  const shots = h.shots;
-  return hdr() + holeBar() + `
-  <main>
-    <div class="shot-list" style="margin-bottom:14px">
-      ${shots.length === 0
-        ? '<div style="color:var(--chalk3);font-size:13px">No shots logged.</div>'
-        : shots.map((sh,i)=>shotCard(sh,i+1)).join('')}
-    </div>
-    <div class="action-row">
-      ${shots.length > 0 ? `<button class="btn red" onclick="undoLast();renderEntry()">↩ Undo</button>` : ''}
-      <button class="btn" onclick="addMoreShots()">+ Add shots</button>
-      ${E.hole < 18
-        ? `<button class="btn pri" onclick="nextHole()">Hole ${E.hole+1} →</button>`
-        : `<button class="btn pri" onclick="showEntryView('log')">View Log</button>`}
-    </div>
-  </main>` + bnav() + `<div class="sp"></div>`;
-}
-
 function shotCard(sh, num) {
   const tc = TYPE_COLORS[sh.type] || '#888';
   const bg = tc + '18';
@@ -2841,7 +2815,6 @@ function curH() {
 }
 
 // Override showEntryView to sync shots to round on hole-summary transition
-const _origShowEntryView = showEntryView;
 function showEntryView(v) {
   E.view = v;
   if (v === 'hole-summary') {
