@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.0.0 · Mar 22, 2026 -->
+<!-- PJ Caddie v6.0.1 · Mar 22, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -49,6 +49,11 @@ html.sun-mode {
   --red: #b02020;
   --red2: #801010;
   --sky: #1a6abf;
+  --blue: #1a5a9a;
+  --green: #1a7a1a;
+  --orange: #b05a00;
+  --yellow: #8a6a00;
+  --purple: #5a2a8a;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--chalk);font-family:'DM Sans',sans-serif;font-size:16px}
@@ -548,7 +553,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.0 · Mar 22, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.1 · Mar 22, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -1686,7 +1691,7 @@ const TYPE_COLORS = {
 // STATE
 // ─────────────────────────────────────────
 let E = {
-  view: 'hole-setup',
+  view: 'phase1',
   hole: 1,
   holes: {},
   // Phase 1 — GHOST CLEAR: reset all on hole nav
@@ -2294,10 +2299,7 @@ function setPar(par) {
 }
 
 function editPar() {
-  if (!confirm('Change par? This will clear the current club sequence.')) return;
-  E.p1seq = [];
-  curH().par = null;
-  showEntryView('hole-setup');
+  // Par is locked from course data — no-op
 }
 
 // ─────────────────────────────────────────
@@ -2323,7 +2325,7 @@ function gotoHole(n) {
   const h = curH();
   if (h.shots.length > 0) showEntryView('hole-summary');
   else if (h.par)          showEntryView('phase1');
-  else                     showEntryView('hole-setup');
+  else                     showEntryView('phase1');
 }
 
 function nextHole() {
@@ -2332,7 +2334,7 @@ function nextHole() {
   E.hole++;
   const h = curH();
   if (h.par) showEntryView('phase1');
-  else       showEntryView('hole-setup');
+  else       showEntryView('phase1');
 }
 
 function addMoreShots() {
@@ -2363,7 +2365,6 @@ function showEntryView(v) { E.view = v; renderEntry(); }
 // ─────────────────────────────────────────
 function renderEntry() {
   const fns = {
-    'hole-setup':  vSetup,
     'phase1':      vPhase1,
     'phase2':      vPhase2,
     'hole-summary':vSummary,
