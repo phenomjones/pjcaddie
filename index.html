@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.0.4 · Mar 22, 2026 -->
+<!-- PJ Caddie v6.0.5 · Mar 22, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -553,7 +553,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.4 · Mar 22, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.5 · Mar 22, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -5357,10 +5357,10 @@ function renderCourseHub() {
         <div id="${cid}-holenotes">
           ${(()=>{
             // Robust lookup: try course registry first, fall back to round data
-            const course = getCourses().find(c=>c.id===courseRounds[0]?.courseId) || getCourses().find(c=>c.name===name);
+            const course = getCourses().find(c=>c.id===data.courseId) || getCourses().find(c=>c.id===courseRounds[0]?.courseId) || getCourses().find(c=>c.name===name);
             const par = course ? course.tees[0].par : (courseRounds[0]?.pars || []);
             const yds = course ? course.tees[0].yds : (courseRounds[0]?.yds || []);
-            const courseId = courseRounds[0]?.courseId || name.replace(/\s+/g,'_');
+            const courseId = data.courseId || courseRounds[0]?.courseId || name.replace(/\s+/g,'_');
             if (!par.length) return '<div style="font-size:12px;color:var(--chalk3)">No hole data found for this course.</div>';
             return par.map((p,i)=>{
               const h = i+1;
