@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.0.7 · Mar 23, 2026 -->
+<!-- PJ Caddie v6.0.8 · Mar 23, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -422,6 +422,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 
 /* ── ENTRY FLOW ── */
 #entry-root{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.entry-col{max-width:500px;margin:0 auto}
 .hdr{background:#111;padding:12px 16px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .hdr-title{font-size:15px;font-weight:700;color:var(--gold);letter-spacing:.5px}
 .hdr-sub{font-size:11px;color:var(--chalk3)}
@@ -436,7 +437,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 .par-edit{font-size:11px;color:var(--chalk3);text-decoration:underline;cursor:pointer;white-space:nowrap}
 .hole-nav{display:flex;gap:4px}
 .hn-btn{padding:6px 10px;border-radius:8px;background:var(--ink3);border:1px solid var(--border);color:var(--chalk2);font-size:13px;cursor:pointer}
-main{padding:14px;max-width:500px;margin:0 auto;box-sizing:border-box}
+main{padding:14px}
 .sect{font-size:11px;color:var(--chalk3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px}
 .club-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
 .cb{padding:11px 4px;border-radius:10px;background:var(--ink3);border:1.5px solid var(--border);color:var(--chalk);font-size:14px;font-weight:600;cursor:pointer;text-align:center;min-height:48px;display:flex;align-items:center;justify-content:center}
@@ -553,7 +554,7 @@ main{padding:14px;max-width:500px;margin:0 auto;box-sizing:border-box}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.7 · Mar 23, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.0.8 · Mar 23, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -824,7 +825,7 @@ main{padding:14px;max-width:500px;margin:0 auto;box-sizing:border-box}
   <div class="swipe-area" id="swipe-area">
     <div id="entry-root"></div>
   </div>
-  <div style="padding:0 max(18px, calc((100% - 680px) / 2));padding-bottom:env(safe-area-inset-bottom,12px);display:flex;flex-direction:column;gap:6px;background:var(--ink);flex-shrink:0;padding-top:10px">
+  <div style="padding:0 max(18px, calc((100% - 500px) / 2));padding-bottom:env(safe-area-inset-bottom,12px);display:flex;flex-direction:column;gap:6px;background:var(--ink);flex-shrink:0;padding-top:10px">
     <div class="nav-row">
       <button class="nav-prev" id="nav-prev" onclick="goPrev()" disabled>←</button>
       <button class="btn btn-gold" id="nav-next" onclick="goNext()" style="flex:1">Next Hole →</button>
@@ -2365,7 +2366,7 @@ function renderEntry() {
     'hole-summary':vSummary,
     'log':         vLog,
   };
-  const _er = document.getElementById('entry-root'); if(_er) _er.innerHTML = (fns[E.view] || vPhase1)();
+  const _er = document.getElementById('entry-root'); if(_er) _er.innerHTML = '<div class="entry-col">' + (fns[E.view] || vPhase1)() + '</div>';
 }
 
 // ── HOLE SETUP ──
