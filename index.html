@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.1.1 · Mar 23, 2026 -->
+<!-- PJ Caddie v6.1.4 · Mar 23, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -559,7 +559,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.1.1 · Mar 23, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.1.4 · Mar 23, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -1067,8 +1067,8 @@ function safeBase64Encode(str) {
   return btoa(binary);
 }
 
-const ZONE_LABELS = {'long-left':'Long L','long-center':'Long','long-right':'Long R','back-left':'Back-L','back-center':'Back','back-right':'Back-R','left':'Left','green':'On Green','right':'Right','ph-left':'PH Left','ph-center':'PH','ph-right':'PH Right','front-left':'Front-L','front-center':'Front','front-right':'Front-R','short-left':'Short L','short-center':'Short','short-right':'Short R'};
-const ZONE_COLORS = {'green':'#5ec85e','left':'#e0a870','right':'#e0a870','back-left':'#c07050','back-center':'var(--red)','back-right':'#c07050','front-left':'#c07050','front-center':'#c07050','front-right':'#c07050','long-left':'#9060b0','long-center':'#9060b0','long-right':'#9060b0','short-left':'#5090c0','short-center':'#5090c0','short-right':'#5090c0'};
+const ZONE_LABELS = {'back-left':'Back L','back-center':'Back','back-right':'Back R','back-left':'Back-L','back-center':'Back','back-right':'Back-R','left':'Left','green':'On Green','right':'Right','ph-left':'PH Left','ph-center':'PH','ph-right':'PH Right','front-left':'Front-L','front-center':'Front','front-right':'Front-R','front-left':'Front L','front-center':'Front','front-right':'Front R'};
+const ZONE_COLORS = {'green':'#5ec85e','left':'#e0a870','right':'#e0a870','back-left':'#c07050','back-center':'var(--red)','back-right':'#c07050','front-left':'#c07050','front-center':'#c07050','front-right':'#c07050','back-left':'#9060b0','back-center':'#9060b0','back-right':'#9060b0','front-left':'#5090c0','front-center':'#5090c0','front-right':'#5090c0'};
 
 // Byron version — displayed in coach header and loading screen
 const BYRON_VERSION = 'Byron 2.0';
@@ -1613,7 +1613,9 @@ function loadHole(i) {
   // Nav buttons
   document.getElementById('nav-prev').disabled = i===0;
   const isLast = i===round.holes-1;
-  document.getElementById('nav-next').textContent = isLast ? 'Finish Round ✓' : 'Next Hole →';
+  const navNext = document.getElementById('nav-next');
+  navNext.textContent = isLast ? 'Finish Round ✓' : 'Next Hole →';
+  navNext.style.visibility = startView === 'hole-summary' ? 'hidden' : 'visible';
 }
 
 function commitHole(i) {
@@ -1748,9 +1750,9 @@ const CF_CAT = {
   'PT':'putter','TW':'tw'
 };
 const cfCat   = c => CF_CAT[c] || 'unknown';
-const cfLong  = c => ['driver','wood','hybrid','long-iron'].includes(cfCat(c));
+const cfBack  = c => ['driver','wood','hybrid','long-iron'].includes(cfCat(c));
 const cfMid   = c => cfCat(c) === 'mid-iron';
-const cfShort = c => ['short-iron','wedge'].includes(cfCat(c));
+const cfFront = c => ['short-iron','wedge'].includes(cfCat(c));
 const cfWedge = c => cfCat(c) === 'wedge';
 function clubColorClass(c) {
   const cat = cfCat(c);
@@ -1768,6 +1770,18 @@ function clubColorClass(c) {
 function cfInferAll(clubs, par) {
   const n = clubs.length;
   const res = clubs.map(c=>({club:c,type:null,confidence:'red',counted:true,isTW:false,isLastPutt:false}));
+
+  // TWIN SIGNAL — must check BEFORE pre-labeling shot[0] as Tee
+  // If clubs[0]===clubs[1] and both are long clubs, shot[0] was a Mishit off the tee
+  if(n>=2 && clubs[0]===clubs[1] && cfBack(clubs[0]) && clubs[0]!=='PT' && clubs[0]!=='TW') {
+    res[0].type='Mishit'; res[0].confidence='amber';
+    // Re-run cfInferAll on the remaining sequence from index 1 (now treated as shot 0)
+    const rest = cfInferAll(clubs.slice(1), par);
+    rest.forEach((r,i)=>{ res[i+1]=r; });
+    for(let i=n-1;i>=0;i--){if(clubs[i]==='PT'){res[i].isLastPutt=true;break;}}
+    return res;
+  }
+
   clubs.forEach((c,i)=>{
     if(c==='PT'){res[i].type='Putt';res[i].confidence='certain';}
     else if(c==='TW'){res[i].type='Putt';res[i].confidence='certain';res[i].counted=false;res[i].isTW=true;}
@@ -1801,13 +1815,13 @@ function cfInferSeg(clubs,par,afterPen){
   const A=t=>({type:t,conf:'amber'});
   const R=()=>({type:null,conf:'red'});
   const lastCat=cfCat(clubs[n-1]);
-  const lastShort=['wedge','short-iron'].includes(lastCat);
+  const lastFront=['wedge','short-iron'].includes(lastCat);
   const isW=c=>['PW','GW','54','58'].includes(c);
 
   // TWIN SIGNAL — same long club twice in a row = first was likely a Mishit
   // Apply before par-specific logic so it works on any par
   for(let i=0;i<n-1;i++){
-    if(clubs[i]===clubs[i+1] && cfLong(clubs[i])){
+    if(clubs[i]===clubs[i+1] && cfBack(clubs[i])){
       // Build result: mark index i as Mishit, recurse on rest without that club
       const before = i>0 ? cfInferSeg(clubs.slice(0,i),par,afterPen) : [];
       const after  = cfInferSeg(clubs.slice(i+1),par,afterPen||i>0);
@@ -1818,7 +1832,7 @@ function cfInferSeg(clubs,par,afterPen){
     if(n===2&&cfWedge(clubs[0])&&cfWedge(clubs[1]))return[A('Chip'),A('Chip')];
     if(n===3&&cfWedge(clubs[1])&&cfWedge(clubs[2])){
       if(afterPen)return[G('Approach'),A('Chip'),A('Chip')];
-      if(cfLong(clubs[0]))return[G('Approach'),A('Chip'),A('Chip')];
+      if(cfBack(clubs[0]))return[G('Approach'),A('Chip'),A('Chip')];
       return[A('Approach'),A('Chip'),A('Chip')];
     }
     if(afterPen){if(n===1)return[G('Approach')];if(n===2)return[A('Approach'),A('Chip')];}
@@ -1831,7 +1845,7 @@ function cfInferSeg(clubs,par,afterPen){
       const isReTee=cfCat(clubs[0])==='driver'||cfCat(clubs[0])==='wood';
       if(n===1&&isReTee)return[A('Tee')];
       if(n===1)return[G('Approach')];
-      if(n===2&&isReTee&&cfShort(clubs[1]))return[A('Tee'),A('Approach')];
+      if(n===2&&isReTee&&cfFront(clubs[1]))return[A('Tee'),A('Approach')];
       if(n===2&&isReTee)return[A('Tee'),A('Approach')];
       if(n===2&&isW(clubs[1]))return[G('Approach'),A('Chip')];
       if(n===2)return[G('Approach'),A('Approach')];
@@ -1841,12 +1855,12 @@ function cfInferSeg(clubs,par,afterPen){
     }
     if(n===1)return[G('Approach')];
     if(n===2){
-      if(cfLong(clubs[0]))return[G('Approach'),isW(clubs[1])?A('Chip'):A('Approach')];
+      if(cfBack(clubs[0]))return[G('Approach'),isW(clubs[1])?A('Chip'):A('Approach')];
       if(cfMid(clubs[0]))return[A('Approach'),isW(clubs[1])?A('Chip'):A('Approach')];
       return[A('Approach'),isW(clubs[1])?A('Chip'):A('Approach')];
     }
-    if(n===3){if(lastShort)return[A('Mishit'),A('Approach'),A('Chip')];return[A('Mishit'),A('Mishit'),A('Approach')];}
-    if(n===4&&lastShort)return[A('Mishit'),A('Mishit'),A('Approach'),A('Chip')];
+    if(n===3){if(lastFront)return[A('Mishit'),A('Approach'),A('Chip')];return[A('Mishit'),A('Mishit'),A('Approach')];}
+    if(n===4&&lastFront)return[A('Mishit'),A('Mishit'),A('Approach'),A('Chip')];
     return clubs.map(R);
   }
   if(par===5){
@@ -1854,8 +1868,8 @@ function cfInferSeg(clubs,par,afterPen){
       const isReTee5=cfCat(clubs[0])==='driver'||cfCat(clubs[0])==='wood';
       if(n===1&&isReTee5)return[A('Tee')];
       if(n===1)return[G('Approach')];
-      if(n===2&&isReTee5&&!cfShort(clubs[1]))return[A('Tee'),A('Layup')];
-      if(n===2&&isReTee5&&cfShort(clubs[1]))return[A('Tee'),A('Approach')];
+      if(n===2&&isReTee5&&!cfFront(clubs[1]))return[A('Tee'),A('Layup')];
+      if(n===2&&isReTee5&&cfFront(clubs[1]))return[A('Tee'),A('Approach')];
       if(n===2&&isW(clubs[1]))return[G('Approach'),A('Chip')];
       if(n===2)return[A('Layup'),G('Approach')];
       if(n===3&&isW(clubs[1])&&isW(clubs[2]))return[G('Approach'),A('Chip'),A('Chip')];
@@ -1866,24 +1880,24 @@ function cfInferSeg(clubs,par,afterPen){
     if(n===2){
       const c0isWoodHybrid = ['driver','wood','hybrid'].includes(cfCat(clubs[0]));
       if(c0isWoodHybrid) return[A('Approach'),A('Approach')];
-      if(cfLong(clubs[0])&&!lastShort)return[G('Layup'),A('Approach')];
-      if(cfLong(clubs[0])&&isW(clubs[1]))return[G('Layup'),A('Approach')];
-      if(cfLong(clubs[0])&&lastShort)return[G('Layup'),A('Approach')];
-      if(!cfLong(clubs[0])&&isW(clubs[1]))return[A('Approach'),A('Chip')];
+      if(cfBack(clubs[0])&&!lastFront)return[G('Layup'),A('Approach')];
+      if(cfBack(clubs[0])&&isW(clubs[1]))return[G('Layup'),A('Approach')];
+      if(cfBack(clubs[0])&&lastFront)return[G('Layup'),A('Approach')];
+      if(!cfBack(clubs[0])&&isW(clubs[1]))return[A('Approach'),A('Chip')];
       return[A('Layup'),A('Approach')];
     }
     if(n===3){
       const c0isWoodHybrid = ['driver','wood','hybrid'].includes(cfCat(clubs[0]));
       const c1isWoodHybrid = ['driver','wood','hybrid'].includes(cfCat(clubs[1]));
-      if(lastShort&&c0isWoodHybrid)return[G('Approach'),G('Approach'),A('Chip')];
-      if(lastShort&&cfLong(clubs[0]))return[G('Layup'),G('Approach'),A('Chip')];
-      if(lastShort)return[A('Layup'),A('Approach'),A('Chip')];
+      if(lastFront&&c0isWoodHybrid)return[G('Approach'),G('Approach'),A('Chip')];
+      if(lastFront&&cfBack(clubs[0]))return[G('Layup'),G('Approach'),A('Chip')];
+      if(lastFront)return[A('Layup'),A('Approach'),A('Chip')];
       if(c0isWoodHybrid&&c1isWoodHybrid)return[A('Approach'),A('Approach'),G('Approach')];
       if(c0isWoodHybrid)return[A('Approach'),A('Approach'),G('Approach')];
-      if(cfLong(clubs[0])&&cfLong(clubs[1]))return[G('Layup'),A('Layup'),G('Approach')];
+      if(cfBack(clubs[0])&&cfBack(clubs[1]))return[G('Layup'),A('Layup'),G('Approach')];
       return[A('Layup'),A('Approach'),A('Chip')];
     }
-    if(n===4&&lastShort)return[G('Layup'),A('Mishit'),G('Approach'),A('Chip')];
+    if(n===4&&lastFront)return[G('Layup'),A('Mishit'),G('Approach'),A('Chip')];
     return clubs.map(R);
   }
   return clubs.map(R);
@@ -1912,7 +1926,7 @@ function qMishit() {
       {lbl:'Fringe', val:'Fringe', cls:'s'},
       {lbl:'Sand', val:'Sand', cls:'s'},
       {lbl:'Jail', val:'Jail', cls:'r'},
-      {lbl:'↓ Barely moved', val:'Short', cls:'r'},
+      {lbl:'↓ Barely moved', val:'Front', cls:'r'},
     ]},
   ];
 }
@@ -1956,9 +1970,8 @@ function qApproach(pfx) {
       {lbl:'✓ Yes — on the green', val:true, cls:'g'},
       {lbl:'No — missed', val:false, cls:'r'},
     ]},
-    { key:'zone', q:`${pfx} — where on the green?`, t:'zone-grid', skipIf:s=>s.hitGreen!==true },
+    { key:'zone', q:`${pfx} — where did it finish on the green?`, t:'zone-grid', skipIf:s=>s.hitGreen!==true },
     { key:'miss', q:`${pfx} — where did it miss?`, t:'miss-grid', skipIf:s=>s.hitGreen!==false },
-    { key:'pinPosition', q:'Pin position?', t:'pin-grid', opt:true },
   ];
 }
 
@@ -1986,9 +1999,8 @@ function qPitch() {
       {lbl:'✓ Yes — on the green', val:true, cls:'g'},
       {lbl:'No — missed', val:false, cls:'r'},
     ]},
-    { key:'zone', q:'Pitch — where on the green?', t:'zone-grid', skipIf:s=>s.hitGreen!==true },
+    { key:'zone', q:'Pitch — where did it finish on the green?', t:'zone-grid', skipIf:s=>s.hitGreen!==true },
     { key:'miss', q:'Pitch — where did it miss?', t:'miss-grid', skipIf:s=>s.hitGreen!==false },
-    { key:'pinPosition', q:'Pin position?', t:'pin-grid', opt:true },
   ];
 }
 
@@ -2001,9 +2013,9 @@ function qChip() {
     ]},
     { key:'result', q:'Chip — result?', t:'pills', opts:[
       {lbl:'❌ Chunked', val:'Chunked', cls:'r'},
-      {lbl:'↓ Short', val:'Short', cls:'r'},
+      {lbl:'↓ Front', val:'Front', cls:'r'},
       {lbl:'🎯 Close', val:'Close', cls:'g'},
-      {lbl:'↑ Long', val:'Long', cls:'r'},
+      {lbl:'↑ Back', val:'Back', cls:'r'},
       {lbl:'❌ Bladed', val:'Bladed', cls:'r'},
     ]},
   ];
@@ -2017,11 +2029,11 @@ function qSand(sandType) {
       {lbl:'No — still in bunker', val:false, cls:'r'},
     ]},
     { key:'proximity', q:'Sand — proximity?', t:'pills', skipIf:s=>s.gotOut!==true, opts:[
-      {lbl:'↓↓ Way short', val:'WayShort', cls:'r'},
-      {lbl:'↓ Short', val:'Short', cls:'r'},
+      {lbl:'↓↓ Way short', val:'WayFront', cls:'r'},
+      {lbl:'↓ Front', val:'Front', cls:'r'},
       {lbl:'🎯 Close', val:'Close', cls:'g'},
-      {lbl:'↑ Long', val:'Long', cls:'r'},
-      {lbl:'↑↑ Way long', val:'WayLong', cls:'r'},
+      {lbl:'↑ Back', val:'Back', cls:'r'},
+      {lbl:'↑↑ Way long', val:'WayBack', cls:'r'},
     ]},
   ];
 }
@@ -2039,7 +2051,7 @@ function qRecovery() {
       {lbl:'Bunker', val:'Bunker', cls:'s'},
       {lbl:'Fringe', val:'Fringe', cls:'s'},
       {lbl:'Green', val:'Green', cls:'g'},
-      {lbl:'↓ Short / OB', val:'Short', cls:'r'},
+      {lbl:'↓ Front / OB', val:'Front', cls:'r'},
     ]},
   ];
 }
@@ -2613,7 +2625,7 @@ function calcUI(q) {
 
 function teeGrid(key) {
   // Fairway is center — rendered separately as a tall dominant button
-  // Two rows: OB/OOP/Rough flanking Fairway, then Bunker/Water/Short below
+  // Two rows: OB/OOP/Rough flanking Fairway, then Bunker/Water/Front below
   const left = [
     {lbl:'←\nRough',val:'Rough-Left',cls:'rgh'},
     {lbl:'←←\nOOP',val:'OOP-Left',cls:'oop'},
@@ -2627,7 +2639,7 @@ function teeGrid(key) {
   const r2 = [
     {lbl:'Bunker',val:'Bunker',cls:'bnk'},
     {lbl:'💧 Water',val:'Water',cls:'wat'},
-    {lbl:'↓ Short',val:'Short',cls:'sh'},
+    {lbl:'↓ Front',val:'Front',cls:'sh'},
   ];
   return `
     <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:5px;margin-bottom:5px">
@@ -2644,18 +2656,18 @@ function teeGrid(key) {
 
 function zoneGrid(key) {
   const cells = [
-    {lbl:'Long\nLeft',val:'long-left',cls:'lng'},{lbl:'Long\nCenter',val:'long-center',cls:'lng'},{lbl:'Long\nRight',val:'long-right',cls:'lng'},
+    {lbl:'Back\nLeft',val:'back-left',cls:'lng'},{lbl:'Back\nCenter',val:'back-center',cls:'lng'},{lbl:'Back\nRight',val:'back-right',cls:'lng'},
     {lbl:'Left',val:'left',cls:'rgh'},{lbl:'Center',val:'center',cls:'ong'},{lbl:'Right',val:'right',cls:'rgh'},
-    {lbl:'Short\nLeft',val:'short-left',cls:'sh'},{lbl:'Short\nCenter',val:'short-center',cls:'sh'},{lbl:'Short\nRight',val:'short-right',cls:'sh'},
+    {lbl:'Front\nLeft',val:'front-left',cls:'sh'},{lbl:'Front\nCenter',val:'front-center',cls:'sh'},{lbl:'Front\nRight',val:'front-right',cls:'sh'},
   ];
   return `<div class="g3">${cells.map(c=>`<button class="gc ${c.cls}" onclick="p2AnswerQ('${key}',${jsVal(c.val)})">${c.lbl}</button>`).join('')}</div>`;
 }
 
 function missGrid(key) {
   const main = [
-    {lbl:'↑↑\nLong L',val:'long-left',cls:'lng'},{lbl:'↑↑\nLong',val:'long-center',cls:'lng'},{lbl:'↑↑\nLong R',val:'long-right',cls:'lng'},
+    {lbl:'↑↑\nBack L',val:'back-left',cls:'lng'},{lbl:'↑↑\nBack',val:'back-center',cls:'lng'},{lbl:'↑↑\nBack R',val:'back-right',cls:'lng'},
     {lbl:'←\nLeft',val:'left',cls:'rgh'},{lbl:null,val:null,cls:''},{lbl:'Right\n→',val:'right',cls:'rgh'},
-    {lbl:'↓↓\nShort L',val:'short-left',cls:'sh'},{lbl:'↓\nShort',val:'short-center',cls:'sh'},{lbl:'↓↓\nShort R',val:'short-right',cls:'sh'},
+    {lbl:'↓↓\nFront L',val:'front-left',cls:'sh'},{lbl:'↓\nFront',val:'front-center',cls:'sh'},{lbl:'↓↓\nFront R',val:'front-right',cls:'sh'},
   ];
   const extra = [
     {lbl:'Bunker',val:'Bunker',cls:'bnk'},{lbl:'💧 Water',val:'Water',cls:'wat'},
@@ -2692,11 +2704,11 @@ function pinGrid(key) {
 
 function puttArrows(key) {
   const opts = [
-    { lbl:'↓↓', sub:'Way short', val:'WayShort', cls:'r' },
-    { lbl:'↓',  sub:'Short',     val:'Short',    cls:'r' },
+    { lbl:'↓↓', sub:'Way short', val:'WayFront', cls:'r' },
+    { lbl:'↓',  sub:'Front',     val:'Front',    cls:'r' },
     { lbl:'●',  sub:'Online',    val:'Online',   cls:'g' },
-    { lbl:'↑',  sub:'Long',      val:'Long',     cls:'r' },
-    { lbl:'↑↑', sub:'Way long',  val:'WayLong',  cls:'r' },
+    { lbl:'↑',  sub:'Back',      val:'Back',     cls:'r' },
+    { lbl:'↑↑', sub:'Way long',  val:'WayBack',  cls:'r' },
   ];
   const colors = { g:'var(--green)', r:'var(--red)' };
   return `<div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">
@@ -2713,34 +2725,125 @@ function puttArrows(key) {
   </div>`;
 }
 
+function shotProse(sh) {
+  const club = sh.club === 'PT' ? 'putter' : sh.club === 'TW' ? 'tap-in' : sh.club;
+  const yds = sh.yardage ? ` ${sh.yardage}-yard` : '';
+  const aimed = sh.aimed ? sh.aimed.toLowerCase() : null;
+  const landed = sh.landed ? sh.landed.toLowerCase().replace(/-/g,' ') : null;
+  const zone = sh.zone ? sh.zone.replace(/-/g,' ') : null;
+  const miss = sh.miss ? sh.miss.replace(/-/g,' ') : null;
+
+  const aimPhrase = aimed ? `aimed ${aimed}` : null;
+
+  // Tee shot
+  if (sh.type === 'Tee' || sh.type === 'TeeP3') {
+    let s = `Your${yds} ${club} tee shot`;
+    if (aimPhrase) s += `, ${aimPhrase},`;
+    if (landed) {
+      const landedColor = landed.includes('fairway') ? 'var(--green)' : landed.includes('ob') || landed.includes('water') ? 'var(--red)' : 'var(--orange)';
+      s += ` landed in the <b style="color:${landedColor}">${landed}</b>.`;
+    } else { s += '.'; }
+    return s;
+  }
+
+  // Approach / Pitch / Layup
+  if (['Approach','Pitch','Layup'].includes(sh.type)) {
+    let s = `Your${yds} ${club}`;
+    if (sh.type === 'Layup') s += ' layup';
+    if (aimPhrase) s += `, ${aimPhrase},`;
+    if (sh.hitGreen === true) {
+      s += ` <b style="color:var(--green)">hit the green</b>`;
+      if (zone) s += ` — finished <b>${zone}</b>`;
+      s += '.';
+    } else if (sh.hitGreen === false) {
+      s += ` <b style="color:var(--red)">missed the green</b>`;
+      if (miss) s += ` — <b>${miss}</b>`;
+      s += '.';
+    } else if (landed) {
+      s += ` landed <b>${landed}</b>.`;
+    } else { s += '.'; }
+    return s;
+  }
+
+  // Chip
+  if (sh.type === 'Chip') {
+    let s = `${club} chip`;
+    if (aimPhrase) s += `, ${aimPhrase}`;
+    if (sh.result) {
+      const rc = sh.result === 'Close' ? 'var(--green)' : sh.result === 'Chunked' || sh.result === 'Bladed' ? 'var(--red)' : 'var(--chalk2)';
+      s += ` — <b style="color:${rc}">${sh.result.toLowerCase()}</b>`;
+    }
+    s += '.';
+    return s;
+  }
+
+  // Sand
+  if (sh.type === 'Sand') {
+    const type = sh.sandType === 'fairway' ? 'Fairway bunker' : 'Sand';
+    let s = `${type} shot with ${club}`;
+    if (sh.gotOut === true) s += ` — <b style="color:var(--green)">got out</b>`;
+    else if (sh.gotOut === false) s += ` — <b style="color:var(--red)">stayed in the bunker</b>`;
+    if (sh.proximity && sh.gotOut === true) s += `, ${sh.proximity.toLowerCase()} to the hole`;
+    s += '.';
+    return s;
+  }
+
+  // Recovery / Mishit
+  if (sh.type === 'Recovery' || sh.type === 'Mishit') {
+    let s = sh.type === 'Mishit' ? `Mishit with ${club}` : `Recovery with ${club}`;
+    if (landed) s += ` — ball ended in the <b>${landed}</b>`;
+    s += '.';
+    return s;
+  }
+
+  // Putt
+  if (sh.type === 'Putt') {
+    if (sh.isTW) return `Tap-in — <span style="color:var(--chalk3)">not counted</span>.`;
+    if (sh.isLastPutt || sh.made) return `<b style="color:var(--green)">Putt holed.</b>`;
+    let s = `Putt`;
+    if (sh.speed) {
+      const sc = sh.speed === 'Online' ? 'var(--green)' : 'var(--red)';
+      s += ` — <b style="color:${sc}">${sh.speed.toLowerCase()}</b>`;
+    }
+    s += '.';
+    return s;
+  }
+
+  // Penalty
+  if (sh.type === 'Penalty') return `<b style="color:var(--red)">Penalty stroke.</b>`;
+
+  return `${club} — ${sh.type || '?'}.`;
+}
+
+function deleteShot(idx) {
+  const h = curH();
+  if (idx < 0 || idx >= h.shots.length) return;
+  h.shots.splice(idx, 1);
+  const i = S.currentHole;
+  const round = S.currentRound;
+  if (round && round.scores[i]) {
+    round.scores[i].shots = [...h.shots];
+    calcScore(i);
+    saveWIP(round);
+  }
+  showEntryView('hole-summary');
+}
+
 function shotCard(sh, num) {
-  const tc = TYPE_COLORS[sh.type] || '#888';
+  const tc = TYPE_COLORS[sh.type==='TeeP3'?'Tee':sh.type] || '#888';
   const bg = tc + '18';
-  const parts = [];
-  if (sh.yardage)                parts.push(`<b>${sh.yardage} yds</b>`);
-  if (sh.aimed)                  parts.push(`Aimed <b>${sh.aimed}</b>`);
-  if (sh.landed)                 parts.push(`→ <b>${sh.landed}</b>`);
-  if (sh.hitGreen === true)      parts.push(`<b style="color:var(--green)">✓ GIR</b>`);
-  if (sh.hitGreen === false)     parts.push(`<b style="color:var(--red)">✗ Miss</b>`);
-  if (sh.zone)                   parts.push(`Zone <b>${sh.zone}</b>`);
-  if (sh.miss)                   parts.push(`Miss <b>${sh.miss}</b>`);
-  if (sh.pinPosition)            parts.push(`Pin <b>${sh.pinPosition}</b>`);
-  if (sh.result)                 parts.push(`<b>${sh.result}</b>`);
-  if (sh.gotOut === true)        parts.push(`<b style="color:var(--green)">Got out</b>`);
-  if (sh.gotOut === false)       parts.push(`<b style="color:var(--red)">Stayed in</b>`);
-  if (sh.proximity)              parts.push(`Prox <b>${sh.proximity}</b>`);
-  if (sh.speed)                  parts.push(`Speed <b>${sh.speed}</b>`);
-  if (sh.sandType)               parts.push(`<span style="color:var(--chalk3)">${sh.sandType}</span>`);
-  if (sh.isGIR === false)        parts.push(`<span style="color:var(--chalk3)">(not GIR)</span>`);
-  if (sh.isTW)                   parts.push(`<span style="color:var(--chalk3)">(TW — not counted)</span>`);
+  const typeLabel = sh.type === 'TeeP3' ? 'Tee' : (sh.type || '?');
+  const idx = num - 1;
+  const prose = shotProse(sh);
   return `
-    <div class="scard">
+    <div class="scard" style="position:relative">
       <div class="scard-hd">
         <div class="snum">#${num}</div>
         <div class="sclub">${sh.club}</div>
-        <div class="sbadge" style="color:${tc};border-color:${tc};background:${bg}">${sh.type}</div>
+        <div class="sbadge" style="color:${tc};border-color:${tc};background:${bg}">${typeLabel}</div>
+        <button onclick="deleteShot(${idx})" style="margin-left:auto;background:none;border:none;color:var(--chalk3);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;opacity:.6" title="Delete shot">✕</button>
       </div>
-      <div class="sdet">${parts.join(' · ') || '<span style="color:var(--chalk3)">—</span>'}</div>
+      <div class="sdet">${prose}</div>
     </div>`;
 }
 
@@ -2818,6 +2921,9 @@ function showEntryView(v) {
       saveWIP(round);
     }
   }
+  // Hide bottom nav-next on hole-summary (vSummary has its own Next Hole button)
+  const navNext = document.getElementById('nav-next');
+  if (navNext) navNext.style.visibility = v === 'hole-summary' ? 'hidden' : 'visible';
   renderEntry();
 }
 
@@ -2829,13 +2935,20 @@ function vSummary() {
   const i = S.currentHole;
   const isLast = round ? i >= round.holes - 1 : false;
   const pinOpts = [
-    {k:'front-left',l:'Fr-L'},{k:'front-center',l:'Front'},{k:'front-right',l:'Fr-R'},
-    {k:'center-left',l:'Mid-L'},{k:'center',l:'Center'},{k:'center-right',l:'Mid-R'},
-    {k:'back-left',l:'Bk-L'},{k:'back-center',l:'Back'},{k:'back-right',l:'Bk-R'}
+    {k:'back-left', l:'Back Left',  color:'#7a9aff'},
+    {k:'back-center',l:'Back',      color:'#7a9aff'},
+    {k:'back-right', l:'Back Right',color:'#7a9aff'},
+    {k:'center-left',l:'Mid Left',  color:'#c8a84b'},
+    {k:'center',     l:'Center',    color:'#5ec85e'},
+    {k:'center-right',l:'Mid Right',color:'#c8a84b'},
+    {k:'front-left', l:'Front Left',color:'#e8994a'},
+    {k:'front-center',l:'Front',    color:'#e8994a'},
+    {k:'front-right',l:'Front Right',color:'#e8994a'},
   ];
   const curPin = round && round.scores[i] ? round.scores[i].pinLocation : null;
   const existingNotes = round && round.scores[i] ? (round.scores[i].notes || '') : '';
   return `<div style="padding:14px 16px 80px">
+    <div style="font-size:13px;font-weight:700;color:var(--chalk);letter-spacing:.3px;margin-bottom:4px">Hole Review</div>
     <div style="font-size:11px;color:var(--chalk3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">
       Hole ${i+1} · ${shots.length} shot${shots.length!==1?'s':''}${h.par?' · Par '+h.par:''}
     </div>
@@ -2853,7 +2966,10 @@ function vSummary() {
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">
         ${pinOpts.map(p => {
           const sel = curPin===p.k;
-          return `<button onclick="setPin(${i},'${p.k}');showEntryView('hole-summary')" style="padding:9px 4px;border-radius:8px;background:${sel?'rgba(200,168,75,.15)':'var(--ink3)'};border:1px solid ${sel?'var(--gold)':'var(--border)'};color:${sel?'var(--gold)':'var(--chalk3)'};font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif">${p.l}</button>`;
+          const bg = sel ? p.color+'33' : 'var(--ink3)';
+          const border = sel ? p.color : 'var(--border)';
+          const color = sel ? p.color : 'var(--chalk3)';
+          return `<button onclick="setPin(${i},'${p.k}');showEntryView('hole-summary')" style="padding:9px 4px;border-radius:8px;background:${bg};border:1.5px solid ${border};color:${color};font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;line-height:1.3">${p.l}</button>`;
         }).join('')}
       </div>
     </div>
@@ -3265,14 +3381,14 @@ function scorecardHTML(round) {
       driveData.map(d=>`<td style="padding:6px 3px;text-align:center;font-size:13px;font-weight:700;color:${d.color}">${d.sym}</td>`).join('') +
       td(driveTotTxt,`font-size:13px;color:${driveTotClr};font-weight:700`) + '</tr>';
 
-    // CARD APPROACH: On=●, Short=↓, Long=↑, Left=◀, Right=▶, no data=—
+    // CARD APPROACH: On=●, Front=↓, Back=↑, Left=◀, Right=▶, no data=—
     const approachData = arr.map(s => {
       const appShot = (s.shots||[]).find(sh=>['Approach','Pitch'].includes(sh.type)||(sh.type==='Tee'&&s.par===3));
       if (!appShot || !appShot.approachDist) return { sym: '—', color: 'var(--chalk3)' };
       if (appShot.approachDist==='On') return { sym: '●', color: '#5ec85e' };
       const side = appShot.approachSide;
-      if (appShot.approachDist==='Short') return { sym: side==='Left'?'↙':side==='Right'?'↘':'↓', color: '#5090c0' };
-      if (appShot.approachDist==='Long')  return { sym: side==='Left'?'↖':side==='Right'?'↗':'↑', color: '#9060b0' };
+      if (appShot.approachDist==='Front') return { sym: side==='Left'?'↙':side==='Right'?'↘':'↓', color: '#5090c0' };
+      if (appShot.approachDist==='Back')  return { sym: side==='Left'?'↖':side==='Right'?'↗':'↑', color: '#9060b0' };
       if (appShot.approachDist==='PH')    return { sym: side==='Left'?'◀':'▶', color: '#e0a870' };
       return { sym: '—', color: 'var(--chalk3)' };
     });
@@ -3391,8 +3507,8 @@ function tendenciesHTML(round) {
     } else if (shot.approachDist) {
       // Legacy
       if (shot.approachDist==='On') key = shot.approachZone || 'green';
-      else if (shot.approachDist==='Short') key = shot.approachSide ? 'short-'+shot.approachSide.toLowerCase() : 'short-center';
-      else if (shot.approachDist==='Long')  key = shot.approachSide ? 'long-'+shot.approachSide.toLowerCase()  : 'long-center';
+      else if (shot.approachDist==='Front') key = shot.approachSide ? 'short-'+shot.approachSide.toLowerCase() : 'front-center';
+      else if (shot.approachDist==='Back')  key = shot.approachSide ? 'long-'+shot.approachSide.toLowerCase()  : 'back-center';
       else if (shot.approachDist==='PH')    key = shot.approachSide ? 'ph-'+shot.approachSide.toLowerCase()    : 'ph-center';
     } else if (shot.approachFinish) {
       key = shot.approachFinish;
@@ -3437,15 +3553,15 @@ function tendenciesHTML(round) {
     <div class="eyebrow" style="margin-bottom:6px">Approach Finish Zones · ${girCount}/${scores.length} GIR${apprFinishCounts['green']?` · <span style="color:var(--chalk3);font-size:11px">${apprFinishCounts['green']} on-green unplaced</span>`:''}</div>
     <div style="max-width:300px;margin:8px auto 4px">${(()=>{
       const onZones=['back-left','back-center','back-right','ph-left','ph-center','ph-right','front-left','front-center','front-right'];
-      const offZones3x=['long-left','long-center','long-right','short-left','short-center','short-right'];
+      const offZones3x=['back-left','back-center','back-right','front-left','front-center','front-right'];
       const hlbl={'back-left':'Bk-L','back-center':'Back','back-right':'Bk-R','ph-left':'Mid-L','ph-center':'Mid','ph-right':'Mid-R','front-left':'Fr-L','front-center':'Front','front-right':'Fr-R'};
       const maxH=Math.max(1,...onZones.map(z=>apprFinishCounts[z]||0));
       function greenCell(z){const cnt=apprFinishCounts[z]||0;const pct=totalApprFinish?Math.round(cnt/totalApprFinish*100):0;const op=cnt?Math.max(0.15,cnt/maxH*0.85):0.07;return `<div class="sg-cell sg-cell--heat" style="background:rgba(58,107,58,${op.toFixed(2)});border-color:rgba(90,160,90,${cnt?0.4:0.12})">${hlbl[z]}<br><span style="color:var(--chalk);font-size:13px;font-weight:700">${cnt||'·'}</span>${cnt?`<br><span style="font-size:10px;opacity:.65">${pct}%</span>`:''}</div>`;}
       function offCell(z,lbl){const cnt=apprFinishCounts[z]||0;const pct=totalApprFinish&&cnt?Math.round(cnt/totalApprFinish*100):0;return `<div class="sg-cell sg-cell--heat" style="background:${cnt?'rgba(180,130,60,.18)':'rgba(180,130,60,.05)'};border-color:rgba(180,130,60,${cnt?0.35:0.12})">${lbl}<br><span style="color:${cnt?'var(--gold)':'var(--chalk3)'};font-size:13px;font-weight:700">${cnt||'·'}</span>${cnt?`<br><span style="font-size:10px;opacity:.65">${pct}%</span>`:''}</div>`;}
-      const longRow=`<div></div>${offCell('long-left','Lng-L')}${offCell('long-center','Long')}${offCell('long-right','Lng-R')}<div></div>`;
+      const longRow=`<div></div>${offCell('back-left','Bk-L')}${offCell('back-center','Back')}${offCell('back-right','Bk-R')}<div></div>`;
       const leftCell=`<div class="sg-cell sg-cell--heat" style="background:${apprFinishCounts['left']?'rgba(180,130,60,.18)':'rgba(180,130,60,.05)'};border-color:rgba(180,130,60,${apprFinishCounts['left']?0.35:0.12});grid-row:2/5">Left<br><span style="color:${apprFinishCounts['left']?'var(--gold)':'var(--chalk3)'};font-size:13px;font-weight:700">${apprFinishCounts['left']||'·'}</span>${apprFinishCounts['left']?`<br><span style="font-size:10px;opacity:.65">${Math.round(apprFinishCounts['left']/totalApprFinish*100)}%</span>`:''}</div>`;
       const rightCell=`<div class="sg-cell sg-cell--heat" style="background:${apprFinishCounts['right']?'rgba(180,130,60,.18)':'rgba(180,130,60,.05)'};border-color:rgba(180,130,60,${apprFinishCounts['right']?0.35:0.12});grid-row:2/5">Right<br><span style="color:${apprFinishCounts['right']?'var(--gold)':'var(--chalk3)'};font-size:13px;font-weight:700">${apprFinishCounts['right']||'·'}</span>${apprFinishCounts['right']?`<br><span style="font-size:10px;opacity:.65">${Math.round(apprFinishCounts['right']/totalApprFinish*100)}%</span>`:''}</div>`;
-      const shortRow=`<div></div>${offCell('short-left','Sht-L')}${offCell('short-center','Short')}${offCell('short-right','Sht-R')}<div></div>`;
+      const shortRow=`<div></div>${offCell('front-left','Fr-L')}${offCell('front-center','Front')}${offCell('front-right','Fr-R')}<div></div>`;
       const greenBlock=`<div style="grid-column:2/5;grid-row:2/5;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3px;padding:4px;border:2.5px solid rgba(94,200,94,.5);border-radius:7px;box-sizing:border-box">${onZones.map(z=>greenCell(z)).join('')}</div>`;
       return `<div style="display:grid;grid-template-columns:52px 1fr 1fr 1fr 52px;grid-template-rows:auto auto auto auto auto;gap:3px">${longRow}${leftCell}${greenBlock}${rightCell}${shortRow}</div>`;
     })()}</div>
@@ -3641,12 +3757,12 @@ Score: ${total} (${total-par>=0?'+':''}${total-par} vs par ${par}) | Holes: ${ro
   const dataRef = `DATA REFERENCE:
 - teeAimed: Left/Center/Right | teeShape: Draw/Straight/Fade/Hook/Pull/Push/Slice/Fat/Top/Thin
 - teeLanded: fairway/rough-left/rough-right/bunker/ob-left/ob-right/oop-left/oop-right/short. ob-left/ob-right = OB penalty. oop = out of position, ball IN PLAY.
-- approachAimed: Left/Center/Right | approachDist: Short/PH/On/Long (On=GIR)
+- approachAimed: Left/Center/Right | approachDist: Front/PH/On/Back (On=GIR)
 - approachSide: Left/Center/Right | approachZone: 9-zone grid when On
 - layupAimed/layupDist/layupSide | contact: Thin/Fat (blank=solid)
 - lie: WHERE BALL ENDED UP — Fairway/Rough/Fringe/Green/Sand/Jail/Penalty
 - gotOut/sandGotOut/sandProx | chipProx: Tap-in/Close/Medium/Far/Bladed/Chunked
-- puttSpeed: Short/Long | roundNote: player field note — treat as primary context`;
+- puttSpeed: Front/Back | roundNote: player field note — treat as primary context`;
   const rawData = JSON.stringify(holeData, null, 2);
   return { holeData, total, par, roundHeader, dataRef, rawData };
 }
@@ -3811,7 +3927,7 @@ TASK: Output spatial count data for visual rendering. Every field must be a numb
   TIER 3 — DECISION ERROR: aimed toward danger given established miss pattern. Flag these.
   TIER 4 — EXECUTION ERROR: aimed correctly, still found trouble. Do NOT flag.
 
-MISS GRID: for each club with 2+ approach or tee shots, output a 3x3 grid of shot counts. Keys: short-left, short-center, short-right, left, center, right, long-left, long-center, long-right.
+MISS GRID: for each club with 2+ approach or tee shots, output a 3x3 grid of shot counts. Keys: front-left, front-center, front-right, left, center, right, back-left, back-center, back-right.
 
 SHAPE COUNTS: for Driver and fairway woods only. Count by: Hook, Pull, Draw, Straight, Fade, Push, Slice.
 
@@ -3821,7 +3937,7 @@ Respond ONLY with valid JSON, no markdown:
 {
   "patternsTab": {
     "aimHitRate": {"overall":0.0,"byClub":[{"club":"...","attempts":0,"hits":0,"rate":0.0}]},
-    "missGrids": [{"club":"...","total":0,"cells":{"short-left":0,"short-center":0,"short-right":0,"left":0,"center":0,"right":0,"long-left":0,"long-center":0,"long-right":0}}],
+    "missGrids": [{"club":"...","total":0,"cells":{"front-left":0,"front-center":0,"front-right":0,"left":0,"center":0,"right":0,"back-left":0,"back-center":0,"back-right":0}}],
     "shapeCounts": [{"club":"...","counts":{"Hook":0,"Pull":0,"Draw":0,"Straight":0,"Fade":0,"Push":0,"Slice":0}}],
     "shapeProfile": {"overall":"fade/draw/two-way/straight","byCategory":[{"category":"Driver","dominant":"fade","consistency":"high/medium/low"}]},
     "contactTrends": [{"club":"...","thin":0,"fat":0,"good":0}],
@@ -4247,8 +4363,8 @@ function renderPatternsTab(data, round) {
   const missGridHTML = (() => {
     const grids = pt.missGrids || [];
     if (!grids.length) return '';
-    const ZONES = ['long-left','long-center','long-right','left','center','right','short-left','short-center','short-right'];
-    const ZONE_LBLS = {'long-left':'LL','long-center':'Lg','long-right':'LR','left':'L','center':'✓','right':'R','short-left':'SL','short-center':'Sh','short-right':'SR'};
+    const ZONES = ['back-left','back-center','back-right','left','center','right','front-left','front-center','front-right'];
+    const ZONE_LBLS = {'back-left':'LL','back-center':'Bk','back-right':'Bk-R','left':'L','center':'✓','right':'R','front-left':'Fr-L','front-center':'Fr','front-right':'Fr-R'};
     const cellBg = (n,max) => { if(!n) return 'background:rgba(255,255,255,.03)'; const op=Math.max(0.15,n/max*0.8); return n===max?`background:rgba(226,75,74,${op.toFixed(2)})`:`background:rgba(200,168,75,${op.toFixed(2)})`; };
     return `<div class="pat-block"><div class="pat-block-hdr">📍 Miss Pattern</div>
       <div style="font-size:12px;color:var(--chalk3);margin-bottom:12px">Where shots land relative to target</div>
@@ -4258,7 +4374,7 @@ function renderPatternsTab(data, round) {
         return `<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:600;color:var(--chalk);margin-bottom:6px">${g.club} <span style="font-size:11px;color:var(--chalk3);font-weight:400">${g.total} shots</span></div>
           <div style="display:flex;gap:12px;align-items:flex-start">
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;width:132px;flex-shrink:0">${gridCells}</div>
-            <div style="font-size:10px;color:var(--chalk3);line-height:2"><div>Long ↑</div><div style="margin-top:14px">Pin Hi</div><div style="margin-top:14px">Short ↓</div></div>
+            <div style="font-size:10px;color:var(--chalk3);line-height:2"><div>Back ↑</div><div style="margin-top:14px">Pin Hi</div><div style="margin-top:14px">Front ↓</div></div>
           </div>
           <div style="display:flex;justify-content:space-between;width:132px;font-size:9px;color:var(--chalk3);opacity:.4;margin-top:2px"><span>Left</span><span>Center</span><span>Right</span></div>
         </div>`;
@@ -4308,7 +4424,7 @@ function renderPatternsTab(data, round) {
     const sg=pt.shortGame; if (!sg) return '';
     const cp=sg.chipProxDist||{}, cpTotal=Object.values(cp).reduce((a,b)=>a+b,0)||1;
     const sandPct=Math.round(nPct(sg.sandSaveRate)), recPct=Math.round(nPct(sg.recoveryRate));
-    return `<div class="pat-block"><div class="pat-block-hdr">🏖 Short Game</div>
+    return `<div class="pat-block"><div class="pat-block-hdr">🏖 Front Game</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin:10px 0">
         ${[['Sand saves',sandPct+'%',sevColor(sandPct)],['Recovery',recPct+'%',sevColor(recPct)],['Putts/GIR',(sg.puttsPerGIR||0).toFixed(1),'var(--chalk)'],['Putts/miss',(sg.puttsPerNonGIR||0).toFixed(1),'var(--chalk)']].map(([l,v,c])=>`<div style="text-align:center;background:var(--ink3);border-radius:8px;padding:8px 4px"><div style="font-size:17px;font-weight:700;color:${c};font-family:'DM Serif Display',serif">${v}</div><div style="font-size:9px;color:var(--chalk3);margin-top:2px;line-height:1.3">${l}</div></div>`).join('')}
       </div></div>`;
@@ -4383,8 +4499,8 @@ function renderTeeTab(round) {
   const catLabel = c => ({fairway:'Fairway',rough:'Rough',trouble:'Trouble',ob:'OB',unknown:'\u2014'}[c]||c);
   const shapeArrow = s => ({Draw:'\u2199 Draw',Straight:'\u2191 Straight',Fade:'\u2198 Fade',Hook:'\u21a9 Hook',Pull:'\u2190 Pull',Push:'\u2192 Push',Slice:'\u21aa Slice',Fat:'\u2193 Fat',Top:'\u2193 Top',Thin:'\u2193 Thin'}[s]||s||'\u2014');
   const aimLabel  = s => ({Left:'\u2190 Left of Flag',Center:'\u25cb At Flag',Right:'Right of Flag \u2192'}[s]||s||'\u2014');
-  const distLabel = d => ({Short:'Short \u2193',PH:'Pin High',On:'On Green \u2713',Long:'Long \u2191'}[d]||d||'\u2014');
-  const distColor = d => ({Short:'var(--sky)',PH:'var(--chalk2)',On:'#5ec85e',Long:'#9060b0'}[d]||'var(--chalk3)');
+  const distLabel = d => ({Front:'Front \u2193',PH:'Pin High',On:'On Green \u2713',Back:'Back \u2191'}[d]||d||'\u2014');
+  const distColor = d => ({Front:'var(--sky)',PH:'var(--chalk2)',On:'#5ec85e',Back:'#9060b0'}[d]||'var(--chalk3)');
 
   const driverShots = [], otherShots = [], par3Shots = [];
 
@@ -5468,7 +5584,7 @@ async function getBriefing(courseId, courseName, notesKey) {
 
   const prompt = `${BYRON_PERSONA}
 
-YOUR ROLE THIS BRIEF: Deliver a pre-round strategic brief for ${courseName}.\n\nCOURSE HISTORY: ${histSummary}\n\nOVERALL COURSE NOTES:\n${courseNotes||'None provided.'}\n\nPER-HOLE CADDIE/GREEN NOTES:\n${holeNotes||'None provided.'}\n\n18-HANDICAP SCORING REALITY (follow this strictly):\n- Bogey is a GOOD score on a hard hole. Double bogey is acceptable on the hardest holes. Never chase par aggressively.\n- Scoring zones are: PARITY TARGET (realistic par opportunity — easy par 4s, reachable par 5s), DAMAGE CONTROL (bogey is fine, avoid doubles — medium/hard holes), SURVIVAL (bogey/double is acceptable, just get out clean — the brutal holes).\n- NEVER use the word "birdie" unless the hole is genuinely drivable or a par 5 reachable in two with a normal shot. Instead say things like "two pars here would be an excellent day" or "walk off with bogey and be happy."\n- The mental game is about grinding for pars and accepting bogeys intelligently — not chasing scores that aren't there.\n\nDeliver a pre-round brief in this exact structure:\n\n1. GAME PLAN (2-3 sentences): The single most important strategic mindset for this course at 18 handicap. Ground it in realistic expectations.\n\n2. KEY TRAPS (3-4 holes): The holes most likely to blow up a round. One sentence each — what to avoid and why.\n\n3. ONE THING TO REMEMBER walking to the first tee.\n\n4. HOLE BY HOLE:\nFor every hole, one line in this exact format:\nH[n] · [PARITY TARGET / DAMAGE CONTROL / SURVIVAL] — Tee: [aim/miss strategy]. Approach: [acceptable miss direction].\nExample: H4 · DAMAGE CONTROL — Tee: aim center-left, missing right feeds into bunkers. Approach: short-left forgives, long-right is dead.\nFor par 3s: skip the Tee line, just give the approach strategy.\nFor the hardest par 4s and 5s where reaching the green in regulation is unlikely: note the layup target.\n\nBe direct, specific, and tactical. Use realistic 18-handicap language throughout.`;
+YOUR ROLE THIS BRIEF: Deliver a pre-round strategic brief for ${courseName}.\n\nCOURSE HISTORY: ${histSummary}\n\nOVERALL COURSE NOTES:\n${courseNotes||'None provided.'}\n\nPER-HOLE CADDIE/GREEN NOTES:\n${holeNotes||'None provided.'}\n\n18-HANDICAP SCORING REALITY (follow this strictly):\n- Bogey is a GOOD score on a hard hole. Double bogey is acceptable on the hardest holes. Never chase par aggressively.\n- Scoring zones are: PARITY TARGET (realistic par opportunity — easy par 4s, reachable par 5s), DAMAGE CONTROL (bogey is fine, avoid doubles — medium/hard holes), SURVIVAL (bogey/double is acceptable, just get out clean — the brutal holes).\n- NEVER use the word "birdie" unless the hole is genuinely drivable or a par 5 reachable in two with a normal shot. Instead say things like "two pars here would be an excellent day" or "walk off with bogey and be happy."\n- The mental game is about grinding for pars and accepting bogeys intelligently — not chasing scores that aren't there.\n\nDeliver a pre-round brief in this exact structure:\n\n1. GAME PLAN (2-3 sentences): The single most important strategic mindset for this course at 18 handicap. Ground it in realistic expectations.\n\n2. KEY TRAPS (3-4 holes): The holes most likely to blow up a round. One sentence each — what to avoid and why.\n\n3. ONE THING TO REMEMBER walking to the first tee.\n\n4. HOLE BY HOLE:\nFor every hole, one line in this exact format:\nH[n] · [PARITY TARGET / DAMAGE CONTROL / SURVIVAL] — Tee: [aim/miss strategy]. Approach: [acceptable miss direction].\nExample: H4 · DAMAGE CONTROL — Tee: aim center-left, missing right feeds into bunkers. Approach: front-left forgives, back-right is dead.\nFor par 3s: skip the Tee line, just give the approach strategy.\nFor the hardest par 4s and 5s where reaching the green in regulation is unlikely: note the layup target.\n\nBe direct, specific, and tactical. Use realistic 18-handicap language throughout.`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -5549,7 +5665,14 @@ function bailOut() {
   if (!confirm('Abandon this round? All data for this round will be deleted.\n\nThis cannot be undone.')) return;
   saveWIP(null);
   S.currentRound = null;
+  S.currentHole = 0;
   if (ghConfigured() && navigator.onLine) ghClearWIP(null).catch(()=>{});
+  // Reset full entry state so next round starts clean
+  E.holes = {}; E.hole = 1; E.view = 'phase1';
+  E.p1seq = []; E.p1editIdx = null;
+  E.p2idx = 0; E.p2shot = {}; E.p2qs = []; E.p2qi = 0;
+  E.p2type = null; E.p2club = null; E.p2editing = null;
+  E.sandType = 'greenside'; E.calc = '';
   showView('home');
   renderHome();
 }
