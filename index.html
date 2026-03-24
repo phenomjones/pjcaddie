@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.1.0 · Mar 23, 2026 -->
+<!-- PJ Caddie v6.1.1 · Mar 23, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -559,7 +559,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.1.0 · Mar 23, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.1.1 · Mar 23, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -2385,14 +2385,9 @@ function vSetup() {
 // ── PHASE 1 — CLUB SEQUENCE ──
 function vPhase1() {
   const h = curH();
-  const locked = E.p1seq.length > 0;
-  // Pull par from round (authoritative) first, fall back to entry state
+  // Sync par from round into entry state so inference works
   const roundPar = S.currentRound ? S.currentRound.pars[S.currentHole] : null;
-  const knownPar = roundPar || h.par;
-  if (roundPar && h.par !== roundPar) h.par = roundPar; // keep entry state in sync
-  const parHtml = knownPar
-    ? `<div style="font-size:13px;font-weight:600;color:var(--gold)">Par ${knownPar}</div>`
-    : `<div class="par-row">${[3,4,5].map(p=>`<div class="pc ${h.par===p?'on':''}" onclick="setPar(${p})">Par ${p}</div>`).join('')}</div>`;
+  if (roundPar && h.par !== roundPar) h.par = roundPar;
 
   const seqHtml = E.p1seq.length > 0
     ? `<div class="seq-strip">
@@ -2422,14 +2417,7 @@ function vPhase1() {
   if (E.p1editIdx !== null) {
     const editItem = E.p1seq[E.p1editIdx];
     const types = E.p1editIdx === 0 ? PICK_TYPES_SHOT0 : PICK_TYPES;
-    return hdr() + `<div class="hole-bar">
-      <div><div class="h-label">Hole</div><div class="h-num">${E.hole}</div></div>
-      ${parHtml}
-      <div class="hole-nav">
-        ${E.hole>1?`<button class="hn-btn" onclick="gotoHole(${E.hole-1})">←</button>`:'<div style="width:34px"></div>'}
-        ${E.hole<18?`<button class="hn-btn" onclick="gotoHole(${E.hole+1})">→</button>`:''}
-      </div>
-    </div>` + seqHtml + `
+    return seqHtml + `
     <main>
       <div class="overlay-hd">Shot ${E.p1editIdx+1} — ${editItem.club} — change type</div>
       <div class="type-chips">${types.map(t=>`<div class="tc" onclick="p1SetType(${E.p1editIdx},'${t}')">${t}</div>`).join('')}</div>
@@ -2438,14 +2426,7 @@ function vPhase1() {
     </main>` + bnav() + `<div class="sp"></div>`;
   }
 
-  return hdr() + `<div class="hole-bar">
-    <div><div class="h-label">Hole</div><div class="h-num">${E.hole}</div></div>
-    ${parHtml}
-    <div class="hole-nav">
-      ${E.hole>1?`<button class="hn-btn" onclick="gotoHole(${E.hole-1})">←</button>`:'<div style="width:34px"></div>'}
-      ${E.hole<18?`<button class="hn-btn" onclick="gotoHole(${E.hole+1})">→</button>`:''}
-    </div>
-  </div>` + seqHtml + `
+  return seqHtml + `
   <main>
     <div class="sect">Select clubs</div>
     <div class="club-grid">
