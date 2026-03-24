@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.1.4 · Mar 23, 2026 -->
+<!-- PJ Caddie v6.1.7 · Mar 24, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -67,7 +67,7 @@ body{display:flex;flex-direction:column}
 .view{display:none;flex-direction:column;height:100%;overflow:hidden}
 .view.active{display:flex}
 .scroll-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-.pad{padding:0 max(18px, calc((100% - 680px) / 2))}
+.pad{padding:0 max(18px, calc((100% - 500px) / 2))}
 .pad-b{padding-bottom:24px}
 
 /* ── TYPOGRAPHY ── */
@@ -81,7 +81,7 @@ body{display:flex;flex-direction:column}
 .safe-bot{height:calc(env(safe-area-inset-bottom,20px) + 8px);flex-shrink:0}
 
 /* ── HEADER ── */
-.hdr{padding:12px max(18px, calc((100% - 680px) / 2)) 14px;flex-shrink:0}
+.hdr{padding:12px max(44px, calc((100% - 500px) / 2 + 26px)) 14px max(18px, calc((100% - 500px) / 2));flex-shrink:0}
 .hdr-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
 .back-btn{background:none;border:none;color:var(--gold);font-family:'DM Sans',sans-serif;font-size:13px;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px}
 .back-btn::before{content:'←';font-size:15px}
@@ -202,7 +202,7 @@ body{display:flex;flex-direction:column}
 .rr-rel{font-size:13px;margin-top:1px}
 
 /* ── TABS ── */
-.tab-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 max(0px, calc((100% - 680px) / 2))}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 max(0px, calc((100% - 500px) / 2))}
 .tab{flex:1;padding:13px;text-align:center;font-size:13px;color:var(--chalk3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
 .tab.on{color:var(--gold);border-bottom-color:var(--gold)}
 
@@ -238,7 +238,7 @@ body{display:flex;flex-direction:column}
 .hole-yardage{font-size:11px;color:var(--chalk3);padding:0 18px 6px;text-align:center;letter-spacing:1px}
 
 /* ── PROGRESS DOTS ── */
-.progress-bar{display:flex;gap:4px;padding:6px max(18px, calc((100% - 680px) / 2)) 8px;overflow-x:auto;flex-shrink:0}
+.progress-bar{display:flex;gap:4px;padding:6px max(18px, calc((100% - 500px) / 2)) 8px;overflow-x:auto;flex-shrink:0}
 .progress-bar::-webkit-scrollbar{display:none}
 .p-dot{width:22px;height:22px;border-radius:50%;background:var(--ink3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--chalk3);flex-shrink:0;cursor:pointer;transition:all .2s}
 .p-dot.cur{border-color:var(--gold);background:rgba(200,168,75,.15);color:var(--gold);font-weight:600}
@@ -249,7 +249,7 @@ body{display:flex;flex-direction:column}
 .swipe-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative}
 
 /* ── STICKY BOTTOM ── */
-.sticky-bot{padding:12px max(18px, calc((100% - 680px) / 2));background:linear-gradient(to top,var(--ink) 70%,transparent);position:sticky;bottom:0;flex-shrink:0}
+.sticky-bot{padding:12px max(18px, calc((100% - 500px) / 2));background:linear-gradient(to top,var(--ink) 70%,transparent);position:sticky;bottom:0;flex-shrink:0}
 .nav-row{display:flex;gap:8px}
 .nav-prev{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:15px 18px;font-size:18px;cursor:pointer;color:var(--chalk2);transition:opacity .15s;flex-shrink:0}
 .nav-prev:disabled{opacity:.3}
@@ -350,7 +350,7 @@ hr{border:none;border-top:1px solid var(--border);margin:14px 0}
 .green-btn.on-green-zone{background:rgba(58,107,58,.5);border-color:var(--fairway);color:#8ed88e;font-weight:600}
 .green-btn.on-miss{background:rgba(201,64,64,.2);border-color:rgba(201,64,64,.5);color:#e07070;font-weight:500}
 
-.club-picker-sticky{position:sticky;top:0;z-index:10;background:var(--ink2);border-bottom:1px solid var(--border);padding-bottom:2px;padding-left:max(18px, calc((100% - 680px) / 2));padding-right:max(18px, calc((100% - 680px) / 2))}
+.club-picker-sticky{position:sticky;top:0;z-index:10;background:var(--ink2);border-bottom:1px solid var(--border);padding-bottom:2px;padding-left:max(18px, calc((100% - 500px) / 2));padding-right:max(18px, calc((100% - 500px) / 2))}
 .penalty-btn{border-color:rgba(255,215,0,.4)!important;color:#ffd700!important}
 
 .club-picker-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
@@ -559,7 +559,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.1.4 · Mar 23, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.1.7 · Mar 24, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -863,7 +863,7 @@ main{padding:14px}
       <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Notes about this round — how you felt, course conditions, mental game, anything you want the coach to factor in.</div>
       <textarea id="round-notes-ta" style="width:100%;min-height:180px;background:var(--ink3);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--chalk2);font-family:'DM Sans',sans-serif;resize:vertical;box-sizing:border-box;line-height:1.6" placeholder="e.g. Felt rushed on the back 9, kept leaving approach shots short. Wind was 15mph from the right on holes 10-14. First round back after 2 weeks off." oninput="saveRoundNotes()"></textarea>
     </div>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-top:20px;padding:0 max(18px, calc((100% - 680px) / 2))">
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:20px;padding:0 max(18px, calc((100% - 500px) / 2))">
       <button id="sum-byron-btn" class="btn-coach" onclick="openCoach(S.currentRound)">🎓 Byron Analysis</button>
       <button class="btn btn-gold" onclick="saveRound()">Save Round</button>
     </div>
@@ -897,7 +897,7 @@ main{padding:14px}
     <div id="det-overview" style="padding-top:16px"></div>
     <div id="det-scorecard" style="padding-top:16px;display:none"></div>
     <div id="det-tendencies" style="padding-top:16px;display:none"></div>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-top:20px;padding:0 max(18px, calc((100% - 680px) / 2))">
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:20px;padding:0 max(18px, calc((100% - 500px) / 2))">
       <button id="det-byron-btn" class="btn-coach" onclick="openCoach(getRounds().find(r=>r.id===S.viewingId))">🎓 Byron Analysis</button>
       <button id="det-edit-btn" class="btn" onclick="editRound()" style="background:rgba(200,168,75,.08);border:1px solid var(--border);color:var(--chalk2)">✏️ Edit Round</button>
       <button class="btn btn-danger" onclick="confirmDelete()">Delete Round</button>
@@ -1414,6 +1414,12 @@ function confirmBag() {
   if (!S.activeBag.length) { alert('Add at least one club.'); return; }
   // Save this bag as "last used" for next round
   localStorage.setItem('caddie_last_bag', JSON.stringify(S.activeBag));
+  // Clear any stale entry state from previous rounds
+  E.holes = {}; E.hole = 1; E.view = 'phase1';
+  E.p1seq = []; E.p1editIdx = null;
+  E.p2idx = 0; E.p2shot = {}; E.p2qs = []; E.p2qi = 0;
+  E.p2type = null; E.p2club = null; E.p2editing = null;
+  E.sandType = 'greenside'; E.calc = '';
   showView('scoring');
   buildScoringView();
   loadHole(0);
@@ -1629,6 +1635,34 @@ function commitHole(i) {
   };
   calcScore(i);
   saveWIP(round);
+}
+
+function renderDots(currentI) {
+  const el = document.getElementById('sc-dots');
+  if (!el || !S.currentRound) return;
+  const round = S.currentRound;
+  const n = round.holes;
+  let html = '';
+  for (let i = 0; i < n; i++) {
+    const sc = round.scores[i];
+    const hasShots = sc && sc.shots && sc.shots.length > 0;
+    const isOver = hasShots && sc.strokes > round.pars[i];
+    const isCur = i === currentI;
+    const cls = isCur ? 'p-dot cur'
+               : hasShots ? (isOver ? 'p-dot done done-over' : 'p-dot done')
+               : 'p-dot';
+    html += `<div class="${cls}" onclick="jumpToHole(${i})">${i+1}</div>`;
+  }
+  el.innerHTML = html;
+  const curDot = el.children[currentI];
+  if (curDot) curDot.scrollIntoView({inline:'center', behavior:'smooth', block:'nearest'});
+}
+
+function jumpToHole(targetI) {
+  if (!S.currentRound || targetI === S.currentHole) return;
+  commitHole(S.currentHole);
+  pushWIPToGitHub();
+  loadHole(targetI);
 }
 
 function goNext() {
@@ -2058,7 +2092,7 @@ function qRecovery() {
 
 function qPutt() {
   return [
-    { key:'speed', q:'Putt — speed / line?', t:'putt-arrows' },
+    { key:'speed', q:'Putt — where did it finish?', t:'putt-arrows' },
   ];
 }
 
@@ -2704,11 +2738,11 @@ function pinGrid(key) {
 
 function puttArrows(key) {
   const opts = [
-    { lbl:'↓↓', sub:'Way short', val:'WayFront', cls:'r' },
-    { lbl:'↓',  sub:'Front',     val:'Front',    cls:'r' },
-    { lbl:'●',  sub:'Online',    val:'Online',   cls:'g' },
-    { lbl:'↑',  sub:'Back',      val:'Back',     cls:'r' },
-    { lbl:'↑↑', sub:'Way long',  val:'WayBack',  cls:'r' },
+    { lbl:'↓↓', sub:'Way short',  val:'WayShort', cls:'r' },
+    { lbl:'↓',  sub:'Short',      val:'Short',    cls:'r' },
+    { lbl:'●',  sub:'Holed',      val:'Holed',    cls:'g' },
+    { lbl:'↑',  sub:'Long',       val:'Long',     cls:'r' },
+    { lbl:'↑↑', sub:'Way long',   val:'WayLong',  cls:'r' },
   ];
   const colors = { g:'var(--green)', r:'var(--red)' };
   return `<div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">
@@ -2800,10 +2834,11 @@ function shotProse(sh) {
   if (sh.type === 'Putt') {
     if (sh.isTW) return `Tap-in — <span style="color:var(--chalk3)">not counted</span>.`;
     if (sh.isLastPutt || sh.made) return `<b style="color:var(--green)">Putt holed.</b>`;
+    if (sh.speed === 'Holed') return `<b style="color:var(--green)">Putt holed.</b>`;
     let s = `Putt`;
     if (sh.speed) {
-      const sc = sh.speed === 'Online' ? 'var(--green)' : 'var(--red)';
-      s += ` — <b style="color:${sc}">${sh.speed.toLowerCase()}</b>`;
+      const sc = sh.speed === 'Holed' ? 'var(--green)' : 'var(--red)';
+      s += ` — <b style="color:${sc}">${sh.speed.toLowerCase().replace('wayshort','way short').replace('waylong','way long')}</b>`;
     }
     s += '.';
     return s;
@@ -2948,7 +2983,7 @@ function vSummary() {
   const curPin = round && round.scores[i] ? round.scores[i].pinLocation : null;
   const existingNotes = round && round.scores[i] ? (round.scores[i].notes || '') : '';
   return `<div style="padding:14px 16px 80px">
-    <div style="font-size:13px;font-weight:700;color:var(--chalk);letter-spacing:.3px;margin-bottom:4px">Hole Review</div>
+    <div style="font-size:22px;font-weight:700;color:var(--chalk);font-family:'DM Serif Display',serif;letter-spacing:.2px;margin-bottom:2px">Hole Review</div>
     <div style="font-size:11px;color:var(--chalk3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">
       Hole ${i+1} · ${shots.length} shot${shots.length!==1?'s':''}${h.par?' · Par '+h.par:''}
     </div>
