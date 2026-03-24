@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.1.7 · Mar 24, 2026 -->
+<!-- PJ Caddie v6.1.8 · Mar 24, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -559,7 +559,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.1.7 · Mar 24, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.1.8 · Mar 24, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -1418,8 +1418,8 @@ function confirmBag() {
   E.holes = {}; E.hole = 1; E.view = 'phase1';
   E.p1seq = []; E.p1editIdx = null;
   E.p2idx = 0; E.p2shot = {}; E.p2qs = []; E.p2qi = 0;
-  E.p2type = null; E.p2club = null; E.p2editing = null;
-  E.sandType = 'greenside'; E.calc = '';
+  E.p2type = null; E.p2club = null; E.p2editing = null; E.p2editIdx = null;
+  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false;
   showView('scoring');
   buildScoringView();
   loadHole(0);
@@ -1608,8 +1608,8 @@ function loadHole(i) {
   // Reset phase state
   E.p1seq = []; E.p1editIdx = null;
   E.p2idx = 0; E.p2shot = {}; E.p2qs = []; E.p2qi = 0;
-  E.p2type = null; E.p2club = null; E.p2editing = null;
-  E.sandType = 'greenside'; E.calc = '';
+  E.p2type = null; E.p2club = null; E.p2editing = null; E.p2editIdx = null;
+  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false;
 
   // If hole already has shots, go straight to summary; otherwise phase1
   const startView = (score.shots && score.shots.length > 0) ? 'hole-summary' : 'phase1';
@@ -1749,6 +1749,8 @@ let E = {
   p2type: null,
   p2club: null,
   p2editing: null,    // 'club' | 'type' | null
+  p2editIdx: null,    // SHOT EDIT — index of shot being edited, null = new shot mode
+  pitchGateMsg: false,// PITCH GATE — show reclassify notice on next render
   sandType: 'greenside',
   calc: '',
 };
@@ -2226,6 +2228,17 @@ function p2SetClub(club) {
 
 function p2AnswerQ(key, val) {
   E.p2shot[key] = val;
+  // PITCH GATE — auto-reclassify Approach → Pitch at 40-65 yards
+  if (key === 'yardage' && val !== null && val >= 40 && val <= 65 && E.p2type === 'Approach') {
+    E.p2type = 'Pitch';
+    if (E.p2idx < E.p1seq.length) E.p1seq[E.p2idx].type = 'Pitch';
+    E.p2qs = buildQs('Pitch');
+    E.p2qi = 1; // yardage already answered (first q in Pitch), skip it
+    advanceSkips();
+    E.pitchGateMsg = true;
+    renderEntry();
+    return;
+  }
   E.p2qi++;
   advanceSkips();
   if (E.p2qi >= E.p2qs.length) commitP2Shot();
@@ -2307,10 +2320,26 @@ function commitP2Shot() {
     isTeeShot: E.p2type === 'Tee' || E.p2type === 'TeeP3',
     isTW: E.p2club === 'TW',
   };
-  if (E.p2type === 'Recovery') shot.isGIR = false; // GREEN GUARD
+  if (E.p2type === 'Recovery') shot.isGIR = false;
   if (E.p2type === 'Sand') shot.sandType = E.sandType;
   Object.assign(shot, E.p2shot);
   Object.keys(shot).forEach(k => { if (shot[k] === undefined) delete shot[k]; });
+
+  // SHOT EDIT — write back to existing index instead of pushing
+  if (E.p2editIdx !== null) {
+    curH().shots[E.p2editIdx] = shot;
+    E.p2editIdx = null;
+    const i = S.currentHole;
+    const round = S.currentRound;
+    if (round && round.scores[i]) {
+      round.scores[i].shots = [...curH().shots];
+      calcScore(i);
+      saveWIP(round);
+    }
+    showEntryView('hole-summary');
+    return;
+  }
+
   curH().shots.push(shot);
   E.p2idx++;
   if (E.p2idx >= E.p1seq.length) {
@@ -2318,7 +2347,6 @@ function commitP2Shot() {
     showEntryView('hole-summary');
   } else {
     startP2Shot();
-    // If next shot is a last putt (silent commit), recurse immediately
     if (E.p1seq[E.p2idx] && E.p1seq[E.p2idx].isLastPutt) {
       commitP2Shot();
     } else {
@@ -2502,6 +2530,12 @@ function vPhase2() {
 }
 
 function p2Header() {
+  if (E.p2editIdx !== null) {
+    return `<div class="p2-hdr">
+      <div class="p2-progress" style="color:var(--gold)">✏️ Editing Shot ${E.p2editIdx + 1}</div>
+      <span class="p2-redo" onclick="showEntryView('hole-summary')">✕ Cancel edit</span>
+    </div>`;
+  }
   const total = E.p1seq.length;
   const cur = E.p2idx + 1;
   return `<div class="p2-hdr">
@@ -2624,12 +2658,14 @@ function vP2Question(q) {
   return hdr() + p2Header() + `
   <main>
     ${p2ContextBar(true)}
+    ${E.pitchGateMsg ? `<div style="font-size:12px;color:var(--gold);background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.3);border-radius:8px;padding:8px 12px;margin-bottom:10px">↩ Changed to Pitch (${E.p2shot.yardage} yds) — tap type to override</div>` : ''}
+    ${(()=>{ E.pitchGateMsg = false; return ''; })()}
     ${sandTog}${twNote}${dotsHtml}
     <div class="q-label">${q.q}</div>
     ${body}
     <div class="action-row" style="margin-top:4px">
       <button class="btn" onclick="p2GoBack()">← Back</button>
-      <button class="btn red" onclick="fullRedo()">↺ Redo clubs</button>
+      ${E.p2editIdx === null ? `<button class="btn red" onclick="fullRedo()">↺ Redo clubs</button>` : ''}
     </div>
   </main>` + bnav() + `<div class="sp"></div>`;
 }
@@ -2864,6 +2900,26 @@ function deleteShot(idx) {
   showEntryView('hole-summary');
 }
 
+function editShot(idx) {
+  const h = curH();
+  const sh = h.shots[idx];
+  if (!sh) return;
+  E.p2editIdx = idx;
+  E.p2club = sh.club;
+  E.p2type = sh.type;
+  // Pre-populate answers from existing shot (exclude structural fields)
+  E.p2shot = Object.assign({}, sh);
+  ['club','type','isTeeShot','isTW','sandType'].forEach(k => delete E.p2shot[k]);
+  if (sh.sandType) E.sandType = sh.sandType;
+  E.p2qs = buildQs(E.p2type);
+  E.p2qi = 0;
+  E.calc = '';
+  E.p2editing = null;
+  E.pitchGateMsg = false;
+  advanceSkips();
+  showEntryView('phase2');
+}
+
 function shotCard(sh, num) {
   const tc = TYPE_COLORS[sh.type==='TeeP3'?'Tee':sh.type] || '#888';
   const bg = tc + '18';
@@ -2876,7 +2932,8 @@ function shotCard(sh, num) {
         <div class="snum">#${num}</div>
         <div class="sclub">${sh.club}</div>
         <div class="sbadge" style="color:${tc};border-color:${tc};background:${bg}">${typeLabel}</div>
-        <button onclick="deleteShot(${idx})" style="margin-left:auto;background:none;border:none;color:var(--chalk3);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;opacity:.6" title="Delete shot">✕</button>
+        <button onclick="editShot(${idx})" style="margin-left:auto;background:none;border:none;color:var(--chalk3);font-size:14px;cursor:pointer;padding:0 4px;line-height:1;opacity:.6" title="Edit shot">✏️</button>
+        <button onclick="deleteShot(${idx})" style="background:none;border:none;color:var(--chalk3);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;opacity:.6" title="Delete shot">✕</button>
       </div>
       <div class="sdet">${prose}</div>
     </div>`;
@@ -5706,8 +5763,8 @@ function bailOut() {
   E.holes = {}; E.hole = 1; E.view = 'phase1';
   E.p1seq = []; E.p1editIdx = null;
   E.p2idx = 0; E.p2shot = {}; E.p2qs = []; E.p2qi = 0;
-  E.p2type = null; E.p2club = null; E.p2editing = null;
-  E.sandType = 'greenside'; E.calc = '';
+  E.p2type = null; E.p2club = null; E.p2editing = null; E.p2editIdx = null;
+  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false;
   showView('home');
   renderHome();
 }
