@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.1.8 · Mar 24, 2026 -->
+<!-- PJ Caddie v6.2.3 · Mar 25, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -242,8 +242,10 @@ body{display:flex;flex-direction:column}
 .progress-bar::-webkit-scrollbar{display:none}
 .p-dot{width:22px;height:22px;border-radius:50%;background:var(--ink3);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--chalk3);flex-shrink:0;cursor:pointer;transition:all .2s}
 .p-dot.cur{border-color:var(--gold);background:rgba(200,168,75,.15);color:var(--gold);font-weight:600}
-.p-dot.done{background:var(--ink3);border-color:var(--fairway)}
-.p-dot.done-over{border-color:var(--red)}
+.p-dot.done-birdie{background:rgba(74,143,212,.12);border-color:var(--blue);color:var(--blue);font-weight:600}
+.p-dot.done-par{background:rgba(58,107,58,.12);border-color:var(--fairway);color:#6ec86e;font-weight:500}
+.p-dot.done-bogey{background:rgba(232,153,74,.1);border-color:var(--orange);color:var(--orange);font-weight:500}
+.p-dot.done-double{background:rgba(201,64,64,.12);border-color:var(--red);color:#e07070;font-weight:500}
 
 /* ── SWIPE AREA ── */
 .swipe-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative}
@@ -559,7 +561,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.1.8 · Mar 24, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.3 · Mar 25, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -853,11 +855,13 @@ main{padding:14px}
     <div class="tab" onclick="sumTab('scorecard',this)">Scorecard</div>
     <div class="tab" onclick="sumTab('tendencies',this)">Tendencies</div>
     <div class="tab" onclick="sumTab('notes',this)">Notes</div>
+    <div class="tab" onclick="sumTab('review',this)">⚠️ Review</div>
   </div>
   <div class="scroll-body pad" style="padding-bottom:24px">
     <div id="sum-overview" style="padding-top:16px"></div>
     <div id="sum-scorecard" style="padding-top:16px;display:none"></div>
     <div id="sum-tendencies" style="padding-top:16px;display:none"></div>
+    <div id="sum-review" style="padding-top:16px;display:none"></div>
     <div id="sum-notes" style="padding-top:16px;display:none">
       <div class="eyebrow" style="margin-bottom:10px">Round Notes for Coach</div>
       <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:12px">Notes about this round — how you felt, course conditions, mental game, anything you want the coach to factor in.</div>
@@ -1419,7 +1423,7 @@ function confirmBag() {
   E.p1seq = []; E.p1editIdx = null;
   E.p2idx = 0; E.p2shot = {}; E.p2qs = []; E.p2qi = 0;
   E.p2type = null; E.p2club = null; E.p2editing = null; E.p2editIdx = null;
-  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false;
+  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false; E.pitchGateActive = false;
   showView('scoring');
   buildScoringView();
   loadHole(0);
@@ -1599,6 +1603,11 @@ function loadHole(i) {
 
   renderDots(i);
 
+  // PHASE SAVE — stash current hole's in-progress club sequence before clearing
+  if (E.hole && E.holes[E.hole] && E.p1seq.length > 0) {
+    E.holes[E.hole]._savedP1seq = [...E.p1seq];
+  }
+
   // Init entry state for this hole — E.hole is 1-based so store at i+1
   const eKey = i + 1;
   if (!E.holes[eKey]) E.holes[eKey] = { par: null, shots: [] };
@@ -1609,7 +1618,15 @@ function loadHole(i) {
   E.p1seq = []; E.p1editIdx = null;
   E.p2idx = 0; E.p2shot = {}; E.p2qs = []; E.p2qi = 0;
   E.p2type = null; E.p2club = null; E.p2editing = null; E.p2editIdx = null;
-  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false;
+  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false; E.pitchGateActive = false;
+  E.lastAction = null;
+
+  // PHASE SAVE — restore saved sequence if returning to a hole mid-entry (no committed shots yet)
+  const savedSeq = E.holes[eKey]._savedP1seq;
+  if (savedSeq && savedSeq.length > 0 && (score.shots||[]).length === 0) {
+    E.p1seq = [...savedSeq];
+    delete E.holes[eKey]._savedP1seq;
+  }
 
   // If hole already has shots, go straight to summary; otherwise phase1
   const startView = (score.shots && score.shots.length > 0) ? 'hole-summary' : 'phase1';
@@ -1646,11 +1663,17 @@ function renderDots(currentI) {
   for (let i = 0; i < n; i++) {
     const sc = round.scores[i];
     const hasShots = sc && sc.shots && sc.shots.length > 0;
-    const isOver = hasShots && sc.strokes > round.pars[i];
     const isCur = i === currentI;
-    const cls = isCur ? 'p-dot cur'
-               : hasShots ? (isOver ? 'p-dot done done-over' : 'p-dot done')
-               : 'p-dot';
+    let cls = 'p-dot';
+    if (isCur) {
+      cls = 'p-dot cur';
+    } else if (hasShots) {
+      const diff = sc.strokes - round.pars[i];
+      if (diff <= -1)     cls = 'p-dot done-birdie';
+      else if (diff === 0) cls = 'p-dot done-par';
+      else if (diff === 1) cls = 'p-dot done-bogey';
+      else                 cls = 'p-dot done-double';
+    }
     html += `<div class="${cls}" onclick="jumpToHole(${i})">${i+1}</div>`;
   }
   el.innerHTML = html;
@@ -1660,6 +1683,12 @@ function renderDots(currentI) {
 
 function jumpToHole(targetI) {
   if (!S.currentRound || targetI === S.currentHole) return;
+  // PIN WARN — flag if pin position not set on current hole
+  const i = S.currentHole;
+  const round = S.currentRound;
+  if (round && round.scores[i] && round.scores[i].shots && round.scores[i].shots.length > 0 && !round.scores[i].pinLocation) {
+    if (!confirm('No pin position set for Hole ' + (i+1) + '.\n\nProceed anyway?')) return;
+  }
   commitHole(S.currentHole);
   pushWIPToGitHub();
   loadHole(targetI);
@@ -1751,6 +1780,8 @@ let E = {
   p2editing: null,    // 'club' | 'type' | null
   p2editIdx: null,    // SHOT EDIT — index of shot being edited, null = new shot mode
   pitchGateMsg: false,// PITCH GATE — show reclassify notice on next render
+  pitchGateActive: false, // GATE LOCK — gate has fired, track for back/re-entry
+  lastAction: null,   // SMART UNDO — {type:'add'|'delete'|'edit', idx, shot}
   sandType: 'greenside',
   calc: '',
 };
@@ -2049,9 +2080,9 @@ function qChip() {
     ]},
     { key:'result', q:'Chip — result?', t:'pills', opts:[
       {lbl:'❌ Chunked', val:'Chunked', cls:'r'},
-      {lbl:'↓ Front', val:'Front', cls:'r'},
+      {lbl:'↓ Short', val:'Short', cls:'r'},
       {lbl:'🎯 Close', val:'Close', cls:'g'},
-      {lbl:'↑ Back', val:'Back', cls:'r'},
+      {lbl:'↑ Long', val:'Long', cls:'r'},
       {lbl:'❌ Bladed', val:'Bladed', cls:'r'},
     ]},
   ];
@@ -2202,7 +2233,9 @@ function advanceSkips() {
 
 function p2SetType(type) {
   E.p2type = type;
-  E.p1seq[E.p2idx].type = type;
+  if (E.p1seq[E.p2idx]) E.p1seq[E.p2idx].type = type; // guard: p1seq empty in edit mode
+  E.pitchGateActive = false; // overriding clears gate
+  E.pitchGateMsg = false;
   E.sandType = 'greenside';
   E.p2shot = {};
   E.p2qi = 0;
@@ -2228,16 +2261,31 @@ function p2SetClub(club) {
 
 function p2AnswerQ(key, val) {
   E.p2shot[key] = val;
-  // PITCH GATE — auto-reclassify Approach → Pitch at 40-65 yards
-  if (key === 'yardage' && val !== null && val >= 40 && val <= 65 && E.p2type === 'Approach') {
-    E.p2type = 'Pitch';
-    if (E.p2idx < E.p1seq.length) E.p1seq[E.p2idx].type = 'Pitch';
-    E.p2qs = buildQs('Pitch');
-    E.p2qi = 1; // yardage already answered (first q in Pitch), skip it
-    advanceSkips();
-    E.pitchGateMsg = true;
-    renderEntry();
-    return;
+  // PITCH GATE — auto-reclassify Approach → Pitch at 40-70 yards
+  if (key === 'yardage') {
+    if (val !== null && val >= 40 && val <= 70 && E.p2type === 'Approach') {
+      E.p2type = 'Pitch';
+      if (E.p1seq[E.p2idx]) E.p1seq[E.p2idx].type = 'Pitch';
+      E.p2qs = buildQs('Pitch');
+      E.p2qi = 1; // yardage already answered (first q in Pitch), skip it
+      advanceSkips();
+      E.pitchGateMsg = true;
+      E.pitchGateActive = true;
+      renderEntry();
+      return;
+    }
+    // GATE LOCK — if gate fired and user backed/re-entered yardage outside range, restore Approach
+    if (E.pitchGateActive && E.p2type === 'Pitch' && (val === null || val < 40 || val > 70)) {
+      E.p2type = 'Approach';
+      if (E.p1seq[E.p2idx]) E.p1seq[E.p2idx].type = 'Approach';
+      E.p2qs = buildQs('Approach');
+      E.p2qi = 1;
+      advanceSkips();
+      E.pitchGateActive = false;
+      E.pitchGateMsg = false;
+      renderEntry();
+      return;
+    }
   }
   E.p2qi++;
   advanceSkips();
@@ -2268,6 +2316,11 @@ function p2GoBack() {
     E.calc = backQ.t === 'calc' ? String(E.p2shot[backQ.key] || '') : '';
     E.p2qi = target;
     renderEntry();
+  } else if (E.p2editIdx !== null) {
+    // Edit mode at first question — cancel edit, back to hole review
+    E.p2editIdx = null;
+    E.pitchGateMsg = false; E.pitchGateActive = false;
+    showEntryView('hole-summary');
   } else if (E.p2idx === 0) {
     // First shot, first question — back to Phase 1
     fullRedo();
@@ -2327,8 +2380,11 @@ function commitP2Shot() {
 
   // SHOT EDIT — write back to existing index instead of pushing
   if (E.p2editIdx !== null) {
+    const before = Object.assign({}, curH().shots[E.p2editIdx]);
     curH().shots[E.p2editIdx] = shot;
+    E.lastAction = { type: 'edit', idx: E.p2editIdx, shot: before };
     E.p2editIdx = null;
+    E.pitchGateMsg = false;
     const i = S.currentHole;
     const round = S.currentRound;
     if (round && round.scores[i]) {
@@ -2341,6 +2397,7 @@ function commitP2Shot() {
   }
 
   curH().shots.push(shot);
+  E.lastAction = { type: 'add', idx: curH().shots.length - 1 };
   E.p2idx++;
   if (E.p2idx >= E.p1seq.length) {
     E.p1seq = [];
@@ -2533,7 +2590,7 @@ function p2Header() {
   if (E.p2editIdx !== null) {
     return `<div class="p2-hdr">
       <div class="p2-progress" style="color:var(--gold)">✏️ Editing Shot ${E.p2editIdx + 1}</div>
-      <span class="p2-redo" onclick="showEntryView('hole-summary')">✕ Cancel edit</span>
+      <span style="font-size:13px;color:var(--gold);text-decoration:underline;cursor:pointer;white-space:nowrap;font-weight:600" onclick="showEntryView('hole-summary')">✕ Cancel edit</span>
     </div>`;
   }
   const total = E.p1seq.length;
@@ -2547,7 +2604,7 @@ function p2Header() {
 function p2ContextBar(tappable) {
   const typeLabel = typeDisplayLabel(E.p2type);
   const tc = TYPE_COLORS[E.p2type==='TeeP3'?'Approach':E.p2type] || '#888';
-  const canTap = tappable && E.p2qi === 0;
+  const canTap = tappable && (E.p2qi === 0 || E.pitchGateActive);
   return `<div class="ctx-bar">
     <div class="ctx-club ${canTap?'tap':''}" ${canTap?`onclick="E.p2editing='club';renderEntry()"`:''}>
       ${E.p2club}
@@ -2629,6 +2686,22 @@ function vP2EditType() {
   </main>` + bnav() + `<div class="sp"></div>`;
 }
 
+function p2SeqStrip() {
+  // Edit mode — show single shot being edited
+  if (E.p2editIdx !== null) return '';
+  if (E.p1seq.length === 0) return '';
+  const tags = E.p1seq.map((item, i) => {
+    const isCur = i === E.p2idx;
+    const tc = TYPE_COLORS[item.type==='TeeP3'?'Tee':item.type] || '#888';
+    const border = isCur ? `border-color:${tc};background:${tc}22` : 'border-color:var(--border)';
+    const clubColor = isCur ? `color:${tc};font-weight:700` : 'color:var(--chalk3)';
+    return `<div style="font-size:11px;padding:3px 7px;border-radius:8px;border:1.5px solid;${border};display:flex;align-items:center;gap:3px;flex-shrink:0">
+      <span style="${clubColor}">${item.club}</span>
+    </div>`;
+  }).join('');
+  return `<div style="display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;padding:6px 0 4px;margin-bottom:4px;-webkit-overflow-scrolling:touch">${tags}</div>`;
+}
+
 function vP2Question(q) {
   const { total, cur } = smartDots(E.p2qs, E.p2shot, E.p2qi);
   const dotsHtml = total > 1
@@ -2657,9 +2730,10 @@ function vP2Question(q) {
 
   return hdr() + p2Header() + `
   <main>
+    ${p2SeqStrip()}
     ${p2ContextBar(true)}
-    ${E.pitchGateMsg ? `<div style="font-size:12px;color:var(--gold);background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.3);border-radius:8px;padding:8px 12px;margin-bottom:10px">↩ Changed to Pitch (${E.p2shot.yardage} yds) — tap type to override</div>` : ''}
-    ${(()=>{ E.pitchGateMsg = false; return ''; })()}
+    ${E.pitchGateMsg ? `<div style="font-size:12px;color:var(--gold);background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.3);border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">↩ Changed to Pitch (${E.p2shot.yardage} yds)<button onclick="p2SetType('Approach')" style="background:none;border:1px solid rgba(200,168,75,.5);border-radius:6px;padding:3px 8px;font-size:11px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">Keep as Approach</button></div>` : ''}
+    ${(()=>{ E.pitchGateMsg = false; E.pitchGateActive = false; return ''; })()}
     ${sandTog}${twNote}${dotsHtml}
     <div class="q-label">${q.q}</div>
     ${body}
@@ -2735,9 +2809,9 @@ function zoneGrid(key) {
 
 function missGrid(key) {
   const main = [
-    {lbl:'↑↑\nBack L',val:'back-left',cls:'lng'},{lbl:'↑↑\nBack',val:'back-center',cls:'lng'},{lbl:'↑↑\nBack R',val:'back-right',cls:'lng'},
+    {lbl:'↑↑\nLong L',val:'back-left',cls:'lng'},{lbl:'↑↑\nLong',val:'back-center',cls:'lng'},{lbl:'↑↑\nLong R',val:'back-right',cls:'lng'},
     {lbl:'←\nLeft',val:'left',cls:'rgh'},{lbl:null,val:null,cls:''},{lbl:'Right\n→',val:'right',cls:'rgh'},
-    {lbl:'↓↓\nFront L',val:'front-left',cls:'sh'},{lbl:'↓\nFront',val:'front-center',cls:'sh'},{lbl:'↓↓\nFront R',val:'front-right',cls:'sh'},
+    {lbl:'↓↓\nShort L',val:'front-left',cls:'sh'},{lbl:'↓\nShort',val:'front-center',cls:'sh'},{lbl:'↓↓\nShort R',val:'front-right',cls:'sh'},
   ];
   const extra = [
     {lbl:'Bunker',val:'Bunker',cls:'bnk'},{lbl:'💧 Water',val:'Water',cls:'wat'},
@@ -2776,7 +2850,7 @@ function puttArrows(key) {
   const opts = [
     { lbl:'↓↓', sub:'Way short',  val:'WayShort', cls:'r' },
     { lbl:'↓',  sub:'Short',      val:'Short',    cls:'r' },
-    { lbl:'●',  sub:'Holed',      val:'Holed',    cls:'g' },
+    { lbl:'●',  sub:'Tap-in',      val:'Holed',    cls:'g' },
     { lbl:'↑',  sub:'Long',       val:'Long',     cls:'r' },
     { lbl:'↑↑', sub:'Way long',   val:'WayLong',  cls:'r' },
   ];
@@ -2797,90 +2871,155 @@ function puttArrows(key) {
 
 function shotProse(sh) {
   const club = sh.club === 'PT' ? 'putter' : sh.club === 'TW' ? 'tap-in' : sh.club;
-  const yds = sh.yardage ? ` ${sh.yardage}-yard` : '';
-  const aimed = sh.aimed ? sh.aimed.toLowerCase() : null;
-  const landed = sh.landed ? sh.landed.toLowerCase().replace(/-/g,' ') : null;
-  const zone = sh.zone ? sh.zone.replace(/-/g,' ') : null;
-  const miss = sh.miss ? sh.miss.replace(/-/g,' ') : null;
+  const yds = sh.yardage ? `${sh.yardage}-yard ` : '';
 
-  const aimPhrase = aimed ? `aimed ${aimed}` : null;
-
-  // Tee shot
-  if (sh.type === 'Tee' || sh.type === 'TeeP3') {
-    let s = `Your${yds} ${club} tee shot`;
-    if (aimPhrase) s += `, ${aimPhrase},`;
-    if (landed) {
-      const landedColor = landed.includes('fairway') ? 'var(--green)' : landed.includes('ob') || landed.includes('water') ? 'var(--red)' : 'var(--orange)';
-      s += ` landed in the <b style="color:${landedColor}">${landed}</b>.`;
-    } else { s += '.'; }
-    return s;
+  // Zone → human label (green zones)
+  function zoneLabel(z) {
+    if (!z) return null;
+    const map = {
+      'back-left':'long left','back-center':'long','back-right':'long right',
+      'left':'pin high left','center':'pin high','right':'pin high right',
+      'front-left':'short left','front-center':'short','front-right':'short right',
+    };
+    return map[z] || z.replace(/-/g,' ');
   }
 
-  // Approach / Pitch / Layup
-  if (['Approach','Pitch','Layup'].includes(sh.type)) {
-    let s = `Your${yds} ${club}`;
-    if (sh.type === 'Layup') s += ' layup';
-    if (aimPhrase) s += `, ${aimPhrase},`;
-    if (sh.hitGreen === true) {
-      s += ` <b style="color:var(--green)">hit the green</b>`;
-      if (zone) s += ` — finished <b>${zone}</b>`;
-      s += '.';
-    } else if (sh.hitGreen === false) {
-      s += ` <b style="color:var(--red)">missed the green</b>`;
-      if (miss) s += ` — <b>${miss}</b>`;
-      s += '.';
-    } else if (landed) {
-      s += ` landed <b>${landed}</b>.`;
-    } else { s += '.'; }
-    return s;
+  // Miss → human label
+  function missLabel(m) {
+    if (!m) return null;
+    const map = {
+      'back-left':'long left','back-center':'long','back-right':'long right',
+      'left':'left','center':'center','right':'right',
+      'front-left':'short left','front-center':'short','front-right':'short right',
+      'Bunker':'in the bunker','Water':'in the water',
+      'OOP-Left':'out of play left','OOP-Right':'out of play right',
+    };
+    return map[m] || m.replace(/-/g,' ');
   }
 
-  // Chip
-  if (sh.type === 'Chip') {
-    let s = `${club} chip`;
-    if (aimPhrase) s += `, ${aimPhrase}`;
-    if (sh.result) {
-      const rc = sh.result === 'Close' ? 'var(--green)' : sh.result === 'Chunked' || sh.result === 'Bladed' ? 'var(--red)' : 'var(--chalk2)';
-      s += ` — <b style="color:${rc}">${sh.result.toLowerCase()}</b>`;
+  // Landed → human label (tee/layup)
+  function landedLabel(l) {
+    if (!l) return null;
+    const map = {
+      'Fairway':'the fairway','Rough-Left':'rough left','Rough-Right':'rough right',
+      'OB-Left':'OB left','OB-Right':'OB right','OOP-Left':'out of play left',
+      'OOP-Right':'out of play right','Bunker':'a bunker','Water':'the water',
+      'Short':'short of the fairway',
+    };
+    return map[l] || l.replace(/-/g,' ').toLowerCase();
+  }
+
+  // Aimed → conversational
+  function aimPhrase(aimed, type) {
+    if (!aimed) return null;
+    if (type === 'Tee' || type === 'TeeP3') {
+      return aimed === 'Center' ? 'aimed center' : aimed === 'Left' ? 'aimed left' : 'aimed right';
     }
+    return aimed === 'Center' ? 'aimed at the flag' : aimed === 'Left' ? 'aimed left of center' : 'aimed right of center';
+  }
+
+  // ── TEE SHOT ──
+  if (sh.type === 'Tee' || sh.type === 'TeeP3' || sh.isTeeShot) {
+    const aim = aimPhrase(sh.aimed, sh.type);
+    const dest = landedLabel(sh.landed);
+    const destColor = sh.landed === 'Fairway' ? 'var(--green)'
+                    : (sh.landed||'').includes('OB') || sh.landed === 'Water' ? 'var(--red)'
+                    : 'var(--orange)';
+    let s = aim ? `${aim[0].toUpperCase() + aim.slice(1)} with your ${club}` : `Your ${club}`;
+    if (dest) s += ` — <b style="color:${destColor}">${dest}</b>`;
     s += '.';
     return s;
   }
 
-  // Sand
+  // ── APPROACH / PITCH / LAYUP ──
+  if (['Approach','Pitch','Layup'].includes(sh.type)) {
+    const aim = aimPhrase(sh.aimed, sh.type);
+    const aimStr = aim ? `${aim[0].toUpperCase() + aim.slice(1)} with your ${yds}${club}` : `Your ${yds}${club}`;
+    if (sh.type === 'Layup') {
+      const dest = landedLabel(sh.landed);
+      let s = aimStr + (sh.type === 'Layup' ? ' layup' : '');
+      if (dest) s += ` — <b>${dest}</b>`;
+      s += '.';
+      return s;
+    }
+    if (sh.hitGreen === true) {
+      const zl = zoneLabel(sh.zone);
+      let s = aimStr;
+      if (zl) s += ` — <b style="color:var(--green)">${zl}</b>`;
+      else s += ` — <b style="color:var(--green)">on the green</b>`;
+      s += '.';
+      return s;
+    }
+    if (sh.hitGreen === false) {
+      const ml = missLabel(sh.miss);
+      let s = aimStr + ` — <b style="color:var(--red)">missed ${ml || 'the green'}</b>.`;
+      return s;
+    }
+    return aimStr + '.';
+  }
+
+  // ── CHIP ──
+  if (sh.type === 'Chip') {
+    const aim = sh.aimed && sh.aimed !== 'Center' ? ` (aimed ${sh.aimed.toLowerCase()} of pin)` : '';
+    if (!sh.result) return `${club} chip${aim}.`;
+    const rc = sh.result === 'Close' ? 'var(--green)' : sh.result === 'Chunked' || sh.result === 'Bladed' ? 'var(--red)' : 'var(--chalk2)';
+    const verb = {
+      'Chunked':`Chunked it with your ${club}`,
+      'Bladed': `Bladed it with your ${club}`,
+      'Close':  `${club} chip${aim} — <b style="color:var(--green)">close`,
+      'Short':  `${club} chip${aim} — <b style="color:var(--chalk2)">came up short`,
+      'Long':   `${club} chip${aim} — <b style="color:var(--chalk2)">ran it long`,
+    }[sh.result];
+    if (sh.result === 'Chunked' || sh.result === 'Bladed') return `<b style="color:var(--red)">${verb}</b>.`;
+    return `${verb}</b>.`;
+  }
+
+  // ── SAND ──
   if (sh.type === 'Sand') {
-    const type = sh.sandType === 'fairway' ? 'Fairway bunker' : 'Sand';
-    let s = `${type} shot with ${club}`;
-    if (sh.gotOut === true) s += ` — <b style="color:var(--green)">got out</b>`;
-    else if (sh.gotOut === false) s += ` — <b style="color:var(--red)">stayed in the bunker</b>`;
-    if (sh.proximity && sh.gotOut === true) s += `, ${sh.proximity.toLowerCase()} to the hole`;
+    const label = sh.sandType === 'fairway' ? 'Fairway bunker' : 'Greenside sand';
+    if (sh.gotOut === false) return `${label} — <b style="color:var(--red)">stayed in</b> with your ${club}.`;
+    const prox = {
+      'WayFront':'way short','Front':'short','Close':'close','Back':'long','WayBack':'way long'
+    }[sh.proximity] || null;
+    let s = `${label} — out with your ${club}`;
+    if (prox) s += `, <b style="color:${prox==='close'?'var(--green)':'var(--chalk2)'}">${prox}</b>`;
     s += '.';
     return s;
   }
 
-  // Recovery / Mishit
-  if (sh.type === 'Recovery' || sh.type === 'Mishit') {
-    let s = sh.type === 'Mishit' ? `Mishit with ${club}` : `Recovery with ${club}`;
-    if (landed) s += ` — ball ended in the <b>${landed}</b>`;
+  // ── RECOVERY ──
+  if (sh.type === 'Recovery') {
+    if (sh.gotOut === false) return `<b style="color:var(--red)">Couldn't get out</b> with your ${club}.`;
+    const dest = landedLabel(sh.landed);
+    let s = `Got out with your ${club}`;
+    if (dest) s += ` — <b>${dest}</b>`;
     s += '.';
     return s;
   }
 
-  // Putt
+  // ── MISHIT ──
+  if (sh.type === 'Mishit') {
+    const dest = landedLabel(sh.landed);
+    let s = `<b style="color:var(--red)">Mishit</b> with your ${club}`;
+    if (dest) s += ` — <b>${dest}</b>`;
+    s += '.';
+    return s;
+  }
+
+  // ── PUTT ──
   if (sh.type === 'Putt') {
     if (sh.isTW) return `Tap-in — <span style="color:var(--chalk3)">not counted</span>.`;
-    if (sh.isLastPutt || sh.made) return `<b style="color:var(--green)">Putt holed.</b>`;
-    if (sh.speed === 'Holed') return `<b style="color:var(--green)">Putt holed.</b>`;
-    let s = `Putt`;
-    if (sh.speed) {
-      const sc = sh.speed === 'Holed' ? 'var(--green)' : 'var(--red)';
-      s += ` — <b style="color:${sc}">${sh.speed.toLowerCase().replace('wayshort','way short').replace('waylong','way long')}</b>`;
-    }
-    s += '.';
-    return s;
+    if (sh.isLastPutt || sh.made || sh.speed === 'Holed') return `<b style="color:var(--green)">Holed it.</b>`;
+    const speedMap = {
+      'WayShort':'<b style="color:var(--red)">Way short</b>',
+      'Short':   '<b style="color:var(--orange)">Left it short</b>',
+      'Long':    '<b style="color:var(--orange)">Ran it by</b>',
+      'WayLong': '<b style="color:var(--red)">Way long</b>',
+    };
+    return (speedMap[sh.speed] || 'Putt') + '.';
   }
 
-  // Penalty
+  // ── PENALTY ──
   if (sh.type === 'Penalty') return `<b style="color:var(--red)">Penalty stroke.</b>`;
 
   return `${club} — ${sh.type || '?'}.`;
@@ -2889,7 +3028,9 @@ function shotProse(sh) {
 function deleteShot(idx) {
   const h = curH();
   if (idx < 0 || idx >= h.shots.length) return;
+  const removed = Object.assign({}, h.shots[idx]);
   h.shots.splice(idx, 1);
+  E.lastAction = { type: 'delete', idx, shot: removed };
   const i = S.currentHole;
   const round = S.currentRound;
   if (round && round.scores[i]) {
@@ -2905,6 +3046,8 @@ function editShot(idx) {
   const sh = h.shots[idx];
   if (!sh) return;
   E.p2editIdx = idx;
+  E.p2idx = 0;
+  E.p2startCount = h.shots.length; // EDIT BACK — prevent fullRedo wiping real shots
   E.p2club = sh.club;
   E.p2type = sh.type;
   // Pre-populate answers from existing shot (exclude structural fields)
@@ -2913,9 +3056,10 @@ function editShot(idx) {
   if (sh.sandType) E.sandType = sh.sandType;
   E.p2qs = buildQs(E.p2type);
   E.p2qi = 0;
-  E.calc = '';
+  E.calc = sh.yardage ? String(sh.yardage) : ''; // EDIT YARDAGE — pre-populate calc
   E.p2editing = null;
   E.pitchGateMsg = false;
+  E.pitchGateActive = false;
   advanceSkips();
   showEntryView('phase2');
 }
@@ -2923,7 +3067,7 @@ function editShot(idx) {
 function shotCard(sh, num) {
   const tc = TYPE_COLORS[sh.type==='TeeP3'?'Tee':sh.type] || '#888';
   const bg = tc + '18';
-  const typeLabel = sh.type === 'TeeP3' ? 'Tee' : (sh.type || '?');
+  const typeLabel = sh.isTeeShot ? 'Tee' : sh.type === 'TeeP3' ? 'Tee' : (sh.type || '?');
   const idx = num - 1;
   const prose = shotProse(sh);
   return `
@@ -3050,7 +3194,11 @@ function vSummary() {
         : shots.map((sh,si)=>shotCard(sh,si+1)).join('')}
     </div>
     <div style="display:flex;gap:7px;margin-bottom:16px">
-      ${shots.length > 0 ? `<button onclick="undoLastShot()" style="flex:1;padding:12px;border-radius:10px;background:transparent;border:1.5px solid var(--red);color:var(--red);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">↩ Undo</button>` : ''}
+      ${shots.length > 0 ? `<button onclick="undoLastShot()" style="flex:1;padding:12px;border-radius:10px;background:transparent;border:1.5px solid var(--red);color:var(--red);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">${
+        E.lastAction && E.lastAction.type === 'delete' ? '↩ Undo delete' :
+        E.lastAction && E.lastAction.type === 'edit'   ? '↩ Undo edit' :
+        '↩ Undo'
+      }</button>` : ''}
       <button onclick="addMoreShots()" style="flex:1;padding:12px;border-radius:10px;background:var(--ink3);border:1.5px solid var(--border);color:var(--chalk2);font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">+ More shots</button>
     </div>
     <div style="background:var(--ink2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
@@ -3083,6 +3231,10 @@ function saveNoteAndNext() {
     round.scores[i].notes = notesEl.value;
     saveWIP(round);
   }
+  // PIN WARN — flag if pin position not set
+  if (round && round.scores[i] && !round.scores[i].pinLocation) {
+    if (!confirm('No pin position set for Hole ' + (i+1) + '.\n\nProceed anyway?')) return;
+  }
   goNext();
 }
 
@@ -3108,18 +3260,34 @@ function addMoreShots() {
   showEntryView('phase1');
 }
 
-// undoLastShot removes last shot from entry state + round
+// undoLastAction reverses the last add, delete, or edit
 function undoLastShot() {
   const h = curH();
-  if (h.shots.length > 0) {
-    h.shots.pop();
-    const i = S.currentHole;
-    const round = S.currentRound;
-    if (round && round.scores[i]) {
-      round.scores[i].shots = [...h.shots];
-      calcScore(i);
-      saveWIP(round);
+  const act = E.lastAction;
+  const i = S.currentHole;
+  const round = S.currentRound;
+
+  if (act) {
+    if (act.type === 'add') {
+      // Undo add — remove the shot that was added
+      if (act.idx < h.shots.length) h.shots.splice(act.idx, 1);
+    } else if (act.type === 'delete') {
+      // Undo delete — re-insert the removed shot at its original index
+      h.shots.splice(act.idx, 0, act.shot);
+    } else if (act.type === 'edit') {
+      // Undo edit — restore the original shot
+      if (act.idx < h.shots.length) h.shots[act.idx] = act.shot;
     }
+    E.lastAction = null;
+  } else {
+    // Fallback — remove last shot if no action tracked
+    if (h.shots.length > 0) h.shots.pop();
+  }
+
+  if (round && round.scores[i]) {
+    round.scores[i].shots = [...h.shots];
+    calcScore(i);
+    saveWIP(round);
   }
   showEntryView('hole-summary');
 }
@@ -3284,8 +3452,9 @@ function renderSummary(round) {
   document.getElementById('sum-overview').innerHTML=overviewHTML(round);
   document.getElementById('sum-scorecard').innerHTML=scorecardHTML(round);
   document.getElementById('sum-tendencies').innerHTML=tendenciesHTML(round);
+  document.getElementById('sum-review').innerHTML=reviewHTML(round);
   // Reset to overview tab
-  ['overview','scorecard','tendencies','notes'].forEach(t=>{
+  ['overview','scorecard','tendencies','notes','review'].forEach(t=>{
     const el=document.getElementById('sum-'+t);
     if(el) el.style.display=t==='overview'?'block':'none';
   });
@@ -3294,7 +3463,7 @@ function renderSummary(round) {
 }
 
 function sumTab(tab,el){
-  ['overview','scorecard','tendencies','notes'].forEach(t=>{
+  ['overview','scorecard','tendencies','notes','review'].forEach(t=>{
     document.getElementById('sum-'+t).style.display=t===tab?'block':'none';
   });
   document.querySelectorAll('#view-summary .tab').forEach(t=>t.classList.remove('on'));
@@ -3528,6 +3697,68 @@ function scorecardHTML(round) {
     ${back.length?`<div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.7;margin-bottom:10px;margin-top:4px">Back Nine</div>${nineTable(back,'Back')}`:'' }
     ${totalsBlock}
   </div>`;
+}
+
+// REVIEW HTML — blank audit, missing data flags
+function reviewHTML(round) {
+  const scores = round.scores || [];
+  const issues = [];
+
+  scores.forEach((sc, i) => {
+    if (!sc || !sc.shots || sc.shots.length === 0) return;
+    const holeNum = i + 1;
+    const holeIssues = [];
+
+    // Missing pin position
+    if (!sc.pinLocation) {
+      holeIssues.push('No pin position set');
+    }
+
+    // Approach / Pitch shots with no hitGreen answer
+    sc.shots.forEach((sh, si) => {
+      if (['Approach','Pitch'].includes(sh.type) && sh.hitGreen === undefined || sh.hitGreen === null) {
+        if (['Approach','Pitch'].includes(sh.type)) {
+          holeIssues.push(`Shot ${si+1} (${sh.club} ${sh.type}) — hit green not recorded`);
+        }
+      }
+      // Tee shots with no landed answer
+      if ((sh.type === 'Tee' || sh.isTeeShot) && sh.type !== 'TeeP3' && !sh.landed) {
+        holeIssues.push(`Shot ${si+1} (${sh.club} Tee) — landing zone not recorded`);
+      }
+    });
+
+    if (holeIssues.length > 0) {
+      issues.push({ hole: holeNum, par: sc.par, items: holeIssues });
+    }
+  });
+
+  if (issues.length === 0) {
+    return `<div style="text-align:center;padding:32px 16px">
+      <div style="font-size:32px;margin-bottom:12px">✅</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--chalk);margin-bottom:6px">All clear</div>
+      <div style="font-size:13px;color:var(--chalk3);line-height:1.6">No missing data found. Byron has everything he needs.</div>
+    </div>`;
+  }
+
+  const rows = issues.map(issue => `
+    <div style="background:var(--ink2);border:1px solid rgba(201,64,64,.25);border-radius:10px;padding:12px 14px;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:700;color:var(--chalk);margin-bottom:6px;display:flex;align-items:center;gap:8px">
+        <span style="background:rgba(201,64,64,.15);border:1px solid rgba(201,64,64,.35);border-radius:6px;padding:2px 8px;color:#e07070;font-size:11px">Hole ${issue.hole}</span>
+        <span style="color:var(--chalk3);font-weight:400;font-size:11px">Par ${issue.par||'?'}</span>
+      </div>
+      ${issue.items.map(item => `
+        <div style="font-size:12px;color:var(--chalk3);line-height:1.6;display:flex;align-items:flex-start;gap:6px;margin-bottom:2px">
+          <span style="color:var(--orange);flex-shrink:0">⚠</span>
+          <span>${item}</span>
+        </div>`).join('')}
+    </div>`).join('');
+
+  return `
+    <div style="margin-bottom:12px">
+      <div style="font-size:10px;color:var(--chalk3);letter-spacing:.7px;text-transform:uppercase;margin-bottom:4px">Missing Data — ${issues.length} hole${issues.length!==1?'s':''}</div>
+      <div style="font-size:12px;color:var(--chalk3);line-height:1.6;margin-bottom:14px">These gaps won't block Byron but may affect his analysis. Tap a hole dot to go back and fill them in.</div>
+      ${rows}
+    </div>`;
 }
 
 // TENDENCIES HTML
@@ -5764,7 +5995,7 @@ function bailOut() {
   E.p1seq = []; E.p1editIdx = null;
   E.p2idx = 0; E.p2shot = {}; E.p2qs = []; E.p2qi = 0;
   E.p2type = null; E.p2club = null; E.p2editing = null; E.p2editIdx = null;
-  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false;
+  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false; E.pitchGateActive = false;
   showView('home');
   renderHome();
 }
