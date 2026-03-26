@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.2.3 · Mar 25, 2026 -->
+<!-- PJ Caddie v6.2.4 · Mar 25, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -481,6 +481,7 @@ main{padding:14px}
 .pill.g{border-color:var(--green);color:var(--green);background:rgba(94,200,94,.07)}
 .pill.r{border-color:var(--red);color:var(--red);background:rgba(201,64,64,.07)}
 .pill.s{border-color:var(--yellow);color:var(--yellow);background:rgba(212,184,64,.07)}
+.pill.o{border-color:var(--orange);color:var(--orange);background:rgba(232,153,74,.07)}
 .tee-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:5px}
 .tee-row2{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:14px}
 .gc{padding:8px 2px;border-radius:8px;background:var(--ink3);border:1.5px solid var(--border);color:var(--chalk2);font-size:10px;font-weight:600;cursor:pointer;text-align:center;min-height:50px;display:flex;align-items:center;justify-content:center;line-height:1.2;white-space:pre}
@@ -561,7 +562,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.3 · Mar 25, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.4 · Mar 25, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -1423,7 +1424,7 @@ function confirmBag() {
   E.p1seq = []; E.p1editIdx = null;
   E.p2idx = 0; E.p2shot = {}; E.p2qs = []; E.p2qi = 0;
   E.p2type = null; E.p2club = null; E.p2editing = null; E.p2editIdx = null;
-  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false; E.pitchGateActive = false;
+  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false; E.pitchGateActive = false; E.pitchGateSuppressed = false;
   showView('scoring');
   buildScoringView();
   loadHole(0);
@@ -1618,7 +1619,7 @@ function loadHole(i) {
   E.p1seq = []; E.p1editIdx = null;
   E.p2idx = 0; E.p2shot = {}; E.p2qs = []; E.p2qi = 0;
   E.p2type = null; E.p2club = null; E.p2editing = null; E.p2editIdx = null;
-  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false; E.pitchGateActive = false;
+  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false; E.pitchGateActive = false; E.pitchGateSuppressed = false;
   E.lastAction = null;
 
   // PHASE SAVE — restore saved sequence if returning to a hole mid-entry (no committed shots yet)
@@ -1781,6 +1782,7 @@ let E = {
   p2editIdx: null,    // SHOT EDIT — index of shot being edited, null = new shot mode
   pitchGateMsg: false,// PITCH GATE — show reclassify notice on next render
   pitchGateActive: false, // GATE LOCK — gate has fired, track for back/re-entry
+  pitchGateSuppressed: false, // GATE SUPPRESS — user overrode gate, don't re-fire
   lastAction: null,   // SMART UNDO — {type:'add'|'delete'|'edit', idx, shot}
   sandType: 'greenside',
   calc: '',
@@ -2080,9 +2082,9 @@ function qChip() {
     ]},
     { key:'result', q:'Chip — result?', t:'pills', opts:[
       {lbl:'❌ Chunked', val:'Chunked', cls:'r'},
-      {lbl:'↓ Short', val:'Short', cls:'r'},
+      {lbl:'↓ Short', val:'Short', cls:'o'},
       {lbl:'🎯 Close', val:'Close', cls:'g'},
-      {lbl:'↑ Long', val:'Long', cls:'r'},
+      {lbl:'↑ Long', val:'Long', cls:'o'},
       {lbl:'❌ Bladed', val:'Bladed', cls:'r'},
     ]},
   ];
@@ -2233,8 +2235,9 @@ function advanceSkips() {
 
 function p2SetType(type) {
   E.p2type = type;
-  if (E.p1seq[E.p2idx]) E.p1seq[E.p2idx].type = type; // guard: p1seq empty in edit mode
-  E.pitchGateActive = false; // overriding clears gate
+  if (E.p1seq[E.p2idx]) E.p1seq[E.p2idx].type = type;
+  if (type === 'Approach') E.pitchGateSuppressed = true; // GATE SUPPRESS — user chose to keep as Approach
+  E.pitchGateActive = false;
   E.pitchGateMsg = false;
   E.sandType = 'greenside';
   E.p2shot = {};
@@ -2263,7 +2266,7 @@ function p2AnswerQ(key, val) {
   E.p2shot[key] = val;
   // PITCH GATE — auto-reclassify Approach → Pitch at 40-70 yards
   if (key === 'yardage') {
-    if (val !== null && val >= 40 && val <= 70 && E.p2type === 'Approach') {
+    if (val !== null && val >= 40 && val <= 70 && E.p2type === 'Approach' && !E.pitchGateSuppressed) {
       E.p2type = 'Pitch';
       if (E.p1seq[E.p2idx]) E.p1seq[E.p2idx].type = 'Pitch';
       E.p2qs = buildQs('Pitch');
@@ -2319,7 +2322,7 @@ function p2GoBack() {
   } else if (E.p2editIdx !== null) {
     // Edit mode at first question — cancel edit, back to hole review
     E.p2editIdx = null;
-    E.pitchGateMsg = false; E.pitchGateActive = false;
+    E.pitchGateMsg = false; E.pitchGateActive = false; E.pitchGateSuppressed = false;
     showEntryView('hole-summary');
   } else if (E.p2idx === 0) {
     // First shot, first question — back to Phase 1
@@ -2733,7 +2736,7 @@ function vP2Question(q) {
     ${p2SeqStrip()}
     ${p2ContextBar(true)}
     ${E.pitchGateMsg ? `<div style="font-size:12px;color:var(--gold);background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.3);border-radius:8px;padding:8px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">↩ Changed to Pitch (${E.p2shot.yardage} yds)<button onclick="p2SetType('Approach')" style="background:none;border:1px solid rgba(200,168,75,.5);border-radius:6px;padding:3px 8px;font-size:11px;color:var(--gold);cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">Keep as Approach</button></div>` : ''}
-    ${(()=>{ E.pitchGateMsg = false; E.pitchGateActive = false; return ''; })()}
+    ${(()=>{ E.pitchGateMsg = false; E.pitchGateActive = false; E.pitchGateSuppressed = false; return ''; })()}
     ${sandTog}${twNote}${dotsHtml}
     <div class="q-label">${q.q}</div>
     ${body}
@@ -2897,16 +2900,22 @@ function shotProse(sh) {
     return map[m] || m.replace(/-/g,' ');
   }
 
-  // Landed → human label (tee/layup)
+  // Landed → human label (tee/layup) — full phrases not fragments
   function landedLabel(l) {
     if (!l) return null;
     const map = {
-      'Fairway':'the fairway','Rough-Left':'rough left','Rough-Right':'rough right',
-      'OB-Left':'OB left','OB-Right':'OB right','OOP-Left':'out of play left',
-      'OOP-Right':'out of play right','Bunker':'a bunker','Water':'the water',
-      'Short':'short of the fairway',
+      'Fairway':'found the fairway',
+      'Rough-Left':'found the rough left',
+      'Rough-Right':'found the rough right',
+      'OB-Left':'went OB left',
+      'OB-Right':'went OB right',
+      'OOP-Left':'went out of play left',
+      'OOP-Right':'went out of play right',
+      'Bunker':'found a bunker',
+      'Water':'found the water',
+      'Short':'came up short',
     };
-    return map[l] || l.replace(/-/g,' ').toLowerCase();
+    return map[l] || 'ended up ' + l.replace(/-/g,' ').toLowerCase();
   }
 
   // Aimed → conversational
@@ -2937,7 +2946,7 @@ function shotProse(sh) {
     const aimStr = aim ? `${aim[0].toUpperCase() + aim.slice(1)} with your ${yds}${club}` : `Your ${yds}${club}`;
     if (sh.type === 'Layup') {
       const dest = landedLabel(sh.landed);
-      let s = aimStr + (sh.type === 'Layup' ? ' layup' : '');
+      let s = aimStr + ' layup';
       if (dest) s += ` — <b>${dest}</b>`;
       s += '.';
       return s;
@@ -2945,14 +2954,14 @@ function shotProse(sh) {
     if (sh.hitGreen === true) {
       const zl = zoneLabel(sh.zone);
       let s = aimStr;
-      if (zl) s += ` — <b style="color:var(--green)">${zl}</b>`;
-      else s += ` — <b style="color:var(--green)">on the green</b>`;
+      if (zl) s += ` — <b style="color:var(--green)">finished ${zl}</b>`;
+      else s += ` — <b style="color:var(--green)">hit the green</b>`;
       s += '.';
       return s;
     }
     if (sh.hitGreen === false) {
       const ml = missLabel(sh.miss);
-      let s = aimStr + ` — <b style="color:var(--red)">missed ${ml || 'the green'}</b>.`;
+      let s = aimStr + ` — <b style="color:var(--red)">missed it ${ml || 'wide'}</b>.`;
       return s;
     }
     return aimStr + '.';
@@ -5995,7 +6004,7 @@ function bailOut() {
   E.p1seq = []; E.p1editIdx = null;
   E.p2idx = 0; E.p2shot = {}; E.p2qs = []; E.p2qi = 0;
   E.p2type = null; E.p2club = null; E.p2editing = null; E.p2editIdx = null;
-  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false; E.pitchGateActive = false;
+  E.sandType = 'greenside'; E.calc = ''; E.pitchGateMsg = false; E.pitchGateActive = false; E.pitchGateSuppressed = false;
   showView('home');
   renderHome();
 }
