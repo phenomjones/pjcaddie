@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.2.4 · Mar 25, 2026 -->
+<!-- PJ Caddie v6.2.6 · Mar 28, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -562,7 +562,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.4 · Mar 25, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.6 · Mar 28, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -1058,7 +1058,7 @@ const PRELOADED_COURSES = [
   }
 ];
 
-const CLUBS = ['Driver','3W','5W','2H','3H','4H','5H','5i','6i','7i','8i','9i','PW','GW','54','58','PT','TW','?'];
+const CLUBS = ['Driver','3W','5W','2H','3H','4H','5H','5i','6i','7i','8i','9i','PW','GW','SW','LW','PT','TW','?'];
 const SHOT_TYPES = ['Tee','Approach','Layup','Recovery','Pitch','Sand','Chip','Putt','Mishit','Penalty','?'];
 const LIE_OPTIONS = ['Fairway','Rough','Fringe','Green','Sand','Jail','Penalty'];
 
@@ -1385,7 +1385,7 @@ function renderBagScreen() {
     { label: 'Woods',   color: '#6baadf', border: 'rgba(107,170,223,.4)', clubs: ['Driver','3W','5W'] },
     { label: 'Hybrids', color: '#7ed4a0', border: 'rgba(126,212,160,.4)', clubs: ['2H','3H','4H','5H'] },
     { label: 'Irons',   color: 'var(--chalk2)', border: 'var(--border)',  clubs: ['5i','6i','7i','8i','9i'] },
-    { label: 'Wedges',  color: '#e8994a', border: 'rgba(232,153,74,.4)',  clubs: ['PW','GW','54','58'] },
+    { label: 'Wedges',  color: '#e8994a', border: 'rgba(232,153,74,.4)',  clubs: ['PW','GW','SW','LW'] },
     { label: 'Putter',  color: '#b48ef0', border: 'rgba(180,142,240,.4)', clubs: ['PT','TW'] },
     { label: 'Other',   color: 'var(--chalk3)', border: 'var(--border)', clubs: ['?'] },
   ];
@@ -1815,7 +1815,7 @@ const CF_CAT = {
   '2H':'hybrid','3H':'hybrid','4H':'hybrid','5H':'hybrid',
   '5i':'long-iron','6i':'long-iron','7i':'mid-iron',
   '8i':'short-iron','9i':'short-iron',
-  'PW':'wedge','GW':'wedge','54':'wedge','58':'wedge',
+  'PW':'wedge','GW':'wedge','SW':'wedge','LW':'wedge',
   'PT':'putter','TW':'tw'
 };
 const cfCat   = c => CF_CAT[c] || 'unknown';
@@ -1885,7 +1885,7 @@ function cfInferSeg(clubs,par,afterPen){
   const R=()=>({type:null,conf:'red'});
   const lastCat=cfCat(clubs[n-1]);
   const lastFront=['wedge','short-iron'].includes(lastCat);
-  const isW=c=>['PW','GW','54','58'].includes(c);
+  const isW=c=>['PW','GW','SW','LW'].includes(c);
 
   // TWIN SIGNAL — same long club twice in a row = first was likely a Mishit
   // Apply before par-specific logic so it works on any par
@@ -2018,10 +2018,14 @@ function buildQs(type) {
 
 function qTee() {
   return [
-    { key:'aimed', q:'Where did you aim?', t:'pills', opts:[
-      {lbl:'← Left', val:'Left', cls:'s'},
-      {lbl:'🎯 Center', val:'Center', cls:'g'},
-      {lbl:'Right →', val:'Right', cls:'s'},
+    { key:'teeShape', q:'Shot shape?', t:'pills', opts:[
+      {lbl:'🪝 Hook', val:'Hook', cls:'r'},
+      {lbl:'← Pull', val:'Pull', cls:'s'},
+      {lbl:'↙ Draw', val:'Draw', cls:'g'},
+      {lbl:'⬆ Straight', val:'Straight', cls:'g'},
+      {lbl:'↘ Fade', val:'Fade', cls:'o'},
+      {lbl:'Push →', val:'Push', cls:'s'},
+      {lbl:'🍌 Slice', val:'Slice', cls:'r'},
     ]},
     { key:'landed', q:'Where did it land?', t:'tee-grid' },
   ];
@@ -2059,11 +2063,6 @@ function qLayup() {
 function qPitch() {
   return [
     { key:'yardage', q:'Pitch — carry yardage?', t:'calc', opt:true },
-    { key:'aimed', q:'Pitch — where did you aim?', t:'pills', opts:[
-      {lbl:'← Left of center', val:'Left', cls:'s'},
-      {lbl:'🎯 Center of green', val:'Center', cls:'g'},
-      {lbl:'Right of center →', val:'Right', cls:'s'},
-    ]},
     { key:'hitGreen', q:'Pitch — hit the green?', t:'pills', opts:[
       {lbl:'✓ Yes — on the green', val:true, cls:'g'},
       {lbl:'No — missed', val:false, cls:'r'},
@@ -2075,16 +2074,13 @@ function qPitch() {
 
 function qChip() {
   return [
-    { key:'aimed', q:'Chip — where did you aim?', t:'pills', opts:[
-      {lbl:'← Left of pin', val:'Left', cls:'s'},
-      {lbl:'🎯 At the pin', val:'Center', cls:'g'},
-      {lbl:'Right of pin →', val:'Right', cls:'s'},
-    ]},
     { key:'result', q:'Chip — result?', t:'pills', opts:[
       {lbl:'❌ Chunked', val:'Chunked', cls:'r'},
+      {lbl:'↓↓ V.Short', val:'VeryShort', cls:'r'},
       {lbl:'↓ Short', val:'Short', cls:'o'},
       {lbl:'🎯 Close', val:'Close', cls:'g'},
       {lbl:'↑ Long', val:'Long', cls:'o'},
+      {lbl:'↑↑ V.Long', val:'VeryLong', cls:'r'},
       {lbl:'❌ Bladed', val:'Bladed', cls:'r'},
     ]},
   ];
@@ -2126,9 +2122,7 @@ function qRecovery() {
 }
 
 function qPutt() {
-  return [
-    { key:'speed', q:'Putt — where did it finish?', t:'putt-arrows' },
-  ];
+  return [];
 }
 
 // ─────────────────────────────────────────
@@ -2564,7 +2558,7 @@ function vPhase1() {
   <main>
     <div class="sect">Select clubs</div>
     <div class="club-grid">
-      ${['Driver','3W','5W','2H','3H','4H','5H','5i','6i','7i','8i','9i','PW','GW','54','58'].map(c=>
+      ${['Driver','3W','5W','2H','3H','4H','5H','5i','6i','7i','8i','9i','PW','GW','SW','LW'].map(c=>
         `<button class="cb ${clubColorClass(c)}" onclick="p1AddClub('${c}')">${c}</button>`
       ).join('')}
       <button class="cb" style="color:var(--chalk3);border-color:rgba(180,142,240,.3)" onclick="p1AddClub('TW')">TW</button>
@@ -2929,12 +2923,12 @@ function shotProse(sh) {
 
   // ── TEE SHOT ──
   if (sh.type === 'Tee' || sh.type === 'TeeP3' || sh.isTeeShot) {
-    const aim = aimPhrase(sh.aimed, sh.type);
+    const shape = sh.teeShape ? sh.teeShape.toLowerCase() : null;
     const dest = landedLabel(sh.landed);
     const destColor = sh.landed === 'Fairway' ? 'var(--green)'
                     : (sh.landed||'').includes('OB') || sh.landed === 'Water' ? 'var(--red)'
                     : 'var(--orange)';
-    let s = aim ? `${aim[0].toUpperCase() + aim.slice(1)} with your ${club}` : `Your ${club}`;
+    let s = shape ? `Hit a ${shape} with your ${club}` : `Your ${club}`;
     if (dest) s += ` — <b style="color:${destColor}">${dest}</b>`;
     s += '.';
     return s;
@@ -2969,15 +2963,16 @@ function shotProse(sh) {
 
   // ── CHIP ──
   if (sh.type === 'Chip') {
-    const aim = sh.aimed && sh.aimed !== 'Center' ? ` (aimed ${sh.aimed.toLowerCase()} of pin)` : '';
-    if (!sh.result) return `${club} chip${aim}.`;
+    if (!sh.result) return `${club} chip.`;
     const rc = sh.result === 'Close' ? 'var(--green)' : sh.result === 'Chunked' || sh.result === 'Bladed' ? 'var(--red)' : 'var(--chalk2)';
     const verb = {
-      'Chunked':`Chunked it with your ${club}`,
-      'Bladed': `Bladed it with your ${club}`,
-      'Close':  `${club} chip${aim} — <b style="color:var(--green)">close`,
-      'Short':  `${club} chip${aim} — <b style="color:var(--chalk2)">came up short`,
-      'Long':   `${club} chip${aim} — <b style="color:var(--chalk2)">ran it long`,
+      'Chunked':  `Chunked it with your ${club}`,
+      'Bladed':   `Bladed it with your ${club}`,
+      'Close':    `${club} chip — <b style="color:var(--green)">close`,
+      'Short':    `${club} chip — <b style="color:var(--chalk2)">came up short`,
+      'VeryShort':`${club} chip — <b style="color:var(--red)">very short`,
+      'Long':     `${club} chip — <b style="color:var(--chalk2)">ran it long`,
+      'VeryLong': `${club} chip — <b style="color:var(--red)">way long`,
     }[sh.result];
     if (sh.result === 'Chunked' || sh.result === 'Bladed') return `<b style="color:var(--red)">${verb}</b>.`;
     return `${verb}</b>.`;
@@ -3019,13 +3014,7 @@ function shotProse(sh) {
   if (sh.type === 'Putt') {
     if (sh.isTW) return `Tap-in — <span style="color:var(--chalk3)">not counted</span>.`;
     if (sh.isLastPutt || sh.made || sh.speed === 'Holed') return `<b style="color:var(--green)">Holed it.</b>`;
-    const speedMap = {
-      'WayShort':'<b style="color:var(--red)">Way short</b>',
-      'Short':   '<b style="color:var(--orange)">Left it short</b>',
-      'Long':    '<b style="color:var(--orange)">Ran it by</b>',
-      'WayLong': '<b style="color:var(--red)">Way long</b>',
-    };
-    return (speedMap[sh.speed] || 'Putt') + '.';
+    return `Putt.`;
   }
 
   // ── PENALTY ──
