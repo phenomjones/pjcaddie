@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.2.11 · Mar 29, 2026 -->
+<!-- PJ Caddie v6.2.12 · Mar 29, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -562,7 +562,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.11 · Mar 29, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.12 · Mar 29, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -4276,7 +4276,7 @@ async function importFromPhoto(files) {
       method: 'POST',
       signal: _photoAbort.signal,
       headers: { 'Content-Type': 'application/json', 'x-api-key': antKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, messages: [{ role: 'user', content: [...imgBlocks, { type: 'text', text: PARSER_PROMPT }] }] })
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 8000, messages: [{ role: 'user', content: [...imgBlocks, { type: 'text', text: PARSER_PROMPT }] }] })
     });
     const d = await resp.json();
     if (!resp.ok) throw new Error(d.error?.message || 'API error ' + resp.status);
@@ -4290,7 +4290,8 @@ async function importFromPhoto(files) {
     _resetPhotoInput();
     if (e.name === 'AbortError') return; // user cancelled — already navigated to setup
     showView('setup');
-    alert('Import failed: ' + e.message);
+    const isTrunc = e.message && (e.message.toLowerCase().includes('unexpected end') || e.message.toLowerCase().includes('unexpected eof'));
+    alert(isTrunc ? 'Import cut off — try importing 9 holes at a time, or use a clearer photo.' : 'Import failed: ' + e.message);
   }
 }
 
