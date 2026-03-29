@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.2.6 · Mar 28, 2026 -->
+<!-- PJ Caddie v6.2.11 · Mar 29, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -562,7 +562,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.6 · Mar 28, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.11 · Mar 29, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -752,6 +752,8 @@ main{padding:14px}
     </div>
 
     <button class="btn btn-gold" onclick="startRound()">Begin Round →</button>
+    <button class="btn btn-outline" style="margin-top:8px" onclick="triggerPhotoImport()">📷 Import from Paper Notes</button>
+    <input type="file" id="photo-import-input" multiple accept="image/*" style="display:none" onchange="importFromPhoto(this.files)">
 
     <!-- Add / Edit Course Panel -->
     <div id="add-course-panel" style="display:none;margin-top:20px">
@@ -907,6 +909,30 @@ main{padding:14px}
       <button id="det-edit-btn" class="btn" onclick="editRound()" style="background:rgba(200,168,75,.08);border:1px solid var(--border);color:var(--chalk2)">✏️ Edit Round</button>
       <button class="btn btn-danger" onclick="confirmDelete()">Delete Round</button>
     </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PHOTO LOADING ═══════════════ -->
+<div class="view" id="view-photo-loading">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:20px;padding:40px">
+    <div style="font-size:40px">📷</div>
+    <div style="font-size:20px;font-weight:700;color:var(--chalk);font-family:'DM Serif Display',serif">Parsing your notes…</div>
+    <div style="font-size:14px;color:var(--chalk3);text-align:center;max-width:260px;line-height:1.6">Byron is reading your handwriting. This usually takes 15–20 seconds.</div>
+    <div class="coach-spinner" style="margin-top:8px"></div>
+    <button onclick="cancelPhotoImport()" style="margin-top:8px;background:none;border:1px solid var(--border);border-radius:100px;padding:8px 22px;font-size:13px;color:var(--chalk3);cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
+  </div>
+</div>
+
+<!-- ═══════════════ PHOTO VERIFY ═══════════════ -->
+<div class="view" id="view-photo-verify">
+  <div class="safe-top" style="display:none"></div>
+  <div class="hdr">
+    <button class="back-btn" onclick="backFromVerify()">Back</button>
+    <div class="title">Review Import</div>
+  </div>
+  <div class="scroll-body pad pad-b" id="pv-cards" style="padding-bottom:100px"></div>
+  <div class="sticky-bot">
+    <button class="btn btn-gold" onclick="commitPhotoRound()">Confirm &amp; Save Round →</button>
   </div>
 </div>
 
@@ -4041,14 +4067,14 @@ function buildRoundContext(round) {
     shots:(s.shots||[]).map(sh=>({
       club:sh.club, type:sh.type,
       contact:sh.contact||null, teeShape:sh.teeShape||null,
-      teeLanded:sh.teeLanded||null, teeAimed:sh.teeAimed||null,
+      teeLanded:sh.teeLanded||null,
       approachAimed:sh.approachAimed||null, approachDist:sh.approachDist||null,
       approachSide:sh.approachSide||null, approachZone:sh.approachZone||null,
       layupAimed:sh.layupAimed||null, layupDist:sh.layupDist||null,
       layupSide:sh.layupSide||null, gotOut:sh.gotOut||null,
       recoveryLanded:sh.recoveryLanded||null, sandGotOut:sh.sandGotOut||null,
-      sandProx:sh.sandProx||null, chipProx:sh.chipProx||null,
-      chipSide:sh.chipSide||null, puttSpeed:sh.puttSpeed||null,
+      sandProx:sh.sandProx||null, chipResult:sh.result||null,
+      chipSide:sh.chipSide||null,
       lie:sh.lie||null, rating:sh.rating||null
     })),
     roundNote:s.notes||null
@@ -4076,16 +4102,310 @@ function buildRoundContext(round) {
   const roundHeader = `Course: ${round.courseName} (${round.teeName}) | Date: ${round.date}
 Score: ${total} (${total-par>=0?'+':''}${total-par} vs par ${par}) | Holes: ${round.holes}${roundNotes?'\nROUND NOTES: '+roundNotes:''}${playerNotes?'\nPLAYER PROFILE & GAPPING:\n'+playerNotes:''}${courseNotes?'\nCOURSE KNOWLEDGE:\n'+courseNotes:''}${holeNotesText}${greenNotesText}`;
   const dataRef = `DATA REFERENCE:
-- teeAimed: Left/Center/Right | teeShape: Draw/Straight/Fade/Hook/Pull/Push/Slice/Fat/Top/Thin
+- teeShape: Hook/Pull/Draw/Straight/Fade/Push/Slice (tee shot shape — primary tee field)
 - teeLanded: fairway/rough-left/rough-right/bunker/ob-left/ob-right/oop-left/oop-right/short. ob-left/ob-right = OB penalty. oop = out of position, ball IN PLAY.
 - approachAimed: Left/Center/Right | approachDist: Front/PH/On/Back (On=GIR)
 - approachSide: Left/Center/Right | approachZone: 9-zone grid when On
 - layupAimed/layupDist/layupSide | contact: Thin/Fat (blank=solid)
 - lie: WHERE BALL ENDED UP — Fairway/Rough/Fringe/Green/Sand/Jail/Penalty
-- gotOut/sandGotOut/sandProx | chipProx: Tap-in/Close/Medium/Far/Bladed/Chunked
-- puttSpeed: Front/Back | roundNote: player field note — treat as primary context`;
+- gotOut/sandGotOut/sandProx | chipResult: Chunked/VeryShort/Short/Close/Long/VeryLong/Bladed
+- roundNote: player field note — treat as primary context`;
   const rawData = JSON.stringify(holeData, null, 2);
   return { holeData, total, par, roundHeader, dataRef, rawData };
+}
+
+// ── Photo Import ─────────────────────────────────────────────────────────────
+const PARSER_PROMPT = `You are parsing handwritten golf shot notation from a photo of a field notebook.
+Convert the notation exactly into the JSON schema below. Return ONLY valid JSON — no preamble, no markdown fences, no explanation.
+
+LINE FORMAT: H[n] P[par]: shots · putts [p[n]]
+The number after the final · is always the putt count. The optional p[n] after the putts is the pin location (e.g. p6 = pin position 6). Do not confuse P[par] at the start of a line (uppercase P, hole par) with p[n] at the end (lowercase p, pin location).
+
+TEE SHOT (always shot 1, no prefix): [Club] [Shape] [Landing]
+
+PAR 3 EXCEPTION: On par 3 holes, the tee shot uses approach/zone notation instead of landing notation. A circled number means hit the green. A plain number or Bk/Wt means missed. No landing symbol on par 3 tee shots.
+
+SHAPE SYMBOLS (diagonal pen marks written on paper):
+  Three left-leaning marks  = Hook     (teeShape: "Hook")
+  Two left-leaning marks    = Pull     (teeShape: "Pull")
+  One left-leaning mark     = Draw     (teeShape: "Draw")
+  Vertical bar |            = Straight (teeShape: "Straight")
+  One right-leaning mark    = Fade     (teeShape: "Fade")
+  Two right-leaning marks   = Push     (teeShape: "Push")
+  Three right-leaning marks = Slice    (teeShape: "Slice")
+
+LANDING SYMBOLS (par 4/5 tee shots only, left to right):
+  --- = OB-Left (penalty)    -- = OOP-Left (in play)    - = Rough-Left
+  F-  = Fairway-Left         F  = Fairway               F+ = Fairway-Right
+  +   = Rough-Right          ++ = OOP-Right (in play)   +++ = OB-Right (penalty)
+  x immediately after landing symbol = penalty stroke applied
+
+APPROACH: [yds] [Club] [L/C/R] [Zone or Miss]
+  L/C/R = aimed Left/Center/Right of flag
+  Zone (hit green): circled number 1-9    Miss (missed): plain number 1-9 or Bk or Wt
+  Green grid numpad layout:
+    7=back-left   8=back-center   9=back-right
+    4=left        5=center        6=right
+    1=front-left  2=front-center  3=front-right
+
+PITCH: Pi [yds] [Club] [Zone or Miss] — no aimed direction, same zone/miss as approach
+
+LAYUP: [Club] [L/C/R] [Landing] — no shape, same landing symbols as tee shot
+
+CHIP: Ch [Club] [Result]
+  Result symbols: --- = Chunked, -- = VeryShort, - = Short, ^ = Close, + = Long, ++ = VeryLong, +++ = Bladed
+
+SAND: Sd [Club] [+ or -] — + got out, - did not get out
+  If tee shot landed in Bunker AND next shot has Sd prefix, sandType is "fairway". Otherwise "greenside".
+
+RECOVERY: Rc [Club] [+ or -] — + got out, - did not get out
+
+TEXAS WEDGE: TW in the shot sequence (between · separators) = putt from off the green.
+  Written as: · TW · [putts]   Example: · TW · 2 means Texas Wedge then 2 putts.
+  TW is a stroke but NOT counted as an official putt. Emit as { "club": "TW", "type": "Putt", "isTW": true }.
+
+PENALTY: x after a shot = insert a Penalty shot object immediately after that shot
+
+PUTTS: count only (number after final ·, before optional p[n]). Convert to individual Putt objects.
+  All but the last: isLastPutt false. Last putt: isLastPutt true.
+  Club is "PT" for all regular putts.
+
+PIN LOCATION: optional p[n] written after the putt count. Uses numpad layout — DIFFERENT from approach zones.
+  p7=back-left  p8=back-center  p9=back-right
+  p4=mid-left   p5=mid-center   p6=mid-right
+  p1=front-left p2=front-center p3=front-right
+  Note: middle row is "mid-left/mid-center/mid-right" NOT "left/center/right".
+  If no p[n] is written, set pinLocation to null.
+
+CRITICAL EDGE CASES:
+OB RE-TEE: If a tee shot lands OB and x follows, the NEXT shot is also a tee shot (re-tee after penalty).
+  Example: DR [Slice] +++ x · DR [Fade] F → Tee(Slice,OB-Right) + Penalty + Tee(Fade,Fairway)
+
+MISSING FIELDS: If you cannot read a symbol clearly, set that field to null. Never guess.
+  Do not infer teeShape as Straight just because no shape mark is written — set null.
+  Do not infer aimed as Center if L/C/R is unclear — set null.
+
+MULTI-LINE HOLES: A single hole may span multiple lines if the shots did not fit on one line.
+  A continuation line has no H[n] prefix. It belongs to the most recent hole that was opened.
+  The putt count appears just before the optional p[n] at the end of the LAST line — never mid-hole.
+  Example of a 2-line hole:
+    H7 P4: DR /// +++ x
+            DR / F · 155 7i C 1 · 3 p5
+  Parse this as one hole: Tee(Slice,OB-Right) + Penalty + Tee(Fade,Fairway) + Approach(155,7i,Center,miss:front-center) + 3 putts + pin mid-center.
+
+MULTIPLE IMAGES: Parse all holes found across all images into one holes array ordered by hole number.
+parseNote must be 60 characters or fewer.
+
+OUTPUT JSON SCHEMA — return ONLY this structure, no other text:
+{
+  "holes": [
+    {
+      "hole": 1,
+      "par": 4,
+      "putts": 2,
+      "pinLocation": "mid-center",
+      "confidence": "high",
+      "parseNote": null,
+      "shots": [
+        { "club": "Driver", "type": "Tee", "isTeeShot": true, "teeShape": "Draw", "teeLanded": "Fairway" },
+        { "club": "7i", "type": "Approach", "yardage": 155, "aimed": "Center", "hitGreen": true, "zone": "center", "miss": null },
+        { "club": "TW", "type": "Putt", "isTW": true },
+        { "club": "PT", "type": "Putt", "isLastPutt": false },
+        { "club": "PT", "type": "Putt", "isLastPutt": true }
+      ]
+    }
+  ]
+}
+
+Field rules:
+- confidence: "high" (all clear) | "medium" (1-2 uncertain fields) | "low" (significant unreadable portions)
+- type values: "Tee"|"Approach"|"Pitch"|"Layup"|"Chip"|"Sand"|"Recovery"|"Penalty"|"Putt"
+- isTeeShot: true on all tee shots including par 3 tee shots
+- Sand: include sandType ("greenside" or "fairway") and gotOut (true or false)
+- Recovery: include gotOut (true or false)
+- Penalty: { "type": "Penalty", "club": null }
+- TW (Texas Wedge): { "club": "TW", "type": "Putt", "isTW": true } — no isLastPutt field
+- zone: "front-left"|"front-center"|"front-right"|"left"|"center"|"right"|"back-left"|"back-center"|"back-right"
+- miss: same zone strings plus "Bunker" or "Water"
+- teeLanded: "Fairway"|"Fairway-Left"|"Fairway-Right"|"Rough-Left"|"Rough-Right"|"OB-Left"|"OB-Right"|"OOP-Left"|"OOP-Right"|"Bunker"
+- result (Chip only): "Chunked"|"VeryShort"|"Short"|"Close"|"Long"|"VeryLong"|"Bladed"
+- aimed: "Left"|"Center"|"Right"
+- yardage: integer or null
+- pinLocation: "front-left"|"front-center"|"front-right"|"mid-left"|"mid-center"|"mid-right"|"back-left"|"back-center"|"back-right"|null`;
+
+let S_photoData = null; // parsed round JSON from photo import
+
+function triggerPhotoImport() {
+  if (!S.setupCourseId) { alert('Select a course first.'); return; }
+  document.getElementById('photo-import-input').click();
+}
+
+let _photoAbort = null; // AbortController for in-flight import fetch
+
+function _resetPhotoInput() {
+  const el = document.getElementById('photo-import-input');
+  if (el) el.value = '';
+}
+
+function backFromVerify() {
+  S_photoData = null;
+  _resetPhotoInput();
+  showView('setup');
+}
+
+function cancelPhotoImport() {
+  if (_photoAbort) { _photoAbort.abort(); _photoAbort = null; }
+  _resetPhotoInput();
+  showView('setup');
+}
+
+async function importFromPhoto(files) {
+  if (!files || !files.length) return;
+  const antKey = localStorage.getItem('caddie_ant_key');
+  if (!antKey) { alert('Byron API key required — add it in Settings.'); return; }
+  _photoAbort = new AbortController();
+  showView('photo-loading');
+  try {
+    const imgBlocks = await Promise.all(Array.from(files).map(f => new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = () => res({ type: 'image', source: { type: 'base64', media_type: f.type, data: reader.result.split(',')[1] } });
+      reader.onerror = rej;
+      reader.readAsDataURL(f);
+    })));
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: _photoAbort.signal,
+      headers: { 'Content-Type': 'application/json', 'x-api-key': antKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4000, messages: [{ role: 'user', content: [...imgBlocks, { type: 'text', text: PARSER_PROMPT }] }] })
+    });
+    const d = await resp.json();
+    if (!resp.ok) throw new Error(d.error?.message || 'API error ' + resp.status);
+    const raw = d.content[0].text.replace(/```json|```/g, '').trim();
+    S_photoData = JSON.parse(raw);
+    _photoAbort = null;
+    _resetPhotoInput();
+    showPhotoVerify(S_photoData);
+  } catch(e) {
+    _photoAbort = null;
+    _resetPhotoInput();
+    if (e.name === 'AbortError') return; // user cancelled — already navigated to setup
+    showView('setup');
+    alert('Import failed: ' + e.message);
+  }
+}
+
+function showPhotoVerify(data) {
+  document.getElementById('pv-cards').innerHTML = buildVerifyCards(data);
+  showView('photo-verify');
+}
+
+function buildVerifyCards(data) {
+  const confStyle = { high: { color: 'var(--green)', label: '✓ Confident', border: 'var(--border)' }, medium: { color: '#e8994a', label: '⚠ Review flagged fields', border: 'rgba(232,153,74,.5)' }, low: { color: 'var(--red)', label: '✗ Low confidence — check carefully', border: 'rgba(201,64,64,.5)' } };
+  return (data.holes || []).map(h => {
+    const cs = confStyle[h.confidence] || confStyle.low;
+    const shotLines = (h.shots || []).map(sh => photoShotLabel(sh)).join('<br>');
+    const noteHtml = h.parseNote ? `<div style="margin-top:8px;font-size:12px;color:#e8994a;font-style:italic">⚠ ${h.parseNote}</div>` : '';
+    return `<div style="background:var(--ink3);border:1px solid ${cs.border};border-radius:12px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+        <div style="font-weight:700;color:var(--chalk);font-size:16px">Hole ${h.hole} <span style="font-weight:400;color:var(--chalk3);font-size:13px">Par ${h.par} · ${h.putts} putt${h.putts===1?'':'s'}</span></div>
+        <div style="font-size:11px;color:${cs.color};letter-spacing:.3px">${cs.label}</div>
+      </div>
+      <div style="font-size:13px;color:var(--chalk2);line-height:2">${shotLines || '<span style="color:var(--chalk3)">No shots parsed</span>'}</div>
+      ${noteHtml}
+    </div>`;
+  }).join('') || '<div style="color:var(--chalk3);text-align:center;padding:40px">No holes found in image.</div>';
+}
+
+function photoShotLabel(sh) {
+  const unk = v => (v == null) ? `<span style="color:#e8994a">?</span>` : String(v);
+  if (sh.type === 'Penalty') return `<span style="color:var(--red)">✗ Penalty stroke</span>`;
+  if (sh.type === 'Putt') return sh.isLastPutt ? `<span style="color:var(--green)">▸ Holed</span>` : `▸ Putt`;
+  if (sh.type === 'Tee') return `🏌 ${sh.club||'?'} &nbsp;shape: ${unk(sh.teeShape)} &nbsp;landed: ${unk(sh.teeLanded)}`;
+  if (sh.type === 'Approach') return `→ ${sh.yardage?sh.yardage+'y ':''}<b>${sh.club||'?'}</b> aimed ${unk(sh.aimed)} — ${sh.hitGreen?'<span style="color:var(--green)">🟢 '+unk(sh.zone)+'</span>':'<span style="color:var(--red)">❌ '+unk(sh.miss)+'</span>'}`;
+  if (sh.type === 'Pitch') return `Pi ${sh.yardage?sh.yardage+'y ':''}<b>${sh.club||'?'}</b> — ${sh.hitGreen?'<span style="color:var(--green)">🟢 '+unk(sh.zone)+'</span>':'<span style="color:var(--red)">❌ '+unk(sh.miss)+'</span>'}`;
+  if (sh.type === 'Layup') return `↔ <b>${sh.club||'?'}</b> aimed ${unk(sh.aimed)}`;
+  if (sh.type === 'Chip') return `Ch <b>${sh.club||'?'}</b> — ${unk(sh.result)}`;
+  if (sh.type === 'Sand') return `Sd <b>${sh.club||'?'}</b> (${sh.sandType||'?'}) — ${sh.gotOut?'got out':'stayed in'}`;
+  if (sh.type === 'Recovery') return `Rc <b>${sh.club||'?'}</b> — ${sh.gotOut?'got out':'stayed in'}`;
+  return `${sh.club||'?'} ${sh.type||'?'}`;
+}
+
+function mapParsedShot(sh, holePar) {
+  const out = { club: sh.club || null, type: sh.type };
+  if (sh.type === 'Penalty') { out.club = null; return out; }
+  if (sh.type === 'Putt') { out.club = sh.isTW ? 'TW' : 'PT'; if (sh.isTW) out.isTW = true; if (sh.isLastPutt != null) out.isLastPutt = sh.isLastPutt; return out; }
+  if (sh.isTeeShot) out.isTeeShot = true;
+  if (sh.teeShape) out.teeShape = sh.teeShape;
+  if (sh.teeLanded) out.teeLanded = sh.teeLanded;
+  if (sh.type === 'Tee' && holePar === 3) {
+    if (sh.hitGreen != null) out.hitGreen = sh.hitGreen;
+    if (sh.zone) out.approachZone = sh.zone;
+    if (sh.miss) out.approachSide = sh.miss;
+  }
+  if (sh.type === 'Approach' || sh.type === 'Pitch') {
+    if (sh.aimed) out.approachAimed = sh.aimed;
+    if (sh.yardage) out.yardage = sh.yardage;
+    if (sh.hitGreen != null) out.hitGreen = sh.hitGreen;
+    if (sh.zone) out.approachZone = sh.zone;
+    if (sh.miss) out.approachSide = sh.miss;
+  }
+  if (sh.type === 'Layup') {
+    if (sh.aimed) out.layupAimed = sh.aimed;
+    if (sh.teeLanded) out.layupLanded = sh.teeLanded;
+  }
+  if (sh.type === 'Chip') { if (sh.result) out.result = sh.result; }
+  if (sh.type === 'Sand') { out.sandType = sh.sandType || 'greenside'; if (sh.gotOut != null) out.gotOut = sh.gotOut; }
+  if (sh.type === 'Recovery') { if (sh.gotOut != null) out.gotOut = sh.gotOut; }
+  return out;
+}
+
+function commitPhotoRound() {
+  if (!S_photoData || !S.setupCourseId) return;
+  const course = getCourses().find(c => c.id === S.setupCourseId);
+  if (!course) return;
+  const tee = course.tees[S.setupTeeIdx || 0];
+  // BACK NINE: derive played holes from parsed data, not from setup slice
+  // This correctly handles front 9, back 9, or any subset of holes
+  const parsedHoles = (S_photoData.holes || [])
+    .filter(h => h.hole >= 1 && h.hole <= tee.par.length)
+    .sort((a, b) => a.hole - b.hole);
+  const pars = parsedHoles.map(h => tee.par[h.hole - 1]);
+  const yds  = parsedHoles.map(h => tee.yds[h.hole - 1]);
+  const round = {
+    id: Date.now().toString(),
+    date: document.getElementById('setup-date').value,
+    courseId: course.id,
+    courseName: course.name,
+    teeName: tee.name,
+    holes: parsedHoles.length,
+    pars,
+    yds,
+    scores: [],
+    importedFromPhoto: true
+  };
+  // Map parsed holes into round.scores (sequential, 0-indexed by play order)
+  parsedHoles.forEach((h, idx) => {
+    const mappedShots = (h.shots || []).map(sh => mapParsedShot(sh, h.par));
+    round.scores[idx] = {
+      hole: h.hole,
+      par: tee.par[h.hole - 1],
+      yds: tee.yds[h.hole - 1],
+      shots: mappedShots,
+      strokes: 0, putts: 0, penalties: 0, notes: '',
+      pinLocation: h.pinLocation || null
+    };
+  });
+  // Recalculate strokes/putts/penalties from actual shots
+  S.currentRound = round;
+  for (let i = 0; i < round.scores.length; i++) { if (round.scores[i].shots.length) calcScore(i); }
+  // Commit to saved rounds (unlocked, editable)
+  const rounds = getRounds();
+  rounds.push(round);
+  saveRounds(rounds);
+  syncWithGitHub(true);
+  S_photoData = null;
+  showView('history');
+  renderHistory();
 }
 
 // ── Top-level byronCall ──────────────────────────────────────────────────────
@@ -4832,7 +5152,7 @@ function renderTeeTab(round) {
     const appr = s.par === 3 ? tee : (s.shots.find(sh => sh.type === 'Approach') || null);
     const entry = {
       hole:s.hole, par:s.par, yds:s.yds, strokes:s.strokes, club:tee.club,
-      aimed:tee.teeAimed||null, shape:tee.teeShape||null, landed:tee.teeLanded||null, contact:tee.contact||null,
+      aimed:tee.teeShape||null, shape:tee.teeShape||null, landed:tee.teeLanded||null, contact:tee.contact||null,
       approachAimed:appr?.approachAimed||null, approachDist:appr?.approachDist||null,
       approachZone:appr?.approachZone||null, approachSide:appr?.approachSide||null
     };
