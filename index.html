@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.2.12 · Mar 29, 2026 -->
+<!-- PJ Caddie v6.2.18 · Mar 29, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -562,7 +562,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.12 · Mar 29, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.18 · Mar 29, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -1292,7 +1292,7 @@ function archiveRound(id) {
   syncWithGitHub(true);
 }
 
-function deleteRound(id) {
+async function deleteRound(id) {
   const rounds = getRounds();
   const r = rounds.find(r=>r.id===id);
   if(!r || r.locked) return;
@@ -1302,7 +1302,16 @@ function deleteRound(id) {
   saveRounds(updated);
   renderHome();
   renderHistory();
-  syncWithGitHub(true);
+  // Direct push to GitHub — no merge, so deleted round cannot be resurrected from remote
+  if (ghConfigured() && navigator.onLine) {
+    try {
+      const { sha } = await ghGetFile();
+      await ghPutFile(updated, sha);
+    } catch(e) {
+      console.error('Delete GitHub push failed:', e);
+      setSyncStatus('Deleted locally. GitHub sync failed — re-sync manually.', 'err');
+    }
+  }
 }
 
 // SETUP
@@ -2896,24 +2905,24 @@ function shotProse(sh) {
   const club = sh.club === 'PT' ? 'putter' : sh.club === 'TW' ? 'tap-in' : sh.club;
   const yds = sh.yardage ? `${sh.yardage}-yard ` : '';
 
-  // Zone → human label (green zones)
+  // Zone → human label (green zones) — locked vocabulary
   function zoneLabel(z) {
     if (!z) return null;
     const map = {
-      'back-left':'long left','back-center':'long','back-right':'long right',
-      'left':'pin high left','center':'pin high','right':'pin high right',
-      'front-left':'short left','front-center':'short','front-right':'short right',
+      'back-left':'back left','back-center':'back middle','back-right':'back right',
+      'left':'pin high left','center':'center','right':'pin high right',
+      'front-left':'front left','front-center':'front middle','front-right':'front right',
     };
     return map[z] || z.replace(/-/g,' ');
   }
 
-  // Miss → human label
+  // Miss → human label — locked vocabulary
   function missLabel(m) {
     if (!m) return null;
     const map = {
-      'back-left':'long left','back-center':'long','back-right':'long right',
-      'left':'left','center':'center','right':'right',
-      'front-left':'short left','front-center':'short','front-right':'short right',
+      'back-left':'long left miss','back-center':'long middle miss','back-right':'long right miss',
+      'left':'pin high left miss','center':'center','right':'pin high right miss',
+      'front-left':'short left miss','front-center':'short middle miss','front-right':'short right miss',
       'Bunker':'in the bunker','Water':'in the water',
       'OOP-Left':'out of play left','OOP-Right':'out of play right',
     };
@@ -4123,16 +4132,28 @@ The number after the final · is always the putt count. The optional p[n] after 
 
 TEE SHOT (always shot 1, no prefix): [Club] [Shape] [Landing]
 
-PAR 3 EXCEPTION: On par 3 holes, the tee shot uses approach/zone notation instead of landing notation. A circled number means hit the green. A plain number or Bk/Wt means missed. No landing symbol on par 3 tee shots.
+PAR 3 TEE SHOTS — ALWAYS emit. Never skip a par 3 tee shot.
+  On par 3 holes, the tee shot uses approach-style zone/miss notation instead of landing symbols.
+  A circled number = hit the green (zone). A plain number or Bk/Wt = missed (miss).
+  teeShape is captured if a shape mark is written. teeLanded is null (no landing symbol on par 3s).
+  Always emit as: { "club": ..., "type": "Tee", "isTeeShot": true, "teeShape": ..., "hitGreen": true/false, "zone": ..., "miss": ... }
+  Example: H4 P3: 8i / ⑤ · 2 p8 → Tee(8i, Fade, zone:center) + 2 putts + pin back-center
+  CRITICAL: Par 3 tee shots are frequently the only shot before putts. Do NOT drop them.
 
-SHAPE SYMBOLS (diagonal pen marks written on paper):
-  Three left-leaning marks  = Hook     (teeShape: "Hook")
-  Two left-leaning marks    = Pull     (teeShape: "Pull")
-  One left-leaning mark     = Draw     (teeShape: "Draw")
-  Vertical bar |            = Straight (teeShape: "Straight")
-  One right-leaning mark    = Fade     (teeShape: "Fade")
-  Two right-leaning marks   = Push     (teeShape: "Push")
-  Three right-leaning marks = Slice    (teeShape: "Slice")
+SHAPE SYMBOLS — diagonal pen strokes. Direction is critical — do not confuse these:
+  A DRAW stroke looks like a BACKSLASH (\) — starts upper-right, ends lower-left.
+  A FADE stroke looks like a FORWARD SLASH (/) — starts upper-left, ends lower-right.
+  These are mirror images. \ leans left. / leans right.
+
+  \\\  (3 backslash-direction strokes) = Hook     (teeShape: "Hook")
+  \\   (2 backslash-direction strokes) = Pull     (teeShape: "Pull")
+  \    (1 backslash-direction stroke)  = Draw     (teeShape: "Draw")
+  |    (vertical bar)                  = Straight (teeShape: "Straight")
+  /    (1 forward-slash-direction stroke)  = Fade  (teeShape: "Fade")
+  //   (2 forward-slash-direction strokes) = Push  (teeShape: "Push")
+  ///  (3 forward-slash-direction strokes) = Slice (teeShape: "Slice")
+
+  NEVER confuse Draw (\) with Fade (/). A backslash leans toward lower-left. A forward slash leans toward lower-right.
 
 LANDING SYMBOLS (par 4/5 tee shots only, left to right):
   --- = OB-Left (penalty)    -- = OOP-Left (in play)    - = Rough-Left
@@ -4140,20 +4161,51 @@ LANDING SYMBOLS (par 4/5 tee shots only, left to right):
   +   = Rough-Right          ++ = OOP-Right (in play)   +++ = OB-Right (penalty)
   x immediately after landing symbol = penalty stroke applied
 
+CRITICAL — Fairway modifiers: F alone = Fairway (center). F- = Fairway-Left. F+ = Fairway-Right.
+  The + or - attached to F is part of the symbol — NEVER strip it.
+  F-  must always map to teeLanded: "Fairway-Left"  — never plain "Fairway"
+  F+  must always map to teeLanded: "Fairway-Right" — never plain "Fairway"
+  F   must always map to teeLanded: "Fairway"        — only when no modifier is present
+
 APPROACH: [yds] [Club] [L/C/R] [Zone or Miss]
   L/C/R = aimed Left/Center/Right of flag
-  Zone (hit green): circled number 1-9    Miss (missed): plain number 1-9 or Bk or Wt
-  Green grid numpad layout:
-    7=back-left   8=back-center   9=back-right
-    4=left        5=center        6=right
-    1=front-left  2=front-center  3=front-right
+  Zone (hit green): circled number 1–9    Miss (missed green): plain number 1–9, or Bk (Bunker), Wt (Water)
+
+  GREEN ZONE NUMPAD — think of a phone keypad viewed from behind the ball:
+    7 = back-left    8 = back-center    9 = back-right
+    4 = left         5 = center         6 = right
+    1 = front-left   2 = front-center   3 = front-right
+
+  Circled number → hitGreen: true, zone: [value], miss: null
+  Plain number   → hitGreen: false, zone: null, miss: [value]
+
+  Zone/miss stored values by number:
+    ⑦ or 7 → "back-left"    ⑧ or 8 → "back-center"    ⑨ or 9 → "back-right"
+    ④ or 4 → "left"         ⑤ or 5 → "center"          ⑥ or 6 → "right"
+    ① or 1 → "front-left"  ② or 2 → "front-center"    ③ or 3 → "front-right"
+
+  CRITICAL — anchor the numpad correctly:
+    7 is BACK-LEFT (top-left of keypad). 9 is BACK-RIGHT (top-right). 1 is FRONT-LEFT (bottom-left). 3 is FRONT-RIGHT (bottom-right).
+    Never swap left/right. A circled 7 = zone "back-left", a circled 9 = zone "back-right".
 
 PITCH: Pi [yds] [Club] [Zone or Miss] — no aimed direction, same zone/miss as approach
 
 LAYUP: [Club] [L/C/R] [Landing] — no shape, same landing symbols as tee shot
+  Yardage is optional on layups. If no distance is written before the club, parse without it (yardage: null). A layup with no yardage is valid — do not skip or fail it.
 
 CHIP: Ch [Club] [Result]
-  Result symbols: --- = Chunked, -- = VeryShort, - = Short, ^ = Close, + = Long, ++ = VeryLong, +++ = Bladed
+  Count the symbols precisely — chip result uses minus signs, a caret, and plus signs:
+  ---  (three minuses) = Chunked
+  --   (two minuses)   = VeryShort
+  -    (one minus)     = Short
+  ^    (caret)         = Close
+  +    (one plus)      = Long
+  ++   (two pluses)    = VeryLong
+  +++  (three pluses)  = Bladed
+
+  CRITICAL — chip +/++/+++ are result symbols, NOT tee shot landing symbols.
+  In a chip context: ++ = VeryLong (NOT OOP-Right). +++ = Bladed (NOT OB-Right).
+  Never map chip plus symbols to landing values. Count the marks and use the table above.
 
 SAND: Sd [Club] [+ or -] — + got out, - did not get out
   If tee shot landed in Bunker AND next shot has Sd prefix, sandType is "fairway". Otherwise "greenside".
@@ -4164,7 +4216,11 @@ TEXAS WEDGE: TW in the shot sequence (between · separators) = putt from off the
   Written as: · TW · [putts]   Example: · TW · 2 means Texas Wedge then 2 putts.
   TW is a stroke but NOT counted as an official putt. Emit as { "club": "TW", "type": "Putt", "isTW": true }.
 
-PENALTY: x after a shot = insert a Penalty shot object immediately after that shot
+PENALTY: x after any shot = insert a Penalty shot object immediately after that shot.
+  This applies to ALL shot types including tee shots. x after a tee shot is common (OB, water, lost ball).
+  Example (penalty after tee, ball stays in play): DR \ F x · 9i C ⑤ · 2 → Tee(Draw,Fairway) + Penalty + Approach(9i,Center,zone:center) + 2 putts
+  Example (OB re-tee): DR /// +++ x · DR / F → Tee(Slice,OB-Right) + Penalty + Tee(Fade,Fairway)
+  NEVER skip an x — every x is exactly one Penalty object in the shots array.
 
 PUTTS: count only (number after final ·, before optional p[n]). Convert to individual Putt objects.
   All but the last: isLastPutt false. Last putt: isLastPutt true.
@@ -4193,7 +4249,9 @@ MULTI-LINE HOLES: A single hole may span multiple lines if the shots did not fit
             DR / F · 155 7i C 1 · 3 p5
   Parse this as one hole: Tee(Slice,OB-Right) + Penalty + Tee(Fade,Fairway) + Approach(155,7i,Center,miss:front-center) + 3 putts + pin mid-center.
 
-MULTIPLE IMAGES: Parse all holes found across all images into one holes array ordered by hole number.
+MULTIPLE IMAGES: Include ALL holes found across all images regardless of their physical position on the page, then sort the output by hole number.
+  NEVER skip a hole because it appears at the top, bottom, or an unexpected location on the page — position does not determine inclusion.
+  A hole written at the top of a page (e.g. H18 written above H1-H9) is still valid and must be included.
 parseNote must be 60 characters or fewer.
 
 OUTPUT JSON SCHEMA — return ONLY this structure, no other text:
@@ -4306,12 +4364,14 @@ function buildVerifyCards(data) {
     const cs = confStyle[h.confidence] || confStyle.low;
     const shotLines = (h.shots || []).map(sh => photoShotLabel(sh)).join('<br>');
     const noteHtml = h.parseNote ? `<div style="margin-top:8px;font-size:12px;color:#e8994a;font-style:italic">⚠ ${h.parseNote}</div>` : '';
+    const strokeCount = (h.shots || []).length;
+    const pinHtml = h.pinLocation ? `<div style="font-size:12px;color:var(--chalk3);margin-bottom:8px">📍 Pin: ${h.pinLocation}</div>` : '';
     return `<div style="background:var(--ink3);border:1px solid ${cs.border};border-radius:12px;padding:14px 16px;margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
-        <div style="font-weight:700;color:var(--chalk);font-size:16px">Hole ${h.hole} <span style="font-weight:400;color:var(--chalk3);font-size:13px">Par ${h.par} · ${h.putts} putt${h.putts===1?'':'s'}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <div style="font-weight:700;color:var(--chalk);font-size:16px">Hole ${h.hole} <span style="font-weight:400;color:var(--chalk3);font-size:13px">Par ${h.par} · ${strokeCount} stroke${strokeCount===1?'':'s'} · ${h.putts} putt${h.putts===1?'':'s'}</span></div>
         <div style="font-size:11px;color:${cs.color};letter-spacing:.3px">${cs.label}</div>
       </div>
-      <div style="font-size:13px;color:var(--chalk2);line-height:2">${shotLines || '<span style="color:var(--chalk3)">No shots parsed</span>'}</div>
+      ${pinHtml}<div style="font-size:13px;color:var(--chalk2);line-height:2">${shotLines || '<span style="color:var(--chalk3)">No shots parsed</span>'}</div>
       ${noteHtml}
     </div>`;
   }).join('') || '<div style="color:var(--chalk3);text-align:center;padding:40px">No holes found in image.</div>';
@@ -4319,12 +4379,30 @@ function buildVerifyCards(data) {
 
 function photoShotLabel(sh) {
   const unk = v => (v == null) ? `<span style="color:#e8994a">?</span>` : String(v);
+  // Locked zone/miss vocabulary for verify screen
+  const zDisplay = z => ({'back-left':'back left','back-center':'back middle','back-right':'back right','left':'pin high left','center':'center','right':'pin high right','front-left':'front left','front-center':'front middle','front-right':'front right'}[z] || (z ? z.replace(/-/g,' ') : '?'));
+  const mDisplay = m => ({'back-left':'long left miss','back-center':'long middle miss','back-right':'long right miss','left':'pin high left miss','center':'center','right':'pin high right miss','front-left':'short left miss','front-center':'short middle miss','front-right':'short right miss','Bunker':'in the bunker','Water':'in the water'}[m] || (m ? m.replace(/-/g,' ') : '?'));
   if (sh.type === 'Penalty') return `<span style="color:var(--red)">✗ Penalty stroke</span>`;
+  if (sh.type === 'Putt' && sh.isTW) return `↔ <b>TW</b> — Putt off green`;
   if (sh.type === 'Putt') return sh.isLastPutt ? `<span style="color:var(--green)">▸ Holed</span>` : `▸ Putt`;
-  if (sh.type === 'Tee') return `🏌 ${sh.club||'?'} &nbsp;shape: ${unk(sh.teeShape)} &nbsp;landed: ${unk(sh.teeLanded)}`;
-  if (sh.type === 'Approach') return `→ ${sh.yardage?sh.yardage+'y ':''}<b>${sh.club||'?'}</b> aimed ${unk(sh.aimed)} — ${sh.hitGreen?'<span style="color:var(--green)">🟢 '+unk(sh.zone)+'</span>':'<span style="color:var(--red)">❌ '+unk(sh.miss)+'</span>'}`;
-  if (sh.type === 'Pitch') return `Pi ${sh.yardage?sh.yardage+'y ':''}<b>${sh.club||'?'}</b> — ${sh.hitGreen?'<span style="color:var(--green)">🟢 '+unk(sh.zone)+'</span>':'<span style="color:var(--red)">❌ '+unk(sh.miss)+'</span>'}`;
-  if (sh.type === 'Layup') return `↔ <b>${sh.club||'?'}</b> aimed ${unk(sh.aimed)}`;
+  if (sh.type === 'Tee') {
+    const shapeStr = sh.teeShape ? ` &nbsp;shape: ${sh.teeShape}` : '';
+    if (sh.hitGreen !== undefined) {
+      // Par 3 tee shot — show zone/miss result, not landing
+      const result = sh.hitGreen
+        ? `<span style="color:var(--green)">🟢 ${zDisplay(sh.zone)}</span>`
+        : `<span style="color:var(--red)">❌ ${mDisplay(sh.miss)}</span>`;
+      return `🏌 ${sh.club||'?'}${shapeStr} — ${result}`;
+    }
+    return `🏌 ${sh.club||'?'}${shapeStr} &nbsp;landed: ${unk(sh.teeLanded)}`;
+  }
+  if (sh.type === 'Approach') return `→ ${sh.yardage?sh.yardage+'y ':''}<b>${sh.club||'?'}</b> aimed ${unk(sh.aimed)} — ${sh.hitGreen?'<span style="color:var(--green)">🟢 '+zDisplay(sh.zone)+'</span>':'<span style="color:var(--red)">❌ '+mDisplay(sh.miss)+'</span>'}`;
+  if (sh.type === 'Pitch') return `Pi ${sh.yardage?sh.yardage+'y ':''}<b>${sh.club||'?'}</b> — ${sh.hitGreen?'<span style="color:var(--green)">🟢 '+zDisplay(sh.zone)+'</span>':'<span style="color:var(--red)">❌ '+mDisplay(sh.miss)+'</span>'}`;
+  if (sh.type === 'Layup') {
+    const aimStr = sh.aimed ? ` aimed ${sh.aimed}` : '';
+    const landStr = sh.teeLanded ? ` — ${sh.teeLanded.replace(/-/g,' ')}` : '';
+    return `Lay <b>${sh.club||'?'}</b>${aimStr}${landStr}`;
+  }
   if (sh.type === 'Chip') return `Ch <b>${sh.club||'?'}</b> — ${unk(sh.result)}`;
   if (sh.type === 'Sand') return `Sd <b>${sh.club||'?'}</b> (${sh.sandType||'?'}) — ${sh.gotOut?'got out':'stayed in'}`;
   if (sh.type === 'Recovery') return `Rc <b>${sh.club||'?'}</b> — ${sh.gotOut?'got out':'stayed in'}`;
