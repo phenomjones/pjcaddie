@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.2.18 · Mar 29, 2026 -->
+<!-- PJ Caddie v6.2.19 · Mar 29, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -562,7 +562,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.18 · Mar 29, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.19 · Mar 29, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -2921,7 +2921,7 @@ function shotProse(sh) {
     if (!m) return null;
     const map = {
       'back-left':'long left miss','back-center':'long middle miss','back-right':'long right miss',
-      'left':'pin high left miss','center':'center','right':'pin high right miss',
+      'left':'pin high left miss','center':'center miss','right':'pin high right miss',
       'front-left':'short left miss','front-center':'short middle miss','front-right':'short right miss',
       'Bunker':'in the bunker','Water':'in the water',
       'OOP-Left':'out of play left','OOP-Right':'out of play right',
@@ -4154,6 +4154,7 @@ SHAPE SYMBOLS — diagonal pen strokes. Direction is critical — do not confuse
   ///  (3 forward-slash-direction strokes) = Slice (teeShape: "Slice")
 
   NEVER confuse Draw (\) with Fade (/). A backslash leans toward lower-left. A forward slash leans toward lower-right.
+  CRITICAL — if you cannot determine stroke direction with certainty from the photo, set teeShape: null. Never guess. Never default to Fade.
 
 LANDING SYMBOLS (par 4/5 tee shots only, left to right):
   --- = OB-Left (penalty)    -- = OOP-Left (in play)    - = Rough-Left
@@ -4171,22 +4172,23 @@ APPROACH: [yds] [Club] [L/C/R] [Zone or Miss]
   L/C/R = aimed Left/Center/Right of flag
   Zone (hit green): circled number 1–9    Miss (missed green): plain number 1–9, or Bk (Bunker), Wt (Water)
 
-  GREEN ZONE NUMPAD — think of a phone keypad viewed from behind the ball:
-    7 = back-left    8 = back-center    9 = back-right
+  GREEN ZONE NUMPAD — layout matches a calculator numpad (NOT a phone keypad):
+    7 = back-left    8 = back-center    9 = back-right    ← HIGH numbers = BACK of green
     4 = left         5 = center         6 = right
-    1 = front-left   2 = front-center   3 = front-right
+    1 = front-left   2 = front-center   3 = front-right   ← LOW numbers = FRONT of green
+
+  CRITICAL — do NOT use phone keypad orientation. On a phone, 1,2,3 are at the TOP.
+  On this system, 1,2,3 are at the BOTTOM (front of green). 7,8,9 are at the TOP (back of green).
+  A circled ① means hit the FRONT of the green, not the back.
+  A circled ⑨ means hit the BACK-RIGHT of the green, not the front.
 
   Circled number → hitGreen: true, zone: [value], miss: null
   Plain number   → hitGreen: false, zone: null, miss: [value]
 
-  Zone/miss stored values by number:
-    ⑦ or 7 → "back-left"    ⑧ or 8 → "back-center"    ⑨ or 9 → "back-right"
+  Zone/miss stored values by number — memorize these exactly:
+    ① or 1 → "front-left"   ② or 2 → "front-center"   ③ or 3 → "front-right"
     ④ or 4 → "left"         ⑤ or 5 → "center"          ⑥ or 6 → "right"
-    ① or 1 → "front-left"  ② or 2 → "front-center"    ③ or 3 → "front-right"
-
-  CRITICAL — anchor the numpad correctly:
-    7 is BACK-LEFT (top-left of keypad). 9 is BACK-RIGHT (top-right). 1 is FRONT-LEFT (bottom-left). 3 is FRONT-RIGHT (bottom-right).
-    Never swap left/right. A circled 7 = zone "back-left", a circled 9 = zone "back-right".
+    ⑦ or 7 → "back-left"    ⑧ or 8 → "back-center"     ⑨ or 9 → "back-right"
 
 PITCH: Pi [yds] [Club] [Zone or Miss] — no aimed direction, same zone/miss as approach
 
@@ -4244,10 +4246,19 @@ MISSING FIELDS: If you cannot read a symbol clearly, set that field to null. Nev
 MULTI-LINE HOLES: A single hole may span multiple lines if the shots did not fit on one line.
   A continuation line has no H[n] prefix. It belongs to the most recent hole that was opened.
   The putt count appears just before the optional p[n] at the end of the LAST line — never mid-hole.
+  A hole is CLOSED once its putt count has been read. Lines after a closed hole belong to the NEXT H[n] that opens, not to the closed hole.
   Example of a 2-line hole:
     H7 P4: DR /// +++ x
             DR / F · 155 7i C 1 · 3 p5
   Parse this as one hole: Tee(Slice,OB-Right) + Penalty + Tee(Fade,Fairway) + Approach(155,7i,Center,miss:front-center) + 3 putts + pin mid-center.
+
+OUT-OF-ORDER HOLES (e.g. H18 written at top of page above H1):
+  An out-of-order hole is self-contained and closes as soon as its putt count is read.
+  Lines below an out-of-order hole belong to whatever H[n] follows next — never to the out-of-order hole.
+  Example: H18 written at top, followed by H1 P4: ...
+    H18 P3: 7i C ⑥ · 2 p6     ← H18 is complete at "2 p6". Closed.
+    H1 P4: DR \ F- · ...        ← H1 starts fresh. Not a continuation of H18.
+  NEVER let an out-of-order hole absorb content from a subsequent H[n] line or its shots.
 
 MULTIPLE IMAGES: Include ALL holes found across all images regardless of their physical position on the page, then sort the output by hole number.
   NEVER skip a hole because it appears at the top, bottom, or an unexpected location on the page — position does not determine inclusion.
@@ -4381,7 +4392,7 @@ function photoShotLabel(sh) {
   const unk = v => (v == null) ? `<span style="color:#e8994a">?</span>` : String(v);
   // Locked zone/miss vocabulary for verify screen
   const zDisplay = z => ({'back-left':'back left','back-center':'back middle','back-right':'back right','left':'pin high left','center':'center','right':'pin high right','front-left':'front left','front-center':'front middle','front-right':'front right'}[z] || (z ? z.replace(/-/g,' ') : '?'));
-  const mDisplay = m => ({'back-left':'long left miss','back-center':'long middle miss','back-right':'long right miss','left':'pin high left miss','center':'center','right':'pin high right miss','front-left':'short left miss','front-center':'short middle miss','front-right':'short right miss','Bunker':'in the bunker','Water':'in the water'}[m] || (m ? m.replace(/-/g,' ') : '?'));
+  const mDisplay = m => ({'back-left':'long left miss','back-center':'long middle miss','back-right':'long right miss','left':'pin high left miss','center':'center miss','right':'pin high right miss','front-left':'short left miss','front-center':'short middle miss','front-right':'short right miss','Bunker':'in the bunker','Water':'in the water'}[m] || (m ? m.replace(/-/g,' ') : '?'));
   if (sh.type === 'Penalty') return `<span style="color:var(--red)">✗ Penalty stroke</span>`;
   if (sh.type === 'Putt' && sh.isTW) return `↔ <b>TW</b> — Putt off green`;
   if (sh.type === 'Putt') return sh.isLastPutt ? `<span style="color:var(--green)">▸ Holed</span>` : `▸ Putt`;
