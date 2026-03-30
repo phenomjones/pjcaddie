@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v6.2.21 · Mar 29, 2026 -->
+<!-- PJ Caddie v6.2.22 · Mar 29, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -562,7 +562,7 @@ main{padding:14px}
     <div class="home-logo">⛳ PJ Caddie</div>
     <div class="home-tagline">For People Who Suck at Golf</div>
     <!-- ██ VERSION STAMP — UPDATE THIS EVERY RELEASE ██ -->
-    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.21 · Mar 29, 2026</div>
+    <div class="version-stamp" style="font-size:10px;color:var(--chalk3);opacity:.5;margin-top:6px;letter-spacing:1px">v6.2.22 · Mar 29, 2026</div>
     <div class="home-rule"></div>
   </div>
   <div class="scroll-body pad pad-b">
@@ -2126,11 +2126,9 @@ function qChip() {
   return [
     { key:'result', q:'Chip — result?', t:'pills', opts:[
       {lbl:'❌ Chunked', val:'Chunked', cls:'r'},
-      {lbl:'↓↓ V.Short', val:'VeryShort', cls:'r'},
       {lbl:'↓ Short', val:'Short', cls:'o'},
       {lbl:'🎯 Close', val:'Close', cls:'g'},
       {lbl:'↑ Long', val:'Long', cls:'o'},
-      {lbl:'↑↑ V.Long', val:'VeryLong', cls:'r'},
       {lbl:'❌ Bladed', val:'Bladed', cls:'r'},
     ]},
   ];
@@ -3021,9 +3019,7 @@ function shotProse(sh) {
       'Bladed':   `Bladed it with your ${club}`,
       'Close':    `${club} chip — <b style="color:var(--green)">close`,
       'Short':    `${club} chip — <b style="color:var(--chalk2)">came up short`,
-      'VeryShort':`${club} chip — <b style="color:var(--red)">very short`,
       'Long':     `${club} chip — <b style="color:var(--chalk2)">ran it long`,
-      'VeryLong': `${club} chip — <b style="color:var(--red)">way long`,
     }[sh.result];
     if (sh.result === 'Chunked' || sh.result === 'Bladed') return `<b style="color:var(--red)">${verb}</b>.`;
     return `${verb}</b>.`;
@@ -4132,7 +4128,7 @@ Score: ${total} (${total-par>=0?'+':''}${total-par} vs par ${par}) | Holes: ${ro
 - approachSide: Left/Center/Right | approachZone: 9-zone grid when On
 - layupAimed/layupDist/layupSide | contact: Thin/Fat (blank=solid)
 - lie: WHERE BALL ENDED UP — Fairway/Rough/Fringe/Green/Sand/Jail/Penalty
-- gotOut/sandGotOut/sandProx | chipResult: Chunked/VeryShort/Short/Close/Long/VeryLong/Bladed
+- gotOut/sandGotOut/sandProx | chipResult: Chunked/Short/Close/Long/Bladed
 - roundNote: player field note — treat as primary context`;
   const rawData = JSON.stringify(holeData, null, 2);
   return { holeData, total, par, roundHeader, dataRef, rawData };
@@ -4209,17 +4205,14 @@ LAYUP: [Club] [L/C/R] [Landing] — no shape, same landing symbols as tee shot
 
 CHIP: Ch [Club] [Result]
   Count the symbols precisely — chip result uses minus signs, a caret, and plus signs:
-  ---  (three minuses) = Chunked
-  --   (two minuses)   = VeryShort
-  -    (one minus)     = Short
-  ^    (caret)         = Close
-  +    (one plus)      = Long
-  ++   (two pluses)    = VeryLong
-  +++  (three pluses)  = Bladed
+  --   (two minuses)  = Chunked  (fat mishit)
+  -    (one minus)    = Short
+  ^    (caret)        = Close
+  +    (one plus)     = Long
+  ++   (two pluses)   = Bladed   (thin mishit)
 
-  CRITICAL — chip +/++/+++ are result symbols, NOT tee shot landing symbols.
-  In a chip context: ++ = VeryLong (NOT OOP-Right). +++ = Bladed (NOT OB-Right).
-  Never map chip plus symbols to landing values. Count the marks and use the table above.
+  CRITICAL — chip +/++ are result symbols, NOT tee shot landing symbols.
+  In a chip context: ++ = Bladed (NOT OOP-Right). Never map chip plus symbols to landing values.
 
 SAND: Sd [Club] [+ or -] — + got out, - did not get out
   If tee shot landed in Bunker AND next shot has Sd prefix, sandType is "fairway". Otherwise "greenside".
@@ -4309,7 +4302,7 @@ Field rules:
 - zone: "front-left"|"front-center"|"front-right"|"left"|"center"|"right"|"back-left"|"back-center"|"back-right"
 - miss: same zone strings plus "Bunker" or "Water"
 - teeLanded: "Fairway"|"Fairway-Left"|"Fairway-Right"|"Rough-Left"|"Rough-Right"|"OB-Left"|"OB-Right"|"OOP-Left"|"OOP-Right"|"Bunker"
-- result (Chip only): "Chunked"|"VeryShort"|"Short"|"Close"|"Long"|"VeryLong"|"Bladed"
+- result (Chip only): "Chunked"|"Short"|"Close"|"Long"|"Bladed"
 - aimed: "Left"|"Center"|"Right"
 - yardage: integer or null
 - pinLocation: "front-left"|"front-center"|"front-right"|"mid-left"|"mid-center"|"mid-right"|"back-left"|"back-center"|"back-right"|null`;
