@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.2.0 · Apr 9, 2026 -->
+<!-- PJ Caddie v7.3.0 · Apr 9, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -117,6 +117,41 @@ body{display:flex;flex-direction:column}
 .player-textarea::placeholder{color:var(--chalk3);opacity:.6}
 .hub-course-select{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;color:var(--chalk);font-family:'DM Sans',sans-serif;font-size:14px;width:100%;outline:none;margin-bottom:12px;cursor:pointer}
 .hub-course-select:focus{border-color:var(--gold)}
+.pi-drop{border:2px dashed var(--border);border-radius:var(--r);padding:40px 24px;text-align:center;cursor:pointer;transition:background .15s;margin-bottom:14px}
+.pi-drop:active{background:var(--ink3)}
+.pi-drop-icon{font-size:44px;margin-bottom:12px;opacity:.5}
+.pi-drop-msg{font-size:14px;color:var(--chalk3);line-height:1.6}
+.pi-thumb{border-radius:var(--r);overflow:hidden;margin-bottom:12px;background:var(--ink2);border:1px solid var(--border)}
+.pi-thumb img{width:100%;display:block;max-height:380px;object-fit:contain;background:#000}
+.pi-thumb-meta{padding:8px 12px;font-size:11px;color:var(--chalk3)}
+.pi-status{font-size:12px;color:var(--chalk3);text-align:center;margin-bottom:12px;min-height:18px}
+.pi-status.error{color:var(--red)}
+.rc{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;border-left-width:4px}
+.rc.clean{border-left-color:var(--green)}
+.rc.flagged{border-left-color:var(--red)}
+.rc.resolved{border-left-color:var(--gold)}
+.rc-head{display:flex;align-items:center;gap:8px;padding:12px 14px 10px}
+.rc-hnum{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gold);min-width:36px}
+.rc-hinfo{flex:1}
+.rc-hpar{font-size:12px;color:var(--chalk2);font-weight:500}
+.rc-hyds{font-size:11px;color:var(--chalk3);font-family:'DM Mono',monospace}
+.rc-score-block{text-align:right}
+.rc-score-num{font-family:'DM Serif Display',serif;font-size:24px;line-height:1}
+.rc-score-lbl{font-size:10px;letter-spacing:.5px;margin-top:1px;text-transform:uppercase}
+.rc-edit-btn{background:none;border:1px solid var(--border);border-radius:var(--rs);padding:6px 12px;font-size:12px;color:var(--chalk2);cursor:pointer;margin-left:8px;white-space:nowrap;flex-shrink:0}
+.rc-edit-btn:active{opacity:.6}
+.rc-flag-row{padding:8px 14px;background:rgba(201,64,64,.07);border-top:1px solid rgba(201,64,64,.15);font-size:12px;color:var(--red);line-height:1.5;display:flex;gap:7px;align-items:flex-start}
+.rc-summary{padding:8px 14px 11px;font-size:12px;color:var(--chalk2);line-height:1.85;border-top:1px solid var(--border2)}
+.rc-fix{padding:10px 14px 12px;border-top:1px solid var(--border2);background:var(--ink)}
+.fix-lbl{font-size:11px;color:var(--chalk3);margin-bottom:8px}
+.fix-btn-row{display:flex;gap:7px;flex-wrap:wrap}
+.fix-btn{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:9px 18px;font-size:15px;font-family:'DM Serif Display',serif;color:var(--chalk);cursor:pointer;transition:all .15s}
+.fix-btn:active{opacity:.6}
+.fix-btn.picked{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
+.rc-edit{padding:12px 14px;border-top:1px solid var(--border2);background:var(--ink)}
+.confirm-bar{flex-shrink:0;background:var(--ink);border-top:1px solid var(--border);padding:12px max(18px,calc((100%-500px)/2))}
+.confirm-bar .safe-pad{height:calc(env(safe-area-inset-bottom,20px) + 2px)}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 #toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,20px) + 70px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:10px 20px;font-size:13px;color:var(--chalk);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:999;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
@@ -133,7 +168,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.2.0 · Apr 9, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.3.0 · Apr 9, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -243,7 +278,7 @@ body{display:flex;flex-direction:column}
   </div>
 </div>
 
-<!-- PHOTO IMPORT stub -->
+<!-- PHOTO IMPORT -->
 <div class="view" id="view-photo-import">
   <div class="safe-top"></div>
   <div class="hdr">
@@ -252,10 +287,30 @@ body{display:flex;flex-direction:column}
   </div>
   <div class="scroll-body">
     <div class="pad pad-b">
-      <div class="empty-state">
-        <div class="empty-icon">📷</div>
-        <div class="empty-msg">Photo import — Phase 5<br>Build scoring screen first</div>
+      <input type="file" id="pi-file-input" accept="image/*" capture="environment" style="display:none" onchange="onPhotoFileSelected(this.files)">
+      <div class="pi-drop" id="pi-drop-zone" onclick="document.getElementById('pi-file-input').click()">
+        <div class="pi-drop-icon">📷</div>
+        <div class="pi-drop-msg">Tap to open camera or select photo<br><span style="font-size:12px;opacity:.6">Photo of your handwritten notes</span></div>
       </div>
+      <div class="pi-thumb" id="pi-thumb" style="display:none">
+        <img id="pi-thumb-img" alt="Selected photo">
+        <div class="pi-thumb-meta" id="pi-thumb-meta"></div>
+      </div>
+      <div class="pi-status" id="pi-status"></div>
+      <button class="btn btn-gold" id="pi-parse-btn" onclick="parsePhotoWithByron()" disabled>Parse with Byron →</button>
+      <button class="btn btn-outline" style="margin-top:8px" id="pi-change-btn" onclick="document.getElementById('pi-file-input').click()" style="display:none">Change Photo</button>
+    </div>
+  </div>
+</div>
+
+<!-- PHOTO LOADING -->
+<div class="view" id="view-photo-loading">
+  <div class="safe-top"></div>
+  <div class="scroll-body">
+    <div class="pad" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:20px;padding-top:80px">
+      <div style="font-size:52px;animation:spin 2s linear infinite">⛳</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk)">Byron is reading…</div>
+      <div style="font-size:13px;color:var(--chalk3);text-align:center;line-height:1.6">Parsing your handwritten notes<br>This usually takes 10–20 seconds</div>
     </div>
   </div>
 </div>
@@ -321,7 +376,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.2.0 · Phase 3</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.3.0 · Phase 4A</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v1.1 + holeYards</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -331,6 +386,27 @@ body{display:flex;flex-direction:column}
     </div>
   </div>
   <div class="safe-bot"></div>
+</div>
+
+<!-- REVIEW SCREEN -->
+<div class="view" id="view-review">
+  <div class="safe-top"></div>
+  <div class="hdr" style="flex-shrink:0">
+    <div class="hdr-row">
+      <button class="back-btn" onclick="discardReview()">Discard</button>
+      <div id="review-flag-badge"></div>
+    </div>
+    <div class="hdr-title" id="review-title">Review Round</div>
+    <div style="font-size:12px;color:var(--chalk3);margin-top:2px" id="review-subtitle"></div>
+  </div>
+  <div class="scroll-body">
+    <div class="pad" style="padding-top:10px;padding-bottom:20px" id="review-cards"></div>
+  </div>
+  <div class="confirm-bar">
+    <button class="btn btn-gold" id="review-confirm-btn" onclick="confirmRound()" disabled>Confirm Round →</button>
+    <div style="font-size:11px;text-align:center;margin-top:7px" id="review-confirm-status"></div>
+    <div class="safe-pad"></div>
+  </div>
 </div>
 
 <!-- COURSE HUB -->
@@ -427,6 +503,9 @@ const BYRON_PERSONA = 'IDENTITY: You are Byron \u2014 elite caddie and data anal
 
 // Club list \u2014 used by scoring screen (Phase 4)
 const CLUBS = ['Dr','3w','5w','2h','3h','4h','5h','5i','6i','7i','8i','9i','PW','GW','SW','LW','PT','TW','?'];
+
+// Byron parser prompt — new notation system (v7)
+const BYRON_PARSER_PROMPT = `You are Byron, a golf shot data parser. You are reading a photo of handwritten golf notes and extracting structured shot data hole by hole.\n\nROUND CONTEXT:\nCourse: {{course}}\nDate: {{date}}\nExpected holes: {{expectedHoles}}\nPar per hole: {{holePars}}\n\nSTEP 1 \u2014 FIND THE HOLES\nEach hole begins with a label in the format H1, H2, H3 \u2026 H18 written by hand.\n- Scan the entire image for these labels before parsing anything.\n- Do not assume holes are sequential by position on the page \u2014 always read the written label.\n- Do not infer a hole number if you cannot read it clearly \u2014 flag it instead.\n- Everything written between H[n] and the next H[n+anything] belongs to hole n.\n- The first hole may appear at the very top edge of the image \u2014 do not skip it.\n- Ignore all pre-printed text. Parse handwritten content only.\nAfter finding all holes, compare against expectedHoles. Any expected hole not found must be flagged as missing.\n\nSTEP 2 \u2014 PARSE EACH HOLE\nShots are separated by \u00b7 (middle dot). Element order within each shot is flexible.\n\nTEE SHOT (par 4 and par 5 holes only):\nFirst shot is the tee shot. Contains:\n- Club: Dr, 3w, 5w, 4i, 5i, 6i, 7i, 8i, 9i, PW, GW, SW, LW, Rh\n- Position (exactly one of): OBL, OBR, LL, RR, L, R, C\n  OBL=OB or hazard left, OBR=OB or hazard right, LL=left out of position, RR=right out of position, L=left in play, R=right in play, C=center/fairway\n- After OBL or OBR expect RT [club] [position] (re-tee) or D (drop). Flag if neither follows.\nCRITICAL \u2014 L vs LY: L as tee position is single capital letter in tee shot context. LY or LAY is a layup appearing after tee shot. Never confuse these.\n\nPAR 3 TEE SHOT: Par 3 holes have NO tee shot line. First shot is approach. Do not look for position values.\n\nAPPROACH SHOT:\n- Yardage: standalone integer (e.g. 145)\n- Zone pair: two digits separated by ' or : (e.g. 2'7 or 2:7). First=intendedZone(1-9), second=finishZone(1-9)\n- Result: H (hit green) or M (missed)\n- Optional club, optional lie: Rh (rough) or Sd (sand). Omit=fairway.\nZone grid: 7|8|9 (long) / 4|5|6 (mid) / 1|2|3 (short) \u2014 L|C|R\n\nSHORT GAME: Ch=chip, REC or RC=recovery, LAY or LY=layup, X=untracked, D=drop, RT [club] [pos]=retee\n\nPIN: p followed by digit 1-9 (e.g. p6)\n\nPUTTING: begins with \\ or / or |\n- Single number = count only (e.g. \\ 2)\n- Multiple numbers = distances in feet (e.g. \\ 15 3)\n\nSCORE: standalone number. Read the written score. Do not calculate. Compare to shot count and flag if different.\n\nSTEP 3 \u2014 VALIDATE\n1. SCORE_MISMATCH: shot count vs written score differ\n2. HOLE_MISSING: expected hole not in image\n3. FIELD_UNCLEAR: cannot read a specific field\n4. FIELD_MISSING: required field absent\n5. OB_UNRESOLVED: OBL/OBR not followed by RT or D\n6. SCORE_UNCLEAR: cannot read written score\nConfidence: high=all clear+score matches, medium=minor uncertainty, low=multiple issues or mismatch\n\nSTEP 4 \u2014 OUTPUT\nReturn ONLY valid JSON. No preamble, no markdown fences.\nIf no H[n] labels found: {"parseable":false,"parseError":"No hole labels found"}\nOtherwise:\n{"parseable":true,"holes":[{"number":4,"par":5,"score":6,"notation_raw":"Dr RR \u00b7 LY \u00b7 Rh 170 2'7 M \u00b7 p4 \\\\ 3 60","confidence":"high","flags":[],"pinZone":4,"shots":[{"type":"tee","club":"Dr","position":"RR","isTeeShot":true},{"type":"layup"},{"type":"approach","club":"Rh","yardage":170,"intendedZone":2,"finishZone":7,"result":"M","lie":"Rh","isTeeShot":false}],"putts":{"count":2,"distances":[3,60]}}],"missingHoles":[],"parseNotes":""}\n\nFLAG FORMAT: {"type":"score_mismatch","field":"score","detail":"Byron counts 6, written score reads 7"}\nSHOT TYPES: tee|approach|chip|recovery|layup|untracked|retee|drop\nRESULT (approach): H|M\nLIE (approach): null|"Rh"|"Sd"\nPOSITION (tee/retee): OBL|OBR|LL|RR|L|R|C\n\nRULES THAT OVERRIDE EVERYTHING:\n1. Never skip the first hole even at the top edge.\n2. Never infer a hole number \u2014 always read H[n].\n3. Never parse pre-printed scorecard text.\n4. Par 3 holes: no tee shot, first shot is approach.\n5. L (position) and LY/LAY (layup) are never interchangeable.\n6. OBL or OBR must be followed by RT or D. Flag if not.\n7. Read the written score. Do not calculate it.\n8. Flag uncertainty \u2014 never guess silently.\n9. Return only JSON.`;
 
 // ── PRELOADED COURSES ────────────────────────────────────────
 const PRELOADED_COURSES = [
@@ -634,6 +713,8 @@ function showView(id) {
   if (id==='round-setup') initRoundSetup();
   if (id==='course-setup') initCourseSetup();
   if (id==='settings') renderSettings();
+  if (id==='photo-import') initPhotoImport();
+  if (id==='review') renderReview();
   if (id==='course-hub') initCourseHub();
   if (id==='player-hub') initPlayerHub();
 }
@@ -843,6 +924,14 @@ function startRoundSetup() {
 
 function startPhotoImport() {
   if (!S.selectedCourseId || S.selectedTeeIdx===null) return;
+  const course = getCourses().find(c=>c.id===S.selectedCourseId);
+  if (!course || S.selectedTeeIdx===null) return;
+  const teeSet = course.tees[S.selectedTeeIdx];
+  const date = document.getElementById('rs-date').value;
+  const holesPlayed = S.roundHoles==='back'?9:S.roundHoles;
+  const startingHole = S.roundHoles==='back'?10:1;
+  const round = createRound({ courseId:course.id, courseName:course.name, teeSet, date, holesPlayed, startingHole, source:'photo_import' });
+  saveWIP(round);
   showView('photo-import');
 }
 
@@ -893,6 +982,384 @@ function confirmClearAll() {
   localStorage.removeItem('pjc_wip');
   toast('Data cleared');
   renderSettings();
+}
+
+// ── PHOTO IMPORT ─────────────────────────────────────────────
+const PI = { base64: null, mediaType: null };
+
+function initPhotoImport() {
+  PI.base64 = null; PI.mediaType = null;
+  const inp = document.getElementById('pi-file-input');
+  if (inp) inp.value = '';
+  document.getElementById('pi-drop-zone').style.display = '';
+  document.getElementById('pi-thumb').style.display = 'none';
+  document.getElementById('pi-status').textContent = '';
+  document.getElementById('pi-status').className = 'pi-status';
+  document.getElementById('pi-parse-btn').disabled = true;
+}
+
+function onPhotoFileSelected(files) {
+  if (!files || !files.length) return;
+  const file = files[0];
+  PI.mediaType = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = e => {
+    PI.base64 = e.target.result.split(',')[1];
+    document.getElementById('pi-thumb-img').src = e.target.result;
+    document.getElementById('pi-thumb-meta').textContent = (file.name||'Photo') + ' \xb7 ' + (file.size/1024).toFixed(0) + ' KB';
+    document.getElementById('pi-thumb').style.display = '';
+    document.getElementById('pi-drop-zone').style.display = 'none';
+    document.getElementById('pi-parse-btn').disabled = false;
+    document.getElementById('pi-status').textContent = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function parsePhotoWithByron() {
+  const antKey = localStorage.getItem('caddie_ant_key');
+  if (!antKey) { toast('Add API key in Settings first'); return; }
+  if (!PI.base64) { toast('Select a photo first'); return; }
+  const wip = getWIP();
+  if (!wip) { toast('Round setup lost \u2014 start again'); return; }
+
+  // Build round context
+  const courses = getCourses();
+  const course = courses.find(c=>c.id===wip.courseId);
+  const teeSet = course?.tees.find(t=>t.name===wip.tees);
+  const holeParsObj = {};
+  wip.expectedHoles.forEach(h => { holeParsObj[h] = teeSet ? teeSet.holePars[h-1] : 4; });
+
+  const prompt = BYRON_PARSER_PROMPT
+    .replace('{{course}}', wip.course)
+    .replace('{{date}}', wip.date)
+    .replace('{{expectedHoles}}', JSON.stringify(wip.expectedHoles))
+    .replace('{{holePars}}', JSON.stringify(holeParsObj));
+
+  showView('photo-loading');
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': antKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 8000,
+        messages: [{ role:'user', content: [
+          { type:'image', source:{ type:'base64', media_type: PI.mediaType, data: PI.base64 } },
+          { type:'text', text: prompt }
+        ]}]
+      })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message || 'API error');
+    const raw = (data.content?.[0]?.text || '').trim();
+    const result = JSON.parse(raw);
+    initReview(result);
+  } catch(err) {
+    showView('photo-import');
+    document.getElementById('pi-parse-btn').disabled = false;
+    document.getElementById('pi-status').textContent = 'Error: ' + err.message;
+    document.getElementById('pi-status').className = 'pi-status error';
+  }
+}
+
+// ── REVIEW SCREEN ─────────────────────────────────────────────
+const REV = { round: null, holes: [] };
+
+function initReview(byronResult) {
+  const round = getWIP();
+  REV.round = round;
+
+  if (!byronResult.parseable) {
+    showView('photo-import');
+    document.getElementById('pi-parse-btn').disabled = false;
+    document.getElementById('pi-status').textContent = '\u26a0\ufe0f Could not parse: ' + (byronResult.parseError || 'Unknown error');
+    document.getElementById('pi-status').className = 'pi-status error';
+    return;
+  }
+
+  REV.holes = byronResult.holes.map(bh => ({
+    bh,
+    score: null,       // override (null = use bh.score)
+    notation: null,    // override (null = use bh.notation_raw)
+    resolutions: {},   // flagKey -> resolved value
+    editOpen: false
+  }));
+
+  showView('review');
+}
+
+function renderReview() {
+  const wip = REV.round;
+  if (!wip) return;
+  document.getElementById('review-title').textContent = wip.course || 'Review Round';
+  const d = wip.date ? new Date(wip.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+  document.getElementById('review-subtitle').textContent = d + ' \xb7 ' + (wip.holesPlayed||0) + ' holes \xb7 ' + (wip.tees||'');
+  renderReviewCards();
+  updateConfirmBar();
+}
+
+function renderReviewCards() {
+  document.getElementById('review-cards').innerHTML = REV.holes.map((h,i) => holeCardHTML(h,i)).join('');
+  // Scroll to first unresolved flag
+  const first = document.querySelector('.rc.flagged');
+  if (first) setTimeout(()=>first.scrollIntoView({behavior:'smooth',block:'nearest'}),120);
+}
+
+function holeCardHTML(h, idx) {
+  const {bh} = h;
+  const score = h.score !== null ? h.score : bh.score;
+  const par = bh.par;
+  const rel = score != null ? score - par : null;
+  const unresFl = (bh.flags||[]).filter(f => !h.resolutions[fKey(f)]);
+  const hasFix = Object.keys(h.resolutions).length > 0;
+  const cls = unresFl.length ? 'flagged' : hasFix ? 'resolved' : 'clean';
+  const yds = REV.round?.holeYards?.[bh.number-1];
+
+  const scoreBlock = score != null
+    ? `<div class="rc-score-block"><div class="rc-score-num ${scoreColorClass(rel)}">${score}</div><div class="rc-score-lbl ${scoreColorClass(rel)}">${scoreName(rel)}</div></div>`
+    : `<div class="rc-score-block"><div class="rc-score-num" style="color:var(--chalk3)">?</div></div>`;
+
+  const flagsHTML = unresFl.map(f => `
+    <div class="rc-flag-row">\u26a0\ufe0f ${flagDesc(f)}</div>
+    ${fixPanelHTML(f, idx, h)}`).join('');
+
+  const editPanel = h.editOpen ? `<div class="rc-edit">
+    <div class="inp-grp" style="margin-bottom:10px">
+      <label class="inp-label">Score</label>
+      <input class="inp" type="number" min="1" max="15" inputmode="numeric" id="re-score-${idx}"
+        value="${score||''}" style="max-width:100px">
+    </div>
+    <div class="inp-grp" style="margin-bottom:10px">
+      <label class="inp-label">Notation (raw)</label>
+      <textarea class="inp" id="re-notation-${idx}" rows="3" style="font-family:'DM Mono',monospace;font-size:13px">${escHtml(h.notation !== null ? h.notation : (bh.notation_raw||''))}</textarea>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-gold btn-sm" onclick="saveEdit(${idx})">Save</button>
+      <button class="btn btn-outline btn-sm" onclick="closeEdit(${idx})">Cancel</button>
+    </div>
+  </div>` : '';
+
+  return `<div class="rc ${cls}" id="rc-${idx}">
+    <div class="rc-head">
+      <span class="rc-hnum">H${bh.number}</span>
+      <div class="rc-hinfo">
+        <div class="rc-hpar">Par ${par}${yds?' \xb7 '+yds+'y':''}</div>
+        ${bh.confidence==='low'?'<div style="font-size:10px;color:var(--orange)">Low confidence</div>':''}
+      </div>
+      ${scoreBlock}
+      <button class="rc-edit-btn" onclick="toggleEdit(${idx})">${h.editOpen?'Close':'Edit'}</button>
+    </div>
+    ${flagsHTML}
+    <div class="rc-summary">${shotSummary(bh.shots, bh.putts, bh.pinZone)}</div>
+    ${editPanel}
+  </div>`;
+}
+
+function fKey(f) { return f.type + (f.field||''); }
+
+function scoreColorClass(rel) {
+  if (rel == null) return '';
+  return rel < 0 ? 'c-under' : rel > 0 ? 'c-over' : 'c-even';
+}
+
+function scoreName(rel) {
+  if (rel == null) return '';
+  const names = {'-2':'EAGLE','-1':'BIRDIE','0':'PAR','1':'BOGEY','2':'DOUBLE','3':'TRIPLE'};
+  return names[String(rel)] || (rel <= -2 ? 'EAGLE' : 'QUAD+');
+}
+
+function flagDesc(f) {
+  if (f.detail) return f.detail;
+  const m = {score_mismatch:'Score mismatch',field_unclear:'Unclear: '+f.field,field_missing:'Missing: '+f.field,ob_unresolved:'OB not followed by re-tee or drop',score_unclear:'Score unclear'};
+  return m[f.type] || f.type;
+}
+
+function fixPanelHTML(f, idx, h) {
+  const bh = h.bh;
+  const par = bh.par;
+  if (f.type==='score_mismatch' || f.type==='score_unclear') {
+    const byronN = parseInt((f.detail||'').match(/Byron counts (\d+)/)?.[1]) || bh.score || par+1;
+    const writtenN = parseInt((f.detail||'').match(/written score is (\d+)/)?.[1]) || bh.score || par+1;
+    const opts = [...new Set([byronN, writtenN, par, par+1, par+2].filter(n=>n>0&&n<16))].sort((a,b)=>a-b);
+    return `<div class="rc-fix"><div class="fix-lbl">Select correct score:</div><div class="fix-btn-row">
+      ${opts.map(n=>`<button class="fix-btn${h.score===n?' picked':''}" onclick="applyScoreFix(${idx},${n})">${n}</button>`).join('')}
+    </div></div>`;
+  }
+  if (f.type==='ob_unresolved') {
+    return `<div class="rc-fix"><div class="fix-lbl">After OB \u2014 what happened?</div><div class="fix-btn-row">
+      <button class="fix-btn${h.resolutions[fKey(f)]==='retee'?' picked':''}" onclick="resolveFlag(${idx},'${fKey(f)}','retee')">Re-tee</button>
+      <button class="fix-btn${h.resolutions[fKey(f)]==='drop'?' picked':''}" onclick="resolveFlag(${idx},'${fKey(f)}','drop')">Drop</button>
+    </div></div>`;
+  }
+  return `<div class="rc-fix"><div class="fix-lbl" style="color:var(--chalk3)">Tap Edit to correct this field.</div></div>`;
+}
+
+function applyScoreFix(idx, score) {
+  const h = REV.holes[idx];
+  h.score = score;
+  (h.bh.flags||[]).forEach(f => {
+    if (f.type==='score_mismatch'||f.type==='score_unclear') h.resolutions[fKey(f)] = score;
+  });
+  rerenderCard(idx);
+  updateConfirmBar();
+}
+
+function resolveFlag(idx, key, val) {
+  REV.holes[idx].resolutions[key] = val;
+  rerenderCard(idx);
+  updateConfirmBar();
+}
+
+function toggleEdit(idx) {
+  REV.holes[idx].editOpen = !REV.holes[idx].editOpen;
+  rerenderCard(idx);
+}
+
+function closeEdit(idx) {
+  REV.holes[idx].editOpen = false;
+  rerenderCard(idx);
+}
+
+function saveEdit(idx) {
+  const h = REV.holes[idx];
+  const sc = document.getElementById('re-score-'+idx);
+  const no = document.getElementById('re-notation-'+idx);
+  if (sc?.value) {
+    const s = parseInt(sc.value);
+    if (!isNaN(s) && s > 0) {
+      h.score = s;
+      (h.bh.flags||[]).forEach(f => {
+        if (f.type==='score_mismatch'||f.type==='score_unclear') h.resolutions[fKey(f)] = s;
+      });
+    }
+  }
+  if (no) {
+    const newNotation = no.value;
+    h.notation = newNotation;
+    if (newNotation !== (h.bh.notation_raw||'')) {
+      (h.bh.flags||[]).forEach(f => {
+        if (f.type==='field_unclear'||f.type==='field_missing') h.resolutions[fKey(f)] = 'manual_edit';
+      });
+    }
+  }
+  h.editOpen = false;
+  rerenderCard(idx);
+  updateConfirmBar();
+}
+
+function rerenderCard(idx) {
+  const el = document.getElementById('rc-'+idx);
+  if (el) el.outerHTML = holeCardHTML(REV.holes[idx], idx);
+}
+
+function updateConfirmBar() {
+  const total = REV.holes.reduce((a,h) => a + (h.bh.flags||[]).filter(f=>!h.resolutions[fKey(f)]).length, 0);
+  const btn = document.getElementById('review-confirm-btn');
+  const status = document.getElementById('review-confirm-status');
+  const badge = document.getElementById('review-flag-badge');
+  if (!btn) return;
+  if (total > 0) {
+    btn.disabled = true;
+    status.textContent = `Resolve ${total} flag${total!==1?'s':''} to continue`;
+    status.style.color = 'var(--chalk3)';
+    badge.innerHTML = `<span style="background:var(--red);color:#fff;font-size:11px;padding:3px 10px;border-radius:100px">${total} flag${total!==1?'s':''}</span>`;
+  } else {
+    btn.disabled = false;
+    status.textContent = 'All clear \u2014 ready to confirm';
+    status.style.color = 'var(--green)';
+    badge.innerHTML = `<span style="background:var(--green);color:#fff;font-size:11px;padding:3px 10px;border-radius:100px">\u2713 All clear</span>`;
+  }
+}
+
+function shotSummary(shots, putts, pinZone) {
+  if (!shots?.length) return '<span style="color:var(--chalk3)">No shots recorded</span>';
+  const parts = shots.map(sh => {
+    switch(sh.type) {
+      case 'tee':      return `${sh.club||'Tee'} \u2192 ${posLabel(sh.position)}`;
+      case 'retee':    return `Re-tee \u00b7 ${sh.club||''} \u2192 ${posLabel(sh.position)}`;
+      case 'approach': {
+        const yStr = sh.yardage ? sh.yardage+'yd ' : '';
+        const cStr = sh.club ? sh.club+' ' : '';
+        return sh.result==='H'
+          ? `${cStr}${yStr}\u2192 on green (z${sh.finishZone})`
+          : `${cStr}${yStr}\u2192 missed ${missLabel(sh.intendedZone, sh.finishZone)}`;
+      }
+      case 'layup':    return 'Layup';
+      case 'chip':     return 'Chip';
+      case 'recovery': return 'Recovery';
+      case 'drop':     return 'Drop';
+      case 'untracked':return '\u2014';
+      default:         return sh.type;
+    }
+  });
+  if (putts?.count) {
+    const dist = putts.distances?.length ? ' ('+putts.distances.join('ft, ')+'ft)' : '';
+    parts.push(putts.count + (putts.count===1?' putt':' putts') + dist);
+  }
+  if (pinZone) parts.push('pin z'+pinZone);
+  return parts.filter(Boolean).join(' \u00b7 ');
+}
+
+function posLabel(pos) {
+  return {OBL:'OB left',OBR:'OB right',LL:'left (trouble)',RR:'right (trouble)',L:'left rough',R:'right rough',C:'fairway'}[pos] || pos || '\u2014';
+}
+
+function missLabel(iz, fz) {
+  if (!iz||!fz) return 'green';
+  const ic=ZONE_COLS(iz),fc=ZONE_COLS(fz),ir=ZONE_ROWS(iz),fr=ZONE_ROWS(fz);
+  if (fc>ic) return 'right'; if (fc<ic) return 'left';
+  if (fr>ir) return 'long';  if (fr<ir) return 'short';
+  return 'green (proximity)';
+}
+
+function escHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function discardReview() {
+  if (!confirm('Discard this import? Parsed data will be lost.')) return;
+  REV.round = null; REV.holes = [];
+  showView('round-setup');
+}
+
+function confirmRound() {
+  const round = REV.round;
+  if (!round) return;
+  round.holes = REV.holes.map(h => {
+    const bh = h.bh;
+    const score = h.score !== null ? h.score : bh.score;
+    const notation = h.notation !== null ? h.notation : (bh.notation_raw||'');
+    const shots = (bh.shots||[]).map(sh =>
+      sh.type==='approach' ? {...sh, missDirection: deriveMissDirection(sh.intendedZone, sh.finishZone, sh.result)} : sh
+    );
+    const {gir, girPlusOne} = deriveGIR(shots, bh.par);
+    const flagHistory = (bh.flags||[]).map(f => ({
+      type: f.type, field: f.field||null, detail: f.detail||null,
+      resolvedValue: h.resolutions[fKey(f)]||null,
+      resolvedAt: h.resolutions[fKey(f)] ? new Date().toISOString() : null
+    }));
+    const hole = createHole({number:bh.number, par:bh.par, score, pinZone:bh.pinZone, notation});
+    hole.shots = shots;
+    hole.putts = bh.putts || {count:0, distances:[]};
+    hole.gir = gir; hole.girPlusOne = girPlusOne;
+    hole.flagHistory = flagHistory;
+    return hole;
+  });
+  calcRoundTotal(round);
+  round.importSessionId = genId();
+  const rounds = getRounds();
+  rounds.push(round);
+  saveRounds(rounds);
+  saveWIP(null);
+  REV.round = null; REV.holes = [];
+  toast('Round saved \u2713');
+  showView('history');
 }
 
 // ── COURSE HUB ───────────────────────────────────────────────
