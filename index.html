@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.3.0 · Apr 9, 2026 -->
+<!-- PJ Caddie v7.5.0 · Apr 9, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -151,6 +151,87 @@ body{display:flex;flex-direction:column}
 .rc-edit{padding:12px 14px;border-top:1px solid var(--border2);background:var(--ink)}
 .confirm-bar{flex-shrink:0;background:var(--ink);border-top:1px solid var(--border);padding:12px max(18px,calc((100%-500px)/2))}
 .confirm-bar .safe-pad{height:calc(env(safe-area-inset-bottom,20px) + 2px)}
+.stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.stat-tile{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:12px 10px;text-align:center}
+.stat-val{font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk);line-height:1}
+.stat-lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--chalk3);margin-top:4px}
+.miss-strip{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:20px}
+.miss-row{display:flex;gap:0;justify-content:space-between;align-items:center}
+.miss-cell{text-align:center;flex:1}
+.miss-count{font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk);line-height:1}
+.miss-dir{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--chalk3);margin-top:3px}
+.miss-div{width:1px;background:var(--border);height:32px;flex-shrink:0}
+.dhc{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
+.dhc-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;transition:background .12s;user-select:none}
+.dhc-head:active{background:var(--ink3)}
+.dhc-hnum{font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);min-width:30px}
+.dhc-hinfo{flex:1}
+.dhc-hpar{font-size:12px;color:var(--chalk2)}
+.dhc-hyds{font-size:11px;color:var(--chalk3);font-family:'DM Mono',monospace}
+.dhc-score{text-align:right;margin-right:6px}
+.dhc-snum{font-family:'DM Serif Display',serif;font-size:20px;line-height:1}
+.dhc-slbl{font-size:10px;letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
+.gir-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.gir-dot.hit{background:var(--green)}
+.gir-dot.miss{background:var(--border);border:1px solid var(--chalk3)}
+.dhc-chev{font-size:11px;color:var(--chalk3);flex-shrink:0;transition:transform .2s}
+.dhc-chev.open{transform:rotate(180deg)}
+.dhc-body{border-top:1px solid var(--border2);padding:10px 14px 12px;font-size:12px;color:var(--chalk2);line-height:1.9}
+.detail-score-hdr{display:flex;align-items:baseline;gap:12px;margin-bottom:2px}
+.detail-score-big{font-family:'DM Serif Display',serif;font-size:42px;line-height:1;color:var(--chalk)}
+.detail-score-rel{font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk2)}
+.detail-score-name{font-size:13px;color:var(--chalk3);letter-spacing:.5px;text-transform:uppercase}
+.scr-hdr-bar{display:flex;align-items:center;gap:10px;padding:10px max(18px,calc((100%-500px)/2)) 8px;border-bottom:1px solid var(--border2);background:var(--ink);flex-shrink:0}
+.scr-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden;border-left-width:4px;border-left-color:transparent;transition:border-left-color .2s}
+.scr-card.active{border-left-color:var(--gold)}
+.scr-card.done{border-left-color:var(--green)}
+.scr-head{display:flex;align-items:center;gap:8px;padding:12px 14px;cursor:pointer;transition:background .12s;user-select:none}
+.scr-head:active{background:var(--ink3)}
+.scr-body{border-top:1px solid var(--border2);padding:14px 14px 16px}
+.scr-section{margin-bottom:18px}
+.scr-section:last-child{margin-bottom:0}
+.scr-slbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:9px;display:block}
+.score-row{display:flex;gap:6px}
+.score-btn{flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:13px 4px;font-family:'DM Serif Display',serif;font-size:18px;color:var(--chalk);cursor:pointer;text-align:center;transition:all .12s}
+.score-btn:active{opacity:.6}
+.score-btn.sel{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+.score-btn.par-ref{border-color:rgba(200,168,75,.5)}
+.putt-row{display:flex;gap:7px;margin-bottom:8px}
+.putt-btn{flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:12px 4px;font-family:'DM Serif Display',serif;font-size:16px;color:var(--chalk);cursor:pointer;text-align:center;transition:all .12s}
+.putt-btn:active{opacity:.6}
+.putt-btn.sel{background:var(--gold);border-color:var(--gold);color:var(--ink)}
+.pd-row{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.pd-inp{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:9px 10px;color:var(--chalk);font-family:'DM Mono',monospace;font-size:14px;width:72px;outline:none;text-align:center}
+.pd-inp:focus{border-color:var(--gold)}
+.zone-wrap{margin-bottom:4px}
+.zone-grid{display:grid;grid-template-columns:40px repeat(3,1fr);gap:5px;margin-bottom:4px}
+.zone-rlbl{font-size:10px;color:var(--chalk3);display:flex;align-items:center;letter-spacing:.3px;padding-right:4px}
+.zone-clbl{font-size:10px;color:var(--chalk3);text-align:center;letter-spacing:.5px;padding-bottom:2px}
+.zone-btn{background:var(--ink3);border:1px solid var(--border);border-radius:8px;padding:14px 4px;font-family:'DM Serif Display',serif;font-size:15px;color:var(--chalk);cursor:pointer;text-align:center;transition:all .12s}
+.zone-btn:active{opacity:.6}
+.zone-btn.sel{background:var(--fairway);border-color:var(--green);color:#fff;font-weight:700}
+.result-row{display:flex;gap:8px;margin-bottom:12px}
+.result-btn{flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:12px;font-size:13px;color:var(--chalk2);cursor:pointer;text-align:center;transition:all .15s}
+.result-btn:active{opacity:.6}
+.result-btn.h{background:rgba(94,200,94,.15);border-color:var(--green);color:var(--green);font-weight:600}
+.result-btn.m{background:rgba(201,64,64,.1);border-color:var(--red);color:var(--red);font-weight:600}
+.lie-row{display:flex;gap:6px;margin-bottom:12px}
+.lie-btn{flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:9px 4px;font-size:12px;color:var(--chalk2);cursor:pointer;text-align:center;transition:all .15s}
+.lie-btn:active{opacity:.6}
+.lie-btn.sel{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
+.club-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;margin-top:4px}
+.club-scroll::-webkit-scrollbar{display:none}
+.club-chip{background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:7px 13px;font-size:12px;color:var(--chalk2);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
+.club-chip:active{opacity:.6}
+.club-chip.sel{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
+.pos-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.pos-btn{flex:1;min-width:0;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:9px 2px;font-size:11px;color:var(--chalk2);cursor:pointer;text-align:center;transition:all .15s;white-space:nowrap}
+.pos-btn:active{opacity:.6}
+.pos-btn.sel{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
+.sg-row{display:flex;gap:7px;flex-wrap:wrap}
+.sg-btn{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--chalk2);cursor:pointer;transition:all .15s}
+.sg-btn:active{opacity:.6}
+.sg-btn.sel{background:rgba(94,200,94,.12);border-color:var(--green);color:var(--green);font-weight:500}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 #toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,20px) + 70px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:10px 20px;font-size:13px;color:var(--chalk);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:999;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -168,7 +249,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.3.0 · Apr 9, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.5.0 · Apr 9, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -278,6 +359,51 @@ body{display:flex;flex-direction:column}
   </div>
 </div>
 
+<!-- MANUAL SCORING -->
+<div class="view" id="view-scoring">
+  <div class="safe-top"></div>
+  <div class="scr-hdr-bar">
+    <button class="back-btn" onclick="abandonRound()" style="flex-shrink:0">Abandon</button>
+    <div style="flex:1;text-align:center">
+      <div style="font-size:13px;color:var(--chalk);font-weight:500" id="scr-progress-main"></div>
+      <div style="font-size:11px;color:var(--chalk3);margin-top:1px" id="scr-progress-sub"></div>
+    </div>
+    <button class="btn btn-gold btn-sm" style="flex-shrink:0" id="scr-finish-btn" onclick="finishManualRound()" disabled>Finish →</button>
+  </div>
+  <div class="scroll-body">
+    <div class="pad" style="padding-top:10px;padding-bottom:60px" id="scr-cards"></div>
+  </div>
+  <div class="safe-bot"></div>
+</div>
+
+<!-- ROUND DETAIL -->
+<div class="view" id="view-detail">
+  <div class="safe-top"></div>
+  <div class="hdr" style="flex-shrink:0">
+    <div class="hdr-row">
+      <button class="back-btn" onclick="showView('history')">History</button>
+    </div>
+    <div id="det-course" class="hdr-title"></div>
+    <div id="det-meta" style="font-size:12px;color:var(--chalk3);margin-top:2px"></div>
+  </div>
+  <div class="scroll-body">
+    <div class="pad" style="padding-top:16px;padding-bottom:40px">
+      <div id="det-score-hdr" style="margin-bottom:18px"></div>
+      <div class="stat-strip" id="det-stats"></div>
+      <div id="det-miss" style="margin-bottom:6px"></div>
+      <span class="section-lbl">Holes</span>
+      <div id="det-holes"></div>
+      <div class="card" style="margin-top:16px;text-align:center;opacity:.55">
+        <div style="font-size:22px;margin-bottom:6px">🤖</div>
+        <div style="font-size:13px;color:var(--chalk2);font-weight:500">Byron Analysis</div>
+        <div style="font-size:11px;color:var(--chalk3);margin-top:4px">Available in Phase 5</div>
+      </div>
+      <button class="btn btn-danger" style="margin-top:20px" id="det-delete-btn" onclick="deleteRound()">Delete Round</button>
+    </div>
+  </div>
+  <div class="safe-bot"></div>
+</div>
+
 <!-- PHOTO IMPORT -->
 <div class="view" id="view-photo-import">
   <div class="safe-top"></div>
@@ -376,7 +502,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.3.0 · Phase 4A</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.5.0 · Phase 4B</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v1.1 + holeYards</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -713,6 +839,8 @@ function showView(id) {
   if (id==='round-setup') initRoundSetup();
   if (id==='course-setup') initCourseSetup();
   if (id==='settings') renderSettings();
+  if (id==='scoring') initScoring();
+  if (id==='detail') renderDetail();
   if (id==='photo-import') initPhotoImport();
   if (id==='review') renderReview();
   if (id==='course-hub') initCourseHub();
@@ -758,7 +886,7 @@ function renderHistory() {
   el.innerHTML = rounds.map(roundRowHTML).join('');
 }
 
-function showDetail(id) { toast('Round detail \u2014 Phase 4'); }
+function showDetail(id) { DET.roundId = id; DET.openHoles.clear(); showView('detail'); }
 
 // ── COURSE SETUP ─────────────────────────────────────────────
 function initCourseSetup() {
@@ -919,7 +1047,7 @@ function startRoundSetup() {
   const startingHole = S.roundHoles==='back'?10:1;
   const round = createRound({ courseId:course.id, courseName:course.name, teeSet, date, holesPlayed, startingHole, source:'manual' });
   saveWIP(round);
-  toast('Scoring screen \u2014 Phase 4');
+  showView('scoring');
 }
 
 function startPhotoImport() {
@@ -976,12 +1104,482 @@ function saveGHSettings() {
 }
 
 function confirmClearAll() {
-  if (!confirm('Delete ALL rounds? Preloaded courses are kept. Cannot be undone.')) return;
+  if (!confirm('Delete ALL rounds?\n\nCourse Hub notes and Player Hub profile are kept \u2014 those are permanent assets, not round data.\n\nThis cannot be undone.')) return;
   localStorage.removeItem('pjc_rounds');
   localStorage.removeItem('pjc_courses');
   localStorage.removeItem('pjc_wip');
   toast('Data cleared');
   renderSettings();
+}
+
+// ── MANUAL SCORING ───────────────────────────────────────────
+const SCR = { round: null, holes: [], activeIdx: 0 };
+
+function initScoring() {
+  const round = getWIP();
+  if (!round) { showView('home'); return; }
+  SCR.round = round;
+  const courses = getCourses();
+  const course = courses.find(c => c.id === round.courseId);
+  const teeSet = course?.tees.find(t => t.name === round.tees);
+  SCR.holes = round.expectedHoles.map(h => {
+    const i = h - 1;
+    return {
+      holeNum: h, par: teeSet?.holePars[i] || 4, yds: round.holeYards?.[i] || null,
+      score: null, putts: null, showPuttDist: false, puttDistances: [],
+      approachYards: null, approachLie: null, approachResult: null,
+      intendedZone: null, finishZone: null, approachClub: null,
+      teeClub: null, teePosition: null, shortGame: [], saved: false
+    };
+  });
+  SCR.activeIdx = 0;
+  renderScoringScreen();
+}
+
+function renderScoringScreen() {
+  document.getElementById('scr-cards').innerHTML = SCR.holes.map((hs, i) => scrCardHTML(hs, i)).join('');
+  updateScrHeader();
+}
+
+function updateScrHeader() {
+  const total = SCR.holes.length;
+  const done = SCR.holes.filter(h => h.saved).length;
+  const active = SCR.activeIdx !== null ? SCR.holes[SCR.activeIdx] : null;
+  document.getElementById('scr-progress-main').textContent =
+    active ? 'H' + active.holeNum + ' of ' + total : 'All holes complete';
+  document.getElementById('scr-progress-sub').textContent = done + ' of ' + total + ' saved';
+  document.getElementById('scr-finish-btn').disabled = done < total;
+}
+
+function scrCardHTML(hs, idx) {
+  if (hs.saved) return scrSavedCardHTML(hs, idx);
+  if (idx !== SCR.activeIdx) return scrCollapsedCardHTML(hs, idx);
+  return scrExpandedCardHTML(hs, idx);
+}
+
+function scrSavedCardHTML(hs, idx) {
+  const rel = hs.score != null ? hs.score - hs.par : null;
+  const ydsStr = hs.yds ? ' \xb7 ' + hs.yds + 'y' : '';
+  return `<div class="scr-card done" id="scrc-${idx}">
+    <div class="scr-head" onclick="reopenHole(${idx})">
+      <span style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);min-width:30px">H${hs.holeNum}</span>
+      <div style="flex:1">
+        <div style="font-size:12px;color:var(--chalk2)">Par ${hs.par}${ydsStr}</div>
+      </div>
+      <div style="text-align:right;margin-right:8px">
+        <div style="font-family:'DM Serif Display',serif;font-size:20px;line-height:1" class="${scoreColorClass(rel)}">${hs.score ?? '\u2014'}</div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.4px" class="${scoreColorClass(rel)}">${rel != null ? scoreName(rel) : ''}</div>
+      </div>
+      <span style="font-size:11px;color:var(--green)">✓</span>
+    </div>
+  </div>`;
+}
+
+function scrCollapsedCardHTML(hs, idx) {
+  const ydsStr = hs.yds ? ' \xb7 ' + hs.yds + 'y' : '';
+  return `<div class="scr-card" id="scrc-${idx}">
+    <div class="scr-head" onclick="openHoleCard(${idx})">
+      <span style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--chalk3);min-width:30px">H${hs.holeNum}</span>
+      <div style="flex:1;font-size:12px;color:var(--chalk3)">Par ${hs.par}${ydsStr}</div>
+      <span style="font-size:11px;color:var(--chalk3)">▾</span>
+    </div>
+  </div>`;
+}
+
+function scrExpandedCardHTML(hs, idx) {
+  const ydsStr = hs.yds ? ' \xb7 ' + hs.yds + 'y' : '';
+  const par = hs.par;
+
+  // Score buttons: par-1 through par+4
+  const scoreNums = [par-1, par, par+1, par+2, par+3, par+4];
+  const scoreBtns = scoreNums.map(n => n > 0 ?
+    `<button class="score-btn${hs.score===n?' sel':''}${n===par?' par-ref':''}" onclick="setScrScore(${idx},${n})">${n}</button>` : ''
+  ).join('');
+
+  // Putt buttons 0–4
+  const puttBtns = [0,1,2,3,4].map(n =>
+    `<button class="putt-btn${hs.putts===n?' sel':''}" onclick="setScrPutts(${idx},${n})">${n}</button>`
+  ).join('');
+
+  // Putt distance inputs
+  const pdHTML = (hs.showPuttDist && hs.putts > 0) ? `
+    <div class="pd-row">${Array.from({length:hs.putts},(_,i)=>`
+      <div style="display:flex;align-items:center;gap:5px">
+        <input class="pd-inp" type="number" inputmode="numeric" min="1" max="300"
+          id="scrc-pd-${idx}-${i}" placeholder="${i+1}" value="${hs.puttDistances[i]||''}">
+        <span style="font-size:11px;color:var(--chalk3)">ft</span>
+      </div>`).join('')}
+    </div>` : '';
+
+  const puttToggleLabel = hs.showPuttDist ? 'Hide distances' : '+ Add distances';
+
+  // Approach section
+  const lieHTML = `<div class="lie-row">
+    ${[['FW','Fairway',null],['Rh','Rough','Rh'],['Sd','Sand','Sd']].map(([lbl,title,val])=>
+      `<button class="lie-btn${hs.approachLie===val?' sel':''}" onclick="setScrLie(${idx},${JSON.stringify(val)})">${lbl}</button>`
+    ).join('')}
+  </div>`;
+
+  const resultHTML = `<div class="result-row">
+    <button class="result-btn${hs.approachResult==='H'?' h':''}" onclick="setScrResult(${idx},'H')">✅ On Green</button>
+    <button class="result-btn${hs.approachResult==='M'?' m':''}" onclick="setScrResult(${idx},'M')">❌ Missed</button>
+  </div>`;
+
+  const zonesHTML = `
+    <div style="display:flex;gap:12px;margin-bottom:4px">
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--chalk3);margin-bottom:6px">Aimed</div>
+        ${zoneGridHTML(idx,'intendedZone',hs.intendedZone)}
+      </div>
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--chalk3);margin-bottom:6px">Finish</div>
+        ${zoneGridHTML(idx,'finishZone',hs.finishZone)}
+      </div>
+    </div>`;
+
+  const approachClubHTML = `<div class="club-scroll">
+    ${CLUBS.filter(c=>c!=='PT'&&c!=='TW').map(c=>
+      `<button class="club-chip${hs.approachClub===c?' sel':''}" onclick="setScrApproachClub(${idx},'${c}')">${c}</button>`
+    ).join('')}
+  </div>`;
+
+  // Tee section (par 4/5 only)
+  const teeHTML = par > 3 ? `<div class="scr-section">
+    <span class="scr-slbl">Tee Shot</span>
+    <div class="pos-row">
+      ${['OBL','LL','L','C','R','RR','OBR'].map(p=>
+        `<button class="pos-btn${hs.teePosition===p?' sel':''}" onclick="setScrTeePos(${idx},'${p}')">${p}</button>`
+      ).join('')}
+    </div>
+    <div class="club-scroll">
+      ${CLUBS.filter(c=>c!=='PT'&&c!=='TW'&&c!=='?').map(c=>
+        `<button class="club-chip${hs.teeClub===c?' sel':''}" onclick="setScrTeeClub(${idx},'${c}')">${c}</button>`
+      ).join('')}
+    </div>
+  </div>` : '';
+
+  // Short game section
+  const sgItems = par > 3
+    ? [['layup','Layup'],['chip','Chip'],['recovery','Recovery'],['untracked','—']]
+    : [['chip','Chip'],['recovery','Recovery'],['untracked','—']];
+  const sgHTML = `<div class="scr-section">
+    <span class="scr-slbl">Short Game</span>
+    <div class="sg-row">
+      ${sgItems.map(([type,lbl])=>
+        `<button class="sg-btn${hs.shortGame.includes(type)?' sel':''}" onclick="toggleScrSG(${idx},'${type}')">${lbl}</button>`
+      ).join('')}
+    </div>
+  </div>`;
+
+  const approachLabel = par === 3 ? 'Tee / Approach' : 'Approach';
+
+  return `<div class="scr-card active" id="scrc-${idx}">
+    <div class="scr-head">
+      <span style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);min-width:30px">H${hs.holeNum}</span>
+      <div style="flex:1;font-size:12px;color:var(--chalk2)">Par ${par}${ydsStr}</div>
+    </div>
+    <div class="scr-body">
+      <div class="scr-section">
+        <span class="scr-slbl">Score</span>
+        <div class="score-row">${scoreBtns}</div>
+      </div>
+      <div class="scr-section">
+        <span class="scr-slbl">Putts</span>
+        <div class="putt-row">${puttBtns}</div>
+        ${hs.putts > 0 ? `<button style="background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer;padding:0" onclick="togglePuttDist(${idx})">${puttToggleLabel}</button>${pdHTML}` : ''}
+      </div>
+      <div class="scr-section">
+        <span class="scr-slbl">${approachLabel}</span>
+        <div class="inp-grp" style="margin-bottom:10px">
+          <label class="inp-label">Yardage</label>
+          <input class="inp" type="number" inputmode="numeric" min="1" max="700"
+            id="scrc-yds-${idx}" placeholder="e.g. 145" value="${hs.approachYards||''}"
+            style="max-width:120px" onblur="cacheYardage(${idx},this.value)">
+        </div>
+        ${lieHTML}
+        ${resultHTML}
+        ${zonesHTML}
+        <div style="margin-top:6px">
+          <span style="font-size:11px;color:var(--chalk3);display:block;margin-bottom:4px">Club (optional)</span>
+          ${approachClubHTML}
+        </div>
+      </div>
+      ${teeHTML}
+      ${sgHTML}
+      <button class="btn btn-gold" onclick="saveHole(${idx})"
+        ${!hs.score?'disabled':''}>Save Hole →</button>
+    </div>
+  </div>`;
+}
+
+function zoneGridHTML(idx, field, selected) {
+  const rows = [[7,8,9],[4,5,6],[1,2,3]];
+  const rl = ['Long','Mid','Short'];
+  const header = `<div></div><div class="zone-clbl">L</div><div class="zone-clbl">C</div><div class="zone-clbl">R</div>`;
+  const cells = rows.map((row,ri)=>
+    `<div class="zone-rlbl">${rl[ri]}</div>` +
+    row.map(z=>`<button class="zone-btn${selected===z?' sel':''}" onclick="setScrZone(${idx},'${field}',${z})">${z}</button>`).join('')
+  ).join('');
+  return `<div class="zone-grid">${header}${cells}</div>`;
+}
+
+// Setters — update state + re-render card
+function setScrScore(idx, val) { SCR.holes[idx].score = val; rerenderScrCard(idx); updateScrHeader(); }
+function setScrPutts(idx, val) { SCR.holes[idx].putts = val; rerenderScrCard(idx); }
+function togglePuttDist(idx) { SCR.holes[idx].showPuttDist = !SCR.holes[idx].showPuttDist; rerenderScrCard(idx); }
+function setScrResult(idx, val) { SCR.holes[idx].approachResult = val; rerenderScrCard(idx); }
+function setScrLie(idx, val) { SCR.holes[idx].approachLie = val; rerenderScrCard(idx); }
+function setScrZone(idx, field, val) { SCR.holes[idx][field] = val; rerenderScrCard(idx); }
+function setScrTeePos(idx, val) { SCR.holes[idx].teePosition = val; rerenderScrCard(idx); }
+function setScrTeeClub(idx, val) { SCR.holes[idx].teeClub = SCR.holes[idx].teeClub===val?null:val; rerenderScrCard(idx); }
+function setScrApproachClub(idx, val) { SCR.holes[idx].approachClub = SCR.holes[idx].approachClub===val?null:val; rerenderScrCard(idx); }
+function toggleScrSG(idx, type) {
+  const sg = SCR.holes[idx].shortGame;
+  const i = sg.indexOf(type);
+  if (i >= 0) sg.splice(i,1); else sg.push(type);
+  rerenderScrCard(idx);
+}
+function cacheYardage(idx, val) {
+  SCR.holes[idx].approachYards = val ? parseInt(val)||null : null;
+}
+
+function rerenderScrCard(idx) {
+  const el = document.getElementById('scrc-'+idx);
+  if (el) el.outerHTML = scrCardHTML(SCR.holes[idx], idx);
+}
+
+function openHoleCard(idx) {
+  SCR.activeIdx = idx;
+  renderScoringScreen();
+  setTimeout(() => {
+    const el = document.getElementById('scrc-'+idx);
+    if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 80);
+}
+
+function reopenHole(idx) {
+  SCR.holes[idx].saved = false;
+  SCR.activeIdx = idx;
+  renderScoringScreen();
+}
+
+function saveHole(idx) {
+  const hs = SCR.holes[idx];
+  if (!hs.score) { toast('Enter a score first'); return; }
+
+  // Read DOM inputs before re-render wipes them
+  const ydEl = document.getElementById('scrc-yds-'+idx);
+  if (ydEl?.value) hs.approachYards = parseInt(ydEl.value)||null;
+
+  if (hs.showPuttDist && hs.putts > 0) {
+    hs.puttDistances = [];
+    for (let i = 0; i < hs.putts; i++) {
+      const el = document.getElementById('scrc-pd-'+idx+'-'+i);
+      hs.puttDistances.push(el?.value ? parseInt(el.value)||0 : 0);
+    }
+  }
+
+  // Build shot array
+  const shots = [];
+  if (hs.par > 3) shots.push({type:'tee', club:hs.teeClub||null, position:hs.teePosition||null, isTeeShot:true});
+  if (hs.shortGame.includes('layup')) shots.push({type:'layup'});
+
+  const hasApproach = hs.approachYards || hs.approachResult || hs.intendedZone;
+  if (hasApproach || hs.par === 3) {
+    const sh = {
+      type:'approach', club:hs.approachClub||null, yardage:hs.approachYards||null,
+      intendedZone:hs.intendedZone||null, finishZone:hs.finishZone||null,
+      result:hs.approachResult||'M', lie:hs.approachLie||null, isTeeShot:hs.par===3
+    };
+    sh.missDirection = deriveMissDirection(sh.intendedZone, sh.finishZone, sh.result);
+    shots.push(sh);
+  }
+  hs.shortGame.filter(t=>t!=='layup').forEach(t => shots.push({type:t}));
+
+  const {gir, girPlusOne} = deriveGIR(shots, hs.par);
+  const notation = buildManualNotation(hs);
+  const hole = createHole({number:hs.holeNum, par:hs.par, score:hs.score, pinZone:null, notation});
+  hole.shots = shots;
+  hole.putts = {count: hs.putts||0, distances: (hs.puttDistances||[]).filter(d=>d>0)};
+  hole.gir = gir; hole.girPlusOne = girPlusOne;
+
+  // Upsert into WIP round
+  const round = SCR.round;
+  const ei = round.holes.findIndex(h => h.number === hs.holeNum);
+  if (ei >= 0) round.holes[ei] = hole; else round.holes.push(hole);
+  saveWIP(round);
+
+  hs.saved = true;
+
+  // Advance to next unsaved hole
+  const nextIdx = SCR.holes.findIndex((h,i) => i > idx && !h.saved);
+  SCR.activeIdx = nextIdx >= 0 ? nextIdx : null;
+
+  renderScoringScreen();
+  if (nextIdx >= 0) {
+    setTimeout(() => {
+      const el = document.getElementById('scrc-'+nextIdx);
+      if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 100);
+  }
+}
+
+function buildManualNotation(hs) {
+  const parts = [];
+  if (hs.par > 3 && (hs.teeClub || hs.teePosition))
+    parts.push((hs.teeClub||'?') + ' ' + (hs.teePosition||'').trim());
+  if (hs.shortGame.includes('layup')) parts.push('LY');
+  if (hs.approachYards || hs.intendedZone || hs.approachResult) {
+    let ap = '';
+    if (hs.approachClub) ap += hs.approachClub + ' ';
+    if (hs.approachYards) ap += hs.approachYards + ' ';
+    if (hs.intendedZone && hs.finishZone) ap += hs.intendedZone + "'" + hs.finishZone + ' ';
+    ap += (hs.approachResult||'M');
+    if (hs.approachLie) ap += ' ' + hs.approachLie;
+    parts.push(ap.trim());
+  }
+  hs.shortGame.filter(t=>t!=='layup').forEach(t => parts.push(
+    t==='chip'?'Ch':t==='recovery'?'REC':t==='untracked'?'X':t.toUpperCase()
+  ));
+  if (hs.putts != null) {
+    const ds = (hs.puttDistances||[]).filter(d=>d>0).join(' ');
+    parts.push('\\ ' + hs.putts + (ds?' '+ds:''));
+  }
+  return parts.join(' \xb7 ');
+}
+
+function finishManualRound() {
+  const round = SCR.round;
+  if (!round) return;
+  calcRoundTotal(round);
+  round.source = 'manual';
+  const rounds = getRounds();
+  rounds.push(round);
+  saveRounds(rounds);
+  saveWIP(null);
+  DET.roundId = round.id;
+  DET.openHoles.clear();
+  SCR.round = null; SCR.holes = [];
+  toast('Round saved \u2713');
+  showView('detail');
+}
+
+function abandonRound() {
+  if (!confirm('Abandon entry? Your progress is saved in WIP and you can resume later.')) return;
+  showView('home');
+}
+
+// ── ROUND DETAIL ─────────────────────────────────────────────
+const DET = { roundId: null, openHoles: new Set() };
+
+function renderDetail() {
+  const round = getRounds().find(r => r.id === DET.roundId);
+  if (!round) { showView('history'); return; }
+
+  // Header
+  document.getElementById('det-course').textContent = round.course || '\u2014';
+  const d = round.date ? new Date(round.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+  document.getElementById('det-meta').textContent = [d, round.tees, (round.holesPlayed||0)+' holes'].filter(Boolean).join(' \xb7 ');
+
+  // Score header
+  const rel = round.totalScore != null ? round.totalScore - round.par : null;
+  const relStr = rel == null ? '\u2014' : rel === 0 ? 'E' : rel > 0 ? '+'+rel : String(rel);
+  document.getElementById('det-score-hdr').innerHTML = `
+    <div class="detail-score-hdr">
+      <div class="detail-score-big ${scoreColorClass(rel)}">${round.totalScore ?? '\u2014'}</div>
+      <div class="detail-score-rel ${scoreColorClass(rel)}">${relStr}</div>
+    </div>
+    <div class="detail-score-name">${rel != null ? scoreName(rel) : ''}</div>`;
+
+  // Stats
+  const holes = round.holes || [];
+  const girCount = holes.filter(h => h.gir).length;
+  const totalPutts = holes.reduce((a,h) => a + (h.putts?.count||0), 0);
+  const source = round.source === 'photo_import' ? 'Import' : 'Manual';
+  document.getElementById('det-stats').innerHTML = [
+    {val: girCount + '/' + holes.length, lbl: 'GIR'},
+    {val: totalPutts || '\u2014', lbl: 'Putts'},
+    {val: source, lbl: 'Source'}
+  ].map(s => `<div class="stat-tile"><div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join('');
+
+  // Miss breakdown
+  const misses = {left:0, right:0, short:0, long:0, center:0};
+  holes.forEach(h => (h.shots||[]).forEach(sh => {
+    if (sh.type==='approach' && sh.result==='M' && sh.missDirection && misses[sh.missDirection]!=null)
+      misses[sh.missDirection]++;
+  }));
+  const missTotal = Object.values(misses).reduce((a,b)=>a+b,0);
+  const missEl = document.getElementById('det-miss');
+  if (missTotal > 0) {
+    missEl.innerHTML = `<div class="miss-strip">
+      <div class="section-lbl" style="margin-bottom:8px">Approach Misses (${missTotal})</div>
+      <div class="miss-row">
+        <div class="miss-cell"><div class="miss-count">${misses.left}</div><div class="miss-dir">Left</div></div>
+        <div class="miss-div"></div>
+        <div class="miss-cell"><div class="miss-count">${misses.right}</div><div class="miss-dir">Right</div></div>
+        <div class="miss-div"></div>
+        <div class="miss-cell"><div class="miss-count">${misses.short}</div><div class="miss-dir">Short</div></div>
+        <div class="miss-div"></div>
+        <div class="miss-cell"><div class="miss-count">${misses.long}</div><div class="miss-dir">Long</div></div>
+        <div class="miss-div"></div>
+        <div class="miss-cell"><div class="miss-count">${misses.center}</div><div class="miss-dir">Center</div></div>
+      </div>
+    </div>`;
+  } else {
+    missEl.innerHTML = '';
+  }
+
+  // Hole cards
+  document.getElementById('det-holes').innerHTML = holes
+    .sort((a,b) => a.number - b.number)
+    .map((h,i) => detailHoleHTML(h, i, round))
+    .join('');
+}
+
+function detailHoleHTML(h, idx, round) {
+  const rel = h.score != null && h.par ? h.score - h.par : null;
+  const yds = round.holeYards?.[h.number-1];
+  const isOpen = DET.openHoles.has(idx);
+
+  const headHTML = `
+    <div class="dhc-head" onclick="toggleDetailHole(${idx})">
+      <span class="dhc-hnum">H${h.number}</span>
+      <div class="dhc-hinfo">
+        <div class="dhc-hpar">Par ${h.par}${yds?' \xb7 '+yds+'y':''}</div>
+      </div>
+      <div class="dhc-score">
+        <div class="dhc-snum ${scoreColorClass(rel)}">${h.score ?? '\u2014'}</div>
+        <div class="dhc-slbl ${scoreColorClass(rel)}">${rel != null ? scoreName(rel) : ''}</div>
+      </div>
+      <div class="gir-dot ${h.gir?'hit':'miss'}" title="${h.gir?'GIR':'No GIR'}"></div>
+      <span class="dhc-chev${isOpen?' open':''}">▾</span>
+    </div>`;
+
+  const bodyHTML = isOpen ? `<div class="dhc-body">
+    ${shotSummary(h.shots, h.putts, h.pinZone)}
+    ${h.flagHistory?.some(f=>f.resolvedValue) ? '<div style="font-size:10px;color:var(--gold);margin-top:6px;opacity:.7">\u26a0\ufe0f Flag resolved on import</div>' : ''}
+  </div>` : '';
+
+  return `<div class="dhc" id="dhc-${idx}">${headHTML}${bodyHTML}</div>`;
+}
+
+function toggleDetailHole(idx) {
+  if (DET.openHoles.has(idx)) DET.openHoles.delete(idx);
+  else DET.openHoles.add(idx);
+  const round = getRounds().find(r => r.id === DET.roundId);
+  if (!round) return;
+  const holes = (round.holes||[]).sort((a,b)=>a.number-b.number);
+  const el = document.getElementById('dhc-'+idx);
+  if (el) el.outerHTML = detailHoleHTML(holes[idx], idx, round);
+}
+
+function deleteRound() {
+  if (!confirm('Delete this round? This cannot be undone.')) return;
+  const rounds = getRounds().filter(r => r.id !== DET.roundId);
+  saveRounds(rounds);
+  DET.roundId = null;
+  showView('history');
+  toast('Round deleted');
 }
 
 // ── PHOTO IMPORT ─────────────────────────────────────────────
