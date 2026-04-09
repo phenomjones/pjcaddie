@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.6.1 · Apr 9, 2026 -->
+<!-- PJ Caddie v7.8.0 · Apr 9, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -300,7 +300,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.6.1 · Apr 9, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.8.0 · Apr 9, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -429,6 +429,7 @@ body{display:flex;flex-direction:column}
           <button style="background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer" onclick="bsSelectAll()">All</button>
         </div>
         <div class="club-grid" id="bs-club-grid"></div>
+        <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--chalk2)" id="bs-club-count"></div>
       </div>
       <div id="bs-actions" style="margin-top:20px;display:none">
         <button class="btn btn-gold" id="bs-start-btn" onclick="startRoundFromBag()">Start Round →</button>
@@ -476,8 +477,8 @@ body{display:flex;flex-direction:column}
     <div class="pad" style="padding-top:16px;padding-bottom:20px" id="scr-content"></div>
   </div>
   <div class="wiz-nav" id="wiz-nav" style="display:none">
-    <button class="wiz-back" id="wiz-back-btn" onclick="wizBack()">← Back</button>
-    <button class="wiz-next" id="wiz-next-btn" onclick="wizNext()">Next →</button>
+    <button class="wiz-back" id="wiz-back-btn">← Back</button>
+    <button class="wiz-next" id="wiz-next-btn">Next →</button>
   </div>
   <div class="safe-bot"></div>
 </div>
@@ -612,7 +613,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.6.1 · Phase 4B</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.8.0 · Phase 4B</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v1.1 + holeYards</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -1324,6 +1325,13 @@ function renderBsClubGrid(bag) {
       <div class="club-tile-desc">${escHtml(c.desc)}</div>
     </div>`;
   }).join('');
+  // Update count display
+  const countEl = document.getElementById('bs-club-count');
+  if (countEl) {
+    const n = BS.activeClubs.length;
+    countEl.textContent = n === 0 ? 'No clubs selected' : n + ' club' + (n !== 1 ? 's' : '') + ' selected';
+    countEl.style.color = n === 0 ? 'var(--red)' : 'var(--chalk2)';
+  }
   // Update hint text
   const lbl = document.getElementById('bs-hint-lbl');
   if (lbl) lbl.textContent = hint;
@@ -1473,21 +1481,41 @@ function bgsSaveNewBag() {
 }
 
 // ── WIZARD SCORING ────────────────────────────────────────────
-const STEPS_PAR45 = ['tee-club','tee-pos','ob-resolve','approach-yds','approach-lie','approach-zones','approach-result','short-game','putts','putt-dist','score'];
-const STEPS_PAR3  = ['approach-yds','approach-lie','approach-zones','approach-result','short-game','putts','putt-dist','score'];
-const STEP_NAMES  = {'tee-club':'Tee Club','tee-pos':'Tee Position','ob-resolve':'After OB','approach-yds':'Approach','approach-lie':'Lie','approach-zones':'Zones','approach-result':'Result','short-game':'Short Game','putts':'Putts','putt-dist':'Distances','score':'Score'};
 
-const SCR = { round: null, holes: [], activeIdx: null, step: null, wizYds: '' };
+// Shot type definitions
+const SEQ_TYPES = [
+  {type:'tee',      lbl:'Tee Shot',  icon:'\u26f3', par45:true},
+  {type:'retee',    lbl:'Re-tee',    icon:'\ud83d\udd04', par45:true, par3:false},
+  {type:'approach', lbl:'Approach',  icon:'\ud83c\udfaf', par45:true, par3:false},
+  {type:'layup',    lbl:'Layup',     icon:'\ud83d\udcd0', par45:true, par3:false},
+  {type:'chip',     lbl:'Chip',      icon:'\ud83c\udfd5', par45:true, par3:true},
+  {type:'sand',     lbl:'Sand',      icon:'\u26f1\ufe0f',  par45:true, par3:true},
+  {type:'recovery', lbl:'Recovery',  icon:'\ud83d\udcaa', par45:true, par3:true},
+  {type:'penalty',  lbl:'Penalty',   icon:'\u26a0\ufe0f',  par45:true, par3:true},
+  {type:'drop',     lbl:'Drop',      icon:'\ud83d\udccd', par45:true, par3:true},
+  {type:'TW',       lbl:'TW',        icon:'\u26f3', par45:true, par3:true},
+  {type:'HW',       lbl:'HW',        icon:'\u26f3', par45:true, par3:true},
+  {type:'putt',     lbl:'Putt',      icon:'\u26aa', par45:true, par3:true},
+  {type:'X',        lbl:'Unknown',   icon:'\u2753', par45:true, par3:true},
+];
 
-function getActiveSteps(hs) {
-  const base = hs.par>3 ? [...STEPS_PAR45] : [...STEPS_PAR3];
-  return base.filter(s => {
-    if (s==='ob-resolve' && !['OBL','OBR'].includes(hs.teePosition)) return false;
-    if (['approach-lie','approach-zones','approach-result'].includes(s) && hs.approachOverride) return false;
-    if (s==='short-game' && (hs.approachOverride==='REC'||hs.approachOverride==='LY'||hs.approachOverride==='X'||hs.approachResult==='H')) return false;
-    if (s==='putt-dist' && (!hs.putts||hs.putts===0)) return false;
-    return true;
-  });
+const SCR = { round: null, holes: [], activeIdx: null };
+
+function seqScore(hs) { return (hs.sequence||[]).length; }
+function seqPutts(hs) { return (hs.sequence||[]).filter(s=>s.type==='putt').length; }
+function seqPuttItems(hs) { return (hs.sequence||[]).filter(s=>s.type==='putt'); }
+
+function getDetailTasks(hs) {
+  return (hs.sequence||[]).map((item,i) => {
+    if (item.type==='tee'||item.type==='retee') return {seqIdx:i, steps:['club','pos']};
+    if (item.type==='approach') {
+      const steps = ['yds'];
+      if (!item.isTeeShot) steps.push('surface');
+      steps.push('zones');
+      return {seqIdx:i, steps};
+    }
+    return null;
+  }).filter(Boolean);
 }
 
 function initScoring() {
@@ -1501,57 +1529,60 @@ function initScoring() {
     const i = h-1;
     return {
       holeNum:h, par:teeSet?.holePars[i]||4, yds:round.holeYards?.[i]||null,
-      score:null, putts:null, puttDistances:[],
-      approachYards:null, approachLie:null, approachResult:null,
-      intendedZone:null, finishZone:null, approachClub:null, approachOverride:null,
-      teeClub:null, teePosition:null, obResolution:null,
-      shortGame:[], saved:false
+      sequence:[], phase:'sequence',
+      detailTaskIdx:0, detailSubStepIdx:0,
+      puttDistances:[], saved:false
     };
   });
-  SCR.activeIdx = null; SCR.step = null; SCR.wizYds = '';
+  SCR.activeIdx = null;
   renderScoringScreen();
 }
 
 function renderScoringScreen() {
   const done = SCR.holes.filter(h=>h.saved).length;
-  const total = SCR.holes.length;
-  document.getElementById('scr-finish-btn').disabled = done < total;
+  document.getElementById('scr-finish-btn').disabled = done < SCR.holes.length;
+  document.getElementById('scr-progress-main').textContent = SCR.round?.course || 'Round';
+  document.getElementById('scr-progress-sub').textContent = done + ' of ' + SCR.holes.length + ' saved';
 
   if (SCR.activeIdx === null) {
-    // Overview
-    document.getElementById('scr-progress-main').textContent = SCR.round?.course||'Round';
-    document.getElementById('scr-progress-sub').textContent = done+' of '+total+' saved';
     document.getElementById('wiz-hole-hdr').style.display = 'none';
     document.getElementById('wiz-nav').style.display = 'none';
-    document.getElementById('scr-content').innerHTML = `
-      <div style="margin-bottom:14px">
-        ${SCR.holes.map((hs,i)=>`
-          <div class="wiz-overview-row ${hs.saved?'done':'pending'}" onclick="${hs.saved?`reopenHole(${i})`:`openWizHole(${i})`}">
-            <span style="font-family:'DM Serif Display',serif;font-size:18px;color:${hs.saved?'var(--green)':'var(--chalk3)'};min-width:32px">H${hs.holeNum}</span>
-            <div style="flex:1">
-              <div style="font-size:12px;color:var(--chalk2)">Par ${hs.par}${hs.yds?' \xb7 '+hs.yds+'y':''}</div>
-            </div>
-            ${hs.saved
-              ? `<div style="text-align:right"><div style="font-family:'DM Serif Display',serif;font-size:18px" class="${scoreColorClass(hs.score-hs.par)}">${hs.score}</div><div style="font-size:10px;text-transform:uppercase" class="${scoreColorClass(hs.score-hs.par)}">${scoreName(hs.score-hs.par)}</div></div>`
-              : '<span style="font-size:12px;color:var(--chalk3)">Enter →</span>'}
-          </div>`).join('')}
-      </div>`;
+    renderOverview();
   } else {
-    renderWizardStep();
+    const hs = SCR.holes[SCR.activeIdx];
+    if (hs.phase==='sequence') renderSequenceBuilder(hs, SCR.activeIdx);
+    else if (hs.phase==='detail') renderDetailStep(hs, SCR.activeIdx);
+    else if (hs.phase==='putt-dist') renderPuttDist(hs, SCR.activeIdx);
   }
+}
+
+function renderOverview() {
+  document.getElementById('scr-content').innerHTML = SCR.holes.map((hs,i) => `
+    <div class="wiz-overview-row ${hs.saved?'done':'pending'}" onclick="${hs.saved?`reopenHole(${i})`:`openWizHole(${i})`}">
+      <span style="font-family:'DM Serif Display',serif;font-size:18px;color:${hs.saved?'var(--green)':'var(--chalk3)'};min-width:32px">H${hs.holeNum}</span>
+      <div style="flex:1"><div style="font-size:12px;color:var(--chalk2)">Par ${hs.par}${hs.yds?' \xb7 '+hs.yds+'y':''}</div></div>
+      ${hs.saved
+        ? `<div style="text-align:right"><div style="font-family:'DM Serif Display',serif;font-size:18px" class="${scoreColorClass(hs.savedScore-hs.par)}">${hs.savedScore}</div><div style="font-size:10px;text-transform:uppercase" class="${scoreColorClass(hs.savedScore-hs.par)}">${scoreName(hs.savedScore-hs.par)}</div></div>`
+        : '<span style="font-size:12px;color:var(--chalk3)">Enter \u2192</span>'}
+    </div>`).join('');
 }
 
 function openWizHole(idx) {
   SCR.activeIdx = idx;
-  SCR.wizYds = SCR.holes[idx].approachYards ? String(SCR.holes[idx].approachYards) : '';
-  const steps = getActiveSteps(SCR.holes[idx]);
-  SCR.step = steps[0];
+  const hs = SCR.holes[idx];
+  if (!hs.sequence) hs.sequence = [];
+  // Par 3: auto-start with approach as tee shot
+  if (hs.par===3 && hs.sequence.length===0) {
+    hs.sequence.push(makeSeqItem('approach', true));
+  }
+  hs.phase = 'sequence';
   renderScoringScreen();
   document.getElementById('scr-scroll').scrollTo(0,0);
 }
 
 function reopenHole(idx) {
   SCR.holes[idx].saved = false;
+  SCR.holes[idx].phase = 'sequence';
   openWizHole(idx);
   updateScrHeader();
 }
@@ -1561,373 +1592,494 @@ function updateScrHeader() {
   document.getElementById('scr-finish-btn').disabled = done < SCR.holes.length;
 }
 
-function renderWizardStep() {
-  const idx = SCR.activeIdx;
-  const hs = SCR.holes[idx];
-  const steps = getActiveSteps(hs);
-  const stepIdx = steps.indexOf(SCR.step);
-  const isLast = stepIdx === steps.length-1;
+function makeSeqItem(type, isTeeShot) {
+  return {type, isTeeShot:!!isTeeShot, club:null, position:null,
+    yardage:null, approachLie:null, intendedZone:null, finishZone:null,
+    result:null, wizYds:''};
+}
+
+// ── PHASE 1: SEQUENCE BUILDER ──────────────────────────────────
+
+function renderSequenceBuilder(hs, idx) {
+  const score = seqScore(hs);
+  const putts = seqPutts(hs);
+  const rel = score > 0 ? score - hs.par : null;
+  const par3 = hs.par === 3;
+
+  // Available shot types
+  const avail = SEQ_TYPES.filter(t => par3 ? t.par3 !== false : t.par45 !== false)
+    .filter(t => !(par3 && (t.type==='tee'||t.type==='retee')));
+
+  const seqHTML = hs.sequence.length === 0
+    ? '<div style="text-align:center;padding:20px;color:var(--chalk3);font-size:13px">Tap shot types below to build your hole</div>'
+    : hs.sequence.map((item,i) => {
+        const detail = seqItemDetail(item);
+        return `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px">
+          <span style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);min-width:24px">${i+1}</span>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:500;color:var(--chalk)">${seqItemLabel(item)}</div>
+            ${detail?`<div style="font-size:11px;color:var(--chalk3);margin-top:1px">${detail}</div>`:''}
+          </div>
+          <button style="background:none;border:none;color:var(--chalk3);cursor:pointer;font-size:18px;padding:4px 6px;line-height:1" onclick="removeFromSequence(${idx},${i})">\u00d7</button>
+        </div>`;
+      }).join('');
+
+  const scoreHTML = score > 0
+    ? `<div style="display:flex;gap:16px;align-items:center;padding:10px 12px;background:var(--ink3);border-radius:var(--rs);margin-bottom:16px">
+        <div style="text-align:center">
+          <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--chalk)" class="${rel!=null?scoreColorClass(rel):''}">${score}</div>
+          <div style="font-size:10px;color:var(--chalk3);letter-spacing:1px;text-transform:uppercase">${rel!=null?scoreName(rel):'Score'}</div>
+        </div>
+        <div style="width:1px;background:var(--border);height:36px"></div>
+        <div style="text-align:center">
+          <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--chalk)">${putts}</div>
+          <div style="font-size:10px;color:var(--chalk3);letter-spacing:1px;text-transform:uppercase">Putts</div>
+        </div>
+        <div style="flex:1;text-align:right;font-size:11px;color:var(--chalk3)">Par ${hs.par}</div>
+      </div>` : '';
+
+  const canContinue = score > 0;
 
   // Hole header
   const hdr = document.getElementById('wiz-hole-hdr');
   hdr.style.display = '';
   hdr.innerHTML = `<span class="wiz-hole-num">H${hs.holeNum}</span>
     <span class="wiz-hole-info">Par ${hs.par}${hs.yds?' \xb7 '+hs.yds+'y':''}</span>
-    <span class="wiz-step-lbl">${STEP_NAMES[SCR.step]||''} · ${stepIdx+1}/${steps.length}</span>`;
+    <span class="wiz-step-lbl">Sequence</span>`;
 
-  document.getElementById('scr-progress-main').textContent = 'H'+hs.holeNum+' of '+SCR.holes.length;
-  document.getElementById('scr-progress-sub').textContent = SCR.holes.filter(h=>h.saved).length+' saved';
-
-  // Nav
-  const nav = document.getElementById('wiz-nav');
-  nav.style.display = '';
-  const backBtn = document.getElementById('wiz-back-btn');
-  backBtn.style.display = '';
-  backBtn.textContent = stepIdx===0 ? '← Overview' : '← Back';
-
+  // Nav: Back = overview, Next = Continue
+  document.getElementById('wiz-nav').style.display = '';
+  document.getElementById('wiz-back-btn').textContent = '\u2190 Overview';
+  document.getElementById('wiz-back-btn').onclick = () => { SCR.activeIdx=null; renderScoringScreen(); };
   const nextBtn = document.getElementById('wiz-next-btn');
-  nextBtn.textContent = isLast ? 'Save Hole →' : 'Next →';
-  nextBtn.disabled = !canAdvance(SCR.step, hs);
-  nextBtn.onclick = isLast ? ()=>saveHole(idx) : wizNext;
+  nextBtn.style.display = '';
+  nextBtn.textContent = 'Continue \u2192';
+  nextBtn.disabled = !canContinue;
+  nextBtn.onclick = () => continueToDetail(idx);
 
-  // Content
-  document.getElementById('scr-content').innerHTML = wizStepHTML(SCR.step, hs, idx);
+  document.getElementById('scr-content').innerHTML = `
+    ${scoreHTML}
+    <div style="margin-bottom:12px">${seqHTML}</div>
+    <div style="margin-bottom:6px">
+      <span style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.75">Add Shot</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px">
+      ${avail.map(t=>`
+        <button onclick="addToSequence(${idx},'${t.type}')"
+          style="background:var(--ink2);border:1px solid var(--border);border-radius:100px;
+          padding:9px 14px;font-size:13px;color:var(--chalk2);cursor:pointer;
+          display:flex;align-items:center;gap:6px;transition:all .12s"
+          onmousedown="this.style.background='var(--ink3)'" onmouseup="this.style.background='var(--ink2)'">
+          ${t.icon} ${t.lbl}
+        </button>`).join('')}
+    </div>`;
 }
 
-function canAdvance(step, hs) {
-  if (step==='tee-club') return true; // club is optional
-  if (step==='tee-pos') return !!hs.teePosition;
-  if (step==='ob-resolve') return !!hs.obResolution;
-  if (step==='approach-yds') return SCR.wizYds.length>0 || !!hs.approachOverride;
-  if (step==='approach-lie') return true;
-  if (step==='approach-zones') return true;
-  if (step==='approach-result') return !!hs.approachResult;
-  if (step==='short-game') return true;
-  if (step==='putts') return hs.putts !== null;
-  if (step==='putt-dist') return true;
-  if (step==='score') return !!hs.score;
-  return true;
+function seqItemLabel(item) {
+  if (item.type==='approach' && item.isTeeShot) return 'Tee Shot (Approach)';
+  const t = SEQ_TYPES.find(s=>s.type===item.type);
+  return t ? t.lbl : item.type;
 }
 
-function wizNext() {
-  const hs = SCR.holes[SCR.activeIdx];
-  if (SCR.step==='approach-yds') {
-    hs.approachYards = SCR.wizYds ? parseInt(SCR.wizYds)||null : null;
-  }
-  const steps = getActiveSteps(hs);
-  const i = steps.indexOf(SCR.step);
-  if (i < steps.length-1) {
-    SCR.step = steps[i+1];
-    renderWizardStep();
-    document.getElementById('scr-scroll').scrollTo(0,0);
-  }
-}
-
-function wizBack() {
-  const hs = SCR.holes[SCR.activeIdx];
-  const steps = getActiveSteps(hs);
-  const i = steps.indexOf(SCR.step);
-  if (i > 0) {
-    SCR.step = steps[i-1];
-    if (SCR.step==='approach-yds') SCR.wizYds = hs.approachYards ? String(hs.approachYards) : '';
-    renderWizardStep();
-  } else {
-    SCR.activeIdx = null; SCR.step = null;
-    renderScoringScreen();
-  }
-  document.getElementById('scr-scroll').scrollTo(0,0);
-}
-
-function wizAutoNext() { setTimeout(wizNext, 180); }
-
-// ── WIZARD STEP RENDERERS ─────────────────────────────────────
-function wizStepHTML(step, hs, idx) {
-  const wip = SCR.round;
-  const todayClubs = wip?.bagClubs?.length
-    ? getBags().flatMap(b=>b.clubs).filter((c,i,a)=>wip.bagClubs.includes(c.abbr)&&a.findIndex(x=>x.abbr===c.abbr)===i)
-    : CLUBS.filter(c=>c!=='?'&&c!=='PT'&&c!=='TW'&&c!=='HW').map(c=>({abbr:c,desc:''}));
-
-  switch(step) {
-    case 'tee-club': {
-      const driving = todayClubs.filter(c=>['Dr','3w','5w','2h','3h','3i','4h','5h','4i'].includes(c.abbr));
-      return `<div class="wiz-title">What club off the tee?</div>
-        <div class="wiz-sub">Optional — skip if you don't want to track</div>
-        <div class="club-grid">${driving.map(c=>`
-          <div class="club-tile${hs.teeClub===c.abbr?' sel':''}" onclick="setWizField(${idx},'teeClub','${c.abbr}',true)">
-            <div class="club-tile-abbr">${c.abbr}</div>
-            <div class="club-tile-desc">${escHtml(c.desc)}</div>
-          </div>`).join('')}
-        </div>
-        ${hs.teeClub?`<button style="margin-top:12px;background:none;border:none;color:var(--chalk3);font-size:12px;cursor:pointer" onclick="setWizField(${idx},'teeClub',null,false);renderWizardStep()">Clear selection</button>`:''}`;
-    }
-    case 'tee-pos': {
-      const positions = [
-        {v:'OBL',lbl:'OB Left',icon:'💀'},
-        {v:'LL',lbl:'Left (trouble)',icon:'←←'},
-        {v:'L',lbl:'Left rough',icon:'←'},
-        {v:'C',lbl:'Fairway',icon:'✓'},
-        {v:'R',lbl:'Right rough',icon:'→'},
-        {v:'RR',lbl:'Right (trouble)',icon:'→→'},
-        {v:'OBR',lbl:'OB Right',icon:'💀'}
-      ];
-      return `<div class="wiz-title">Where did it go?</div>
-        <div class="big-choice-row">${positions.map(p=>`
-          <button class="big-choice-btn${hs.teePosition===p.v?' sel':''}" onclick="setWizField(${idx},'teePosition','${p.v}',true)">
-            <span class="big-choice-icon" style="font-size:16px;min-width:28px">${p.icon}</span>
-            <div><div style="font-weight:500">${p.v}</div><div style="font-size:12px;color:var(--chalk3)">${p.lbl}</div></div>
-          </button>`).join('')}
-        </div>`;
-    }
-    case 'ob-resolve': {
-      return `<div class="wiz-title">After OB —</div>
-        <div class="wiz-sub">How did you proceed?</div>
-        <div class="big-choice-row">
-          <button class="big-choice-btn${hs.obResolution==='retee'?' sel':''}" onclick="setWizField(${idx},'obResolution','retee',true)">
-            <span class="big-choice-icon">🔄</span><div><div style="font-weight:500">Re-tee</div><div style="font-size:12px;color:var(--chalk3)">Stroke &amp; distance</div></div>
-          </button>
-          <button class="big-choice-btn${hs.obResolution==='drop'?' sel':''}" onclick="setWizField(${idx},'obResolution','drop',true)">
-            <span class="big-choice-icon">📍</span><div><div style="font-weight:500">Drop</div><div style="font-size:12px;color:var(--chalk3)">Forward penalty area</div></div>
-          </button>
-        </div>`;
-    }
-    case 'approach-yds': {
-      const overrides = [
-        {v:'REC',lbl:'Recovery'},{v:'chip',lbl:'Chip'},{v:'LY',lbl:'Layup'},
-        {v:'TW',lbl:'TW'},{v:'HW',lbl:'HW'},{v:'X',lbl:'—'}
-      ];
-      return `<div class="wiz-title">${hs.par===3?'Tee Shot':'Approach'}</div>
-        <div class="calc-display ${SCR.wizYds?'':'empty'}">${SCR.wizYds||'Yardage'}</div>
-        <div class="calc-grid">
-          ${[7,8,9,4,5,6,1,2,3].map(n=>`<button class="calc-btn" onclick="wizCalcDigit(${n})">${n}</button>`).join('')}
-          <button class="calc-btn back" onclick="wizCalcBack()">⌫</button>
-          <button class="calc-btn zero" onclick="wizCalcDigit(0)">0</button>
-        </div>
-        <div class="wiz-override-row">
-          <span style="font-size:11px;color:var(--chalk3);margin-right:4px">Override:</span>
-          ${overrides.map(o=>`<button class="wiz-ovr-btn${hs.approachOverride===o.v?' sel':''}" onclick="setWizOverride(${idx},'${o.v}')">${o.lbl}</button>`).join('')}
-        </div>`;
-    }
-    case 'approach-lie': {
-      const lies = [{v:null,lbl:'Fairway'},{v:'Rh',lbl:'Rough'},{v:'Sd',lbl:'Sand'}];
-      return `<div class="wiz-title">Lie?</div>
-        <div class="big-choice-row">${lies.map(l=>`
-          <button class="big-choice-btn${hs.approachLie===l.v?' sel':''}" onclick="setWizField(${idx},'approachLie',${JSON.stringify(l.v)},true)">
-            <span class="big-choice-icon">${l.v===null?'🌿':l.v==='Rh'?'🌾':'⛱️'}</span>
-            <div style="font-weight:500">${l.lbl}</div>
-          </button>`).join('')}
-        </div>`;
-    }
-    case 'approach-zones': {
-      return `<div class="wiz-title">Zones</div>
-        <div style="display:flex;gap:14px">
-          <div style="flex:1">
-            <div style="font-size:11px;color:var(--chalk3);margin-bottom:8px;text-align:center">Aimed</div>
-            ${wizZoneGrid(idx,'intendedZone',hs.intendedZone)}
-          </div>
-          <div style="flex:1">
-            <div style="font-size:11px;color:var(--chalk3);margin-bottom:8px;text-align:center">Finish</div>
-            ${wizZoneGrid(idx,'finishZone',hs.finishZone)}
-          </div>
-        </div>`;
-    }
-    case 'approach-result': {
-      return `<div class="wiz-title">On the green?</div>
-        <div class="big-choice-row" style="margin-top:8px">
-          <button class="big-choice-btn${hs.approachResult==='H'?' sel':''}" onclick="setWizField(${idx},'approachResult','H',true)">
-            <span class="big-choice-icon">✅</span><div style="font-weight:500">On the green</div>
-          </button>
-          <button class="big-choice-btn${hs.approachResult==='M'?' sel':''}" onclick="setWizField(${idx},'approachResult','M',true)">
-            <span class="big-choice-icon">❌</span><div style="font-weight:500">Missed green</div>
-          </button>
-        </div>`;
-    }
-    case 'short-game': {
-      const opts = [{v:'chip',lbl:'Chip'},{v:'recovery',lbl:'Recovery'},{v:'TW',lbl:'Texas Wedge (TW)'},{v:'HW',lbl:'Hybrid Wedge (HW)'}];
-      return `<div class="wiz-title">Short game?</div>
-        <div class="wiz-sub">Select all that apply before putting</div>
-        <div class="sg-row">${opts.map(o=>`
-          <button class="sg-btn${hs.shortGame.includes(o.v)?' sel':''}" onclick="toggleWizSG(${idx},'${o.v}')">${o.lbl}</button>
-        `).join('')}</div>`;
-    }
-    case 'putts': {
-      return `<div class="wiz-title">How many putts?</div>
-        <div class="big-choice-row" style="flex-direction:row;flex-wrap:wrap;gap:10px">
-          ${[0,1,2,3,4].map(n=>`
-            <button style="flex:1;min-width:60px;background:var(--ink2);border:1px solid ${hs.putts===n?'var(--gold)':'var(--border)'};
-              border-radius:var(--rs);padding:20px 4px;font-family:'DM Serif Display',serif;font-size:28px;
-              color:${hs.putts===n?'var(--gold)':'var(--chalk)'};cursor:pointer;text-align:center"
-              onclick="setWizField(${idx},'putts',${n},${n===0})">
-              ${n}
-            </button>`).join('')}
-        </div>`;
-    }
-    case 'putt-dist': {
-      const count = hs.putts||0;
-      return `<div class="wiz-title">Putt distances</div>
-        <div class="wiz-sub">Optional — enter in feet</div>
-        <div style="display:flex;flex-direction:column;gap:12px">
-          ${Array.from({length:count},(_,i)=>`
-            <div style="display:flex;align-items:center;gap:12px">
-              <span style="font-size:13px;color:var(--chalk3);min-width:52px">Putt ${i+1}</span>
-              <input class="inp" type="number" inputmode="numeric" min="1" max="200"
-                id="wiz-pd-${idx}-${i}" placeholder="ft" value="${hs.puttDistances[i]||''}"
-                style="max-width:90px;text-align:center"
-                oninput="cacheWizPuttDist(${idx},${i},this.value)">
-              <span style="font-size:12px;color:var(--chalk3)">feet</span>
-            </div>`).join('')}
-        </div>`;
-    }
-    case 'score': {
-      const par = hs.par;
-      const nums = [par-1,par,par+1,par+2,par+3,par+4,par+5].filter(n=>n>0);
-      return `<div class="wiz-title">Score for H${hs.holeNum}?</div>
-        <div class="wiz-sub">Par ${par}${hs.yds?' \xb7 '+hs.yds+'y':''}</div>
-        <div class="score-row" style="flex-wrap:wrap;gap:8px">
-          ${nums.map(n=>`
-            <button class="score-btn${hs.score===n?' sel':''}${n===par?' par-ref':''}"
-              style="min-width:54px;flex:0 0 calc(33% - 6px)"
-              onclick="setWizField(${idx},'score',${n},false)">
-              ${n}<div style="font-size:9px;letter-spacing:.5px;margin-top:2px;opacity:.7;text-transform:uppercase">${scoreName(n-par)}</div>
-            </button>`).join('')}
-        </div>`;
-    }
+function seqItemDetail(item) {
+  if ((item.type==='tee'||item.type==='retee') && item.club) return item.club + (item.position?' \u2192 '+item.position:'');
+  if (item.type==='approach') {
+    const parts=[];
+    if (item.club) parts.push(item.club);
+    if (item.yardage) parts.push(item.yardage+'yd');
+    if (item.intendedZone&&item.finishZone) parts.push(item.intendedZone+"'"+item.finishZone);
+    if (item.result) parts.push(item.result==='H'?'\u2705 On':'\u274c Missed');
+    return parts.join(' \xb7 ');
   }
   return '';
 }
 
-function wizZoneGrid(idx, field, selected) {
+function addToSequence(idx, type) {
+  const hs = SCR.holes[idx];
+  const item = makeSeqItem(type, false);
+  hs.sequence.push(item);
+  renderScoringScreen();
+}
+
+function removeFromSequence(idx, seqIdx) {
+  const hs = SCR.holes[idx];
+  // Prevent removing par 3 first approach tee shot
+  if (hs.par===3 && seqIdx===0 && hs.sequence[0]?.isTeeShot) return;
+  hs.sequence.splice(seqIdx, 1);
+  renderScoringScreen();
+}
+
+function continueToDetail(idx) {
+  const hs = SCR.holes[idx];
+  const tasks = getDetailTasks(hs);
+  if (tasks.length === 0) {
+    hs.phase = 'putt-dist';
+  } else {
+    hs.phase = 'detail';
+    hs.detailTaskIdx = 0;
+    hs.detailSubStepIdx = 0;
+  }
+  renderScoringScreen();
+  document.getElementById('scr-scroll').scrollTo(0,0);
+}
+
+// ── PHASE 2: DETAIL WIZARD ─────────────────────────────────────
+
+function renderDetailStep(hs, idx) {
+  const tasks = getDetailTasks(hs);
+  const task = tasks[hs.detailTaskIdx];
+  if (!task) { hs.phase='putt-dist'; renderScoringScreen(); return; }
+
+  const item = hs.sequence[task.seqIdx];
+  const subStep = task.steps[hs.detailSubStepIdx];
+  const taskNum = hs.detailTaskIdx + 1;
+  const taskTotal = tasks.length;
+  const shotNum = task.seqIdx + 1;
+  const isLastTask = hs.detailTaskIdx === tasks.length-1;
+  const isLastSub  = hs.detailSubStepIdx === task.steps.length-1;
+  const isVeryLast = isLastTask && isLastSub;
+
+  // Hole header
+  const hdr = document.getElementById('wiz-hole-hdr');
+  hdr.style.display = '';
+  hdr.innerHTML = `<span class="wiz-hole-num">H${hs.holeNum}</span>
+    <span class="wiz-hole-info">Par ${hs.par}${hs.yds?' \xb7 '+hs.yds+'y':''}</span>
+    <span class="wiz-step-lbl">Shot ${shotNum} \xb7 ${taskNum}/${taskTotal}</span>`;
+
+  // Nav
+  document.getElementById('wiz-nav').style.display = '';
+  const backBtn = document.getElementById('wiz-back-btn');
+  backBtn.textContent = '\u2190 Back';
+  backBtn.onclick = detailBack;
+  const nextBtn = document.getElementById('wiz-next-btn');
+  nextBtn.style.display = '';
+  nextBtn.textContent = isVeryLast ? 'Putts \u2192' : 'Next \u2192';
+  nextBtn.onclick = detailNext;
+
+  // Content
+  const wip = SCR.round;
+  const todayClubs = wip?.bagClubs?.length
+    ? getBags().flatMap(b=>b.clubs).filter((c,_,a)=>wip.bagClubs.includes(c.abbr)&&a.findIndex(x=>x.abbr===c.abbr)===_)
+    : CLUBS.filter(c=>c!=='?'&&c!=='PT'&&c!=='TW'&&c!=='HW').map(c=>({abbr:c,desc:''}));
+
+  let html = `<div style="font-family:'DM Serif Display',serif;font-size:32px;color:var(--gold);margin-bottom:4px">Shot ${shotNum}</div>
+    <div class="wiz-sub" style="margin-bottom:18px">${seqItemLabel(item)}</div>`;
+
+  if (subStep === 'club') {
+    nextBtn.disabled = false; // club is optional
+    html += `<div class="wiz-sub" style="margin-top:-10px;margin-bottom:14px">Optional \u2014 skip if you don't need it</div>
+      <div class="club-grid">${todayClubs.map(c=>`
+        <div class="club-tile${item.club===c.abbr?' sel':''}"
+          onclick="detailSetClub(${idx},${task.seqIdx},'${c.abbr}')">
+          <div class="club-tile-abbr">${c.abbr}</div>
+          <div class="club-tile-desc">${escHtml(c.desc)}</div>
+        </div>`).join('')}
+      </div>
+      ${item.club?`<button style="margin-top:10px;background:none;border:none;color:var(--chalk3);font-size:12px;cursor:pointer" onclick="detailSetClub(${idx},${task.seqIdx},null)">Clear</button>`:''}`;
+  } else if (subStep === 'pos') {
+    nextBtn.disabled = !item.position;
+    const positions = [
+      {v:'OBL',lbl:'OB Left',icon:'\ud83d\udc80'},{v:'LL',lbl:'Left (trouble)',icon:'\u2190\u2190'},
+      {v:'L',lbl:'Left rough',icon:'\u2190'},{v:'C',lbl:'Fairway',icon:'\u2713'},
+      {v:'R',lbl:'Right rough',icon:'\u2192'},{v:'RR',lbl:'Right (trouble)',icon:'\u2192\u2192'},
+      {v:'OBR',lbl:'OB Right',icon:'\ud83d\udc80'}
+    ];
+    html += `<div class="big-choice-row">${positions.map(p=>`
+      <button class="big-choice-btn${item.position===p.v?' sel':''}"
+        onclick="detailSetPos(${idx},${task.seqIdx},'${p.v}')">
+        <span class="big-choice-icon" style="font-size:14px;min-width:24px">${p.icon}</span>
+        <div><div style="font-weight:500">${p.v}</div><div style="font-size:12px;color:var(--chalk3)">${p.lbl}</div></div>
+      </button>`).join('')}
+    </div>`;
+  } else if (subStep === 'yds') {
+    nextBtn.disabled = !item.wizYds && !item.yardage;
+    html += `<div class="calc-display ${item.wizYds?'':'empty'}">${item.wizYds||'Yardage'}</div>
+      <div class="calc-grid">
+        ${[7,8,9,4,5,6,1,2,3].map(n=>`<button class="calc-btn" onclick="detailCalcDigit(${idx},${task.seqIdx},${n})">${n}</button>`).join('')}
+        <button class="calc-btn back" onclick="detailCalcBack(${idx},${task.seqIdx})">\u232b</button>
+        <button class="calc-btn zero" onclick="detailCalcDigit(${idx},${task.seqIdx},0)">0</button>
+      </div>`;
+  } else if (subStep === 'surface') {
+    nextBtn.disabled = false;
+    const surfs = [{v:null,lbl:'Tee / Fairway',icon:'\ud83c\udf3f'},{v:'Rh',lbl:'Rough',icon:'\ud83c\udf3e'},{v:'Sd',lbl:'Sand',icon:'\u26f1\ufe0f'}];
+    html += `<div class="big-choice-row">${surfs.map(s=>`
+      <button class="big-choice-btn${item.approachLie===s.v?' sel':''}"
+        onclick="detailSetSurface(${idx},${task.seqIdx},${JSON.stringify(s.v)},true)">
+        <span class="big-choice-icon">${s.icon}</span><div style="font-weight:500">${s.lbl}</div>
+      </button>`).join('')}
+    </div>`;
+  } else if (subStep === 'zones') {
+    nextBtn.disabled = false;
+    html += `<div style="display:flex;gap:14px">
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--chalk3);margin-bottom:8px;text-align:center">Aimed</div>
+        ${wizZoneGrid(idx, task.seqIdx, 'intendedZone', item.intendedZone)}
+      </div>
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--chalk3);margin-bottom:8px;text-align:center">Finish</div>
+        ${wizZoneGrid(idx, task.seqIdx, 'finishZone', item.finishZone)}
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <div class="result-row">
+        <button class="result-btn${item.result==='H'?' h':''}" onclick="detailSetResult(${idx},${task.seqIdx},'H',true)">\u2705 On Green</button>
+        <button class="result-btn${item.result==='M'?' m':''}" onclick="detailSetResult(${idx},${task.seqIdx},'M',true)">\u274c Missed</button>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('scr-content').innerHTML = html;
+}
+
+function detailNext() {
+  const hs = SCR.holes[SCR.activeIdx];
+  const tasks = getDetailTasks(hs);
+  const task = tasks[hs.detailTaskIdx];
+  if (!task) { hs.phase='putt-dist'; renderScoringScreen(); return; }
+  const item = hs.sequence[task.seqIdx];
+
+  // Flush yardage buffer
+  if (task.steps[hs.detailSubStepIdx]==='yds') {
+    item.yardage = item.wizYds ? parseInt(item.wizYds)||null : null;
+  }
+
+  if (hs.detailSubStepIdx < task.steps.length-1) {
+    hs.detailSubStepIdx++;
+  } else if (hs.detailTaskIdx < tasks.length-1) {
+    hs.detailTaskIdx++;
+    hs.detailSubStepIdx = 0;
+  } else {
+    hs.phase = 'putt-dist';
+  }
+  renderScoringScreen();
+  document.getElementById('scr-scroll').scrollTo(0,0);
+}
+
+function detailBack() {
+  const hs = SCR.holes[SCR.activeIdx];
+  if (hs.detailSubStepIdx > 0) {
+    hs.detailSubStepIdx--;
+  } else if (hs.detailTaskIdx > 0) {
+    hs.detailTaskIdx--;
+    const tasks = getDetailTasks(hs);
+    hs.detailSubStepIdx = tasks[hs.detailTaskIdx].steps.length-1;
+  } else {
+    hs.phase = 'sequence';
+  }
+  renderScoringScreen();
+  document.getElementById('scr-scroll').scrollTo(0,0);
+}
+
+// Detail setters
+function detailSetClub(idx, seqIdx, val) {
+  SCR.holes[idx].sequence[seqIdx].club = val;
+  renderDetailStep(SCR.holes[idx], idx);
+}
+
+function detailSetPos(idx, seqIdx, val) {
+  SCR.holes[idx].sequence[seqIdx].position = val;
+  renderDetailStep(SCR.holes[idx], idx);
+  setTimeout(detailNext, 200);
+}
+
+function detailSetSurface(idx, seqIdx, val, autoNext) {
+  SCR.holes[idx].sequence[seqIdx].approachLie = val;
+  if (autoNext) { renderDetailStep(SCR.holes[idx], idx); setTimeout(detailNext, 200); }
+  else renderDetailStep(SCR.holes[idx], idx);
+}
+
+function detailSetResult(idx, seqIdx, val, autoNext) {
+  SCR.holes[idx].sequence[seqIdx].result = val;
+  if (autoNext) { renderDetailStep(SCR.holes[idx], idx); setTimeout(detailNext, 200); }
+  else renderDetailStep(SCR.holes[idx], idx);
+}
+
+function detailCalcDigit(idx, seqIdx, d) {
+  const item = SCR.holes[idx].sequence[seqIdx];
+  if ((item.wizYds||'').length < 3) item.wizYds = (item.wizYds||'') + String(d);
+  renderDetailStep(SCR.holes[idx], idx);
+}
+
+function detailCalcBack(idx, seqIdx) {
+  const item = SCR.holes[idx].sequence[seqIdx];
+  item.wizYds = (item.wizYds||'').slice(0,-1);
+  renderDetailStep(SCR.holes[idx], idx);
+}
+
+function detailSetZone(idx, seqIdx, field, val) {
+  const item = SCR.holes[idx].sequence[seqIdx];
+  item[field] = val;
+  if (field==='finishZone' && val===5) item.result = 'H'; // zone 5 = always on
+  renderDetailStep(SCR.holes[idx], idx);
+  if (field==='finishZone' && item.intendedZone) setTimeout(detailNext, 200);
+}
+
+function wizZoneGrid(idx, seqIdx, field, selected) {
   const rows=[[7,8,9],[4,5,6],[1,2,3]], rl=['Long','Mid','Short'];
   const hdr=`<div></div><div class="zone-clbl">L</div><div class="zone-clbl">C</div><div class="zone-clbl">R</div>`;
   const cells=rows.map((row,ri)=>`<div class="zone-rlbl">${rl[ri]}</div>`+
-    row.map(z=>`<button class="zone-btn${selected===z?' sel':''}" onclick="setWizZone(${idx},'${field}',${z})">${z}</button>`).join('')
+    row.map(z=>`<button class="zone-btn${selected===z?' sel':''}" onclick="detailSetZone(${idx},${seqIdx},'${field}',${z})">${z}</button>`).join('')
   ).join('');
   return `<div class="zone-grid">${hdr}${cells}</div>`;
 }
 
-// Field setters
-function setWizField(idx, field, val, autoNext) {
-  SCR.holes[idx][field] = val;
-  if (autoNext) { renderWizardStep(); setTimeout(wizNext,200); }
-  else renderWizardStep();
+// ── PHASE 3: PUTT DISTANCES ────────────────────────────────────
+
+function renderPuttDist(hs, idx) {
+  const putts = seqPuttItems(hs);
+  const puttCount = putts.length;
+
+  const hdr = document.getElementById('wiz-hole-hdr');
+  hdr.style.display = '';
+  hdr.innerHTML = `<span class="wiz-hole-num">H${hs.holeNum}</span>
+    <span class="wiz-hole-info">Par ${hs.par}${hs.yds?' \xb7 '+hs.yds+'y':''}</span>
+    <span class="wiz-step-lbl">Putts</span>`;
+
+  document.getElementById('wiz-nav').style.display = '';
+  const backBtn = document.getElementById('wiz-back-btn');
+  backBtn.textContent = '\u2190 Back';
+  backBtn.onclick = () => {
+    const tasks = getDetailTasks(hs);
+    hs.phase = tasks.length > 0 ? 'detail' : 'sequence';
+    if (tasks.length > 0) { hs.detailTaskIdx=tasks.length-1; hs.detailSubStepIdx=tasks[tasks.length-1].steps.length-1; }
+    renderScoringScreen();
+  };
+  const nextBtn = document.getElementById('wiz-next-btn');
+  nextBtn.style.display = '';
+  nextBtn.textContent = 'Save Hole \u2192';
+  nextBtn.disabled = false;
+  nextBtn.onclick = () => saveHole(idx);
+
+  const score = seqScore(hs);
+  const rel = score - hs.par;
+
+  document.getElementById('scr-content').innerHTML = `
+    <div style="display:flex;gap:16px;align-items:center;padding:12px 14px;background:var(--ink3);border-radius:var(--rs);margin-bottom:20px">
+      <div style="text-align:center">
+        <div style="font-family:'DM Serif Display',serif;font-size:32px" class="${scoreColorClass(rel)}">${score}</div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px" class="${scoreColorClass(rel)}">${scoreName(rel)}</div>
+      </div>
+      <div style="width:1px;background:var(--border);height:36px"></div>
+      <div style="text-align:center">
+        <div style="font-family:'DM Serif Display',serif;font-size:32px;color:var(--chalk)">${puttCount}</div>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--chalk3)">Putts</div>
+      </div>
+      <div style="flex:1;text-align:right;font-size:11px;color:var(--chalk3)">Par ${hs.par}</div>
+    </div>
+    ${puttCount > 0 ? `
+      <div class="wiz-title" style="font-size:20px;margin-bottom:6px">Putt distances</div>
+      <div class="wiz-sub">Optional \u2014 enter in feet, or skip</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+        ${Array.from({length:puttCount},(_,i)=>`
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:13px;color:var(--chalk3);min-width:52px">Putt ${i+1}</span>
+            <input class="inp" type="number" inputmode="numeric" min="1" max="200"
+              id="pd-${idx}-${i}" placeholder="ft"
+              value="${hs.puttDistances[i]||''}"
+              oninput="cachePuttDist(${idx},${i},this.value)"
+              style="max-width:90px;text-align:center">
+            <span style="font-size:12px;color:var(--chalk3)">ft</span>
+          </div>`).join('')}
+      </div>` : `<div style="text-align:center;padding:20px;color:var(--chalk3);font-size:13px">No putts in sequence.<br>Tap Save Hole to record.</div>`}`;
 }
 
-function setWizOverride(idx, val) {
-  const hs = SCR.holes[idx];
-  hs.approachOverride = hs.approachOverride===val ? null : val;
-  SCR.wizYds = '';
-  renderWizardStep();
-  if (hs.approachOverride) setTimeout(wizNext,200);
-}
-
-function setWizZone(idx, field, val) {
-  SCR.holes[idx][field] = val;
-  renderWizardStep();
-  // Auto-advance when both zones set
-  const hs = SCR.holes[idx];
-  if (field==='finishZone' && hs.intendedZone) setTimeout(wizNext,200);
-}
-
-function toggleWizSG(idx, type) {
-  const sg = SCR.holes[idx].shortGame;
-  const i = sg.indexOf(type);
-  if (i>=0) sg.splice(i,1); else sg.push(type);
-  renderWizardStep();
-}
-
-function wizCalcDigit(d) {
-  if (SCR.wizYds.length < 3) SCR.wizYds += String(d);
-  renderWizardStep();
-  document.getElementById('wiz-next-btn').disabled = !canAdvance(SCR.step, SCR.holes[SCR.activeIdx]);
-}
-
-function wizCalcBack() {
-  SCR.wizYds = SCR.wizYds.slice(0,-1);
-  renderWizardStep();
-  document.getElementById('wiz-next-btn').disabled = !canAdvance(SCR.step, SCR.holes[SCR.activeIdx]);
-}
-
-function cacheWizPuttDist(idx, i, val) {
+function cachePuttDist(idx, i, val) {
   SCR.holes[idx].puttDistances[i] = val ? parseInt(val)||0 : 0;
 }
 
+// ── SAVE ───────────────────────────────────────────────────────
+
 function saveHole(idx) {
   const hs = SCR.holes[idx];
-  if (!hs.score) { toast('Enter a score first'); return; }
+  const score = seqScore(hs);
+  if (score === 0) { toast('Add shots to the sequence first'); return; }
 
-  // Flush yardage
-  if (!hs.approachOverride) hs.approachYards = SCR.wizYds ? parseInt(SCR.wizYds)||null : hs.approachYards;
-
-  // Build shots
   const shots = [];
-  if (hs.par>3) shots.push({type:'tee',club:hs.teeClub||null,position:hs.teePosition||null,isTeeShot:true});
-  if (hs.obResolution==='retee') shots.push({type:'retee',club:null,position:null});
-  if (hs.obResolution==='drop') shots.push({type:'drop'});
-  if (hs.shortGame.includes('LY')) shots.push({type:'layup'});
-  if (hs.approachOverride && !['LY'].includes(hs.approachOverride)) {
-    const typeMap={'REC':'recovery','chip':'chip','X':'untracked','TW':'chip','HW':'chip'};
-    shots.push({type:typeMap[hs.approachOverride]||'untracked',club:['TW','HW'].includes(hs.approachOverride)?hs.approachOverride:null});
-  } else if (hs.approachYards||hs.approachResult||hs.intendedZone) {
-    const sh={type:'approach',club:hs.approachClub||null,yardage:hs.approachYards||null,
-      intendedZone:hs.intendedZone||null,finishZone:hs.finishZone||null,
-      result:hs.approachResult||'M',lie:hs.approachLie||null,isTeeShot:hs.par===3};
-    sh.missDirection=deriveMissDirection(sh.intendedZone,sh.finishZone,sh.result);
-    shots.push(sh);
-  } else if (hs.par===3) {
-    shots.push({type:'approach',club:null,yardage:null,intendedZone:null,finishZone:null,result:'M',lie:null,isTeeShot:true,missDirection:null});
-  }
-  hs.shortGame.filter(t=>!['LY','TW','HW'].includes(t)).forEach(t=>shots.push({type:t==='chip'?'chip':'recovery'}));
+  (hs.sequence||[]).forEach(item => {
+    switch(item.type) {
+      case 'tee':
+        shots.push({type:'tee', club:item.club||null, position:item.position||null, isTeeShot:true});
+        break;
+      case 'retee':
+        shots.push({type:'retee', club:item.club||null, position:item.position||null});
+        break;
+      case 'approach': {
+        const miss = deriveMissDirection(item.intendedZone, item.finishZone, item.result||'M');
+        shots.push({type:'approach', club:item.club||null, yardage:item.yardage||null,
+          intendedZone:item.intendedZone||null, finishZone:item.finishZone||null,
+          result:item.result||'M', lie:item.approachLie||null,
+          isTeeShot:item.isTeeShot||false, missDirection:miss});
+        break;
+      }
+      case 'layup':    shots.push({type:'layup'}); break;
+      case 'chip':     shots.push({type:'chip'}); break;
+      case 'sand':     shots.push({type:'chip', lie:'Sd'}); break;
+      case 'recovery': shots.push({type:'recovery'}); break;
+      case 'penalty':  shots.push({type:'untracked'}); break;
+      case 'drop':     shots.push({type:'drop'}); break;
+      case 'TW':       shots.push({type:'chip', club:'TW'}); break;
+      case 'HW':       shots.push({type:'chip', club:'HW'}); break;
+      case 'X':        shots.push({type:'untracked'}); break;
+      case 'putt':     break; // putts in hole.putts, not shots
+    }
+  });
 
-  const {gir,girPlusOne} = deriveGIR(shots,hs.par);
+  const puttCount = seqPutts(hs);
+  const puttDist  = (hs.puttDistances||[]).slice(0, puttCount).filter(d=>d>0);
+  const {gir, girPlusOne} = deriveGIR(shots, hs.par);
   const notation = buildManualNotation(hs);
-  const hole = createHole({number:hs.holeNum,par:hs.par,score:hs.score,pinZone:null,notation});
-  hole.shots=shots;
-  hole.putts={count:hs.putts||0,distances:(hs.puttDistances||[]).filter(d=>d>0)};
-  hole.gir=gir; hole.girPlusOne=girPlusOne;
+  const hole = createHole({number:hs.holeNum, par:hs.par, score, pinZone:null, notation});
+  hole.shots = shots;
+  hole.putts  = {count:puttCount, distances:puttDist};
+  hole.gir    = gir; hole.girPlusOne = girPlusOne;
 
-  const round=SCR.round;
-  const ei=round.holes.findIndex(h=>h.number===hs.holeNum);
+  const round = SCR.round;
+  const ei = round.holes.findIndex(h=>h.number===hs.holeNum);
   if (ei>=0) round.holes[ei]=hole; else round.holes.push(hole);
   saveWIP(round);
 
-  hs.saved=true;
-  const nextIdx=SCR.holes.findIndex((h,i)=>i>idx&&!h.saved);
-  if (nextIdx>=0) { openWizHole(nextIdx); }
-  else { SCR.activeIdx=null; SCR.step=null; renderScoringScreen(); }
+  hs.saved = true;
+  hs.savedScore = score;
+
+  const nextIdx = SCR.holes.findIndex((h,i)=>i>idx&&!h.saved);
+  if (nextIdx>=0) openWizHole(nextIdx);
+  else { SCR.activeIdx=null; renderScoringScreen(); }
 }
 
 function buildManualNotation(hs) {
-  const parts=[];
-  if (hs.par>3&&(hs.teeClub||hs.teePosition)) parts.push((hs.teeClub||'?')+' '+(hs.teePosition||''));
-  if (hs.shortGame.includes('LY')) parts.push('LY');
-  if (hs.approachOverride) parts.push(hs.approachOverride);
-  else if (hs.approachYards||hs.intendedZone||hs.approachResult) {
-    let ap='';
-    if (hs.approachClub) ap+=hs.approachClub+' ';
-    if (hs.approachYards) ap+=hs.approachYards+' ';
-    if (hs.intendedZone&&hs.finishZone) ap+=hs.intendedZone+"'"+hs.finishZone+' ';
-    ap+=(hs.approachResult||'M');
-    if (hs.approachLie) ap+=' '+hs.approachLie;
-    parts.push(ap.trim());
-  }
-  hs.shortGame.filter(t=>t!=='LY').forEach(t=>parts.push(t==='chip'?'Ch':t==='recovery'?'REC':t));
-  if (hs.putts!=null){
-    const ds=(hs.puttDistances||[]).filter(d=>d>0).join(' ');
-    parts.push('\\ '+hs.putts+(ds?' '+ds:''));
-  }
-  return parts.join(' \xb7 ');
+  const parts = (hs.sequence||[]).map(item => {
+    if (item.type==='tee'||item.type==='retee') {
+      return (item.type==='retee'?'RT ':'')+((item.club||'?')+' '+(item.position||'')).trim();
+    }
+    if (item.type==='approach') {
+      let s='';
+      if (item.club) s+=item.club+' ';
+      if (item.yardage) s+=item.yardage+' ';
+      if (item.intendedZone&&item.finishZone) s+=item.intendedZone+"'"+item.finishZone+' ';
+      s+=(item.result||'M');
+      if (item.approachLie) s+=' '+item.approachLie;
+      return s.trim();
+    }
+    const map={layup:'LY',chip:'Ch',sand:'Sd',recovery:'REC',penalty:'PEN',drop:'D',TW:'TW',HW:'HW',putt:'p',X:'X'};
+    return map[item.type]||item.type;
+  });
+  const puttCount = seqPutts(hs);
+  const puttDist = (hs.puttDistances||[]).slice(0,puttCount).filter(d=>d>0).join(' ');
+  parts.push('\\ '+puttCount+(puttDist?' '+puttDist:''));
+  return parts.filter(Boolean).join(' \xb7 ');
 }
 
 function finishManualRound() {
-  const round=SCR.round;
+  const round = SCR.round;
   if (!round) return;
   calcRoundTotal(round);
-  round.source='manual';
-  const rounds=getRounds();
+  round.source = 'manual';
+  const rounds = getRounds();
   rounds.push(round);
   saveRounds(rounds);
   saveWIP(null);
-  DET.roundId=round.id; DET.openHoles.clear();
-  SCR.round=null; SCR.holes=[];
+  DET.roundId = round.id; DET.openHoles.clear();
+  SCR.round = null; SCR.holes = [];
   toast('Round saved \u2713');
   showView('detail');
 }
@@ -1936,6 +2088,7 @@ function abandonRound() {
   if (!confirm('Abandon entry? Your progress is saved in WIP and you can resume later.')) return;
   showView('home');
 }
+
 
 // ── ROUND DETAIL ─────────────────────────────────────────────
 const DET = { roundId: null, openHoles: new Set() };
