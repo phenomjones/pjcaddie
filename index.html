@@ -535,7 +535,10 @@ body{display:flex;flex-direction:column}
       <span class="section-lbl">Holes</span>
       <div id="det-holes"></div>
       <div id="byron-section" style="margin-top:20px">
-        <span class="section-lbl" style="margin-bottom:10px">Byron Analysis</span>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px">
+          <span class="section-lbl" style="margin-bottom:0">Byron Analysis</span>
+          <span style="font-size:10px;color:var(--chalk3);opacity:.6" id="byron-version-lbl"></span>
+        </div>
 
         <!-- Pass 1: Holes -->
         <div class="card byron-pass-card" id="byron-card-holes">
@@ -696,7 +699,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.9 · Phase 4B</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.9 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v1.1 + holeYards</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -2603,6 +2606,8 @@ function renderByronGameplan(el, result) {
 }
 
 function byronUpdateUI(roundId) {
+  const vEl = document.getElementById('byron-version-lbl');
+  if (vEl) vEl.textContent = BYRON_VERSION;
   const passes = ['holes','patterns','gameplan'];
   passes.forEach((pass, i) => {
     const cache = byronGetCache(roundId, pass);
