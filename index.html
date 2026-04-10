@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.9 · Apr 9, 2026 -->
+
+<!-- PJ Caddie v7.10.10 · Apr 9, 2026 -->
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -325,6 +327,7 @@ body{display:flex;flex-direction:column}
 <div id="app">
 
 <!-- HOME -->
+
 <div class="view active" id="view-home">
   <div class="safe-top"></div>
   <div class="scroll-body">
@@ -333,7 +336,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.9 · Apr 9, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.10 · Apr 9, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -353,6 +356,7 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- HISTORY -->
+
 <div class="view" id="view-history">
   <div class="safe-top"></div>
   <div class="hdr">
@@ -366,6 +370,7 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- COURSE SETUP -->
+
 <div class="view" id="view-course-setup">
   <div class="safe-top"></div>
   <div class="hdr">
@@ -407,6 +412,7 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- ROUND SETUP -->
+
 <div class="view" id="view-round-setup">
   <div class="safe-top"></div>
   <div class="hdr">
@@ -445,6 +451,7 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- BAG SELECT (pre-round) -->
+
 <div class="view" id="view-bag-select">
   <div class="safe-top"></div>
   <div class="hdr" style="flex-shrink:0">
@@ -474,6 +481,7 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- BAG SETTINGS -->
+
 <div class="view" id="view-bag-settings">
   <div class="safe-top"></div>
   <div class="hdr" style="flex-shrink:0">
@@ -496,6 +504,7 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- MANUAL SCORING (wizard) -->
+
 <div class="view" id="view-scoring">
   <div class="safe-top"></div>
   <div class="scr-hdr-bar">
@@ -518,6 +527,7 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- ROUND DETAIL -->
+
 <div class="view" id="view-detail">
   <div class="safe-top"></div>
   <div class="hdr" style="flex-shrink:0">
@@ -540,64 +550,68 @@ body{display:flex;flex-direction:column}
           <span style="font-size:10px;color:var(--chalk3);opacity:.6" id="byron-version-lbl"></span>
         </div>
 
-        <!-- Pass 1: Holes -->
-        <div class="card byron-pass-card" id="byron-card-holes">
-          <div class="byron-pass-hdr" onclick="toggleByronCard('holes')">
-            <div>
-              <div class="byron-pass-title">🔍 Holes</div>
-              <div class="byron-pass-sub" id="byron-ts-holes"></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <button class="btn btn-gold btn-sm" id="byron-btn-holes" onclick="event.stopPropagation();runByron('holes')">Run</button>
-              <span class="byron-pass-chev" id="byron-chev-holes">▾</span>
-            </div>
-          </div>
-          <div id="byron-body-holes" class="byron-pass-body" style="display:none">
-            <div id="byron-content-holes"></div>
-          </div>
+```
+    <!-- Pass 1: Holes -->
+    <div class="card byron-pass-card" id="byron-card-holes">
+      <div class="byron-pass-hdr" onclick="toggleByronCard('holes')">
+        <div>
+          <div class="byron-pass-title">🔍 Holes</div>
+          <div class="byron-pass-sub" id="byron-ts-holes"></div>
         </div>
-
-        <!-- Pass 2: Patterns -->
-        <div class="card byron-pass-card" id="byron-card-patterns">
-          <div class="byron-pass-hdr" onclick="toggleByronCard('patterns')">
-            <div>
-              <div class="byron-pass-title">📊 Patterns</div>
-              <div class="byron-pass-sub" id="byron-ts-patterns"></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <button class="btn btn-gold btn-sm" id="byron-btn-patterns" onclick="event.stopPropagation();runByron('patterns')" disabled>Run</button>
-              <span class="byron-pass-chev" id="byron-chev-patterns">▾</span>
-            </div>
-          </div>
-          <div id="byron-body-patterns" class="byron-pass-body" style="display:none">
-            <div id="byron-content-patterns"></div>
-          </div>
-        </div>
-
-        <!-- Pass 3: Gameplan -->
-        <div class="card byron-pass-card" id="byron-card-gameplan">
-          <div class="byron-pass-hdr" onclick="toggleByronCard('gameplan')">
-            <div>
-              <div class="byron-pass-title">🎯 Gameplan</div>
-              <div class="byron-pass-sub" id="byron-ts-gameplan"></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <button class="btn btn-gold btn-sm" id="byron-btn-gameplan" onclick="event.stopPropagation();runByron('gameplan')" disabled>Run</button>
-              <span class="byron-pass-chev" id="byron-chev-gameplan">▾</span>
-            </div>
-          </div>
-          <div id="byron-body-gameplan" class="byron-pass-body" style="display:none">
-            <div id="byron-content-gameplan"></div>
-          </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="btn btn-gold btn-sm" id="byron-btn-holes" onclick="event.stopPropagation();runByron('holes')">Run</button>
+          <span class="byron-pass-chev" id="byron-chev-holes">▾</span>
         </div>
       </div>
-      <button class="btn btn-danger" style="margin-top:20px" id="det-delete-btn" onclick="deleteRound()">Delete Round</button>
+      <div id="byron-body-holes" class="byron-pass-body" style="display:none">
+        <div id="byron-content-holes"></div>
+      </div>
     </div>
+
+    <!-- Pass 2: Patterns -->
+    <div class="card byron-pass-card" id="byron-card-patterns">
+      <div class="byron-pass-hdr" onclick="toggleByronCard('patterns')">
+        <div>
+          <div class="byron-pass-title">📊 Patterns</div>
+          <div class="byron-pass-sub" id="byron-ts-patterns"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="btn btn-gold btn-sm" id="byron-btn-patterns" onclick="event.stopPropagation();runByron('patterns')" disabled>Run</button>
+          <span class="byron-pass-chev" id="byron-chev-patterns">▾</span>
+        </div>
+      </div>
+      <div id="byron-body-patterns" class="byron-pass-body" style="display:none">
+        <div id="byron-content-patterns"></div>
+      </div>
+    </div>
+
+    <!-- Pass 3: Gameplan -->
+    <div class="card byron-pass-card" id="byron-card-gameplan">
+      <div class="byron-pass-hdr" onclick="toggleByronCard('gameplan')">
+        <div>
+          <div class="byron-pass-title">🎯 Gameplan</div>
+          <div class="byron-pass-sub" id="byron-ts-gameplan"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="btn btn-gold btn-sm" id="byron-btn-gameplan" onclick="event.stopPropagation();runByron('gameplan')" disabled>Run</button>
+          <span class="byron-pass-chev" id="byron-chev-gameplan">▾</span>
+        </div>
+      </div>
+      <div id="byron-body-gameplan" class="byron-pass-body" style="display:none">
+        <div id="byron-content-gameplan"></div>
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-danger" style="margin-top:20px" id="det-delete-btn" onclick="deleteRound()">Delete Round</button>
+</div>
+```
+
   </div>
   <div class="safe-bot"></div>
 </div>
 
 <!-- PHOTO IMPORT -->
+
 <div class="view" id="view-photo-import">
   <div class="safe-top"></div>
   <div class="hdr">
@@ -623,6 +637,7 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- PHOTO LOADING -->
+
 <div class="view" id="view-photo-loading">
   <div class="safe-top"></div>
   <div class="scroll-body">
@@ -635,6 +650,7 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- SETTINGS -->
+
 <div class="view" id="view-settings">
   <div class="safe-top"></div>
   <div class="hdr">
@@ -668,8 +684,13 @@ body{display:flex;flex-direction:column}
           <label class="inp-label">Branch</label>
           <input class="inp" id="set-gh-branch" type="text" placeholder="main" autocomplete="off">
         </div>
-        <button class="btn btn-outline btn-sm" onclick="saveGHSettings()">Save Sync Settings</button>
-        <div id="gh-status" style="font-size:11px;color:var(--chalk3);margin-top:8px"></div>
+        <button class="btn btn-outline btn-sm" onclick="saveGHSettings()" style="margin-bottom:10px">Save Sync Settings</button>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <button class="btn btn-gold btn-sm" id="gh-push-btn" onclick="ghPush()" style="flex:1">Push ↑</button>
+          <button class="btn btn-outline btn-sm" id="gh-pull-btn" onclick="ghPull()" style="flex:1">Pull ↓</button>
+        </div>
+        <div id="gh-last-sync" style="font-size:10px;color:var(--chalk3);margin-bottom:4px"></div>
+        <div id="gh-status" style="font-size:11px;color:var(--chalk3)"></div>
       </div>
       <div class="card" style="margin-bottom:10px">
         <div class="section-lbl">Reference</div>
@@ -699,7 +720,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.9 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.10 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v1.1 + holeYards</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -712,6 +733,7 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- REVIEW SCREEN -->
+
 <div class="view" id="view-review">
   <div class="safe-top"></div>
   <div class="hdr" style="flex-shrink:0">
@@ -733,6 +755,7 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- COURSE HUB -->
+
 <div class="view" id="view-course-hub">
   <div class="safe-top"></div>
   <div class="hdr">
@@ -757,6 +780,7 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- PLAYER HUB -->
+
 <div class="view" id="view-player-hub">
   <div class="safe-top"></div>
   <div class="hdr">
@@ -1120,6 +1144,7 @@ function saveCourseNotes(courseId, notes) {
     const all = JSON.parse(localStorage.getItem('pjc_course_notes') || '{}');
     all[courseId] = notes;
     localStorage.setItem('pjc_course_notes', JSON.stringify(all));
+    const meta = getSyncMeta(); meta.notesTs = Date.now(); saveSyncMeta(meta);
   } catch {}
 }
 
@@ -1156,6 +1181,7 @@ function getPlayerProfile() {
 }
 function savePlayerProfile(profile) {
   localStorage.setItem('pjc_player', JSON.stringify(profile));
+  const meta = getSyncMeta(); meta.playerTs = Date.now(); saveSyncMeta(meta);
 }
 
 // ── STATE ────────────────────────────────────────────────────
@@ -1447,6 +1473,14 @@ function renderSettings() {
   const keyStatus = document.getElementById('ant-key-status');
   keyStatus.textContent = antKey?'\u2713 API key saved':'No key saved';
   keyStatus.style.color = antKey?'var(--green)':'var(--chalk3)';
+  const syncMeta = getSyncMeta();
+  const lastSyncEl = document.getElementById('gh-last-sync');
+  if (lastSyncEl) {
+    const parts = [];
+    if (syncMeta.lastPush) parts.push('Last push: '+new Date(syncMeta.lastPush).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}));
+    if (syncMeta.lastPull) parts.push('Last pull: '+new Date(syncMeta.lastPull).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}));
+    lastSyncEl.textContent = parts.join(' · ') || 'Never synced';
+  }
 }
 
 function saveAntKey() {
@@ -1469,6 +1503,171 @@ function saveGHSettings() {
   document.getElementById('gh-status').textContent='\u2713 Sync settings saved';
   document.getElementById('gh-status').style.color='var(--green)';
   toast('GitHub settings saved \u2713');
+}
+
+// ── GITHUB SYNC ───────────────────────────────────────────────
+const SYNC_FILE = 'pjcaddie-sync.json';
+
+function getSyncMeta() {
+  try { return JSON.parse(localStorage.getItem('pjc_sync_meta')||'{}'); }
+  catch { return {}; }
+}
+function saveSyncMeta(meta) {
+  localStorage.setItem('pjc_sync_meta', JSON.stringify(meta));
+}
+
+function ghHeaders() {
+  return {
+    'Authorization': 'token '+localStorage.getItem('gh_token'),
+    'Accept': 'application/vnd.github.v3+json',
+    'Content-Type': 'application/json'
+  };
+}
+
+function ghRepoBase() {
+  const repo = localStorage.getItem('gh_repo')||'';
+  return 'https://api.github.com/repos/'+repo+'/contents/'+SYNC_FILE;
+}
+
+async function ghReadFile() {
+  const branch = localStorage.getItem('gh_branch')||'main';
+  const resp = await fetch(ghRepoBase()+'?ref='+branch, {headers:ghHeaders()});
+  if (resp.status===404) return null;
+  if (!resp.ok) throw new Error('GitHub read failed: '+resp.status);
+  const data = await resp.json();
+  const raw = data.content.replace(/\n/g,'');
+  const content = JSON.parse(decodeURIComponent(escape(atob(raw))));
+  return {content, sha:data.sha};
+}
+
+async function ghWriteFile(content, sha, attempt) {
+  attempt = attempt||0;
+  const branch = localStorage.getItem('gh_branch')||'main';
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 0))));
+  const body = {
+    message: 'pjcaddie sync '+new Date().toISOString(),
+    content: encoded,
+    branch
+  };
+  if (sha) body.sha = sha;
+  const resp = await fetch(ghRepoBase(), {method:'PUT', headers:ghHeaders(), body:JSON.stringify(body)});
+  if (resp.status===409 && attempt<2) {
+    const current = await ghReadFile();
+    return ghWriteFile(content, current?.sha, attempt+1);
+  }
+  if (!resp.ok) {
+    const err = await resp.json().catch(()=>({}));
+    throw new Error(err.message||'GitHub write failed: '+resp.status);
+  }
+  return resp.json();
+}
+
+function ghValidate() {
+  if (!localStorage.getItem('gh_token')) throw new Error('No GitHub token \u2014 add it in Settings');
+  if (!localStorage.getItem('gh_repo'))  throw new Error('No repo set \u2014 add it in Settings');
+}
+
+function mergeRounds(local, remote) {
+  const map = {};
+  (remote||[]).forEach(r => { map[r.id]=r; });
+  (local||[]).forEach(r => { map[r.id]=r; }); // local wins on same ID
+  return Object.values(map).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+}
+
+function ghSetStatus(msg, color) {
+  const el = document.getElementById('gh-status');
+  if (el) { el.textContent=msg; el.style.color=color||'var(--chalk3)'; }
+}
+
+async function ghPush() {
+  const pushBtn = document.getElementById('gh-push-btn');
+  try {
+    ghValidate();
+    if (pushBtn) { pushBtn.disabled=true; pushBtn.textContent='Pushing\u2026'; }
+    ghSetStatus('Connecting to GitHub\u2026');
+    const current = await ghReadFile();
+    const meta = getSyncMeta();
+    const now = Date.now();
+    const payload = {
+      syncedAt: now,
+      rounds: getRounds(),
+      courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'),
+      player: JSON.parse(localStorage.getItem('pjc_player')||'null'),
+      notesTs: meta.notesTs||now,
+      playerTs: meta.playerTs||now
+    };
+    await ghWriteFile(payload, current?.sha);
+    meta.lastPush=now;
+    saveSyncMeta(meta);
+    renderSettings();
+    const t = new Date(now).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    ghSetStatus('\u2713 Pushed '+payload.rounds.length+' rounds \u00b7 '+t, 'var(--green)');
+    toast('Pushed to GitHub \u2713');
+  } catch(err) {
+    ghSetStatus('\u2717 '+err.message, 'var(--red)');
+    toast('Push failed');
+  } finally {
+    if (pushBtn) { pushBtn.disabled=false; pushBtn.textContent='Push \u2191'; }
+  }
+}
+
+async function ghPull() {
+  const pullBtn = document.getElementById('gh-pull-btn');
+  try {
+    ghValidate();
+    if (pullBtn) { pullBtn.disabled=true; pullBtn.textContent='Pulling\u2026'; }
+    ghSetStatus('Reading from GitHub\u2026');
+    const result = await ghReadFile();
+    if (!result) {
+      ghSetStatus('No sync file found \u2014 Push from another device first.', 'var(--chalk3)');
+      if (pullBtn) { pullBtn.disabled=false; pullBtn.textContent='Pull \u2193'; }
+      return;
+    }
+    const remote = result.content;
+    const localRounds = getRounds();
+    const remoteRounds = remote.rounds||[];
+    const merged = mergeRounds(localRounds, remoteRounds);
+    const newCount = merged.length - localRounds.length;
+    const meta = getSyncMeta();
+    const notesNewer = remote.notesTs && remote.notesTs>(meta.notesTs||0);
+    const playerNewer = remote.playerTs && remote.playerTs>(meta.playerTs||0);
+    const syncDate = remote.syncedAt ? new Date(remote.syncedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : 'unknown';
+    const msg = [
+      'Remote snapshot: '+syncDate,
+      'Remote: '+remoteRounds.length+' rounds | Local: '+localRounds.length+' rounds',
+      'After merge: '+merged.length+' rounds'+(newCount>0?' (+'+newCount+' new)':''),
+      '',
+      notesNewer ? '\u26a0\ufe0f Remote course notes are newer \u2014 will overwrite local.' : '\u2713 Local course notes are newer \u2014 keeping local.',
+      playerNewer ? '\u26a0\ufe0f Remote player profile is newer \u2014 will overwrite local.' : '\u2713 Local player profile is newer \u2014 keeping local.',
+      '',
+      'Proceed?'
+    ].join('\n');
+    if (!confirm(msg)) {
+      ghSetStatus('Pull cancelled.', 'var(--chalk3)');
+      if (pullBtn) { pullBtn.disabled=false; pullBtn.textContent='Pull \u2193'; }
+      return;
+    }
+    saveRounds(merged);
+    if (notesNewer && remote.courseNotes) {
+      localStorage.setItem('pjc_course_notes', JSON.stringify(remote.courseNotes));
+      meta.notesTs = remote.notesTs;
+    }
+    if (playerNewer && remote.player) {
+      localStorage.setItem('pjc_player', JSON.stringify(remote.player));
+      meta.playerTs = remote.playerTs;
+    }
+    meta.lastPull = Date.now();
+    saveSyncMeta(meta);
+    renderSettings();
+    const t = new Date(meta.lastPull).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    ghSetStatus('\u2713 Pulled \u00b7 '+merged.length+' rounds \u00b7 '+t, 'var(--green)');
+    toast('Pull complete \u2713');
+  } catch(err) {
+    ghSetStatus('\u2717 '+err.message, 'var(--red)');
+    toast('Pull failed');
+  } finally {
+    if (pullBtn) { pullBtn.disabled=false; pullBtn.textContent='Pull \u2193'; }
+  }
 }
 
 function confirmClearAll() {
@@ -2971,391 +3170,371 @@ function holeCardHTML(h, idx) {
     <div class="inp-grp" style="margin-bottom:10px">
       <label class="inp-label">Notation (raw)</label>
       <textarea class="inp" id="re-notation-${idx}" rows="3" style="font-family:'DM Mono',monospace;font-size:13px">${escHtml(h.notation !== null ? h.notation : (bh.notation_raw||''))}</textarea>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-gold btn-sm" onclick="saveEdit(${idx})">Save</button>
-      <button class="btn btn-outline btn-sm" onclick="closeEdit(${idx})">Cancel</button>
-    </div>
+
+```
+</div>
+<div style="display:flex;gap:8px">
+  <button class="btn btn-gold btn-sm" onclick="saveEdit(${idx})">Save</button>
+  <button class="btn btn-outline btn-sm" onclick="closeEdit(${idx})">Cancel</button>
+</div>
+```
+
   </div>` : '';
 
-  return `<div class="rc ${cls}" id="rc-${idx}">
-    <div class="rc-head">
-      <span class="rc-hnum">H${bh.number}</span>
-      <div class="rc-hinfo">
-        <div class="rc-hpar">Par ${par}${yds?' \xb7 '+yds+'y':''}</div>
-        ${bh.confidence==='low'?'<div style="font-size:10px;color:var(--orange)">Low confidence</div>':''}
-      </div>
-      ${scoreBlock}
-      <button class="rc-edit-btn" onclick="toggleEdit(${idx})">${h.editOpen?'Close':'Edit'}</button>
-    </div>
-    ${flagsHTML}
-    <div class="rc-summary">${shotSummary(bh.shots, bh.putts, bh.pinZone)}</div>
-    ${editPanel}
+return `<div class="rc ${cls}" id="rc-${idx}">
+<div class="rc-head">
+<span class="rc-hnum">H${bh.number}</span>
+<div class="rc-hinfo">
+<div class="rc-hpar">Par ${par}${yds?’ \xb7 ‘+yds+‘y’:’’}</div>
+${bh.confidence===‘low’?’<div style="font-size:10px;color:var(--orange)">Low confidence</div>’:’’}
+</div>
+${scoreBlock}
+<button class="rc-edit-btn" onclick="toggleEdit(${idx})">${h.editOpen?‘Close’:‘Edit’}</button>
+</div>
+${flagsHTML}
+<div class="rc-summary">${shotSummary(bh.shots, bh.putts, bh.pinZone)}</div>
+${editPanel}
+
   </div>`;
 }
 
-function fKey(f) { return f.type + (f.field||''); }
+function fKey(f) { return f.type + (f.field||’’); }
 
 function scoreColorClass(rel) {
-  if (rel == null) return '';
-  return rel < 0 ? 'c-under' : rel > 0 ? 'c-over' : 'c-even';
+if (rel == null) return ‘’;
+return rel < 0 ? ‘c-under’ : rel > 0 ? ‘c-over’ : ‘c-even’;
 }
 
 function scoreName(rel) {
-  if (rel == null) return '';
-  const names = {'-2':'EAGLE','-1':'BIRDIE','0':'PAR','1':'BOGEY','2':'DOUBLE','3':'TRIPLE'};
-  return names[String(rel)] || (rel <= -2 ? 'EAGLE' : 'QUAD+');
+if (rel == null) return ‘’;
+const names = {’-2’:‘EAGLE’,’-1’:‘BIRDIE’,‘0’:‘PAR’,‘1’:‘BOGEY’,‘2’:‘DOUBLE’,‘3’:‘TRIPLE’};
+return names[String(rel)] || (rel <= -2 ? ‘EAGLE’ : ‘QUAD+’);
 }
 
 function flagDesc(f) {
-  if (f.detail) return f.detail;
-  const m = {score_mismatch:'Score mismatch',field_unclear:'Unclear: '+f.field,field_missing:'Missing: '+f.field,ob_unresolved:'OB not followed by re-tee or drop',score_unclear:'Score unclear'};
-  return m[f.type] || f.type;
+if (f.detail) return f.detail;
+const m = {score_mismatch:‘Score mismatch’,field_unclear:’Unclear: ’+f.field,field_missing:’Missing: ’+f.field,ob_unresolved:‘OB not followed by re-tee or drop’,score_unclear:‘Score unclear’};
+return m[f.type] || f.type;
 }
 
 function fixPanelHTML(f, idx, h) {
-  const bh = h.bh;
-  const par = bh.par;
-  if (f.type==='score_mismatch' || f.type==='score_unclear') {
-    const byronN = parseInt((f.detail||'').match(/Byron counts (\d+)/)?.[1]) || bh.score || par+1;
-    const writtenN = parseInt((f.detail||'').match(/written score is (\d+)/)?.[1]) || bh.score || par+1;
-    const opts = [...new Set([byronN, writtenN, par, par+1, par+2].filter(n=>n>0&&n<16))].sort((a,b)=>a-b);
-    return `<div class="rc-fix"><div class="fix-lbl">Select correct score:</div><div class="fix-btn-row">
-      ${opts.map(n=>`<button class="fix-btn${h.score===n?' picked':''}" onclick="applyScoreFix(${idx},${n})">${n}</button>`).join('')}
-    </div></div>`;
-  }
-  if (f.type==='ob_unresolved') {
-    return `<div class="rc-fix"><div class="fix-lbl">After OB \u2014 what happened?</div><div class="fix-btn-row">
-      <button class="fix-btn${h.resolutions[fKey(f)]==='retee'?' picked':''}" onclick="resolveFlag(${idx},'${fKey(f)}','retee')">Re-tee</button>
-      <button class="fix-btn${h.resolutions[fKey(f)]==='drop'?' picked':''}" onclick="resolveFlag(${idx},'${fKey(f)}','drop')">Drop</button>
-    </div></div>`;
-  }
-  return `<div class="rc-fix"><div class="fix-lbl" style="color:var(--chalk3)">Tap Edit to correct this field.</div></div>`;
+const bh = h.bh;
+const par = bh.par;
+if (f.type===‘score_mismatch’ || f.type===‘score_unclear’) {
+const byronN = parseInt((f.detail||’’).match(/Byron counts (\d+)/)?.[1]) || bh.score || par+1;
+const writtenN = parseInt((f.detail||’’).match(/written score is (\d+)/)?.[1]) || bh.score || par+1;
+const opts = […new Set([byronN, writtenN, par, par+1, par+2].filter(n=>n>0&&n<16))].sort((a,b)=>a-b);
+return `<div class="rc-fix"><div class="fix-lbl">Select correct score:</div><div class="fix-btn-row"> ${opts.map(n=>`<button class="fix-btn${h.score===n?' picked':''}" onclick="applyScoreFix(${idx},${n})">${n}</button>`).join('')} </div></div>`;
+}
+if (f.type===‘ob_unresolved’) {
+return `<div class="rc-fix"><div class="fix-lbl">After OB \u2014 what happened?</div><div class="fix-btn-row"> <button class="fix-btn${h.resolutions[fKey(f)]==='retee'?' picked':''}" onclick="resolveFlag(${idx},'${fKey(f)}','retee')">Re-tee</button> <button class="fix-btn${h.resolutions[fKey(f)]==='drop'?' picked':''}" onclick="resolveFlag(${idx},'${fKey(f)}','drop')">Drop</button> </div></div>`;
+}
+return `<div class="rc-fix"><div class="fix-lbl" style="color:var(--chalk3)">Tap Edit to correct this field.</div></div>`;
 }
 
 function applyScoreFix(idx, score) {
-  const h = REV.holes[idx];
-  h.score = score;
-  (h.bh.flags||[]).forEach(f => {
-    if (f.type==='score_mismatch'||f.type==='score_unclear') h.resolutions[fKey(f)] = score;
-  });
-  rerenderCard(idx);
-  updateConfirmBar();
+const h = REV.holes[idx];
+h.score = score;
+(h.bh.flags||[]).forEach(f => {
+if (f.type===‘score_mismatch’||f.type===‘score_unclear’) h.resolutions[fKey(f)] = score;
+});
+rerenderCard(idx);
+updateConfirmBar();
 }
 
 function resolveFlag(idx, key, val) {
-  REV.holes[idx].resolutions[key] = val;
-  rerenderCard(idx);
-  updateConfirmBar();
+REV.holes[idx].resolutions[key] = val;
+rerenderCard(idx);
+updateConfirmBar();
 }
 
 function toggleEdit(idx) {
-  REV.holes[idx].editOpen = !REV.holes[idx].editOpen;
-  rerenderCard(idx);
+REV.holes[idx].editOpen = !REV.holes[idx].editOpen;
+rerenderCard(idx);
 }
 
 function closeEdit(idx) {
-  REV.holes[idx].editOpen = false;
-  rerenderCard(idx);
+REV.holes[idx].editOpen = false;
+rerenderCard(idx);
 }
 
 function saveEdit(idx) {
-  const h = REV.holes[idx];
-  const sc = document.getElementById('re-score-'+idx);
-  const no = document.getElementById('re-notation-'+idx);
-  if (sc?.value) {
-    const s = parseInt(sc.value);
-    if (!isNaN(s) && s > 0) {
-      h.score = s;
-      (h.bh.flags||[]).forEach(f => {
-        if (f.type==='score_mismatch'||f.type==='score_unclear') h.resolutions[fKey(f)] = s;
-      });
-    }
-  }
-  if (no) {
-    const newNotation = no.value;
-    h.notation = newNotation;
-    if (newNotation !== (h.bh.notation_raw||'')) {
-      (h.bh.flags||[]).forEach(f => {
-        if (f.type==='field_unclear'||f.type==='field_missing') h.resolutions[fKey(f)] = 'manual_edit';
-      });
-    }
-  }
-  h.editOpen = false;
-  rerenderCard(idx);
-  updateConfirmBar();
+const h = REV.holes[idx];
+const sc = document.getElementById(‘re-score-’+idx);
+const no = document.getElementById(‘re-notation-’+idx);
+if (sc?.value) {
+const s = parseInt(sc.value);
+if (!isNaN(s) && s > 0) {
+h.score = s;
+(h.bh.flags||[]).forEach(f => {
+if (f.type===‘score_mismatch’||f.type===‘score_unclear’) h.resolutions[fKey(f)] = s;
+});
+}
+}
+if (no) {
+const newNotation = no.value;
+h.notation = newNotation;
+if (newNotation !== (h.bh.notation_raw||’’)) {
+(h.bh.flags||[]).forEach(f => {
+if (f.type===‘field_unclear’||f.type===‘field_missing’) h.resolutions[fKey(f)] = ‘manual_edit’;
+});
+}
+}
+h.editOpen = false;
+rerenderCard(idx);
+updateConfirmBar();
 }
 
 function rerenderCard(idx) {
-  const el = document.getElementById('rc-'+idx);
-  if (el) el.outerHTML = holeCardHTML(REV.holes[idx], idx);
+const el = document.getElementById(‘rc-’+idx);
+if (el) el.outerHTML = holeCardHTML(REV.holes[idx], idx);
 }
 
 function updateConfirmBar() {
-  const total = REV.holes.reduce((a,h) => a + (h.bh.flags||[]).filter(f=>!h.resolutions[fKey(f)]).length, 0);
-  const btn = document.getElementById('review-confirm-btn');
-  const status = document.getElementById('review-confirm-status');
-  const badge = document.getElementById('review-flag-badge');
-  if (!btn) return;
-  if (total > 0) {
-    btn.disabled = true;
-    status.textContent = `Resolve ${total} flag${total!==1?'s':''} to continue`;
-    status.style.color = 'var(--chalk3)';
-    badge.innerHTML = `<span style="background:var(--red);color:#fff;font-size:11px;padding:3px 10px;border-radius:100px">${total} flag${total!==1?'s':''}</span>`;
-  } else {
-    btn.disabled = false;
-    status.textContent = 'All clear \u2014 ready to confirm';
-    status.style.color = 'var(--green)';
-    badge.innerHTML = `<span style="background:var(--green);color:#fff;font-size:11px;padding:3px 10px;border-radius:100px">\u2713 All clear</span>`;
-  }
+const total = REV.holes.reduce((a,h) => a + (h.bh.flags||[]).filter(f=>!h.resolutions[fKey(f)]).length, 0);
+const btn = document.getElementById(‘review-confirm-btn’);
+const status = document.getElementById(‘review-confirm-status’);
+const badge = document.getElementById(‘review-flag-badge’);
+if (!btn) return;
+if (total > 0) {
+btn.disabled = true;
+status.textContent = `Resolve ${total} flag${total!==1?'s':''} to continue`;
+status.style.color = ‘var(–chalk3)’;
+badge.innerHTML = `<span style="background:var(--red);color:#fff;font-size:11px;padding:3px 10px;border-radius:100px">${total} flag${total!==1?'s':''}</span>`;
+} else {
+btn.disabled = false;
+status.textContent = ‘All clear \u2014 ready to confirm’;
+status.style.color = ‘var(–green)’;
+badge.innerHTML = `<span style="background:var(--green);color:#fff;font-size:11px;padding:3px 10px;border-radius:100px">\u2713 All clear</span>`;
+}
 }
 
 function shotSummary(shots, putts, pinZone) {
-  if (!shots?.length) return '<span style="color:var(--chalk3)">No shots recorded</span>';
-  const parts = shots.map(sh => {
-    switch(sh.type) {
-      case 'tee':      return `${sh.club||'Tee'} \u2192 ${posLabel(sh.position)}`;
-      case 'retee':    return `Rehit \u00b7 ${sh.club||''} \u2192 ${posLabel(sh.position)}`;
-      case 'approach': {
-        const yStr = sh.yardage ? sh.yardage+'yd ' : '';
-        const cStr = sh.club ? sh.club+' ' : '';
-        return sh.result==='H'
-          ? `${cStr}${yStr}\u2192 on green (z${sh.finishZone})`
-          : `${cStr}${yStr}\u2192 missed ${missLabel(sh.intendedZone, sh.finishZone)}`;
-      }
-      case 'layup':    return 'Layup';
-      case 'chip':     return 'Chip';
-      case 'recovery': return 'Recovery';
-      case 'drop':     return 'Drop';
-      case 'untracked':return '\u2014';
-      default:         return sh.type;
-    }
-  });
-  if (putts?.count) {
-    const dist = putts.distances?.length ? ' ('+putts.distances.join('ft, ')+'ft)' : '';
-    parts.push(putts.count + (putts.count===1?' putt':' putts') + dist);
-  }
-  if (pinZone) parts.push('pin z'+pinZone);
-  return parts.filter(Boolean).join(' \u00b7 ');
+if (!shots?.length) return ‘<span style="color:var(--chalk3)">No shots recorded</span>’;
+const parts = shots.map(sh => {
+switch(sh.type) {
+case ‘tee’:      return `${sh.club||'Tee'} \u2192 ${posLabel(sh.position)}`;
+case ‘retee’:    return `Rehit \u00b7 ${sh.club||''} \u2192 ${posLabel(sh.position)}`;
+case ‘approach’: {
+const yStr = sh.yardage ? sh.yardage+‘yd ’ : ‘’;
+const cStr = sh.club ? sh.club+’ ’ : ‘’;
+return sh.result===‘H’
+? `${cStr}${yStr}\u2192 on green (z${sh.finishZone})`
+: `${cStr}${yStr}\u2192 missed ${missLabel(sh.intendedZone, sh.finishZone)}`;
+}
+case ‘layup’:    return ‘Layup’;
+case ‘chip’:     return ‘Chip’;
+case ‘recovery’: return ‘Recovery’;
+case ‘drop’:     return ‘Drop’;
+case ‘untracked’:return ‘\u2014’;
+default:         return sh.type;
+}
+});
+if (putts?.count) {
+const dist = putts.distances?.length ? ’ (’+putts.distances.join(‘ft, ‘)+‘ft)’ : ‘’;
+parts.push(putts.count + (putts.count===1?’ putt’:’ putts’) + dist);
+}
+if (pinZone) parts.push(‘pin z’+pinZone);
+return parts.filter(Boolean).join(’ \u00b7 ’);
 }
 
 function posLabel(pos) {
-  return {OBL:'OB left',OBR:'OB right',LL:'left (trouble)',RR:'right (trouble)',L:'left rough',R:'right rough',C:'fairway'}[pos] || pos || '\u2014';
+return {OBL:‘OB left’,OBR:‘OB right’,LL:‘left (trouble)’,RR:‘right (trouble)’,L:‘left rough’,R:‘right rough’,C:‘fairway’}[pos] || pos || ‘\u2014’;
 }
 
 function missLabel(iz, fz) {
-  if (!iz||!fz) return 'green';
-  const ic=ZONE_COLS(iz),fc=ZONE_COLS(fz),ir=ZONE_ROWS(iz),fr=ZONE_ROWS(fz);
-  if (fc>ic) return 'right'; if (fc<ic) return 'left';
-  if (fr>ir) return 'long';  if (fr<ir) return 'short';
-  return 'green (proximity)';
+if (!iz||!fz) return ‘green’;
+const ic=ZONE_COLS(iz),fc=ZONE_COLS(fz),ir=ZONE_ROWS(iz),fr=ZONE_ROWS(fz);
+if (fc>ic) return ‘right’; if (fc<ic) return ‘left’;
+if (fr>ir) return ‘long’;  if (fr<ir) return ‘short’;
+return ‘green (proximity)’;
 }
 
 function escHtml(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+return (s||’’).replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’).replace(/”/g,’"’);
 }
 
 function discardReview() {
-  if (!confirm('Discard this import? Parsed data will be lost.')) return;
-  REV.round = null; REV.holes = [];
-  showView('round-setup');
+if (!confirm(‘Discard this import? Parsed data will be lost.’)) return;
+REV.round = null; REV.holes = [];
+showView(‘round-setup’);
 }
 
 function confirmRound() {
-  const round = REV.round;
-  if (!round) return;
-  round.holes = REV.holes.map(h => {
-    const bh = h.bh;
-    const score = h.score !== null ? h.score : bh.score;
-    const notation = h.notation !== null ? h.notation : (bh.notation_raw||'');
-    const shots = (bh.shots||[]).map(sh => {
-      validateShot(sh);
-      return sh.type==='approach' ? {...sh, missDirection: deriveMissDirection(sh.intendedZone, sh.finishZone, sh.result)} : sh;
-    });
-    const {gir, girPlusOne} = deriveGIR(shots, bh.par);
-    const flagHistory = (bh.flags||[]).map(f => ({
-      type: f.type, field: f.field||null, detail: f.detail||null,
-      resolvedValue: h.resolutions[fKey(f)]||null,
-      resolvedAt: h.resolutions[fKey(f)] ? new Date().toISOString() : null
-    }));
-    const hole = createHole({number:bh.number, par:bh.par, score, pinZone:bh.pinZone, notation});
-    hole.shots = shots;
-    hole.putts = bh.putts || {count:0, distances:[]};
-    hole.gir = gir; hole.girPlusOne = girPlusOne;
-    hole.flagHistory = flagHistory;
-    return hole;
-  });
-  calcRoundTotal(round);
-  round.importSessionId = genId();
-  const rounds = getRounds();
-  rounds.push(round);
-  saveRounds(rounds);
-  saveWIP(null);
-  REV.round = null; REV.holes = [];
-  toast('Round saved \u2713');
-  showView('history');
+const round = REV.round;
+if (!round) return;
+round.holes = REV.holes.map(h => {
+const bh = h.bh;
+const score = h.score !== null ? h.score : bh.score;
+const notation = h.notation !== null ? h.notation : (bh.notation_raw||’’);
+const shots = (bh.shots||[]).map(sh => {
+validateShot(sh);
+return sh.type===‘approach’ ? {…sh, missDirection: deriveMissDirection(sh.intendedZone, sh.finishZone, sh.result)} : sh;
+});
+const {gir, girPlusOne} = deriveGIR(shots, bh.par);
+const flagHistory = (bh.flags||[]).map(f => ({
+type: f.type, field: f.field||null, detail: f.detail||null,
+resolvedValue: h.resolutions[fKey(f)]||null,
+resolvedAt: h.resolutions[fKey(f)] ? new Date().toISOString() : null
+}));
+const hole = createHole({number:bh.number, par:bh.par, score, pinZone:bh.pinZone, notation});
+hole.shots = shots;
+hole.putts = bh.putts || {count:0, distances:[]};
+hole.gir = gir; hole.girPlusOne = girPlusOne;
+hole.flagHistory = flagHistory;
+return hole;
+});
+calcRoundTotal(round);
+round.importSessionId = genId();
+const rounds = getRounds();
+rounds.push(round);
+saveRounds(rounds);
+saveWIP(null);
+REV.round = null; REV.holes = [];
+toast(‘Round saved \u2713’);
+showView(‘history’);
 }
 
 // ── COURSE HUB ───────────────────────────────────────────────
 const CH = { courseId: null, teeIdx: 0 };
 
 function initCourseHub() {
-  migrateV6Notes();
-  const courses = getCourses();
-  const sel = document.getElementById('ch-course-select');
-  sel.innerHTML = courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-  CH.courseId = courses[0]?.id || null;
-  CH.teeIdx = 0;
-  if (CH.courseId) renderCourseHubTees();
+migrateV6Notes();
+const courses = getCourses();
+const sel = document.getElementById(‘ch-course-select’);
+sel.innerHTML = courses.map(c => `<option value="${c.id}">${c.name}</option>`).join(’’);
+CH.courseId = courses[0]?.id || null;
+CH.teeIdx = 0;
+if (CH.courseId) renderCourseHubTees();
 }
 
 function onCourseHubCourseChange() {
-  CH.courseId = document.getElementById('ch-course-select').value;
-  CH.teeIdx = 0;
-  renderCourseHubTees();
+CH.courseId = document.getElementById(‘ch-course-select’).value;
+CH.teeIdx = 0;
+renderCourseHubTees();
 }
 
 function renderCourseHubTees() {
-  const course = getCourses().find(c => c.id === CH.courseId);
-  if (!course) return;
-  const el = document.getElementById('ch-tee-chips');
-  el.innerHTML = course.tees.length <= 1 ? '' : course.tees.map((t, i) =>
-    `<button class="tee-chip${CH.teeIdx === i ? ' on' : ''}" onclick="selectCourseHubTee(${i})">${t.name}</button>`
-  ).join('');
-  renderCourseHubHoles(course);
+const course = getCourses().find(c => c.id === CH.courseId);
+if (!course) return;
+const el = document.getElementById(‘ch-tee-chips’);
+el.innerHTML = course.tees.length <= 1 ? ‘’ : course.tees.map((t, i) =>
+`<button class="tee-chip${CH.teeIdx === i ? ' on' : ''}" onclick="selectCourseHubTee(${i})">${t.name}</button>`
+).join(’’);
+renderCourseHubHoles(course);
 }
 
 function selectCourseHubTee(idx) {
-  CH.teeIdx = idx;
-  renderCourseHubTees();
+CH.teeIdx = idx;
+renderCourseHubTees();
 }
 
 function renderCourseHubHoles(course) {
-  const tee = course.tees[CH.teeIdx];
-  if (!tee) return;
-  const notes = getCourseNotes(CH.courseId, course.holes);
-  document.getElementById('ch-hole-rows').innerHTML = tee.holePars.map((par, i) => {
-    const h = i + 1;
-    const yds = tee.holeYards[i] || '\u2013';
-    const n = notes[i] || {tee:'', approach:'', green:''};
-    const parLabel = par === 3 ? 'Par 3' : par === 4 ? 'Par 4' : 'Par 5';
-    return `<div class="hub-hole-block">
-      <div class="hub-hole-hdr">
-        <span class="hub-h-num">H${h}</span>
-        <span class="hub-h-par">${parLabel}</span>
-        <span class="hub-h-yds">${yds} yds</span>
-      </div>
-      ${par !== 3 ? `<div class="hub-field">
-        <span class="hub-field-lbl">🏌️ Tee</span>
-        <textarea class="hub-note" rows="1"
-          placeholder="Aim point, shape, avoid\u2026"
-          onblur="saveCourseHubField(${i},'tee',this.value)"
-          oninput="autoGrowNote(this)">${esc(n.tee)}</textarea>
-      </div>` : ''}
-      <div class="hub-field">
-        <span class="hub-field-lbl">${par === 3 ? '🎯 Tee / Approach' : '🎯 Approach'}</span>
-        <textarea class="hub-note" rows="1"
-          placeholder="${par === 3 ? 'Club, aim, miss side\u2026' : 'Yardage, miss side, pin zones\u2026'}"
-          onblur="saveCourseHubField(${i},'approach',this.value)"
-          oninput="autoGrowNote(this)">${esc(n.approach)}</textarea>
-      </div>
-      <div class="hub-field">
-        <span class="hub-field-lbl">🟢 Green</span>
-        <textarea class="hub-note" rows="1"
-          placeholder="Slopes, speed, trouble areas\u2026"
-          onblur="saveCourseHubField(${i},'green',this.value)"
-          oninput="autoGrowNote(this)">${esc(n.green)}</textarea>
-      </div>
-    </div>`;
-  }).join('');
-  document.getElementById('ch-hole-rows').querySelectorAll('.hub-note').forEach(autoGrowNote);
+const tee = course.tees[CH.teeIdx];
+if (!tee) return;
+const notes = getCourseNotes(CH.courseId, course.holes);
+document.getElementById(‘ch-hole-rows’).innerHTML = tee.holePars.map((par, i) => {
+const h = i + 1;
+const yds = tee.holeYards[i] || ‘\u2013’;
+const n = notes[i] || {tee:’’, approach:’’, green:’’};
+const parLabel = par === 3 ? ‘Par 3’ : par === 4 ? ‘Par 4’ : ‘Par 5’;
+return `<div class="hub-hole-block"> <div class="hub-hole-hdr"> <span class="hub-h-num">H${h}</span> <span class="hub-h-par">${parLabel}</span> <span class="hub-h-yds">${yds} yds</span> </div> ${par !== 3 ? `<div class="hub-field">
+<span class="hub-field-lbl">🏌️ Tee</span>
+<textarea class="hub-note" rows="1"
+placeholder="Aim point, shape, avoid\u2026"
+onblur="saveCourseHubField(${i},'tee',this.value)"
+oninput="autoGrowNote(this)">${esc(n.tee)}</textarea>
+</div>` : ''} <div class="hub-field"> <span class="hub-field-lbl">${par === 3 ? '🎯 Tee / Approach' : '🎯 Approach'}</span> <textarea class="hub-note" rows="1" placeholder="${par === 3 ? 'Club, aim, miss side\u2026' : 'Yardage, miss side, pin zones\u2026'}" onblur="saveCourseHubField(${i},'approach',this.value)" oninput="autoGrowNote(this)">${esc(n.approach)}</textarea> </div> <div class="hub-field"> <span class="hub-field-lbl">🟢 Green</span> <textarea class="hub-note" rows="1" placeholder="Slopes, speed, trouble areas\u2026" onblur="saveCourseHubField(${i},'green',this.value)" oninput="autoGrowNote(this)">${esc(n.green)}</textarea> </div> </div>`;
+}).join(’’);
+document.getElementById(‘ch-hole-rows’).querySelectorAll(’.hub-note’).forEach(autoGrowNote);
 }
 
-function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s) { return (s||’’).replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’).replace(/”/g,’"’); }
 
 function autoGrowNote(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.max(36, el.scrollHeight) + 'px';
+el.style.height = ‘auto’;
+el.style.height = Math.max(36, el.scrollHeight) + ‘px’;
 }
 
 function saveCourseHubField(idx, field, val) {
-  if (!CH.courseId) return;
-  const course = getCourses().find(c => c.id === CH.courseId);
-  if (!course) return;
-  const notes = getCourseNotes(CH.courseId, course.holes);
-  notes[idx][field] = val.trim();
-  saveCourseNotes(CH.courseId, notes);
+if (!CH.courseId) return;
+const course = getCourses().find(c => c.id === CH.courseId);
+if (!course) return;
+const notes = getCourseNotes(CH.courseId, course.holes);
+notes[idx][field] = val.trim();
+saveCourseNotes(CH.courseId, notes);
 }
 
 // ── PLAYER HUB ───────────────────────────────────────────────
 function initPlayerHub() {
-  const p = getPlayerProfile();
-  // Restore toggles
-  ['L','C','R'].forEach(v => {
-    const btn = document.getElementById('ph-miss-'+v);
-    if (btn) btn.classList.toggle('on', p.primaryMiss===v);
-  });
-  ['draw','straight','fade'].forEach(v => {
-    const b1 = document.getElementById('ph-drv-'+v);
-    if (b1) b1.classList.toggle('on', p.driverShape===v);
-    const b2 = document.getElementById('ph-app-'+v);
-    if (b2) b2.classList.toggle('on', p.approachShape===v);
-  });
-  const s = document.getElementById('ph-strengths');
-  const w = document.getElementById('ph-weaknesses');
-  const n = document.getElementById('ph-notes');
-  if (s) s.value = p.strengths||'';
-  if (w) w.value = p.weaknesses||'';
-  if (n) n.value = p.notes||'';
+const p = getPlayerProfile();
+// Restore toggles
+[‘L’,‘C’,‘R’].forEach(v => {
+const btn = document.getElementById(‘ph-miss-’+v);
+if (btn) btn.classList.toggle(‘on’, p.primaryMiss===v);
+});
+[‘draw’,‘straight’,‘fade’].forEach(v => {
+const b1 = document.getElementById(‘ph-drv-’+v);
+if (b1) b1.classList.toggle(‘on’, p.driverShape===v);
+const b2 = document.getElementById(‘ph-app-’+v);
+if (b2) b2.classList.toggle(‘on’, p.approachShape===v);
+});
+const s = document.getElementById(‘ph-strengths’);
+const w = document.getElementById(‘ph-weaknesses’);
+const n = document.getElementById(‘ph-notes’);
+if (s) s.value = p.strengths||’’;
+if (w) w.value = p.weaknesses||’’;
+if (n) n.value = p.notes||’’;
 }
 
 function setPlayerToggle(field, val, btn) {
-  const profile = getPlayerProfile();
-  profile[field] = val;
-  savePlayerProfile(profile);
-  // Update button group UI
-  const parent = btn.parentElement;
-  parent.querySelectorAll('.tgl').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  toast('Saved \u2713');
+const profile = getPlayerProfile();
+profile[field] = val;
+savePlayerProfile(profile);
+// Update button group UI
+const parent = btn.parentElement;
+parent.querySelectorAll(’.tgl’).forEach(b => b.classList.remove(‘on’));
+btn.classList.add(‘on’);
+toast(‘Saved \u2713’);
 }
 
 function autoSavePlayer() {
-  const profile = getPlayerProfile();
-  const s = document.getElementById('ph-strengths');
-  const w = document.getElementById('ph-weaknesses');
-  const n = document.getElementById('ph-notes');
-  if (s) profile.strengths = s.value.trim();
-  if (w) profile.weaknesses = w.value.trim();
-  if (n) profile.notes = n.value.trim();
-  savePlayerProfile(profile);
+const profile = getPlayerProfile();
+const s = document.getElementById(‘ph-strengths’);
+const w = document.getElementById(‘ph-weaknesses’);
+const n = document.getElementById(‘ph-notes’);
+if (s) profile.strengths = s.value.trim();
+if (w) profile.weaknesses = w.value.trim();
+if (n) profile.notes = n.value.trim();
+savePlayerProfile(profile);
 }
 
 // ── SUN MODE ─────────────────────────────────────────────────
 function toggleSunMode() {
-  const on = document.documentElement.classList.toggle('sun-mode');
-  localStorage.setItem('pjc_sun', on?'1':'0');
-  document.getElementById('sun-btn').textContent = on?'☀️':'🌙';
+const on = document.documentElement.classList.toggle(‘sun-mode’);
+localStorage.setItem(‘pjc_sun’, on?‘1’:‘0’);
+document.getElementById(‘sun-btn’).textContent = on?‘☀️’:‘🌙’;
 }
 
 // ── TOAST ────────────────────────────────────────────────────
 let _tt=null;
 function toast(msg,dur) {
-  const el=document.getElementById('toast');
-  el.textContent=msg; el.classList.add('show');
-  clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),dur||2400);
+const el=document.getElementById(‘toast’);
+el.textContent=msg; el.classList.add(‘show’);
+clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove(‘show’),dur||2400);
 }
 
 // ── INIT ─────────────────────────────────────────────────────
 (function init(){
-  migrateV6Notes();
-  if (localStorage.getItem('pjc_sun')==='1') {
-    document.documentElement.classList.add('sun-mode');
-    const btn=document.getElementById('sun-btn');
-    if (btn) btn.textContent='☀️';
-  }
-  renderHome();
+migrateV6Notes();
+if (localStorage.getItem(‘pjc_sun’)===‘1’) {
+document.documentElement.classList.add(‘sun-mode’);
+const btn=document.getElementById(‘sun-btn’);
+if (btn) btn.textContent=‘☀️’;
+}
+renderHome();
 })();
 </script>
+
 </body>
 </html>
