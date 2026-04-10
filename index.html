@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.6 · Apr 9, 2026 -->
+<!-- PJ Caddie v7.10.9 · Apr 9, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -13,8 +13,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#0e1a0e;--ink2:#1c301c;--ink3:#2a4a2a;--fairway:#3a6b3a;--gold:#c8a84b;--gold2:#dfc070;--chalk:#f2edd8;--chalk2:#c9c3a8;--chalk3:#908a72;--white:#ffffff;--red:#c94040;--red2:#a03030;--blue:#4a8fd4;--sky:#6ab0e8;--green:#5ec85e;--orange:#e8994a;--purple:#b48ef0;--border:rgba(200,168,75,0.18);--border2:rgba(242,237,216,0.1);--r:14px;--rs:10px}
-html.sun-mode{--ink:#f5f5f0;--ink2:#e8e8e0;--ink3:#d8d8cc;--fairway:#2a5a2a;--gold:#8a6a00;--gold2:#6a5000;--chalk:#111111;--chalk2:#333333;--chalk3:#555555;--border:rgba(0,0,0,0.15);--border2:rgba(0,0,0,0.08);--red:#b02020;--sky:#1a6abf;--blue:#1a5a9a;--green:#1a7a1a;--orange:#b05a00;--purple:#5a2a8a}
+:root{--ink:#0e1a0e;--ink2:#1c301c;--ink3:#2a4a2a;--fairway:#3a6b3a;--gold:#c8a84b;--chalk:#f2edd8;--chalk2:#c9c3a8;--chalk3:#908a72;--red:#c94040;--green:#5ec85e;--orange:#e8994a;--border:rgba(200,168,75,0.18);--border2:rgba(242,237,216,0.1);--r:14px;--rs:10px}
+html.sun-mode{--ink:#f5f5f0;--ink2:#e8e8e0;--ink3:#d8d8cc;--fairway:#2a5a2a;--gold:#8a6a00;--chalk:#111111;--chalk2:#333333;--chalk3:#555555;--border:rgba(0,0,0,0.15);--border2:rgba(0,0,0,0.08);--red:#b02020;--green:#1a7a1a;--orange:#b05a00}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--chalk);font-family:'DM Sans',sans-serif;font-size:16px}
 body{display:flex;flex-direction:column}
@@ -134,7 +134,6 @@ body{display:flex;flex-direction:column}
 .rc-hnum{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gold);min-width:36px}
 .rc-hinfo{flex:1}
 .rc-hpar{font-size:12px;color:var(--chalk2);font-weight:500}
-.rc-hyds{font-size:11px;color:var(--chalk3);font-family:'DM Mono',monospace}
 .rc-score-block{text-align:right}
 .rc-score-num{font-family:'DM Serif Display',serif;font-size:24px;line-height:1}
 .rc-score-lbl{font-size:10px;letter-spacing:.5px;margin-top:1px;text-transform:uppercase}
@@ -167,7 +166,6 @@ body{display:flex;flex-direction:column}
 .dhc-hnum{font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);min-width:30px}
 .dhc-hinfo{flex:1}
 .dhc-hpar{font-size:12px;color:var(--chalk2)}
-.dhc-hyds{font-size:11px;color:var(--chalk3);font-family:'DM Mono',monospace}
 .dhc-score{text-align:right;margin-right:6px}
 .dhc-snum{font-family:'DM Serif Display',serif;font-size:20px;line-height:1}
 .dhc-slbl{font-size:10px;letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
@@ -187,23 +185,16 @@ body{display:flex;flex-direction:column}
 .scr-card.done{border-left-color:var(--green)}
 .scr-head{display:flex;align-items:center;gap:8px;padding:12px 14px;cursor:pointer;transition:background .12s;user-select:none}
 .scr-head:active{background:var(--ink3)}
-.scr-body{border-top:1px solid var(--border2);padding:14px 14px 16px}
 .scr-section{margin-bottom:18px}
 .scr-section:last-child{margin-bottom:0}
-.scr-slbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:9px;display:block}
-.score-row{display:flex;gap:6px}
 .score-btn{flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:13px 4px;font-family:'DM Serif Display',serif;font-size:18px;color:var(--chalk);cursor:pointer;text-align:center;transition:all .12s}
 .score-btn:active{opacity:.6}
 .score-btn.sel{background:var(--gold);border-color:var(--gold);color:var(--ink)}
-.score-btn.par-ref{border-color:rgba(200,168,75,.5)}
-.putt-row{display:flex;gap:7px;margin-bottom:8px}
 .putt-btn{flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:12px 4px;font-family:'DM Serif Display',serif;font-size:16px;color:var(--chalk);cursor:pointer;text-align:center;transition:all .12s}
 .putt-btn:active{opacity:.6}
 .putt-btn.sel{background:var(--gold);border-color:var(--gold);color:var(--ink)}
-.pd-row{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}
 .pd-inp{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:9px 10px;color:var(--chalk);font-family:'DM Mono',monospace;font-size:14px;width:72px;outline:none;text-align:center}
 .pd-inp:focus{border-color:var(--gold)}
-.zone-wrap{margin-bottom:4px}
 .zone-grid{display:grid;grid-template-columns:40px repeat(3,1fr);gap:5px;margin-bottom:4px}
 .zone-rlbl{font-size:10px;color:var(--chalk3);display:flex;align-items:center;letter-spacing:.3px;padding-right:4px}
 .zone-clbl{font-size:10px;color:var(--chalk3);text-align:center;letter-spacing:.5px;padding-bottom:2px}
@@ -215,7 +206,6 @@ body{display:flex;flex-direction:column}
 .result-btn:active{opacity:.6}
 .result-btn.h{background:rgba(94,200,94,.15);border-color:var(--green);color:var(--green);font-weight:600}
 .result-btn.m{background:rgba(201,64,64,.1);border-color:var(--red);color:var(--red);font-weight:600}
-.lie-row{display:flex;gap:6px;margin-bottom:12px}
 .lie-btn{flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:9px 4px;font-size:12px;color:var(--chalk2);cursor:pointer;text-align:center;transition:all .15s}
 .lie-btn:active{opacity:.6}
 .lie-btn.sel{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
@@ -224,11 +214,9 @@ body{display:flex;flex-direction:column}
 .club-chip{background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:7px 13px;font-size:12px;color:var(--chalk2);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
 .club-chip:active{opacity:.6}
 .club-chip.sel{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
-.pos-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
 .pos-btn{flex:1;min-width:0;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:9px 2px;font-size:11px;color:var(--chalk2);cursor:pointer;text-align:center;transition:all .15s;white-space:nowrap}
 .pos-btn:active{opacity:.6}
 .pos-btn.sel{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
-.sg-row{display:flex;gap:7px;flex-wrap:wrap}
 .sg-btn{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--chalk2);cursor:pointer;transition:all .15s}
 .sg-btn:active{opacity:.6}
 .sg-btn.sel{background:rgba(94,200,94,.12);border-color:var(--green);color:var(--green);font-weight:500}
@@ -236,8 +224,6 @@ body{display:flex;flex-direction:column}
 .wiz-hole-num{font-family:'DM Serif Display',serif;font-size:52px;color:var(--gold);line-height:1;display:block}
 .wiz-hole-info{font-size:17px;color:var(--chalk2);display:block;margin-top:4px;font-weight:500}
 .wiz-step-lbl{font-size:12px;color:var(--chalk3);display:block;margin-top:4px;letter-spacing:.5px}
-.wiz-title{font-family:'DM Serif Display',serif;font-size:26px;color:var(--chalk);margin-bottom:6px}
-.wiz-sub{font-size:13px;color:var(--chalk3);margin-bottom:22px;line-height:1.5}
 .wiz-nav{display:flex;gap:10px;padding:12px max(18px,calc((100%-500px)/2));border-top:1px solid var(--border2);background:var(--ink);flex-shrink:0}
 .wiz-back{background:none;border:1px solid var(--border);border-radius:var(--rs);padding:13px 20px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--chalk2);cursor:pointer;flex-shrink:0}
 .wiz-back:active{opacity:.6}
@@ -251,7 +237,6 @@ body{display:flex;flex-direction:column}
 .calc-btn:active{background:var(--ink2);transform:scale(.97)}
 .calc-btn.back{font-size:18px;color:var(--chalk2)}
 .calc-btn.enter{background:var(--gold);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;letter-spacing:.5px}
-.wiz-override-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border2)}
 .wiz-ovr-btn{background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:8px 14px;font-size:12px;color:var(--chalk2);cursor:pointer;transition:all .15s;white-space:nowrap}
 .wiz-ovr-btn:active{opacity:.6}
 .wiz-ovr-btn.sel{background:rgba(94,200,94,.12);border-color:var(--green);color:var(--green);font-weight:500}
@@ -305,6 +290,35 @@ body{display:flex;flex-direction:column}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 #toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,20px) + 70px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:10px 20px;font-size:13px;color:var(--chalk);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:999;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.byron-pass-card{margin-bottom:10px;padding:0;overflow:hidden}
+.byron-pass-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer;user-select:none;transition:background .12s}
+.byron-pass-hdr:active{background:var(--ink3)}
+.byron-pass-title{font-size:14px;font-weight:600;color:var(--chalk)}
+.byron-pass-sub{font-size:10px;color:var(--chalk3);margin-top:2px;letter-spacing:.3px}
+.byron-pass-chev{font-size:11px;color:var(--chalk3);transition:transform .2s;flex-shrink:0}
+.byron-pass-chev.open{transform:rotate(180deg)}
+.byron-pass-body{border-top:1px solid var(--border2);padding:12px 14px 14px}
+.byron-hole-row{border-bottom:1px solid var(--border2);padding:10px 0;cursor:pointer;user-select:none}
+.byron-hole-row:last-child{border-bottom:none;padding-bottom:0}
+.byron-hole-hdr{display:flex;align-items:center;gap:8px}
+.byron-hole-num{font-family:'DM Serif Display',serif;font-size:15px;color:var(--gold);min-width:28px;flex-shrink:0}
+.byron-hole-summary{font-size:12px;color:var(--chalk2);flex:1;line-height:1.4}
+.byron-hole-chev{font-size:10px;color:var(--chalk3);transition:transform .2s;flex-shrink:0}
+.byron-hole-chev.open{transform:rotate(180deg)}
+.byron-hole-detail{font-size:12px;color:var(--chalk3);line-height:1.7;padding:8px 0 2px 36px}
+.byron-section{margin-bottom:14px}
+.byron-section:last-child{margin-bottom:0}
+.byron-section-lbl{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:5px;display:block}
+.byron-section-txt{font-size:12px;color:var(--chalk2);line-height:1.7}
+.byron-headline{font-size:13px;font-weight:600;color:var(--chalk);background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.25);border-radius:var(--rs);padding:10px 12px;margin-bottom:14px;line-height:1.5}
+.byron-gp-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.byron-gp-hole{font-family:'DM Serif Display',serif;font-size:13px;color:var(--gold);min-width:28px;flex-shrink:0;padding-top:1px}
+.byron-gp-zone{font-size:9px;letter-spacing:1px;text-transform:uppercase;background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:2px 7px;color:var(--chalk3);flex-shrink:0;white-space:nowrap;margin-top:2px}
+.byron-gp-reason{font-size:12px;color:var(--chalk2);line-height:1.6;flex:1}
+.byron-loading{text-align:center;padding:20px 0}
+.byron-spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+.byron-error{font-size:12px;color:var(--red);padding:8px 0}
+.byron-warn{font-size:11px;color:var(--gold);background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.2);border-radius:var(--rs);padding:8px 10px;margin-bottom:10px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -319,7 +333,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.6 · Apr 9, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.9 · Apr 9, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -520,10 +534,59 @@ body{display:flex;flex-direction:column}
       <div id="det-miss" style="margin-bottom:6px"></div>
       <span class="section-lbl">Holes</span>
       <div id="det-holes"></div>
-      <div class="card" style="margin-top:16px;text-align:center;opacity:.55">
-        <div style="font-size:22px;margin-bottom:6px">🤖</div>
-        <div style="font-size:13px;color:var(--chalk2);font-weight:500">Byron Analysis</div>
-        <div style="font-size:11px;color:var(--chalk3);margin-top:4px">Available in Phase 5</div>
+      <div id="byron-section" style="margin-top:20px">
+        <span class="section-lbl" style="margin-bottom:10px">Byron Analysis</span>
+
+        <!-- Pass 1: Holes -->
+        <div class="card byron-pass-card" id="byron-card-holes">
+          <div class="byron-pass-hdr" onclick="toggleByronCard('holes')">
+            <div>
+              <div class="byron-pass-title">🔍 Holes</div>
+              <div class="byron-pass-sub" id="byron-ts-holes"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <button class="btn btn-gold btn-sm" id="byron-btn-holes" onclick="event.stopPropagation();runByron('holes')">Run</button>
+              <span class="byron-pass-chev" id="byron-chev-holes">▾</span>
+            </div>
+          </div>
+          <div id="byron-body-holes" class="byron-pass-body" style="display:none">
+            <div id="byron-content-holes"></div>
+          </div>
+        </div>
+
+        <!-- Pass 2: Patterns -->
+        <div class="card byron-pass-card" id="byron-card-patterns">
+          <div class="byron-pass-hdr" onclick="toggleByronCard('patterns')">
+            <div>
+              <div class="byron-pass-title">📊 Patterns</div>
+              <div class="byron-pass-sub" id="byron-ts-patterns"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <button class="btn btn-gold btn-sm" id="byron-btn-patterns" onclick="event.stopPropagation();runByron('patterns')" disabled>Run</button>
+              <span class="byron-pass-chev" id="byron-chev-patterns">▾</span>
+            </div>
+          </div>
+          <div id="byron-body-patterns" class="byron-pass-body" style="display:none">
+            <div id="byron-content-patterns"></div>
+          </div>
+        </div>
+
+        <!-- Pass 3: Gameplan -->
+        <div class="card byron-pass-card" id="byron-card-gameplan">
+          <div class="byron-pass-hdr" onclick="toggleByronCard('gameplan')">
+            <div>
+              <div class="byron-pass-title">🎯 Gameplan</div>
+              <div class="byron-pass-sub" id="byron-ts-gameplan"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <button class="btn btn-gold btn-sm" id="byron-btn-gameplan" onclick="event.stopPropagation();runByron('gameplan')" disabled>Run</button>
+              <span class="byron-pass-chev" id="byron-chev-gameplan">▾</span>
+            </div>
+          </div>
+          <div id="byron-body-gameplan" class="byron-pass-body" style="display:none">
+            <div id="byron-content-gameplan"></div>
+          </div>
+        </div>
       </div>
       <button class="btn btn-danger" style="margin-top:20px" id="det-delete-btn" onclick="deleteRound()">Delete Round</button>
     </div>
@@ -633,7 +696,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.6 · Phase 4B</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.9 · Phase 4B</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v1.1 + holeYards</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -755,8 +818,137 @@ body{display:flex;flex-direction:column}
 'use strict';
 
 // ── CADDIE VOICE ─────────────────────────────────────────────
-const BYRON_VERSION = 'Byron 2.0';
+const BYRON_VERSION = 'Byron 3.0';
 const BYRON_PERSONA = 'IDENTITY: You are Byron \u2014 elite caddie and data analyst. Your voice draws from four sources: Cory Jez / TourIQ (reads and synthesizes shot data into caddie intelligence), Scott Fawcett / DECADE (dispersion-based targets, probability framework, aim away from the big number), Jon Sherman / Practical Golf (tone calibration for 18-handicap reality, no false hope), and your own voice (direct, specific, dry, never preachy).\n\nLANGUAGE RULE: Never use the word \u201cStrackaline\u201d \u2014 refer to course yardage and green-reading materials as \u201cgreen book\u201d instead.\n\nWHAT YOU ARE NOT: You are not a swing instructor. Never give swing tips, mechanics advice, or range drills. Your job is course management, not technique.\n\nTONE: Direct. Specific. Dry when warranted. Never generic. Never preachy. Every insight must cite a hole, club, yardage, miss direction, or data point. If the data doesn\u2019t support a claim, don\u2019t make it.\n\nWRITING STYLE FOR MOBILE: Write SHORT. Maximum 3 sentences per block \u2014 then stop. No paragraph walls. Each sentence should stand alone.\n\n18-HANDICAP REALITY: Bogey is a good score on a hard hole. Double bogey is acceptable on the hardest holes. Scoring zones: PARITY TARGET (realistic par opportunity), DAMAGE CONTROL (bogey is fine, avoid doubles), SURVIVAL (bogey/double acceptable \u2014 just get out clean). Never chase scores that aren\u2019t there.';
+
+// ── BYRON 3.0 CACHE ───────────────────────────────────────────
+function byronGetCache(roundId, pass) {
+  try { return JSON.parse(localStorage.getItem('byron3_'+roundId+'_'+pass)||'null'); }
+  catch { return null; }
+}
+function byronSetCache(roundId, pass, result) {
+  localStorage.setItem('byron3_'+roundId+'_'+pass, JSON.stringify({result, ts: Date.now()}));
+}
+function byronClearRoundCache(roundId) {
+  ['holes','patterns','gameplan'].forEach(p => localStorage.removeItem('byron3_'+roundId+'_'+p));
+}
+
+// ── BYRON 3.0 DATA ASSEMBLY ───────────────────────────────────
+function byronHistoricalSummary(courseId, currentRoundId) {
+  const prior = getRounds().filter(r => r.courseId===courseId && r.id!==currentRoundId && r.holes?.length);
+  if (!prior.length) return null;
+  const holeStats = {};
+  prior.forEach(r => {
+    (r.holes||[]).forEach(h => {
+      if (!holeStats[h.number]) holeStats[h.number] = {scores:[], gir:[], misses:[]};
+      const hs = holeStats[h.number];
+      if (h.score!=null && h.par) hs.scores.push(h.score-h.par);
+      if (h.gir!=null) hs.gir.push(h.gir?1:0);
+      (h.shots||[]).forEach(sh => {
+        if (sh.type==='approach' && sh.result==='M' && sh.missDirection) hs.misses.push(sh.missDirection);
+      });
+    });
+  });
+  const summary = {};
+  for (const [num, st] of Object.entries(holeStats)) {
+    const avgOP = st.scores.length ? (st.scores.reduce((a,b)=>a+b,0)/st.scores.length).toFixed(1) : null;
+    const girPct = st.gir.length ? Math.round(st.gir.reduce((a,b)=>a+b,0)/st.gir.length*100) : null;
+    const mc = {}; st.misses.forEach(m => mc[m]=(mc[m]||0)+1);
+    const domMiss = Object.entries(mc).sort((a,b)=>b[1]-a[1])[0]?.[0]||null;
+    summary[num] = {avgOverPar:avgOP, girPct, dominantMiss:domMiss};
+  }
+  return {roundCount:prior.length, holes:summary};
+}
+
+function byronRoundStats(round) {
+  const holes = round.holes||[];
+  const approaches = holes.flatMap(h=>(h.shots||[]).filter(s=>s.type==='approach'&&!s.isTeeShot));
+  const teeShots = holes.flatMap(h=>(h.shots||[]).filter(s=>s.isTeeShot));
+  const misses = approaches.filter(s=>s.result==='M'&&s.missDirection);
+  const missDir = {left:0,right:0,short:0,long:0,center:0};
+  misses.forEach(s=>{if(missDir[s.missDirection]!=null)missDir[s.missDirection]++;});
+  const penalties = [];
+  holes.forEach(h=>{
+    (h.shots||[]).forEach(sh=>{
+      if(sh.position==='OBL'||sh.position==='OBR') penalties.push({hole:h.number,position:sh.position,club:sh.club});
+    });
+  });
+  const chipProx = [];
+  holes.forEach(h=>{
+    const hasChip=(h.shots||[]).some(s=>s.type==='chip'||s.type==='recovery');
+    if(hasChip&&h.putts?.distances?.length) chipProx.push(h.putts.distances[0]);
+  });
+  const clubData = {};
+  approaches.forEach(s=>{
+    if(!s.club||!s.yardage) return;
+    if(!clubData[s.club]) clubData[s.club]=[];
+    clubData[s.club].push({yds:s.yardage,result:s.result,intended:s.intendedZone,finish:s.finishZone,miss:s.missDirection,chokeUp:s.chokeUp||false});
+  });
+  return {
+    approachCount:approaches.length,
+    girCount:holes.filter(h=>h.gir).length,
+    totalHoles:holes.length,
+    totalPutts:holes.reduce((a,h)=>a+(h.putts?.count||0),0),
+    missDir, missTotal:misses.length,
+    penalties,
+    chipProx,
+    avgChipProx:chipProx.length?Math.round(chipProx.reduce((a,b)=>a+b,0)/chipProx.length):null,
+    clubData
+  };
+}
+
+function byronBuildBundle(round) {
+  const player = getPlayerProfile();
+  const courses = getCourses();
+  const course = courses.find(c=>c.id===round.courseId);
+  const courseNotes = getCourseNotes(round.courseId, round.holesPlayed||18);
+  const hist = byronHistoricalSummary(round.courseId, round.id);
+  const stats = byronRoundStats(round);
+  const rel = round.totalScore!=null&&round.par ? round.totalScore-round.par : null;
+  const relStr = rel==null?'?':rel===0?'E':rel>0?'+'+rel:String(rel);
+  return {round, player, courseNotes, hist, stats, rel, relStr, courseName:round.course};
+}
+
+// ── BYRON 3.0 PROMPTS ─────────────────────────────────────────
+function byronHolesPrompt(bundle) {
+  const {round, player, courseNotes, stats, relStr} = bundle;
+  const holesData = (round.holes||[]).sort((a,b)=>a.number-b.number).map(h=>{
+    const tee=(h.shots||[]).find(s=>s.isTeeShot);
+    const apps=(h.shots||[]).filter(s=>s.type==='approach'&&!s.isTeeShot);
+    const sg=(h.shots||[]).filter(s=>['chip','recovery','layup'].includes(s.type));
+    return {
+      hole:h.number,par:h.par,score:h.score,overPar:h.score&&h.par?h.score-h.par:null,
+      gir:h.gir,pinZone:h.pinZone,
+      putts:{count:h.putts?.count||0,distances:h.putts?.distances||[]},
+      tee:tee?{club:tee.club,position:tee.position}:null,
+      approaches:apps.map(a=>({club:a.club,yds:a.yardage,intended:a.intendedZone,finish:a.finishZone,result:a.result,miss:a.missDirection,lie:a.lie,chokeUp:a.chokeUp||false})),
+      shortGame:sg.map(s=>s.type)
+    };
+  });
+  const noteLines = courseNotes.map((n,i)=>{
+    const p=[n.tee&&'Tee:'+n.tee,n.approach&&'App:'+n.approach,n.green&&'Grn:'+n.green].filter(Boolean);
+    return p.length?`H${i+1}: ${p.join(' | ')}`:null;
+  }).filter(Boolean).join('\n');
+  const lowWarn = stats.approachCount<9?`Only ${stats.approachCount} approach shots \u2014 limited sample.`:null;
+
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nCOURSE NOTES:\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
+}
+
+function byronPatternsPrompt(bundle, holesResult) {
+  const {round, player, hist, stats, relStr} = bundle;
+  const histStr = hist
+    ? `${hist.roundCount} prior round(s) at ${round.course}. Per-hole history: ${JSON.stringify(hist.holes)}`
+    : `No prior rounds at ${round.course} on record.`;
+  const lowWarn = stats.approachCount<9?`Only ${stats.approachCount} approach shots \u2014 pattern confidence is low.`:null;
+
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 2: PATTERN ANALYSIS \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}\n\nROUND: ${round.course}, ${round.date}, Score ${round.totalScore} (${relStr})\n\nHOLES OUTPUT (Pass 1):\n${JSON.stringify(holesResult)}\n\nROUND STATS:\nApproaches: ${stats.approachCount} | GIR: ${stats.girCount}/${stats.totalHoles} | Putts: ${stats.totalPutts}\nMiss directions: L=${stats.missDir.left} R=${stats.missDir.right} Sh=${stats.missDir.short} Lg=${stats.missDir.long} C=${stats.missDir.center} (${stats.missTotal} total misses)\nPenalties: ${stats.penalties.length} \u2014 ${JSON.stringify(stats.penalties)}\nChip/recovery first-putt distances: ${stats.chipProx.length?stats.chipProx.join(', ')+'ft (avg '+stats.avgChipProx+'ft)':'no data'}\nClub data: ${JSON.stringify(stats.clubData)}\n\nHISTORICAL: ${histStr}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "missPattern": "Quantify miss direction with counts. E.g. '5 of 7 approach misses went right.' Note yardage bands if data supports. Compare to player primary miss.",\n  "clubValidation": "Are clubs matching yardage expectations? Flag systematic short/long by club. Cite specific shots.",\n  "penaltySummary": "Every penalty traced to the decision. Cite hole, club, position. Null if no penalties.",\n  "chipProximity": "First-putt distance after chips/recoveries. Avg, range, and what it costs in putts. Null if no data.",\n  "historicalComparison": "How does this round compare to prior rounds at this course? Cite specific holes or stats where history exists.",\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
+}
+
+function byronGameplanPrompt(bundle, holesResult, patternsResult) {
+  const {round, player, relStr} = bundle;
+
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 3: GAMEPLAN FOR NEXT ROUND \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}\n\nROUND: ${round.course}, ${round.date}, Score ${round.totalScore} (${relStr})\n\nHOLES OUTPUT:\n${JSON.stringify(holesResult)}\n\nPATTERNS OUTPUT:\n${JSON.stringify(patternsResult)}\n\nSCORING ZONES: PARITY TARGET=realistic par opportunity. DAMAGE CONTROL=bogey is the plan. SURVIVAL=get out clean.\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "headline": "Single most important change for next round. One sentence.",\n  "bogeyBudget": [\n    {"hole": 7, "zone": "DAMAGE CONTROL", "reasoning": "Why \u2014 cite avg score or pattern. 1-2 sentences."}\n  ],\n  "aimCorrections": [\n    {"hole": 4, "currentAim": "zone 5", "correctedAim": "zone 4", "reasoning": "Miss goes right \u2014 zone 4 aim keeps miss on green."}\n  ],\n  "otherAdjustments": [\n    "Specific club, distance, or layup change. Cite data. 1 sentence each."\n  ]\n}`;
+}
 
 // Club list \u2014 used by scoring screen (Phase 4)
 const CLUBS = ['Dr','3w','5w','2h','3h','4h','5h','3i','4i','5i','6i','7i','8i','9i','PW','GW','SW','LW','PT','TW','HW','?'];
@@ -805,6 +997,16 @@ const PRELOADED_COURSES = [
 // ── CONSTANTS ────────────────────────────────────────────────
 const SHOT_TYPES = ['tee','approach','chip','recovery','layup','untracked','retee','drop'];
 const TEE_POSITIONS = ['OBL','LL','L','C','R','RR','OBR'];
+
+function validateShot(shot) {
+  const t = (shot.type||'').toLowerCase();
+  if (!SHOT_TYPES.includes(t)) { console.warn('[PJC] Invalid shot type:', shot.type, shot); return false; }
+  if (t === 'tee' && shot.position) {
+    const pos = (shot.position||'').toUpperCase();
+    if (!TEE_POSITIONS.includes(pos)) { console.warn('[PJC] Invalid tee position:', shot.position, shot); return false; }
+  }
+  return true;
+}
 const ZONE_COLS = z => ((z - 1) % 3) + 1;
 const ZONE_ROWS = z => Math.ceil(z / 3);
 
@@ -1595,6 +1797,18 @@ function initScoring() {
   const teeSet = course?.tees.find(t=>t.name===round.tees);
   SCR.holes = round.expectedHoles.map(h => {
     const i = h-1;
+    const savedHole = (round.holes||[]).find(sh=>sh.number===h);
+    if (savedHole) {
+      // Hole already saved — restore as saved state
+      return {
+        holeNum:h, par:teeSet?.holePars[i]||4, yds:round.holeYards?.[i]||null,
+        sequence:[], phase:'sequence',
+        detailTaskIdx:0, detailSubStepIdx:0,
+        puttDistances:[], puttCalcIdx:0, puttCalcBuf:'',
+        pinZone:savedHole.pinZone||null,
+        saved:true, savedScore:savedHole.score
+      };
+    }
     return {
       holeNum:h, par:teeSet?.holePars[i]||4, yds:round.holeYards?.[i]||null,
       sequence:[], phase:'sequence',
@@ -2303,6 +2517,177 @@ function abandonRound() {
 }
 
 
+// ── BYRON 3.0 ENGINE ─────────────────────────────────────────
+function byronTimeAgo(ts) {
+  const mins = Math.round((Date.now()-ts)/60000);
+  if (mins<1) return 'just now';
+  if (mins<60) return mins+'m ago';
+  return Math.round(mins/60)+'h ago';
+}
+
+function toggleByronCard(pass) {
+  const body = document.getElementById('byron-body-'+pass);
+  const chev = document.getElementById('byron-chev-'+pass);
+  if (!body) return;
+  const isOpen = body.style.display!=='none';
+  body.style.display = isOpen?'none':'';
+  if (chev) chev.classList.toggle('open', !isOpen);
+}
+
+function toggleByronHole(row) {
+  const detail = row.querySelector('.byron-hole-detail');
+  const chev = row.querySelector('.byron-hole-chev');
+  if (!detail) return;
+  const isOpen = detail.style.display!=='none';
+  detail.style.display = isOpen?'none':'';
+  if (chev) chev.classList.toggle('open', !isOpen);
+}
+
+function renderByronHoles(el, result) {
+  if (!result?.holes) { el.innerHTML = '<div class="byron-error">Invalid response from Byron.</div>'; return; }
+  const warn = result.lowDataWarning?`<div class="byron-warn">\u26a0\ufe0f ${result.lowDataWarning}</div>`:'';
+  const rows = result.holes.map(h=>`
+    <div class="byron-hole-row" onclick="toggleByronHole(this)">
+      <div class="byron-hole-hdr">
+        <span class="byron-hole-num">H${h.number}</span>
+        <span class="byron-hole-summary">${h.summary||''}</span>
+        <span class="byron-hole-chev">\u25be</span>
+      </div>
+      <div class="byron-hole-detail" style="display:none">${h.detail||''}</div>
+    </div>`).join('');
+  el.innerHTML = warn + rows;
+}
+
+function renderByronPatterns(el, result) {
+  if (!result) { el.innerHTML = '<div class="byron-error">Invalid response from Byron.</div>'; return; }
+  const warn = result.lowDataWarning?`<div class="byron-warn">\u26a0\ufe0f ${result.lowDataWarning}</div>`:'';
+  const sections = [
+    {key:'missPattern',    label:'Miss Pattern'},
+    {key:'clubValidation', label:'Club Validation'},
+    {key:'penaltySummary', label:'Penalties'},
+    {key:'chipProximity',  label:'Short Game'},
+    {key:'historicalComparison', label:'vs. History'}
+  ];
+  const html = sections.filter(s=>result[s.key]&&result[s.key]!=='null'&&result[s.key]!==null).map(s=>
+    `<div class="byron-section"><span class="byron-section-lbl">${s.label}</span><div class="byron-section-txt">${result[s.key]}</div></div>`
+  ).join('');
+  el.innerHTML = warn + (html||'<div class="byron-error">No patterns identified.</div>');
+}
+
+function renderByronGameplan(el, result) {
+  if (!result) { el.innerHTML = '<div class="byron-error">Invalid response from Byron.</div>'; return; }
+  let html = '';
+  if (result.headline) html += `<div class="byron-headline">${result.headline}</div>`;
+  if (result.bogeyBudget?.length) {
+    html += '<div class="byron-section"><span class="byron-section-lbl">Bogey Budget</span>';
+    result.bogeyBudget.forEach(b=>{
+      html += `<div class="byron-gp-row"><span class="byron-gp-hole">H${b.hole}</span><span class="byron-gp-zone">${b.zone}</span><div class="byron-gp-reason">${b.reasoning}</div></div>`;
+    });
+    html += '</div>';
+  }
+  if (result.aimCorrections?.length) {
+    html += '<div class="byron-section"><span class="byron-section-lbl">Aim Corrections</span>';
+    result.aimCorrections.forEach(a=>{
+      html += `<div class="byron-gp-row"><span class="byron-gp-hole">H${a.hole}</span><div class="byron-gp-reason"><strong>${a.currentAim} \u2192 ${a.correctedAim}.</strong> ${a.reasoning}</div></div>`;
+    });
+    html += '</div>';
+  }
+  if (result.otherAdjustments?.length) {
+    html += '<div class="byron-section"><span class="byron-section-lbl">Other Adjustments</span>';
+    result.otherAdjustments.forEach(a=>{
+      html += `<div class="byron-section-txt" style="margin-bottom:6px">\u2022 ${a}</div>`;
+    });
+    html += '</div>';
+  }
+  el.innerHTML = html || '<div class="byron-error">No gameplan generated.</div>';
+}
+
+function byronUpdateUI(roundId) {
+  const passes = ['holes','patterns','gameplan'];
+  passes.forEach((pass, i) => {
+    const cache = byronGetCache(roundId, pass);
+    const btn     = document.getElementById('byron-btn-'+pass);
+    const tsEl    = document.getElementById('byron-ts-'+pass);
+    const contentEl = document.getElementById('byron-content-'+pass);
+    const prevCached = i===0 || !!byronGetCache(roundId, passes[i-1]);
+    if (cache) {
+      if (tsEl) tsEl.textContent = 'Run '+byronTimeAgo(cache.ts);
+      if (btn) { btn.textContent='Re-run'; btn.disabled=false; }
+      if (contentEl) {
+        if (pass==='holes')    renderByronHoles(contentEl, cache.result);
+        else if (pass==='patterns') renderByronPatterns(contentEl, cache.result);
+        else                   renderByronGameplan(contentEl, cache.result);
+      }
+    } else {
+      if (tsEl) tsEl.textContent = i===0?'Run after completing round':prevCached?'Ready to run':'Run Holes first';
+      if (btn) { btn.textContent='Run'; btn.disabled=!prevCached; }
+      if (contentEl) contentEl.innerHTML='';
+    }
+  });
+}
+
+async function runByron(pass) {
+  const antKey = localStorage.getItem('caddie_ant_key');
+  if (!antKey) { toast('Add API key in Settings first'); return; }
+  const round = getRounds().find(r=>r.id===DET.roundId);
+  if (!round) return;
+
+  const btn       = document.getElementById('byron-btn-'+pass);
+  const contentEl = document.getElementById('byron-content-'+pass);
+  const bodyEl    = document.getElementById('byron-body-'+pass);
+  const chevEl    = document.getElementById('byron-chev-'+pass);
+
+  // Open card
+  if (bodyEl) bodyEl.style.display='';
+  if (chevEl) chevEl.classList.add('open');
+
+  // Loading state
+  if (btn) { btn.disabled=true; btn.textContent='Running\u2026'; }
+  if (contentEl) contentEl.innerHTML='<div class="byron-loading"><div class="byron-spinner"></div><div style="font-size:12px;color:var(--chalk3);margin-top:10px">Byron is thinking\u2026</div></div>';
+
+  try {
+    const bundle = byronBuildBundle(round);
+    let prompt;
+    if (pass==='holes') {
+      prompt = byronHolesPrompt(bundle);
+    } else if (pass==='patterns') {
+      const hc = byronGetCache(round.id,'holes');
+      if (!hc) { toast('Run Holes first'); byronUpdateUI(round.id); return; }
+      prompt = byronPatternsPrompt(bundle, hc.result);
+    } else {
+      const hc = byronGetCache(round.id,'holes');
+      const pc = byronGetCache(round.id,'patterns');
+      if (!hc||!pc) { toast('Run Holes and Patterns first'); byronUpdateUI(round.id); return; }
+      prompt = byronGameplanPrompt(bundle, hc.result, pc.result);
+    }
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':antKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:3000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message||'API error');
+    const raw = (data.content?.[0]?.text||'').trim().replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'').trim();
+    const result = JSON.parse(raw);
+    byronSetCache(round.id, pass, result);
+    byronUpdateUI(round.id);
+
+  } catch(err) {
+    if (contentEl) contentEl.innerHTML=`<div class="byron-error">\u26a0\ufe0f ${err.message}</div>`;
+    if (btn) { btn.disabled=false; btn.textContent='Retry'; }
+  }
+}
+
 // ── ROUND DETAIL ─────────────────────────────────────────────
 const DET = { roundId: null, openHoles: new Set() };
 
@@ -2368,6 +2753,9 @@ function renderDetail() {
     .sort((a,b) => a.number - b.number)
     .map((h,i) => detailHoleHTML(h, i, round))
     .join('');
+
+  // Byron 3.0
+  byronUpdateUI(round.id);
 }
 
 function detailHoleHTML(h, idx, round) {
@@ -2515,13 +2903,21 @@ function initReview(byronResult) {
     return;
   }
 
-  REV.holes = byronResult.holes.map(bh => ({
-    bh,
-    score: null,       // override (null = use bh.score)
-    notation: null,    // override (null = use bh.notation_raw)
-    resolutions: {},   // flagKey -> resolved value
-    editOpen: false
-  }));
+  REV.holes = byronResult.holes.map(bh => {
+    // Normalize and validate shot types from parser
+    if (bh.shots) bh.shots.forEach(sh => {
+      if (sh.type) sh.type = sh.type.toLowerCase();
+      if (sh.position) sh.position = sh.position.toUpperCase();
+      validateShot(sh);
+    });
+    return {
+      bh,
+      score: null,
+      notation: null,
+      resolutions: {},
+      editOpen: false
+    };
+  });
 
   showView('review');
 }
@@ -2767,9 +3163,10 @@ function confirmRound() {
     const bh = h.bh;
     const score = h.score !== null ? h.score : bh.score;
     const notation = h.notation !== null ? h.notation : (bh.notation_raw||'');
-    const shots = (bh.shots||[]).map(sh =>
-      sh.type==='approach' ? {...sh, missDirection: deriveMissDirection(sh.intendedZone, sh.finishZone, sh.result)} : sh
-    );
+    const shots = (bh.shots||[]).map(sh => {
+      validateShot(sh);
+      return sh.type==='approach' ? {...sh, missDirection: deriveMissDirection(sh.intendedZone, sh.finishZone, sh.result)} : sh;
+    });
     const {gir, girPlusOne} = deriveGIR(shots, bh.par);
     const flagHistory = (bh.flags||[]).map(f => ({
       type: f.type, field: f.field||null, detail: f.detail||null,
@@ -2886,8 +3283,6 @@ function saveCourseHubField(idx, field, val) {
 }
 
 // ── PLAYER HUB ───────────────────────────────────────────────
-const PLAYER_STATE = {};
-
 function initPlayerHub() {
   const p = getPlayerProfile();
   // Restore toggles
@@ -2907,14 +3302,12 @@ function initPlayerHub() {
   if (s) s.value = p.strengths||'';
   if (w) w.value = p.weaknesses||'';
   if (n) n.value = p.notes||'';
-  Object.assign(PLAYER_STATE, p);
 }
 
 function setPlayerToggle(field, val, btn) {
   const profile = getPlayerProfile();
   profile[field] = val;
   savePlayerProfile(profile);
-  Object.assign(PLAYER_STATE, profile);
   // Update button group UI
   const parent = btn.parentElement;
   parent.querySelectorAll('.tgl').forEach(b => b.classList.remove('on'));
