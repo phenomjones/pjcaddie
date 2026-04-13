@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.14 · Apr 11, 2026 -->
+<!-- PJ Caddie v7.10.15 · Apr 12, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -26,7 +26,7 @@ body{display:flex;flex-direction:column}
 .pad-b{padding-bottom:36px}
 .safe-top{height:env(safe-area-inset-top,44px);flex-shrink:0;background:var(--ink)}
 .safe-bot{height:calc(env(safe-area-inset-bottom,20px) + 8px);flex-shrink:0}
-.hdr{padding:12px max(18px,calc((100% - 500px)/2)) 14px;flex-shrink:0}
+.hdr{padding:12px max(28px,calc((100% - 460px)/2)) 14px;flex-shrink:0}
 .hdr-row{display:flex;align-items:center;gap:10px;margin-bottom:4px}
 .back-btn{background:none;border:none;color:var(--gold);font-family:'DM Sans',sans-serif;font-size:13px;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;opacity:.85}
 .back-btn::before{content:'←';font-size:15px}
@@ -149,7 +149,7 @@ body{display:flex;flex-direction:column}
 .fix-btn:active{opacity:.6}
 .fix-btn.picked{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
 .rc-edit{padding:12px 14px;border-top:1px solid var(--border2);background:var(--ink)}
-.confirm-bar{flex-shrink:0;background:var(--ink);border-top:1px solid var(--border);padding:12px max(18px,calc((100%-500px)/2))}
+.confirm-bar{flex-shrink:0;background:var(--ink);border-top:1px solid var(--border);padding:12px max(28px,calc((100% - 460px)/2))}
 .confirm-bar .safe-pad{height:calc(env(safe-area-inset-bottom,20px) + 2px)}
 .stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
 .stat-tile{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:12px 10px;text-align:center}
@@ -187,7 +187,7 @@ body{display:flex;flex-direction:column}
 .detail-score-big{font-family:'DM Serif Display',serif;font-size:42px;line-height:1;color:var(--chalk)}
 .detail-score-rel{font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk2)}
 .detail-score-name{font-size:13px;color:var(--chalk3);letter-spacing:.5px;text-transform:uppercase}
-.scr-hdr-bar{display:flex;align-items:center;gap:10px;padding:10px max(18px,calc((100%-500px)/2)) 8px;border-bottom:1px solid var(--border2);background:var(--ink);flex-shrink:0}
+.scr-hdr-bar{display:flex;align-items:center;gap:10px;padding:10px max(28px,calc((100% - 460px)/2)) 8px;border-bottom:1px solid var(--border2);background:var(--ink);flex-shrink:0}
 .scr-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden;border-left-width:4px;border-left-color:transparent;transition:border-left-color .2s}
 .scr-card.active{border-left-color:var(--gold)}
 .scr-card.done{border-left-color:var(--green)}
@@ -228,11 +228,11 @@ body{display:flex;flex-direction:column}
 .sg-btn{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--chalk2);cursor:pointer;transition:all .15s}
 .sg-btn:active{opacity:.6}
 .sg-btn.sel{background:rgba(94,200,94,.12);border-color:var(--green);color:var(--green);font-weight:500}
-.wiz-hole-hdr{background:var(--ink2);border-bottom:1px solid var(--border);padding:12px max(18px,calc((100%-500px)/2));display:flex;align-items:center;gap:8px;flex-shrink:0}
+.wiz-hole-hdr{background:var(--ink2);border-bottom:1px solid var(--border);padding:12px max(28px,calc((100% - 460px)/2));display:flex;align-items:center;gap:8px;flex-shrink:0}
 .wiz-hole-num{font-family:'DM Serif Display',serif;font-size:36px;color:var(--gold);line-height:1;flex-shrink:0}
 .wiz-hole-info{font-size:14px;color:var(--chalk2);font-weight:500;flex:1}
 .wiz-step-lbl{font-size:11px;color:var(--chalk3);letter-spacing:.5px;flex-shrink:0}
-.wiz-nav{display:flex;gap:10px;padding:12px max(18px,calc((100%-500px)/2));border-top:1px solid var(--border2);background:var(--ink);flex-shrink:0}
+.wiz-nav{display:flex;gap:10px;padding:12px max(28px,calc((100% - 460px)/2));border-top:1px solid var(--border2);background:var(--ink);flex-shrink:0}
 .wiz-back{background:none;border:1px solid var(--border);border-radius:var(--rs);padding:13px 20px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--chalk2);cursor:pointer;flex-shrink:0}
 .wiz-back:active{opacity:.6}
 .wiz-next{flex:1;background:var(--gold);border:none;border-radius:var(--rs);padding:13px 20px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;transition:opacity .15s}
@@ -344,7 +344,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.14 · Apr 11, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.15 · Apr 12, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -355,7 +355,7 @@ body{display:flex;flex-direction:column}
       </div>
     </div>
   </div>
-  <div style="flex-shrink:0;border-top:1px solid var(--border2);padding:0 max(18px,calc((100%-500px)/2));display:flex">
+  <div style="flex-shrink:0;border-top:1px solid var(--border2);padding:0 max(28px,calc((100% - 460px)/2));display:flex">
     <button class="tgl on" style="border-radius:0;border:none;border-top:2px solid var(--gold)">Home</button>
     <button class="tgl" style="border-radius:0;border:none" onclick="showView('history')">History</button>
     <button class="tgl" style="border-radius:0;border:none" onclick="showView('settings')">Settings</button>
@@ -716,7 +716,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.14 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.15 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -2003,18 +2003,9 @@ function seqPuttItems(hs) { return (hs.sequence||[]).filter(s=>s.type==='putt');
 function getDetailTasks(hs) {
   return (hs.sequence||[]).map((item,i) => {
     if (item.type==='tee') return {seqIdx:i, steps:['club','pos']};
-    if (item.type==='retee') {
-      if (hs.par===3) {
-        // Copy yardage from the original par 3 approach automatically
-        const origApproach = (hs.sequence||[]).find(s=>s.type==='approach'&&s.isTeeShot);
-        if (origApproach?.yardage) item.yardage = origApproach.yardage;
-        if (origApproach?.wizYds) item.wizYds = origApproach.wizYds;
-        return {seqIdx:i, steps:['club','zones'], par3Rehit:true};
-      }
-      return {seqIdx:i, steps:['club','pos']};
-    }
+    if (item.type==='retee') return null; // stroke counted by sequence penalty, no data captured
     if (item.type==='approach') {
-      return {seqIdx:i, steps:['yds','club','zones']};
+      return {seqIdx:i, steps:['yds','club','result','zones']};
     }
     return null;
   }).filter(Boolean);
@@ -2281,8 +2272,8 @@ function renderDetailStep(hs, idx) {
   // Determine inline right button
   const inlineRight = isYardage
     ? `<button class="wiz-next" onclick="detailNext()" style="flex:1">Skip</button>`
-    : subStep === 'club'
-      ? '' // ? is in the club grid
+    : subStep === 'club' || subStep === 'result'
+      ? '' // buttons are in the content
       : `<button class="wiz-next" onclick="detailSkip(${idx})"
           style="flex:0 0 auto;padding:13px 28px;background:var(--ink3);color:var(--chalk3);border:1px solid var(--border)">?</button>`;
 
@@ -2333,25 +2324,28 @@ function renderDetailStep(hs, idx) {
         <button class="calc-btn" onclick="detailCalcDigit(${idx},${task.seqIdx},0)">0</button>
         <button class="calc-btn enter" onclick="detailNext()">Enter</button>
       </div>`;
+  } else if (subStep === 'result') {
+    html += `<div style="margin-top:8px">
+      <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk2);text-align:center;margin-bottom:24px">Did it land on the green?</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <button class="result-btn${item.result==='H'?' h':''}" style="padding:22px;font-size:16px" onclick="detailSetResult(${idx},${task.seqIdx},'H',true)">\u2705 On Green</button>
+        <button class="result-btn${item.result==='M'?' m':''}" style="padding:22px;font-size:16px" onclick="detailSetResult(${idx},${task.seqIdx},'M',true)">\u274c Off Green</button>
+      </div>
+    </div>`;
   } else if (subStep === 'zones') {
-    html += `<div style="display:flex;gap:14px">
+    const missedGreen = item.result === 'M';
+    html += `<div style="margin-bottom:10px">
+      <div style="font-size:12px;font-weight:600;color:var(--chalk3);letter-spacing:.5px;margin-bottom:6px">\ud83d\udccd Pin Location <span style="font-weight:400;opacity:.7">(optional)</span></div>
+      ${wizPinGrid(idx, hs.pinZone)}
+    </div>
+    <div style="display:flex;gap:14px">
       <div style="flex:1">
         <div style="font-size:16px;font-weight:600;color:var(--chalk2);margin-bottom:10px;text-align:center">Aimed</div>
         ${wizZoneGrid(idx, task.seqIdx, 'intendedZone', item.intendedZone)}
       </div>
       <div style="flex:1">
         <div style="font-size:16px;font-weight:600;color:var(--chalk2);margin-bottom:10px;text-align:center">Finish</div>
-        ${wizZoneGrid(idx, task.seqIdx, 'finishZone', item.finishZone)}
-      </div>
-    </div>
-    <div style="margin-top:10px">
-      <div style="font-size:12px;font-weight:600;color:var(--chalk3);letter-spacing:.5px;margin-bottom:6px">📍 Pin Location <span style="font-weight:400;opacity:.7">(optional)</span></div>
-      ${wizPinGrid(idx, hs.pinZone)}
-    </div>
-    <div style="margin-top:10px">
-      <div class="result-row">
-        <button class="result-btn${item.result==='H'?' h':''}" onclick="detailSetResult(${idx},${task.seqIdx},'H',true)">\u2705 On Green</button>
-        <button class="result-btn${item.result==='M'?' m':''}" onclick="detailSetResult(${idx},${task.seqIdx},'M',true)">\u274c Missed</button>
+        ${wizZoneGrid(idx, task.seqIdx, 'finishZone', item.finishZone, missedGreen ? [5] : [])}
       </div>
     </div>`;
   }
@@ -2447,16 +2441,19 @@ function detailCalcBack(idx, seqIdx) {
 function detailSetZone(idx, seqIdx, field, val) {
   const item = SCR.holes[idx].sequence[seqIdx];
   item[field] = val;
-  if (field==='finishZone' && val===5) item.result = 'H';
+  // result is pre-committed on its own screen — no zone-based override
   renderDetailStep(SCR.holes[idx], idx);
-  // No auto-advance — user taps On/Missed to proceed
+  if (field === 'finishZone') setTimeout(detailNext, 200); // auto-advance after finish zone
 }
 
-function wizZoneGrid(idx, seqIdx, field, selected) {
+function wizZoneGrid(idx, seqIdx, field, selected, disabledZones=[]) {
   const rows=[[7,8,9],[4,5,6],[1,2,3]], rl=['Long','Mid','Short'];
   const hdr=`<div></div><div class="zone-clbl">L</div><div class="zone-clbl">C</div><div class="zone-clbl">R</div>`;
   const cells=rows.map((row,ri)=>`<div class="zone-rlbl">${rl[ri]}</div>`+
-    row.map(z=>`<button class="zone-btn${selected===z?' sel':''}" onclick="detailSetZone(${idx},${seqIdx},'${field}',${z})">${z}</button>`).join('')
+    row.map(z=>{
+      const dis = disabledZones.includes(z);
+      return `<button class="zone-btn${selected===z?' sel':''}${dis?' disabled':''}" ${dis?'disabled style="opacity:.32;cursor:not-allowed"':`onclick="detailSetZone(${idx},${seqIdx},'${field}',${z})"`}>${z}</button>`;
+    }).join('')
   ).join('');
   return `<div class="zone-grid">${hdr}${cells}</div>`;
 }
@@ -2551,11 +2548,6 @@ function renderPuttDist(hs, idx) {
     <div style="flex:1;text-align:right;font-size:11px;color:var(--chalk3)">Par ${hs.par}</div>
   </div>`;
 
-  const pinHTML = `<div style="margin-bottom:14px">
-    <div style="font-size:12px;font-weight:500;color:var(--chalk2);margin-bottom:8px;letter-spacing:.3px">Pin Position <span style="color:var(--chalk3);font-weight:400">(optional)</span></div>
-    ${pinZoneGridHTML(idx, hs.pinZone)}
-  </div>`;
-
   const calcHTML = puttCount > 0 && !isDone ? `
     <div style="border-top:1px solid var(--border);margin:14px 0 14px"></div>
     <div style="text-align:center;margin-bottom:12px">
@@ -2568,7 +2560,8 @@ function renderPuttDist(hs, idx) {
       <button class="calc-btn back" onclick="puttCalcBack(${idx})">\u232b</button>
       <button class="calc-btn" onclick="puttCalcDigit(${idx},0)">0</button>
       <button class="calc-btn enter" onclick="puttCalcEnter(${idx})">Enter</button>
-    </div>` : (puttCount === 0 ? `<div style="text-align:center;padding:12px;color:var(--chalk3);font-size:13px">No putts in sequence</div>` : '');
+    </div>
+    <button onclick="puttTapIn(${idx})" style="width:100%;margin-top:8px;padding:13px;background:var(--ink3);border:1px solid var(--border);border-radius:var(--r);color:var(--chalk2);font-size:14px;font-weight:500;cursor:pointer;letter-spacing:.3px">Tap-in \u2192</button>` : (puttCount === 0 ? `<div style="text-align:center;padding:12px;color:var(--chalk3);font-size:13px">No putts in sequence</div>` : '');
 
   const skipOrSave = puttCount > 0 && !isDone
     ? `<button class="wiz-next" onclick="puttCalcSkip(${idx})" style="flex:0 0 auto;padding:13px 28px;background:var(--ink3);color:var(--chalk3);border:1px solid var(--border)">Skip</button>`
@@ -2577,27 +2570,11 @@ function renderPuttDist(hs, idx) {
   document.getElementById('scr-content').innerHTML = `
     ${seqStripHTML(hs, -1)}
     ${scoreSummary}
-    ${pinHTML}
     ${calcHTML}
     <div class="inline-nav">
       <button class="wiz-back" onclick="puttDistBack(${idx})">← Back</button>
       ${skipOrSave}
     </div>`;
-}
-
-function pinZoneGridHTML(holeIdx, selected) {
-  const rows=[[7,8,9],[4,5,6],[1,2,3]], rl=['Long','Mid','Short'];
-  const hdr=`<div></div><div class="zone-clbl">L</div><div class="zone-clbl">C</div><div class="zone-clbl">R</div>`;
-  const cells=rows.map((row,ri)=>`<div class="zone-rlbl">${rl[ri]}</div>`+
-    row.map(z=>`<button class="zone-btn${selected===z?' sel':''}" onclick="setPinZone(${holeIdx},${z})">${z}</button>`).join('')
-  ).join('');
-  return `<div class="zone-grid">${hdr}${cells}</div>`;
-}
-
-function setPinZone(holeIdx, zone) {
-  const hs = SCR.holes[holeIdx];
-  hs.pinZone = hs.pinZone===zone ? null : zone; // tap again to deselect
-  renderPuttDist(hs, holeIdx);
 }
 
 function puttCalcDigit(idx, d) {
@@ -2626,6 +2603,16 @@ function puttCalcEnter(idx) {
 function puttCalcSkip(idx) {
   const hs = SCR.holes[idx];
   hs.puttDistances[hs.puttCalcIdx] = 0;
+  hs.puttCalcIdx++;
+  hs.puttCalcBuf = '';
+  const puttCount = seqPutts(hs);
+  if (hs.puttCalcIdx >= puttCount) saveHole(idx);
+  else renderPuttDist(hs, idx);
+}
+
+function puttTapIn(idx) {
+  const hs = SCR.holes[idx];
+  hs.puttDistances[hs.puttCalcIdx] = 1;
   hs.puttCalcIdx++;
   hs.puttCalcBuf = '';
   const puttCount = seqPutts(hs);
