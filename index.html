@@ -1992,10 +1992,9 @@ const SEQ_TYPES = SEQ_GROUPS.flatMap(g => g.types);
 
 const SCR = { round: null, holes: [], activeIdx: null };
 
-// Rehit (stroke+distance) and Drop (penalty relief) each add +1 penalty stroke
+// Each sequence item = 1 stroke. retee/drop are already in the array as their penalty stroke.
 function seqScore(hs) {
-  const seq = hs.sequence||[];
-  return seq.length + seq.filter(s=>s.type==='retee'||s.type==='drop').length;
+  return (hs.sequence||[]).length;
 }
 function seqPutts(hs) { return (hs.sequence||[]).filter(s=>s.type==='putt').length; }
 function seqPuttItems(hs) { return (hs.sequence||[]).filter(s=>s.type==='putt'); }
@@ -2028,7 +2027,7 @@ function initScoring() {
         sequence:[], phase:'sequence',
         detailTaskIdx:0, detailSubStepIdx:0,
         puttDistances:[], puttCalcIdx:0, puttCalcBuf:'',
-        pinZone:savedHole.pinZone||null,
+        pinZone:savedHole.pinZone||null, editingSeqIdx:null,
         saved:true, savedScore:savedHole.score
       };
     }
@@ -2037,7 +2036,7 @@ function initScoring() {
       sequence:[], phase:'sequence',
       detailTaskIdx:0, detailSubStepIdx:0,
       puttDistances:[], puttCalcIdx:0, puttCalcBuf:'',
-      pinZone:null, saved:false
+      pinZone:null, editingSeqIdx:null, saved:false
     };
   });
   SCR.activeIdx = null;
@@ -2139,13 +2138,20 @@ function renderSequenceBuilder(hs, idx) {
     ? '<div style="text-align:center;padding:20px;color:var(--chalk3);font-size:13px">Tap shot types below to build your hole</div>'
     : hs.sequence.map((item,i) => {
         const detail = seqItemDetail(item);
-        return `<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px">
-          <span style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);min-width:24px">${i+1}</span>
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:500;color:var(--chalk)">${seqItemLabel(item)}</div>
-            ${detail?`<div style="font-size:11px;color:var(--chalk3);margin-top:1px">${detail}</div>`:''}
+        const canEdit = item.type==='tee' || item.type==='approach';
+        const isEditing = hs.editingSeqIdx === i;
+        const editPanel = canEdit && isEditing ? seqEditPanel(idx, i, item, hs) : '';
+        return `<div style="background:var(--ink2);border:1px solid ${isEditing?'var(--gold)':'var(--border)'};border-radius:var(--rs);margin-bottom:6px;overflow:hidden">
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px">
+            <span style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);min-width:24px">${i+1}</span>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:500;color:var(--chalk)">${seqItemLabel(item)}</div>
+              ${detail?`<div style="font-size:11px;color:var(--chalk3);margin-top:1px">${detail}</div>`:''}
+            </div>
+            ${canEdit?`<button style="background:none;border:none;color:${isEditing?'var(--gold)':'var(--chalk3)'};cursor:pointer;font-size:15px;padding:4px 6px;line-height:1" onclick="toggleSeqEdit(${idx},${i})">\u270f\ufe0f</button>`:''}
+            <button style="background:none;border:none;color:var(--chalk3);cursor:pointer;font-size:18px;padding:4px 8px;line-height:1" onclick="removeFromSequence(${idx},${i})">\u00d7</button>
           </div>
-          <button style="background:none;border:none;color:var(--chalk3);cursor:pointer;font-size:18px;padding:4px 6px;line-height:1" onclick="removeFromSequence(${idx},${i})">\u00d7</button>
+          ${editPanel}
         </div>`;
       }).join('');
 
@@ -2216,6 +2222,95 @@ function addToSequence(idx, type) {
   const hs = SCR.holes[idx];
   const item = makeSeqItem(type, false);
   hs.sequence.push(item);
+  renderScoringScreen();
+}
+
+function toggleSeqEdit(idx, seqIdx) {
+  const hs = SCR.holes[idx];
+  hs.editingSeqIdx = hs.editingSeqIdx === seqIdx ? null : seqIdx;
+  renderScoringScreen();
+}
+
+function seqEditPanel(idx, seqIdx, item, hs) {
+  if (item.type === 'tee') {
+    const positions = ['OBL','LL','L','C','R','RR','OBR'];
+    const posBtns = positions.map(p =>
+      `<button onclick="seqEditSetPos(${idx},${seqIdx},'${p}')" style="flex:1;padding:8px 2px;font-size:11px;font-weight:500;background:${item.position===p?'var(--gold)':'var(--ink3)'};color:${item.position===p?'var(--ink)':'var(--chalk2)'};border:1px solid ${item.position===p?'var(--gold)':'var(--border)'};border-radius:6px;cursor:pointer">${p}</button>`
+    ).join('');
+    return `<div style="padding:10px 12px 12px;border-top:1px solid var(--border2)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+        <span style="font-size:12px;color:var(--chalk3);min-width:40px">Club</span>
+        <input type="text" value="${item.club||''}" placeholder="e.g. Dr" maxlength="4"
+          oninput="seqEditSetClub(${idx},${seqIdx},this.value)"
+          style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--chalk);font-size:14px;font-family:inherit">
+      </div>
+      <div style="font-size:12px;color:var(--chalk3);margin-bottom:6px">Position</div>
+      <div style="display:flex;gap:4px">${posBtns}</div>
+    </div>`;
+  }
+  if (item.type === 'approach') {
+    const missedGreen = item.result === 'M';
+    const zones = [7,8,9,4,5,6,1,2,3];
+    const zoneBtn = (field, z) => {
+      const sel = item[field] === z;
+      const dis = field==='finishZone' && missedGreen && z===5;
+      return `<button ${dis?'disabled':''} onclick="seqEditSetZone(${idx},${seqIdx},'${field}',${z})" style="flex:1;padding:8px 0;font-size:12px;font-weight:500;background:${sel?'var(--gold)':'var(--ink3)'};color:${sel?'var(--ink)':dis?'var(--chalk3)':'var(--chalk2)'};border:1px solid ${sel?'var(--gold)':'var(--border)'};border-radius:4px;cursor:${dis?'not-allowed':'pointer'};opacity:${dis?'.32':'1'}">${z}</button>`;
+    };
+    return `<div style="padding:10px 12px 12px;border-top:1px solid var(--border2)">
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <div style="flex:1;display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--chalk3);min-width:40px">Club</span>
+          <input type="text" value="${item.club||''}" placeholder="e.g. 7i" maxlength="4"
+            oninput="seqEditSetClub(${idx},${seqIdx},this.value)"
+            style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--chalk);font-size:14px;font-family:inherit">
+        </div>
+        <div style="flex:1;display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--chalk3);min-width:30px">Yds</span>
+          <input type="number" value="${item.yardage||''}" placeholder="145" min="1" max="300"
+            oninput="seqEditSetYards(${idx},${seqIdx},this.value)"
+            style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--chalk);font-size:14px;font-family:inherit">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button onclick="seqEditSetResult(${idx},${seqIdx},'H')" style="flex:1;padding:10px;font-size:13px;font-weight:500;background:${item.result==='H'?'rgba(94,200,94,.18)':'var(--ink3)'};color:${item.result==='H'?'var(--green)':'var(--chalk2)'};border:1px solid ${item.result==='H'?'var(--green)':'var(--border)'};border-radius:var(--rs);cursor:pointer">\u2705 On Green</button>
+        <button onclick="seqEditSetResult(${idx},${seqIdx},'M')" style="flex:1;padding:10px;font-size:13px;font-weight:500;background:${item.result==='M'?'rgba(201,64,64,.12)':'var(--ink3)'};color:${item.result==='M'?'var(--red)':'var(--chalk2)'};border:1px solid ${item.result==='M'?'var(--red)':'var(--border)'};border-radius:var(--rs);cursor:pointer">\u274c Off Green</button>
+      </div>
+      <div style="display:flex;gap:12px">
+        <div style="flex:1">
+          <div style="font-size:11px;color:var(--chalk3);margin-bottom:5px;text-align:center">Aimed</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px">${zones.map(z=>zoneBtn('intendedZone',z)).join('')}</div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:11px;color:var(--chalk3);margin-bottom:5px;text-align:center">Finish</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px">${zones.map(z=>zoneBtn('finishZone',z)).join('')}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+  return '';
+}
+
+function seqEditSetClub(idx, seqIdx, val) {
+  SCR.holes[idx].sequence[seqIdx].club = val.trim().toUpperCase() || null;
+}
+
+function seqEditSetPos(idx, seqIdx, val) {
+  SCR.holes[idx].sequence[seqIdx].position = val;
+  renderScoringScreen();
+}
+
+function seqEditSetYards(idx, seqIdx, val) {
+  const n = parseInt(val);
+  SCR.holes[idx].sequence[seqIdx].yardage = (n > 0 && n <= 300) ? n : null;
+}
+
+function seqEditSetResult(idx, seqIdx, val) {
+  SCR.holes[idx].sequence[seqIdx].result = val;
+  renderScoringScreen();
+}
+
+function seqEditSetZone(idx, seqIdx, field, val) {
+  SCR.holes[idx].sequence[seqIdx][field] = val;
   renderScoringScreen();
 }
 
