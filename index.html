@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.15 · Apr 12, 2026 -->
+<!-- PJ Caddie v7.10.16 · Apr 15, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -236,6 +236,7 @@ body{display:flex;flex-direction:column}
 .wiz-back{background:none;border:1px solid var(--border);border-radius:var(--rs);padding:13px 20px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--chalk2);cursor:pointer;flex-shrink:0}
 .wiz-back:active{opacity:.6}
 .wiz-next{flex:1;background:var(--gold);border:none;border-radius:var(--rs);padding:13px 20px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;transition:opacity .15s}
+.wiz-skip{flex:0 0 auto;padding:13px 28px;background:var(--ink3);color:var(--chalk3);border:1px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .15s}
 .wiz-next:disabled{opacity:.35;cursor:not-allowed}
 .wiz-next:active:not(:disabled){opacity:.8}
 .calc-display{font-family:'DM Serif Display',serif;font-size:52px;color:var(--chalk);text-align:center;padding:16px 0 20px;letter-spacing:2px;min-height:90px;display:flex;align-items:center;justify-content:center}
@@ -344,7 +345,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.15 · Apr 12, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.16 · Apr 15, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -716,7 +717,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.15 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.16 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -894,6 +895,7 @@ function byronRoundStats(round, clubCarries) {
   holes.forEach(h=>{
     (h.shots||[]).forEach(sh=>{
       if(sh.position==='OBL'||sh.position==='OBR') penalties.push({hole:h.number,position:sh.position,club:sh.club});
+      if(sh.type==='drop') penalties.push({hole:h.number,type:'drop',club:sh.club||null});
     });
   });
   const chipProx = [];
@@ -931,19 +933,22 @@ function byronBuildBundle(round) {
   const course = courses.find(c=>c.id===round.courseId);
   const courseNotes = getCourseNotes(round.courseId, round.holesPlayed||18);
   const hist = byronHistoricalSummary(round.courseId, round.id);
-  // Build carry map from the bag used this round
+  // Build carry and shaft maps from the bag used this round
   const clubCarries = {};
+  const clubShaftMap = {};
   if (round.bagClubs?.length) {
-    const allClubs = getBags().flatMap(b=>b.clubs);
+    const bag = round.bagId ? getBags().find(b=>b.id===round.bagId) : null;
+    const allClubs = bag ? bag.clubs : getBags().flatMap(b=>b.clubs);
     round.bagClubs.forEach(abbr=>{
       const club = allClubs.find(c=>c.abbr===abbr);
       if(club?.carry) clubCarries[abbr] = club.carry;
+      if(club?.shaft) clubShaftMap[abbr] = club.shaft;
     });
   }
   const stats = byronRoundStats(round, clubCarries);
   const rel = round.totalScore!=null&&round.par ? round.totalScore-round.par : null;
   const relStr = rel==null?'?':rel===0?'E':rel>0?'+'+rel:String(rel);
-  return {round, player, courseNotes, hist, stats, rel, relStr, courseName:round.course, clubCarries};
+  return {round, player, courseNotes, hist, stats, rel, relStr, courseName:round.course, clubCarries, clubShaftMap};
 }
 
 // ── BYRON 3.0 PROMPTS ─────────────────────────────────────────
@@ -968,11 +973,11 @@ function byronHolesPrompt(bundle) {
   }).filter(Boolean).join('\n');
   const lowWarn = stats.approachCount<9?`Only ${stats.approachCount} approach shots \u2014 limited sample.`:null;
 
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nCOURSE NOTES:\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nCOURSE NOTES:\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
 }
 
 function byronPatternsPrompt(bundle, holesResult) {
-  const {round, player, hist, stats, relStr, clubCarries} = bundle;
+  const {round, player, hist, stats, relStr, clubCarries, clubShaftMap} = bundle;
   const histStr = hist
     ? `${hist.roundCount} prior round(s) at ${round.course}. Per-hole history: ${JSON.stringify(hist.holes)}`
     : `No prior rounds at ${round.course} on record.`;
@@ -980,8 +985,27 @@ function byronPatternsPrompt(bundle, holesResult) {
   const carryLine = Object.keys(clubCarries||{}).length
     ? `Club carry distances (full swing): ${JSON.stringify(clubCarries)}\nPartial swings detected (<${Math.round(PARTIAL_THRESHOLD*100)}% of carry): ${stats.partialShots.length?JSON.stringify(stats.partialShots):'none'}`
     : 'No carry distances on file \u2014 skip partial swing analysis.';
+  const shaftLine = Object.keys(clubShaftMap||{}).length
+    ? `Club shaft assignments: ${JSON.stringify(clubShaftMap)}`
+    : null;
 
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 2: PATTERN ANALYSIS \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}\n\nROUND: ${round.course}, ${round.date}, Score ${round.totalScore} (${relStr})\n\nHOLES OUTPUT (Pass 1):\n${JSON.stringify(holesResult)}\n\nROUND STATS:\nApproaches: ${stats.approachCount} | GIR: ${stats.girCount}/${stats.totalHoles} | Putts: ${stats.totalPutts}\nMiss directions: L=${stats.missDir.left} R=${stats.missDir.right} Sh=${stats.missDir.short} Lg=${stats.missDir.long} C=${stats.missDir.center} (${stats.missTotal} total misses)\nPenalties: ${stats.penalties.length} \u2014 ${JSON.stringify(stats.penalties)}\nChip/recovery first-putt distances: ${stats.chipProx.length?stats.chipProx.join(', ')+'ft (avg '+stats.avgChipProx+'ft)':'no data'}\nClub data: ${JSON.stringify(stats.clubData)}\n${carryLine}\n\nHISTORICAL: ${histStr}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "missPattern": "Quantify miss direction with counts. E.g. '5 of 7 approach misses went right.' Note yardage bands if data supports. Compare to player primary miss.",\n  "clubValidation": "Are clubs matching yardage expectations? Flag systematic short/long by club. Cite specific shots.",\n  "partialSwings": "If carry data exists: compare GIR rate on partial swings vs full swings. Cite specific clubs and yardages. If no carry data: null.",\n  "penaltySummary": "Every penalty traced to the decision. Cite hole, club, position. Null if no penalties.",\n  "chipProximity": "First-putt distance after chips/recoveries. Avg, range, and what it costs in putts. Null if no data.",\n  "historicalComparison": "How does this round compare to prior rounds at this course? Cite specific holes or stats where history exists.",\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 2: PATTERN ANALYSIS \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}\n\nROUND: ${round.course}, ${round.date}, Score ${round.totalScore} (${relStr})\n\nHOLES OUTPUT (Pass 1):\n${JSON.stringify(holesResult)}\n\nROUND STATS:\nApproaches: ${stats.approachCount} | GIR: ${stats.girCount}/${stats.totalHoles} | Putts: ${stats.totalPutts}\nMiss directions: L=${stats.missDir.left} R=${stats.missDir.right} Sh=${stats.missDir.short} Lg=${stats.missDir.long} C=${stats.missDir.center} (${stats.missTotal} total misses)\nPenalties: ${stats.penalties.length} \u2014 ${JSON.stringify(stats.penalties)}\nChip/recovery first-putt distances: ${stats.chipProx.length?stats.chipProx.join(', ')+'ft (avg '+stats.avgChipProx+'ft)':'no data'}\nClub data: ${JSON.stringify(stats.clubData)}\n${carryLine}\n${shaftLine?shaftLine+'\\n':''}\nHISTORICAL: ${histStr}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "missPattern": "Quantify miss direction with counts. E.g. '5 of 7 approach misses went right.' Note yardage bands if data supports. Compare to player primary miss.",\n  "clubValidation": "Are clubs matching yardage expectations? Flag systematic short/long by club. Cite specific shots.",\n  "partialSwings": "If carry data exists: compare GIR rate on partial swings vs full swings. Cite specific clubs and yardages. If no carry data: null.",\n  "penaltySummary": "Every penalty traced to the decision. Cite hole, club, position. Null if no penalties.",\n  "chipProximity": "First-putt distance after chips/recoveries. Avg, range, and what it costs in putts. Null if no data.",\n  "historicalComparison": "How does this round compare to prior rounds at this course? Cite specific holes or stats where history exists.",\n  "shaftAnalysis": "If shaft data exists: compare GIR rate and miss direction by shaft. Require minimum 5 shots per shaft variant. Null if no shaft data.",\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
+}
+
+function byronPatternsPrompt(bundle, holesResult) {
+  const {round, player, hist, stats, relStr, clubCarries, clubShaftMap} = bundle;
+  const histStr = hist
+    ? `${hist.roundCount} prior round(s) at ${round.course}. Per-hole history: ${JSON.stringify(hist.holes)}`
+    : `No prior rounds at ${round.course} on record.`;
+  const lowWarn = stats.approachCount<9?`Only ${stats.approachCount} approach shots \u2014 pattern confidence is low.`:null;
+  const carryLine = Object.keys(clubCarries||{}).length
+    ? `Club carry distances (full swing): ${JSON.stringify(clubCarries)}\nPartial swings detected (<${Math.round(PARTIAL_THRESHOLD*100)}% of carry): ${stats.partialShots.length?JSON.stringify(stats.partialShots):'none'}`
+    : 'No carry distances on file \u2014 skip partial swing analysis.';
+  const shaftLine = Object.keys(clubShaftMap||{}).length
+    ? `Club shaft assignments: ${JSON.stringify(clubShaftMap)}`
+    : null;
+
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 2: PATTERN ANALYSIS \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}\n\nROUND: ${round.course}, ${round.date}, Score ${round.totalScore} (${relStr})\n\nHOLES OUTPUT (Pass 1):\n${JSON.stringify(holesResult)}\n\nROUND STATS:\nApproaches: ${stats.approachCount} | GIR: ${stats.girCount}/${stats.totalHoles} | Putts: ${stats.totalPutts}\nMiss directions: L=${stats.missDir.left} R=${stats.missDir.right} Sh=${stats.missDir.short} Lg=${stats.missDir.long} C=${stats.missDir.center} (${stats.missTotal} total misses)\nPenalties: ${stats.penalties.length} \u2014 ${JSON.stringify(stats.penalties)}\nChip/recovery first-putt distances: ${stats.chipProx.length?stats.chipProx.join(', ')+'ft (avg '+stats.avgChipProx+'ft)':'no data'}\nClub data: ${JSON.stringify(stats.clubData)}\n${carryLine}\n${shaftLine?shaftLine+'\\n':''}\nHISTORICAL: ${histStr}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "missPattern": "Quantify miss direction with counts. E.g. '5 of 7 approach misses went right.' Note yardage bands if data supports. Compare to player primary miss.",\n  "clubValidation": "Are clubs matching yardage expectations? Flag systematic short/long by club. Cite specific shots.",\n  "partialSwings": "If carry data exists: compare GIR rate on partial swings vs full swings. Cite specific clubs and yardages. If no carry data: null.",\n  "penaltySummary": "Every penalty traced to the decision. Cite hole, club, position. Null if no penalties.",\n  "chipProximity": "First-putt distance after chips/recoveries. Avg, range, and what it costs in putts. Null if no data.",\n  "historicalComparison": "How does this round compare to prior rounds at this course? Cite specific holes or stats where history exists.",\n  "shaftAnalysis": "If shaft data exists: compare GIR rate and miss direction by shaft. Require minimum 5 shots per shaft variant. Null if no shaft data.",\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
 }
 
 function byronGameplanPrompt(bundle, holesResult, patternsResult) {
@@ -1096,7 +1120,7 @@ function deriveMissDirection(intendedZone, finishZone, result) {
 function deriveGIR(shots, par) {
   let n = 0, hit = false;
   for (const sh of shots) {
-    if (['tee','retee','approach','layup','chip','recovery','untracked'].includes(sh.type)) n++;
+    if (['tee','retee','approach','layup','chip','recovery','untracked','drop'].includes(sh.type)) n++;
     if ((sh.type==='approach'||sh.type==='tee') && sh.result==='H') { hit=true; break; }
   }
   const gir = hit && n<=(par-2);
@@ -1614,7 +1638,7 @@ async function ghPush() {
     saveSyncMeta(meta);
     renderSettings();
     const t = new Date(now).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    ghSetStatus('\u2713 Pushed '+payload.rounds.length+' rounds \u00b7 '+t, 'var(--green)');
+    ghSetStatus('\u2713 Pushed '+payload.rounds.length+' rounds \u00b7 notes & profile \u00b7 '+t, 'var(--green)');
     toast('Pushed to GitHub \u2713');
   } catch(err) {
     ghSetStatus('\u2717 '+err.message, 'var(--red)');
@@ -1841,10 +1865,10 @@ function importFromBag() {
 }
 
 // ── BAG SETTINGS ─────────────────────────────────────────────
-const BGS = { expandedId: null, showAddClub: {}, showAddBag: false };
+const BGS = { expandedId: null, showAddClub: {}, showAddBag: false, editingClubIdx: {} };
 
 function initBagSettings() {
-  BGS.expandedId = null; BGS.showAddClub = {}; BGS.showAddBag = false;
+  BGS.expandedId = null; BGS.showAddClub = {}; BGS.showAddBag = false; BGS.editingClubIdx = {};
   renderBgslist();
 }
 
@@ -1856,20 +1880,54 @@ function renderBgslist() {
 
 function bagCardHTML(b) {
   const isOpen = BGS.expandedId === b.id;
-  const clubsHTML = isOpen ? b.clubs.map((c,i)=>`
-    <div class="bag-club-row">
+  const clubsHTML = isOpen ? b.clubs.map((c,i)=>{
+    const isEditing = BGS.editingClubIdx[b.id] === i;
+    const editPanel = isEditing ? `
+    <div style="padding:10px 14px;background:var(--ink3);border-top:1px solid var(--border2)">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px">
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <div style="font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:.5px">Abbr</div>
+          <input class="bag-abbr-inp" id="bgs-edit-abbr-${b.id}-${i}" type="text" maxlength="4"
+            value="${escHtml(c.abbr)}" onclick="event.stopPropagation()"
+            oninput="document.getElementById('bgs-abbr-warn-${b.id}-${i}').style.display=this.value.trim().toUpperCase()!=='${c.abbr}'?'':'none'">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:120px">
+          <div style="font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:.5px">Description</div>
+          <input class="bag-desc-inp" id="bgs-edit-desc-${b.id}-${i}" type="text"
+            value="${escHtml(c.desc||'')}" placeholder="e.g. Ping G440 LST" onclick="event.stopPropagation()">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px">
+        <div style="display:flex;flex-direction:column;gap:3px;flex:1;min-width:120px">
+          <div style="font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:.5px">Shaft</div>
+          <input class="bag-desc-inp" id="bgs-edit-shaft-${b.id}-${i}" type="text"
+            value="${escHtml(c.shaft||'')}" placeholder="e.g. KBS Tour Stiff" onclick="event.stopPropagation()">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <div style="font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:.5px">Carry yds</div>
+          <input class="bag-carry-inp" id="bgs-edit-carry-${b.id}-${i}" type="number" min="1" max="400"
+            value="${c.carry||''}" placeholder="yds" onclick="event.stopPropagation()">
+        </div>
+      </div>
+      <div id="bgs-abbr-warn-${b.id}-${i}" style="display:none;font-size:11px;color:var(--gold);margin-bottom:8px">⚠ Changing abbr breaks carry/shaft lookup in historical rounds</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-gold btn-sm" style="flex:1" onclick="bgsSaveClubEdit('${b.id}',${i})">Save</button>
+        <button class="btn btn-sm" style="flex:1;background:var(--ink2);color:var(--chalk3);border:1px solid var(--border)" onclick="bgsToggleClubEdit('${b.id}',${i})">Cancel</button>
+      </div>
+    </div>` : '';
+    return `
+    <div class="bag-club-row" style="${isEditing?'border-left:2px solid var(--gold);':''}">
       <span class="bag-club-abbr">${c.abbr}</span>
-      <span class="bag-club-desc">${escHtml(c.desc)}</span>
-      <input class="bag-carry-inp" type="number" min="1" max="400" placeholder="yds"
-        value="${c.carry||''}" title="Carry distance"
-        onchange="bgsSetCarry('${b.id}',${i},this.value)"
-        onclick="event.stopPropagation()">
+      <span class="bag-club-desc" style="flex:1">${escHtml(c.desc||'')}${c.shaft?`<span style="color:var(--chalk3)"> · ${escHtml(c.shaft)}</span>`:''}${c.carry?`<span style="color:var(--chalk3);font-size:11px"> · ${c.carry}y</span>`:''}</span>
+      <button style="background:none;border:none;color:${isEditing?'var(--gold)':'var(--chalk3)'};cursor:pointer;font-size:14px;padding:4px 8px;line-height:1" onclick="bgsToggleClubEdit('${b.id}',${i})">✏️</button>
       <button class="bag-del-btn" onclick="bgsRemoveClub('${b.id}',${i})" title="Remove">×</button>
-    </div>`).join('') : '';
+    </div>${editPanel}`;
+  }).join('') : '';
   const addFormHTML = isOpen && BGS.showAddClub[b.id] ? `
     <div class="bag-add-form">
       <input class="bag-abbr-inp" id="bgs-abbr-${b.id}" type="text" placeholder="Abbr" maxlength="4">
       <input class="bag-desc-inp" id="bgs-desc-${b.id}" type="text" placeholder="e.g. Ping G440 LST">
+      <input class="bag-desc-inp" id="bgs-shaft-${b.id}" type="text" placeholder="Shaft (optional)" style="min-width:140px">
       <input class="bag-carry-inp" id="bgs-carry-${b.id}" type="number" min="1" max="400" placeholder="yds">
       <button class="btn btn-gold btn-sm" onclick="bgsAddClub('${b.id}')">Add</button>
     </div>` : '';
@@ -1904,13 +1962,14 @@ function bgsToggleAddClub(id) {
 function bgsAddClub(bagId) {
   const abbr = document.getElementById('bgs-abbr-'+bagId)?.value.trim().toUpperCase();
   const desc = document.getElementById('bgs-desc-'+bagId)?.value.trim();
+  const shaft = document.getElementById('bgs-shaft-'+bagId)?.value.trim();
   const carryRaw = document.getElementById('bgs-carry-'+bagId)?.value.trim();
   const carry = carryRaw ? parseInt(carryRaw) : null;
   if (!abbr) { toast('Enter an abbreviation'); return; }
   const bags = getBags();
   const bag = bags.find(b=>b.id===bagId);
   if (!bag) return;
-  bag.clubs.push({abbr, desc:desc||'', ...(carry?{carry}:{})});
+  bag.clubs.push({abbr, desc:desc||'', ...(shaft?{shaft}:{}), ...(carry?{carry}:{})});
   saveBags(bags);
   BGS.showAddClub[bagId]=false;
   renderBgslist();
@@ -1925,6 +1984,29 @@ function bgsSetCarry(bagId, idx, val) {
   if (carry > 0) bag.clubs[idx].carry = carry;
   else delete bag.clubs[idx].carry;
   saveBags(bags);
+}
+
+function bgsToggleClubEdit(bagId, idx) {
+  const cur = BGS.editingClubIdx[bagId];
+  BGS.editingClubIdx[bagId] = cur === idx ? null : idx;
+  renderBgslist();
+}
+
+function bgsSaveClubEdit(bagId, idx) {
+  const abbr = document.getElementById(`bgs-edit-abbr-${bagId}-${idx}`)?.value.trim().toUpperCase();
+  const desc = document.getElementById(`bgs-edit-desc-${bagId}-${idx}`)?.value.trim();
+  const shaft = document.getElementById(`bgs-edit-shaft-${bagId}-${idx}`)?.value.trim();
+  const carryRaw = document.getElementById(`bgs-edit-carry-${bagId}-${idx}`)?.value.trim();
+  const carry = carryRaw ? parseInt(carryRaw) : null;
+  if (!abbr) { toast('Abbr required'); return; }
+  const bags = getBags();
+  const bag = bags.find(b=>b.id===bagId);
+  if (!bag) return;
+  bag.clubs[idx] = { abbr, desc:desc||'', ...(shaft?{shaft}:{}), ...(carry?{carry}:{}) };
+  saveBags(bags);
+  BGS.editingClubIdx[bagId] = null;
+  renderBgslist();
+  toast(abbr+' updated \u2713');
 }
 
 function bgsRemoveClub(bagId, idx) {
@@ -2366,7 +2448,7 @@ function renderDetailStep(hs, idx) {
 
   // Determine inline right button
   const inlineRight = isYardage
-    ? `<button class="wiz-next" onclick="detailNext()" style="flex:1">Skip</button>`
+    ? `<button class="wiz-next" onclick="detailNext()">Skip</button>`
     : subStep === 'club' || subStep === 'result'
       ? '' // buttons are in the content
       : `<button class="wiz-next" onclick="detailSkip(${idx})"
@@ -2659,7 +2741,7 @@ function renderPuttDist(hs, idx) {
     <button onclick="puttTapIn(${idx})" style="width:100%;margin-top:8px;padding:13px;background:var(--ink3);border:1px solid var(--border);border-radius:var(--r);color:var(--chalk2);font-size:14px;font-weight:500;cursor:pointer;letter-spacing:.3px">Tap-in \u2192</button>` : (puttCount === 0 ? `<div style="text-align:center;padding:12px;color:var(--chalk3);font-size:13px">No putts in sequence</div>` : '');
 
   const skipOrSave = puttCount > 0 && !isDone
-    ? `<button class="wiz-next" onclick="puttCalcSkip(${idx})" style="flex:0 0 auto;padding:13px 28px;background:var(--ink3);color:var(--chalk3);border:1px solid var(--border)">Skip</button>`
+    ? `<button class="wiz-skip" onclick="puttCalcSkip(${idx})">Skip</button>`
     : `<button class="wiz-next" onclick="saveHole(${idx})">Save Hole \u2192</button>`;
 
   document.getElementById('scr-content').innerHTML = `
