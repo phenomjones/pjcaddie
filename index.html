@@ -682,12 +682,23 @@ body{display:flex;flex-direction:column}
           <input class="inp" id="set-gh-branch" type="text" placeholder="main" autocomplete="off">
         </div>
         <button class="btn btn-outline btn-sm" onclick="saveGHSettings()" style="margin-bottom:10px">Save Sync Settings</button>
-        <div style="display:flex;gap:6px;margin-bottom:6px">
-          <button class="btn btn-gold btn-sm" id="gh-push-notes-btn" onclick="ghPushNotes()" style="flex:1">Notes ↑</button>
-          <button class="btn btn-gold btn-sm" id="gh-push-game-btn" onclick="ghPushMyGame()" style="flex:1">My Game ↑</button>
-          <button class="btn btn-gold btn-sm" id="gh-push-bags-btn" onclick="ghPushBags()" style="flex:1">Bags ↑</button>
+        <div style="display:grid;grid-template-columns:68px 1fr 1fr;gap:6px;align-items:center;margin-bottom:10px">
+          <div></div>
+          <div style="text-align:center;font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:.8px">Push \u2191</div>
+          <div style="text-align:center;font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:.8px">Pull \u2193</div>
+          <div style="font-size:12px;color:var(--chalk2)">Rounds</div>
+          <button class="btn btn-gold btn-sm" id="gh-push-rounds-btn" onclick="ghPushRounds()">Push</button>
+          <button class="btn btn-outline btn-sm" id="gh-pull-rounds-btn" onclick="ghPullRounds()">Pull</button>
+          <div style="font-size:12px;color:var(--chalk2)">Courses</div>
+          <button class="btn btn-gold btn-sm" id="gh-push-courses-btn" onclick="ghPushCourses()">Push</button>
+          <button class="btn btn-outline btn-sm" id="gh-pull-courses-btn" onclick="ghPullCourses()">Pull</button>
+          <div style="font-size:12px;color:var(--chalk2)">My Game</div>
+          <button class="btn btn-gold btn-sm" id="gh-push-game-btn" onclick="ghPushMyGame()">Push</button>
+          <button class="btn btn-outline btn-sm" id="gh-pull-game-btn" onclick="ghPullMyGame()">Pull</button>
+          <div style="font-size:12px;color:var(--chalk2)">Bags</div>
+          <button class="btn btn-gold btn-sm" id="gh-push-bags-btn" onclick="ghPushBags()">Push</button>
+          <button class="btn btn-outline btn-sm" id="gh-pull-bags-btn" onclick="ghPullBags()">Pull</button>
         </div>
-        <button class="btn btn-outline btn-sm" id="gh-pull-btn" onclick="ghPull()" style="width:100%;margin-bottom:6px">Pull ↓</button>
         <div id="gh-last-sync" style="font-size:10px;color:var(--chalk3);margin-bottom:4px"></div>
         <div id="gh-status" style="font-size:11px;color:var(--chalk3)"></div>
       </div>
@@ -1628,29 +1639,72 @@ async function ghPushSection(label, btnId, sectionData) {
     renderSettings();
     const t = new Date(now).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     ghSetStatus('\u2713 Pushed '+label+' \u00b7 '+t, 'var(--green)');
-    toast('Pushed to GitHub \u2713');
+    toast('Pushed '+label+' \u2713');
   } catch(err) {
-    ghSetStatus('\u2717 '+err.message, 'var(--red)');
-    toast('Push failed');
+    ghSetStatus('\u2717 '+label+': '+(err.message||'unknown error'), 'var(--red)');
+    toast('\u2717 '+label+' push failed: '+(err.message||'unknown error'));
   } finally {
-    if (btn) { btn.disabled=false; btn.textContent=label+' \u2191'; }
+    if (btn) { btn.disabled=false; btn.textContent='Push'; }
   }
 }
 
-function ghPushNotes() {
-  return ghPushSection('Notes', 'gh-push-notes-btn', now => ({
+async function ghPullSection(label, btnId, tsKey, restoreFn) {
+  const btn = document.getElementById(btnId);
+  try {
+    ghValidate();
+    if (btn) { btn.disabled=true; btn.textContent='Pulling\u2026'; }
+    ghSetStatus('Reading from GitHub\u2026');
+    const result = await ghReadFile();
+    if (!result) {
+      ghSetStatus('No sync file found \u2014 Push first.', 'var(--chalk3)');
+      return;
+    }
+    const remote = result.content;
+    const meta = getSyncMeta();
+    const remoteTs = remote[tsKey]||0;
+    const localTs = meta[tsKey]||0;
+    if (remoteTs <= localTs) {
+      ghSetStatus('\u2713 '+label+' already up to date.', 'var(--chalk3)');
+      return;
+    }
+    if (!confirm('Remote '+label+' is newer.\nOverwrite local '+label+'?')) {
+      ghSetStatus('Pull cancelled.', 'var(--chalk3)');
+      return;
+    }
+    restoreFn(remote);
+    meta[tsKey] = remoteTs;
+    meta.lastPull = Date.now();
+    saveSyncMeta(meta);
+    renderSettings();
+    const t = new Date(meta.lastPull).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    ghSetStatus('\u2713 Pulled '+label+' \u00b7 '+t, 'var(--green)');
+    toast('Pulled '+label+' \u2713');
+  } catch(err) {
+    ghSetStatus('\u2717 '+label+': '+(err.message||'unknown error'), 'var(--red)');
+    toast('\u2717 '+label+' pull failed');
+  } finally {
+    if (btn) { btn.disabled=false; btn.textContent='Pull'; }
+  }
+}
+
+function ghPushRounds() {
+  return ghPushSection('Rounds', 'gh-push-rounds-btn', now => ({
+    fields: { rounds: getRounds() },
+    metaFields: {}
+  }));
+}
+function ghPushCourses() {
+  return ghPushSection('Courses', 'gh-push-courses-btn', now => ({
     fields: { courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), notesTs: now },
     metaFields: { notesTs: now }
   }));
 }
-
 function ghPushMyGame() {
   return ghPushSection('My Game', 'gh-push-game-btn', now => ({
     fields: { player: JSON.parse(localStorage.getItem('pjc_player')||'null'), playerTs: now },
     metaFields: { playerTs: now }
   }));
 }
-
 function ghPushBags() {
   return ghPushSection('Bags', 'gh-push-bags-btn', now => ({
     fields: { bags: JSON.parse(localStorage.getItem('pjc_bags')||'null'), bagsTs: now },
@@ -1658,16 +1712,15 @@ function ghPushBags() {
   }));
 }
 
-async function ghPull() {
-  const pullBtn = document.getElementById('gh-pull-btn');
+async function ghPullRounds() {
+  const btn = document.getElementById('gh-pull-rounds-btn');
   try {
     ghValidate();
-    if (pullBtn) { pullBtn.disabled=true; pullBtn.textContent='Pulling\u2026'; }
+    if (btn) { btn.disabled=true; btn.textContent='Pulling\u2026'; }
     ghSetStatus('Reading from GitHub\u2026');
     const result = await ghReadFile();
     if (!result) {
-      ghSetStatus('No sync file found \u2014 Push from another device first.', 'var(--chalk3)');
-      if (pullBtn) { pullBtn.disabled=false; pullBtn.textContent='Pull \u2193'; }
+      ghSetStatus('No sync file found \u2014 Push first.', 'var(--chalk3)');
       return;
     }
     const remote = result.content;
@@ -1675,52 +1728,39 @@ async function ghPull() {
     const remoteRounds = remote.rounds||[];
     const merged = mergeRounds(localRounds, remoteRounds);
     const newCount = merged.length - localRounds.length;
-    const meta = getSyncMeta();
-    const notesNewer = remote.notesTs && remote.notesTs>(meta.notesTs||0);
-    const playerNewer = remote.playerTs && remote.playerTs>(meta.playerTs||0);
-    const bagsNewer = remote.bagsTs && remote.bagsTs>(meta.bagsTs||0);
-    const syncDate = remote.syncedAt ? new Date(remote.syncedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : 'unknown';
-    const msg = [
-      'Remote snapshot: '+syncDate,
-      'Remote: '+remoteRounds.length+' rounds | Local: '+localRounds.length+' rounds',
-      'After merge: '+merged.length+' rounds'+(newCount>0?' (+'+newCount+' new)':''),
-      '',
-      notesNewer ? '\u26a0\ufe0f Remote course notes are newer \u2014 will overwrite local.' : '\u2713 Local course notes are newer \u2014 keeping local.',
-      playerNewer ? '\u26a0\ufe0f Remote player profile is newer \u2014 will overwrite local.' : '\u2713 Local player profile is newer \u2014 keeping local.',
-      bagsNewer ? '\u26a0\ufe0f Remote bag data is newer \u2014 will overwrite local.' : '\u2713 Local bag data is newer \u2014 keeping local.',
-      '',
-      'Proceed?'
-    ].join('\n');
-    if (!confirm(msg)) {
+    if (!confirm('Remote: '+remoteRounds.length+' rounds \u00b7 Local: '+localRounds.length+' rounds\nAfter merge: '+merged.length+(newCount>0?' (+'+newCount+' new)':'')+'\n\nProceed?')) {
       ghSetStatus('Pull cancelled.', 'var(--chalk3)');
-      if (pullBtn) { pullBtn.disabled=false; pullBtn.textContent='Pull \u2193'; }
       return;
     }
     saveRounds(merged);
-    if (notesNewer && remote.courseNotes) {
-      localStorage.setItem('pjc_course_notes', JSON.stringify(remote.courseNotes));
-      meta.notesTs = remote.notesTs;
-    }
-    if (playerNewer && remote.player) {
-      localStorage.setItem('pjc_player', JSON.stringify(remote.player));
-      meta.playerTs = remote.playerTs;
-    }
-    if (bagsNewer && remote.bags) {
-      localStorage.setItem('pjc_bags', JSON.stringify(remote.bags));
-      meta.bagsTs = remote.bagsTs;
-    }
+    const meta = getSyncMeta();
     meta.lastPull = Date.now();
     saveSyncMeta(meta);
     renderSettings();
     const t = new Date(meta.lastPull).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    ghSetStatus('\u2713 Pulled \u00b7 '+merged.length+' rounds \u00b7 '+t, 'var(--green)');
-    toast('Pull complete \u2713');
+    ghSetStatus('\u2713 Pulled Rounds \u00b7 '+merged.length+' rounds \u00b7 '+t, 'var(--green)');
+    toast('Pulled Rounds \u2713');
   } catch(err) {
-    ghSetStatus('\u2717 '+err.message, 'var(--red)');
-    toast('Pull failed');
+    ghSetStatus('\u2717 Rounds: '+(err.message||'unknown error'), 'var(--red)');
+    toast('\u2717 Rounds pull failed');
   } finally {
-    if (pullBtn) { pullBtn.disabled=false; pullBtn.textContent='Pull \u2193'; }
+    if (btn) { btn.disabled=false; btn.textContent='Pull'; }
   }
+}
+function ghPullCourses() {
+  return ghPullSection('Courses', 'gh-pull-courses-btn', 'notesTs', remote => {
+    if (remote.courseNotes) localStorage.setItem('pjc_course_notes', JSON.stringify(remote.courseNotes));
+  });
+}
+function ghPullMyGame() {
+  return ghPullSection('My Game', 'gh-pull-game-btn', 'playerTs', remote => {
+    if (remote.player) localStorage.setItem('pjc_player', JSON.stringify(remote.player));
+  });
+}
+function ghPullBags() {
+  return ghPullSection('Bags', 'gh-pull-bags-btn', 'bagsTs', remote => {
+    if (remote.bags) localStorage.setItem('pjc_bags', JSON.stringify(remote.bags));
+  });
 }
 
 function confirmClearAll() {
