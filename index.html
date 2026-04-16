@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.26 · Apr 16, 2026 -->
+<!-- PJ Caddie v7.10.27 · Apr 16, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -351,7 +351,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.26 · Apr 16, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.27 · Apr 16, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -468,20 +468,17 @@ body{display:flex;flex-direction:column}
   <div class="hdr" style="flex-shrink:0">
     <div class="hdr-row"><button class="back-btn" onclick="showView('round-setup')">Back</button></div>
     <div class="hdr-title">Today's Bag</div>
+    <div id="bs-course-sub" style="font-size:12px;color:var(--chalk3);margin-top:2px"></div>
   </div>
   <div class="scroll-body">
     <div class="pad pad-b">
-      <div class="inp-grp">
-        <label class="inp-label">Select Bag</label>
-        <div class="tee-chips" id="bs-bag-chips"></div>
-      </div>
+      <div class="tee-chips" id="bs-bag-chips" style="margin-bottom:12px"></div>
       <div id="bs-clubs-section" style="display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
           <label class="inp-label" style="margin:0" id="bs-hint-lbl">Tap clubs you're bringing today</label>
           <button style="background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer" onclick="bsSelectAll()">All</button>
         </div>
         <div class="club-grid" id="bs-club-grid"></div>
-        <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--chalk2)" id="bs-club-count"></div>
         <div id="bs-shaft-section" style="display:none;margin-top:16px">
           <div onclick="bsToggleShaftSection()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:6px 0;border-bottom:1px solid var(--border2);margin-bottom:2px">
             <span class="inp-label" style="margin:0">Shaft Overrides <span style="font-size:10px;color:var(--chalk3);font-weight:400">— for this round only</span></span>
@@ -489,6 +486,14 @@ body{display:flex;flex-direction:column}
           </div>
           <div id="bs-shaft-list" style="display:none"></div>
         </div>
+      </div>
+      <div id="bs-cross-bar" style="display:none;margin-top:12px">
+        <div style="font-size:10px;letter-spacing:.6px;color:var(--chalk3);font-weight:600;margin-bottom:7px">FROM OTHER BAGS — tap to remove</div>
+        <div id="bs-cross-pills" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+      </div>
+      <div id="bs-count-row" style="display:none;display:flex;align-items:center;justify-content:space-between;margin-top:10px;margin-bottom:4px">
+        <span style="font-size:13px;color:var(--chalk3)">Total selected</span>
+        <span style="font-size:13px;font-weight:700;color:var(--gold)" id="bs-club-count"></span>
       </div>
       <div id="bs-actions" style="margin-top:20px;display:none">
         <button class="btn btn-gold" id="bs-start-btn" onclick="startRoundFromBag()">Start Round →</button>
@@ -743,7 +748,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.26 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.27 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -798,6 +803,10 @@ body{display:flex;flex-direction:column}
           <span style="font-size:11px;color:var(--chalk3);white-space:nowrap">📝 Notes from</span>
           <select id="ch-master-tee-select" onchange="onMasterTeeChange()" style="background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);color:var(--chalk);font-size:12px;padding:3px 8px;flex:1;outline:none"></select>
           <span style="font-size:10px;color:var(--chalk3);white-space:nowrap">tees</span>
+        </div>
+        <div id="ch-default-bag-bar" style="display:none;align-items:center;gap:8px;padding:8px 0 7px;border-bottom:1px solid var(--border2)">
+          <span style="font-size:11px;color:var(--chalk3);white-space:nowrap">🎒 Default bag</span>
+          <select id="ch-default-bag-select" onchange="onCourseDefaultBagChange()" style="background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);color:var(--chalk);font-size:12px;padding:3px 8px;flex:1;outline:none"></select>
         </div>
         <div id="ch-hole-rows"></div>
       </div>
@@ -1256,6 +1265,23 @@ function setMasterTeeId(courseId, teeId) {
     const all = JSON.parse(localStorage.getItem('pjc_master_tees') || '{}');
     all[courseId] = teeId;
     localStorage.setItem('pjc_master_tees', JSON.stringify(all));
+    const meta = getSyncMeta(); meta.notesTs = Date.now(); saveSyncMeta(meta);
+  } catch {}
+}
+
+// ── COURSE DEFAULT BAG ────────────────────────────────────────
+// pjc_course_bags = { [courseId]: bagId }
+function getCourseBag(courseId) {
+  try {
+    const all = JSON.parse(localStorage.getItem('pjc_course_bags') || '{}');
+    return all[courseId] || null;
+  } catch { return null; }
+}
+function setCourseBag(courseId, bagId) {
+  try {
+    const all = JSON.parse(localStorage.getItem('pjc_course_bags') || '{}');
+    all[courseId] = bagId;
+    localStorage.setItem('pjc_course_bags', JSON.stringify(all));
     const meta = getSyncMeta(); meta.notesTs = Date.now(); saveSyncMeta(meta);
   } catch {}
 }
@@ -1802,7 +1828,7 @@ function ghPushRounds() {
 }
 function ghPushCourses() {
   return ghPushSection('Courses', 'gh-push-courses-btn', now => ({
-    fields: { courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), masterTees: JSON.parse(localStorage.getItem('pjc_master_tees')||'{}'), notesTs: now },
+    fields: { courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), masterTees: JSON.parse(localStorage.getItem('pjc_master_tees')||'{}'), courseBags: JSON.parse(localStorage.getItem('pjc_course_bags')||'{}'), notesTs: now },
     metaFields: { notesTs: now }
   }));
 }
@@ -1858,6 +1884,7 @@ function ghPullCourses() {
   return ghPullSection('Courses', 'gh-pull-courses-btn', 'notesTs', remote => {
     if (remote.courseNotes) localStorage.setItem('pjc_course_notes', JSON.stringify(remote.courseNotes));
     if (remote.masterTees) localStorage.setItem('pjc_master_tees', JSON.stringify(remote.masterTees));
+    if (remote.courseBags) localStorage.setItem('pjc_course_bags', JSON.stringify(remote.courseBags));
   });
 }
 function ghPullMyGame() {
@@ -1931,107 +1958,182 @@ function getBags() {
 function saveBags(bags) { localStorage.setItem('pjc_bags',JSON.stringify(bags)); }
 
 // ── BAG SELECT (pre-round) ────────────────────────────────────
-const BS = { bagId: null, activeClubs: [], shaftOverrides: {} };
+const BS = { viewingBagId: null, defaultBagId: null, selectedClubIds: new Set(), shaftOverrides: {} };
 
 function initBagSelect() {
-  BS.bagId = null; BS.activeClubs = [];
+  BS.selectedClubIds = new Set();
+  BS.shaftOverrides = {};
   const bags = getBags();
-  document.getElementById('bs-bag-chips').innerHTML = bags.map(b=>
-    `<button class="tee-chip" id="bs-chip-${b.id}" onclick="bsPickBag('${b.id}')">${b.name}</button>`
-  ).join('');
-  document.getElementById('bs-clubs-section').style.display = 'none';
-  document.getElementById('bs-actions').style.display = 'none';
-  if (bags.length) bsPickBag(bags[0].id);
-}
-
-function bsGetCourseHistory(bagAbbrs) {
-  // Find most recent round at this course with bagClubs data
+  if (!bags.length) {
+    document.getElementById('bs-bag-chips').innerHTML = '';
+    document.getElementById('bs-clubs-section').style.display = 'none';
+    document.getElementById('bs-actions').style.display = '';
+    document.getElementById('bs-start-btn').disabled = true;
+    document.getElementById('bs-import-btn').disabled = true;
+    return;
+  }
+  // Resolve default bag from course setting
   const wip = getWIP();
-  if (!wip?.courseId) return null;
-  const rounds = getRounds()
-    .filter(r => r.courseId === wip.courseId && Array.isArray(r.bagClubs) && r.bagClubs.length > 0)
-    .sort((a,b) => (b.date||'').localeCompare(a.date||''));
-  if (!rounds.length) return null;
-  // Filter history clubs against what's actually in today's bag
-  return rounds[0].bagClubs.filter(abbr => bagAbbrs.includes(abbr));
+  const courseSub = document.getElementById('bs-course-sub');
+  if (courseSub && wip) courseSub.textContent = [wip.course, wip.tees].filter(Boolean).join(' \xb7 ');
+  const defaultBagId = wip?.courseId ? getCourseBag(wip.courseId) : null;
+  const defaultBag = bags.find(b => b.id === defaultBagId) || bags[0];
+  BS.defaultBagId = defaultBag.id;
+  BS.viewingBagId = defaultBag.id;
+  // Default bag: all selected. All other bags: nothing selected.
+  defaultBag.clubs.forEach(c => BS.selectedClubIds.add(c.id));
+  // Render chips
+  document.getElementById('bs-bag-chips').innerHTML = bags.map(b =>
+    `<button class="tee-chip${b.id === BS.viewingBagId ? ' on' : ''}" id="bs-chip-${b.id}" onclick="bsPickBag('${b.id}')">${b.name}</button>`
+  ).join('');
+  document.getElementById('bs-clubs-section').style.display = '';
+  document.getElementById('bs-actions').style.display = '';
+  renderBsClubGrid();
 }
 
 function bsPickBag(id) {
-  BS.bagId = id;
-  BS.shaftOverrides = {}; // reset per-round shaft overrides when bag changes
-  const bags = getBags();
-  const bag = bags.find(b=>b.id===id);
-  document.querySelectorAll('#bs-bag-chips .tee-chip').forEach(c=>c.classList.remove('on'));
+  BS.viewingBagId = id;
+  document.querySelectorAll('#bs-bag-chips .tee-chip').forEach(c => c.classList.remove('on'));
   const chip = document.getElementById('bs-chip-'+id);
   if (chip) chip.classList.add('on');
-
-  const bagAbbrs = bag ? bag.clubs.map(c=>c.abbr) : [];
-  const history = bsGetCourseHistory(bagAbbrs);
-
-  if (history && history.length > 0) {
-    // Use course history, filtered against current bag
-    BS.activeClubs = history;
-  } else {
-    // First time at this course or no history — default to all clubs
-    BS.activeClubs = [...bagAbbrs];
-  }
-
-  renderBsClubGrid(bag);
-  document.getElementById('bs-clubs-section').style.display = '';
-  document.getElementById('bs-actions').style.display = '';
+  renderBsClubGrid();
 }
 
-function renderBsClubGrid(bag) {
+function renderBsClubGrid() {
+  const bags = getBags();
+  const bag = bags.find(b => b.id === BS.viewingBagId);
   if (!bag) return;
-  const hasHistory = bsGetCourseHistory(bag.clubs.map(c=>c.abbr)) !== null;
-  const hint = hasHistory ? 'Loaded from your last round here — adjust as needed' : 'Tap clubs you\'re bringing today';
   document.getElementById('bs-club-grid').innerHTML = bag.clubs.map(c => {
-    const active = BS.activeClubs.includes(c.abbr);
-    return `<div class="club-tile${active?' sel':''}"
-      style="${active?'':'opacity:.3;filter:grayscale(1)'}"
-      onclick="bsToggleClub('${c.abbr}')">
+    const sel = BS.selectedClubIds.has(c.id);
+    return `<div class="club-tile${sel ? ' sel' : ''}" onclick="bsToggleClub('${c.id}')">
       <div class="club-tile-abbr">${c.abbr}</div>
       <div class="club-tile-head">${escHtml(c.desc)}</div>
-      ${c.shaft?`<div class="club-tile-shaft">${escHtml(c.shaft)}</div>`:''}
+      ${c.shaft ? `<div class="club-tile-shaft">${escHtml(c.shaft)}</div>` : ''}
     </div>`;
   }).join('');
-  // Update count display
-  const countEl = document.getElementById('bs-club-count');
-  if (countEl) {
-    const n = BS.activeClubs.length;
-    countEl.textContent = n === 0 ? 'No clubs selected' : n + ' club' + (n !== 1 ? 's' : '') + ' selected';
-    countEl.style.color = n === 0 ? 'var(--red)' : 'var(--chalk2)';
-  }
-  // Update hint text
-  const lbl = document.getElementById('bs-hint-lbl');
-  if (lbl) lbl.textContent = hint;
-  // Update shaft override section
+  renderBsCrossBar();
   renderBsShaftSection();
 }
 
-function bsToggleClub(abbr) {
-  const i = BS.activeClubs.indexOf(abbr);
-  if (i>=0) BS.activeClubs.splice(i,1); else BS.activeClubs.push(abbr);
-  const bags = getBags();
-  const bag = bags.find(b=>b.id===BS.bagId);
-  renderBsClubGrid(bag);
+function bsToggleClub(clubId) {
+  BS.selectedClubIds.has(clubId) ? BS.selectedClubIds.delete(clubId) : BS.selectedClubIds.add(clubId);
+  renderBsClubGrid();
 }
 
 function bsSelectAll() {
   const bags = getBags();
-  const bag = bags.find(b=>b.id===BS.bagId);
-  BS.activeClubs = bag ? bag.clubs.map(c=>c.abbr) : [];
-  renderBsClubGrid(bag);
+  const bag = bags.find(b => b.id === BS.viewingBagId);
+  if (!bag) return;
+  bag.clubs.forEach(c => BS.selectedClubIds.add(c.id));
+  renderBsClubGrid();
+}
+
+function renderBsCrossBar() {
+  const bags = getBags();
+  // Cross clubs = selected clubs NOT in the default bag
+  const crossClubs = [];
+  bags.forEach(bag => {
+    if (bag.id === BS.defaultBagId) return;
+    bag.clubs.forEach(c => {
+      if (BS.selectedClubIds.has(c.id)) crossClubs.push({...c, bagName: bag.name});
+    });
+  });
+  const bar = document.getElementById('bs-cross-bar');
+  const pills = document.getElementById('bs-cross-pills');
+  const countEl = document.getElementById('bs-club-count');
+  if (bar && pills) {
+    if (crossClubs.length) {
+      bar.style.display = '';
+      pills.innerHTML = crossClubs.map(c =>
+        `<span onclick="bsRemoveCross('${c.id}')" style="background:rgba(200,168,75,.12);border:1px solid rgba(200,168,75,.4);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace;cursor:pointer">${c.abbr} <span style="opacity:.5;font-size:9px">${c.bagName}</span> \xd7</span>`
+      ).join('');
+    } else {
+      bar.style.display = 'none';
+    }
+  }
+  if (countEl) {
+    const n = BS.selectedClubIds.size;
+    countEl.textContent = n + ' club' + (n !== 1 ? 's' : '') + ' selected';
+  }
+}
+
+function bsRemoveCross(clubId) {
+  BS.selectedClubIds.delete(clubId);
+  renderBsClubGrid();
+}
+
+function buildClubSnapshot(selectedClubIds, allBags, shaftOverrides) {
+  // Freeze club profiles across all bags — keyed by abbr for Byron display
+  // Default bag clubs take precedence on abbr collision
+  const snapshot = {};
+  const defaultBag = allBags.find(b => b.id === BS.defaultBagId);
+  // Process default bag first so it wins on abbr collision
+  const orderedBags = defaultBag
+    ? [defaultBag, ...allBags.filter(b => b.id !== BS.defaultBagId)]
+    : allBags;
+  orderedBags.forEach(bag => {
+    bag.clubs.forEach(club => {
+      if (!selectedClubIds.has(club.id)) return;
+      if (snapshot[club.abbr]) return; // default bag already set this abbr
+      const shaftToUse = (shaftOverrides && shaftOverrides[club.abbr]) ? shaftOverrides[club.abbr] : (club.shaft || null);
+      snapshot[club.abbr] = {
+        desc: club.desc || '',
+        ...(shaftToUse ? { shaft: shaftToUse } : {}),
+        ...(club.carry ? { carry: club.carry } : {}),
+        clubId: club.id || null
+      };
+    });
+  });
+  return snapshot;
+}
+
+function startRoundFromBag() {
+  const wip = getWIP();
+  if (!wip) return;
+  const bags = getBags();
+  const defaultBag = bags.find(b => b.id === BS.defaultBagId);
+  wip.bagId = BS.defaultBagId;
+  wip.bagName = defaultBag?.name || '';
+  wip.bagClubs = [...BS.selectedClubIds].map(id => {
+    for (const bag of bags) {
+      const c = bag.clubs.find(c => c.id === id);
+      if (c) return c.abbr;
+    }
+    return null;
+  }).filter(Boolean);
+  wip.clubSnapshot = buildClubSnapshot(BS.selectedClubIds, bags, BS.shaftOverrides);
+  saveWIP(wip);
+  showView('scoring');
+}
+
+function importFromBag() {
+  const wip = getWIP();
+  if (!wip) return;
+  const bags = getBags();
+  const defaultBag = bags.find(b => b.id === BS.defaultBagId);
+  wip.bagId = BS.defaultBagId;
+  wip.bagName = defaultBag?.name || '';
+  wip.bagClubs = [...BS.selectedClubIds].map(id => {
+    for (const bag of bags) {
+      const c = bag.clubs.find(c => c.id === id);
+      if (c) return c.abbr;
+    }
+    return null;
+  }).filter(Boolean);
+  wip.clubSnapshot = buildClubSnapshot(BS.selectedClubIds, bags, BS.shaftOverrides);
+  saveWIP(wip);
+  showView('photo-import');
 }
 
 function renderBsShaftSection() {
   const bags = getBags();
-  const bag = bags.find(b=>b.id===BS.bagId);
-  if (!bag) return;
-  // Only show clubs that are active AND have a shaft defined
-  const shaftClubs = BS.activeClubs
-    .map(abbr => bag.clubs.find(c=>c.abbr===abbr))
-    .filter(c => c && c.shaft);
+  // Collect all selected clubs with shafts across all bags
+  const shaftClubs = [];
+  bags.forEach(bag => {
+    bag.clubs.forEach(c => {
+      if (BS.selectedClubIds.has(c.id) && c.shaft) shaftClubs.push(c);
+    });
+  });
   const sec = document.getElementById('bs-shaft-section');
   const list = document.getElementById('bs-shaft-list');
   if (!sec || !list) return;
@@ -2064,48 +2166,6 @@ function bsToggleShaftSection() {
   const open = list.style.display === 'none';
   list.style.display = open ? '' : 'none';
   chev.style.transform = open ? 'rotate(180deg)' : '';
-}
-
-function buildClubSnapshot(activeClubs, bag, shaftOverrides) {
-  // Freeze full club profiles at the moment of round start — immutable for Byron analysis
-  const snapshot = {};
-  (activeClubs || []).forEach(abbr => {
-    const club = (bag?.clubs || []).find(c => c.abbr === abbr);
-    if (club) {
-      const shaftToUse = (shaftOverrides && shaftOverrides[abbr]) ? shaftOverrides[abbr] : (club.shaft || null);
-      snapshot[abbr] = {
-        desc: club.desc || '',
-        ...(shaftToUse ? { shaft: shaftToUse } : {}),
-        ...(club.carry ? { carry: club.carry } : {}),
-        clubId: club.id || null
-      };
-    }
-  });
-  return snapshot;
-}
-
-function startRoundFromBag() {
-  const wip = getWIP();
-  if (!wip) return;
-  const bags = getBags();
-  const bag = bags.find(b=>b.id===BS.bagId);
-  wip.bagId = BS.bagId;
-  wip.bagName = bag?.name || '';
-  wip.bagClubs = [...BS.activeClubs];
-  wip.clubSnapshot = buildClubSnapshot(BS.activeClubs, bag, BS.shaftOverrides);
-}
-
-function importFromBag() {
-  const wip = getWIP();
-  if (!wip) return;
-  const bags = getBags();
-  const bag = bags.find(b=>b.id===BS.bagId);
-  wip.bagId = BS.bagId;
-  wip.bagName = bag?.name || '';
-  wip.bagClubs = [...BS.activeClubs];
-  wip.clubSnapshot = buildClubSnapshot(BS.activeClubs, bag, BS.shaftOverrides);
-  saveWIP(wip);
-  showView('photo-import');
 }
 
 // ── BAG SETTINGS ─────────────────────────────────────────────
@@ -4233,7 +4293,17 @@ function renderCourseHubTees() {
     course.tees.map((t, i) =>
       `<button class="tee-chip${CH.teeIdx === i ? ' on' : ''}" onclick="selectCourseHubTee(${i})">${t.name}</button>`
     ).join('');
-  // Master tee selector — only shown when 2+ tee sets exist
+  // Default bag selector — always shown (any course can have a default bag)
+  const bagSel = document.getElementById('ch-default-bag-select');
+  const bagBar = document.getElementById('ch-default-bag-bar');
+  const allBags = getBags();
+  if (bagSel && bagBar) {
+    const currentBagId = getCourseBag(CH.courseId);
+    bagSel.innerHTML = `<option value="">None</option>` + allBags.map(b =>
+      `<option value="${b.id}"${b.id === currentBagId ? ' selected' : ''}>${b.name}</option>`
+    ).join('');
+    bagBar.style.display = 'flex';
+  }
   const masterRow = document.getElementById('ch-notes-tee-bar');
   const masterSel = document.getElementById('ch-master-tee-select');
   if (course.tees.length > 1) {
@@ -4328,6 +4398,23 @@ function onMasterTeeChange() {
   const course = getCourses().find(c => c.id === CH.courseId);
   const tee = course?.tees.find(t => t.id === sel.value);
   toast(`Notes reference: ${tee?.name || 'updated'} tees \u2713`);
+}
+
+function onCourseDefaultBagChange() {
+  const sel = document.getElementById('ch-default-bag-select');
+  if (!sel || !CH.courseId) return;
+  const bagId = sel.value || null;
+  if (bagId) setCourseBag(CH.courseId, bagId);
+  else {
+    try {
+      const all = JSON.parse(localStorage.getItem('pjc_course_bags') || '{}');
+      delete all[CH.courseId];
+      localStorage.setItem('pjc_course_bags', JSON.stringify(all));
+    } catch {}
+  }
+  const bags = getBags();
+  const bag = bags.find(b => b.id === bagId);
+  toast(bag ? `Default bag: ${bag.name} \u2713` : 'Default bag cleared');
 }
 
 function renderCourseHubHoles(course) {
