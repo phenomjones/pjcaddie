@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.23 · Apr 16, 2026 -->
+<!-- PJ Caddie v7.10.25 · Apr 16, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -269,6 +269,8 @@ body{display:flex;flex-direction:column}
 .club-tile.putter.sel{background:rgba(180,142,240,.25)}
 .club-tile-abbr{font-family:'DM Serif Display',serif;font-size:18px;color:var(--chalk);line-height:1}
 .club-tile-desc{font-size:9px;color:var(--chalk3);margin-top:3px;line-height:1.3;word-break:break-word}
+.club-tile-head{font-size:11px;font-weight:700;color:var(--gold);margin-top:4px;line-height:1.25;word-break:break-word;text-align:center}
+.club-tile-shaft{font-size:11px;font-weight:400;color:#b0ccc0;line-height:1.25;word-break:break-word;text-align:center}
 .wiz-overview-row{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;cursor:pointer;transition:background .12s}
 .wiz-overview-row:active{background:var(--ink3)}
 .wiz-overview-row.done{border-left:4px solid var(--green)}
@@ -345,7 +347,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.23 · Apr 16, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.25 · Apr 16, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -477,8 +479,11 @@ body{display:flex;flex-direction:column}
         <div class="club-grid" id="bs-club-grid"></div>
         <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--chalk2)" id="bs-club-count"></div>
         <div id="bs-shaft-section" style="display:none;margin-top:16px">
-          <div class="inp-label" style="margin-bottom:8px">Shaft Overrides <span style="font-size:10px;color:var(--chalk3);font-weight:400">— for this round only</span></div>
-          <div id="bs-shaft-list"></div>
+          <div onclick="bsToggleShaftSection()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:6px 0;border-bottom:1px solid var(--border2);margin-bottom:2px">
+            <span class="inp-label" style="margin:0">Shaft Overrides <span style="font-size:10px;color:var(--chalk3);font-weight:400">— for this round only</span></span>
+            <span id="bs-shaft-chevron" style="font-size:13px;color:var(--chalk3);transition:transform .2s">▼</span>
+          </div>
+          <div id="bs-shaft-list" style="display:none"></div>
         </div>
       </div>
       <div id="bs-actions" style="margin-top:20px;display:none">
@@ -734,7 +739,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.23 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.25 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -782,14 +787,14 @@ body{display:flex;flex-direction:column}
         <span class="section-lbl">Course</span>
         <select class="hub-course-select" id="ch-course-select" onchange="onCourseHubCourseChange()"></select>
       </div>
-      <div id="ch-tee-chips" class="tee-chips" style="margin-bottom:8px"></div>
-      <div id="ch-master-tee-row" style="display:none;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs)">
-        <span style="font-size:11px;color:var(--chalk3);white-space:nowrap">📝 Notes from</span>
-        <select id="ch-master-tee-select" onchange="onMasterTeeChange()" style="background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);color:var(--chalk);font-size:12px;padding:4px 8px;flex:1;outline:none"></select>
-        <span style="font-size:10px;color:var(--chalk3);white-space:nowrap">tees</span>
-      </div>
+      <div id="ch-tee-chips" class="tee-chips" style="margin-bottom:12px"></div>
       <div id="ch-pji" style="margin-bottom:14px"></div>
       <div style="background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:0 14px">
+        <div id="ch-notes-tee-bar" style="display:none;align-items:center;gap:8px;padding:8px 0 7px;border-bottom:1px solid var(--border2)">
+          <span style="font-size:11px;color:var(--chalk3);white-space:nowrap">📝 Notes from</span>
+          <select id="ch-master-tee-select" onchange="onMasterTeeChange()" style="background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);color:var(--chalk);font-size:12px;padding:3px 8px;flex:1;outline:none"></select>
+          <span style="font-size:10px;color:var(--chalk3);white-space:nowrap">tees</span>
+        </div>
         <div id="ch-hole-rows"></div>
       </div>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:12px;opacity:.7">Notes save automatically when you tap away</div>
@@ -929,8 +934,9 @@ function byronRoundStats(round, clubCarries) {
   const partialShots = [];
   approaches.forEach(s=>{
     if(!s.club||!s.yardage) return;
+    const carryKey = s.clubId || s.club; // prefer clubId, abbr as legacy fallback
     if(!clubData[s.club]) clubData[s.club]=[];
-    const carry = clubCarries?.[s.club];
+    const carry = clubCarries?.[carryKey];
     const isPartial = carry ? (s.yardage/carry) < PARTIAL_THRESHOLD : null;
     if(isPartial) partialShots.push({hole:holes.find(h=>(h.shots||[]).includes(s))?.number,club:s.club,yds:s.yardage,carry,pct:Math.round(s.yardage/carry*100),result:s.result,miss:s.missDirection});
     clubData[s.club].push({yds:s.yardage,result:s.result,intended:s.intendedZone,finish:s.finishZone,miss:s.missDirection,isPartial});
@@ -956,14 +962,21 @@ function byronBuildBundle(round) {
   const courseNotes = getCourseNotes(round.courseId, round.holesPlayed||18);
   const hist = byronHistoricalSummary(round.courseId, round.id);
   // Build carry and shaft maps — prefer immutable clubSnapshot (v7.10.18+),
-  // fall back to current bag lookup for rounds predating the snapshot
+  // fall back to current bag lookup for rounds predating the snapshot.
+  // Maps are keyed by BOTH clubId (for new shots) and abbr (legacy fallback).
   const clubCarries = {};
   const clubShaftMap = {};
   if (round.clubSnapshot && Object.keys(round.clubSnapshot).length) {
     // Snapshot path: ground-truth data frozen at round start
     Object.entries(round.clubSnapshot).forEach(([abbr, profile]) => {
-      if (profile.carry) clubCarries[abbr] = profile.carry;
-      if (profile.shaft) clubShaftMap[abbr] = profile.shaft;
+      if (profile.carry) {
+        if (profile.clubId) clubCarries[profile.clubId] = profile.carry;
+        clubCarries[abbr] = profile.carry; // abbr key for legacy shots
+      }
+      if (profile.shaft) {
+        if (profile.clubId) clubShaftMap[profile.clubId] = profile.shaft;
+        clubShaftMap[abbr] = profile.shaft; // abbr key for legacy shots
+      }
     });
   } else if (round.bagClubs?.length) {
     // Legacy path: look up current bag state (pre-v7.10.18 rounds)
@@ -1974,7 +1987,8 @@ function renderBsClubGrid(bag) {
       style="${active?'':'opacity:.3;filter:grayscale(1)'}"
       onclick="bsToggleClub('${c.abbr}')">
       <div class="club-tile-abbr">${c.abbr}</div>
-      <div class="club-tile-desc">${escHtml(c.desc)}</div>
+      <div class="club-tile-head">${escHtml(c.desc)}</div>
+      ${c.shaft?`<div class="club-tile-shaft">${escHtml(c.shaft)}</div>`:''}
     </div>`;
   }).join('');
   // Update count display
@@ -2037,6 +2051,15 @@ function bsSetShaftOverride(abbr, val) {
   const v = val.trim();
   if (v) BS.shaftOverrides[abbr] = v;
   else delete BS.shaftOverrides[abbr];
+}
+
+function bsToggleShaftSection() {
+  const list = document.getElementById('bs-shaft-list');
+  const chev = document.getElementById('bs-shaft-chevron');
+  if (!list || !chev) return;
+  const open = list.style.display === 'none';
+  list.style.display = open ? '' : 'none';
+  chev.style.transform = open ? 'rotate(180deg)' : '';
 }
 
 function buildClubSnapshot(activeClubs, bag, shaftOverrides) {
@@ -3115,6 +3138,12 @@ function saveHole(idx) {
     }
   });
 
+  // Enrich shots with clubId resolved from round's frozen snapshot
+  const snap = SCR.round?.clubSnapshot || {};
+  shots.forEach(s => {
+    if (s.club && !s.clubId && snap[s.club]?.clubId) s.clubId = snap[s.club].clubId;
+  });
+
   const puttCount = seqPutts(hs);
   const puttDist  = (hs.puttDistances||[]).slice(0, puttCount).filter(d=>d>0);
   const {gir, girPlusOne} = deriveGIR(shots, hs.par);
@@ -4003,6 +4032,7 @@ function discardReview() {
 function confirmRound() {
   const round = REV.round;
   if (!round) return;
+  const snap = round.clubSnapshot || {};
   round.holes = REV.holes.map(h => {
     const bh = h.bh;
     const score = h.score !== null ? h.score : bh.score;
@@ -4010,7 +4040,11 @@ function confirmRound() {
     const shots = (bh.shots||[]).map(sh => {
       validateShot(sh);
       const withId = sh.id ? sh : {...sh, id: genId()};
-      return withId.type==='approach' ? {...withId, missDirection: deriveMissDirection(withId.intendedZone, withId.finishZone, withId.result)} : withId;
+      // Resolve clubId from snapshot by abbr — skip if already present
+      const withClubId = (withId.club && !withId.clubId && snap[withId.club]?.clubId)
+        ? {...withId, clubId: snap[withId.club].clubId}
+        : withId;
+      return withClubId.type==='approach' ? {...withClubId, missDirection: deriveMissDirection(withClubId.intendedZone, withClubId.finishZone, withClubId.result)} : withClubId;
     });
     const {gir, girPlusOne} = deriveGIR(shots, bh.par);
     const flagHistory = (bh.flags||[]).map(f => ({
@@ -4194,7 +4228,7 @@ function renderCourseHubTees() {
     `<button class="tee-chip${CH.teeIdx === i ? ' on' : ''}" onclick="selectCourseHubTee(${i})">${t.name}</button>`
   ).join('');
   // Master tee selector — only shown when 2+ tee sets exist
-  const masterRow = document.getElementById('ch-master-tee-row');
+  const masterRow = document.getElementById('ch-notes-tee-bar');
   const masterSel = document.getElementById('ch-master-tee-select');
   if (course.tees.length > 1) {
     const currentMasterId = getMasterTeeId(CH.courseId) || course.tees[0].id;
