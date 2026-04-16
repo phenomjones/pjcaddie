@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.19 · Apr 15, 2026 -->
+<!-- PJ Caddie v7.10.21 · Apr 16, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -345,7 +345,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.19 · Apr 15, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.21 · Apr 16, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -476,6 +476,10 @@ body{display:flex;flex-direction:column}
         </div>
         <div class="club-grid" id="bs-club-grid"></div>
         <div style="text-align:center;margin-top:10px;font-size:13px;color:var(--chalk2)" id="bs-club-count"></div>
+        <div id="bs-shaft-section" style="display:none;margin-top:16px">
+          <div class="inp-label" style="margin-bottom:8px">Shaft Overrides <span style="font-size:10px;color:var(--chalk3);font-weight:400">— for this round only</span></div>
+          <div id="bs-shaft-list"></div>
+        </div>
       </div>
       <div id="bs-actions" style="margin-top:20px;display:none">
         <button class="btn btn-gold" id="bs-start-btn" onclick="startRoundFromBag()">Start Round →</button>
@@ -730,7 +734,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.19 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.21 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -1033,11 +1037,13 @@ const PRELOADED_COURSES = [
     holes: 18,
     tees: [
       {
+        id: 'paramount-blue',
         name: 'Blue',
         holePars:  [4,4,4,3,4,4,4,5,3, 4,5,3,4,4,4,4,4,3],
         holeYards: [410,337,378,220,332,413,410,495,179, 361,558,120,360,400,343,395,419,153]
       },
       {
+        id: 'paramount-silver',
         name: 'Silver',
         holePars:  [4,4,4,3,4,4,4,5,3, 4,5,3,4,4,4,4,4,3],
         holeYards: [335,325,365,182,327,392,391,375,165, 325,517,112,310,374,320,285,391,138]
@@ -1050,11 +1056,13 @@ const PRELOADED_COURSES = [
     holes: 18,
     tees: [
       {
+        id: 'westchester-black-white',
         name: 'Black/White',
         holePars:  [4,4,3,4,3,5,4,5,4, 4,4,3,4,3,4,3,5,4],
         holeYards: [358,423,168,428,193,512,344,480,303, 389,420,185,391,175,425,149,494,340]
       },
       {
+        id: 'westchester-white',
         name: 'White',
         holePars:  [4,4,3,4,3,5,4,5,4, 4,4,3,4,3,4,3,5,4],
         holeYards: [354,423,160,428,193,512,335,455,287, 389,402,185,391,175,408,149,477,302]
@@ -1094,7 +1102,7 @@ function createRound({ courseId, courseName, teeSet, date, holesPlayed, starting
   const par = expectedHoles.reduce((a,h)=>a+(teeSet.holePars[h-1]||0),0);
   return {
     id: genId(), courseId, course: courseName, date, par,
-    tees: teeSet.name, holesPlayed, startingHole, expectedHoles,
+    tees: teeSet.name, teeId: teeSet.id || null, holesPlayed, startingHole, expectedHoles,
     holeYards: teeSet.holeYards || [],
     holePars: teeSet.holePars ? [...teeSet.holePars] : [],
     totalScore: null, source: source||'manual',
@@ -1104,6 +1112,7 @@ function createRound({ courseId, courseName, teeSet, date, holesPlayed, starting
 
 function createHole({ number, par, score, pinZone, notation }) {
   return {
+    id: genId(),
     number, par, score: score||null, pinZone: pinZone||null,
     gir: false, girPlusOne: false, notation: notation||'',
     flagHistory: [], shots: [], putts: { count:0, distances:[] }
@@ -1217,7 +1226,39 @@ function migrateV6Notes() {
   localStorage.setItem('pjc_notes_migrated', '1');
 }
 
-// ── PLAYER PROFILE STORAGE ────────────────────────────────────
+// ── ID MIGRATION ─────────────────────────────────────────────
+// Adds stable IDs to any bags, clubs, and tee sets that predate the ID schema.
+// Safe to run multiple times — skips entities that already have an id.
+function migrateEntityIds() {
+  if (localStorage.getItem('pjc_ids_migrated')) return;
+  let changed = false;
+
+  // Bags + clubs
+  const bags = getBags();
+  bags.forEach(bag => {
+    if (!bag.id) { bag.id = genId(); changed = true; }
+    (bag.clubs||[]).forEach(c => {
+      if (!c.id) { c.id = genId(); changed = true; }
+    });
+  });
+  if (changed) saveBags(bags);
+
+  // User-saved courses — tee sets
+  try {
+    const savedCourses = JSON.parse(localStorage.getItem('pjc_courses')||'[]');
+    let courseChanged = false;
+    savedCourses.forEach(course => {
+      (course.tees||[]).forEach(t => {
+        if (!t.id) { t.id = genId(); courseChanged = true; }
+      });
+    });
+    if (courseChanged) localStorage.setItem('pjc_courses', JSON.stringify(savedCourses));
+  } catch {}
+
+  localStorage.setItem('pjc_ids_migrated', '1');
+}
+
+
 function getPlayerProfile() {
   try { return JSON.parse(localStorage.getItem('pjc_player')||'null') || {}; }
   catch { return {}; }
@@ -1374,7 +1415,7 @@ function saveCourseSetup() {
   const teeName = document.getElementById('cs-tee').value.trim()||'White';
   if (!name) { toast('Enter a course name'); return; }
   const holeYards = S.courseHoleYards.map(y=>y!==''?Number(y):0);
-  const newTee = { name: teeName, holePars:[...S.courseHolePars], holeYards };
+  const newTee = { id: genId(), name: teeName, holePars:[...S.courseHolePars], holeYards };
   const all = getCourses();
   const existing = all.find(c=>c.name.toLowerCase()===name.toLowerCase()&&!PRELOADED_COURSES.find(p=>p.id===c.id));
   if (existing) {
@@ -1775,25 +1816,41 @@ function confirmClearAll() {
 // ── BAGS ─────────────────────────────────────────────────────
 const DEFAULT_BAGS = [
   { id:'bag-a', name:'Bag A', clubs:[
-    {abbr:'Dr',desc:'Ping G440 LST'},{abbr:'3w',desc:'Ping G440 LST'},
-    {abbr:'5w',desc:'Ping G440 Max'},{abbr:'2h',desc:'TaylorMade Qi35'},
-    {abbr:'3h',desc:'TaylorMade Qi35'},{abbr:'4i',desc:'Srixon ZXi U'},
-    {abbr:'5i',desc:'Srixon ZXi5'},{abbr:'6i',desc:'Srixon ZXi5'},
-    {abbr:'7i',desc:'Srixon ZXi7'},{abbr:'8i',desc:'Srixon ZXi7'},
-    {abbr:'9i',desc:'Srixon ZXi7'},{abbr:'PW',desc:'Srixon ZXi7'},
-    {abbr:'GW',desc:'Srixon ZXi7'},{abbr:'SW',desc:'54\u00b0 Cleveland RTZ'},
-    {abbr:'LW',desc:'58\u00b0 Cleveland RTZ'},{abbr:'PT',desc:'SC Phantom 5.2 2026'}
+    {id:'ba-dr',  abbr:'Dr', desc:'Ping G440 LST'},
+    {id:'ba-3w',  abbr:'3w', desc:'Ping G440 LST'},
+    {id:'ba-5w',  abbr:'5w', desc:'Ping G440 Max'},
+    {id:'ba-2h',  abbr:'2h', desc:'TaylorMade Qi35'},
+    {id:'ba-3h',  abbr:'3h', desc:'TaylorMade Qi35'},
+    {id:'ba-4i',  abbr:'4i', desc:'Srixon ZXi U'},
+    {id:'ba-5i',  abbr:'5i', desc:'Srixon ZXi5'},
+    {id:'ba-6i',  abbr:'6i', desc:'Srixon ZXi5'},
+    {id:'ba-7i',  abbr:'7i', desc:'Srixon ZXi7'},
+    {id:'ba-8i',  abbr:'8i', desc:'Srixon ZXi7'},
+    {id:'ba-9i',  abbr:'9i', desc:'Srixon ZXi7'},
+    {id:'ba-pw',  abbr:'PW', desc:'Srixon ZXi7'},
+    {id:'ba-gw',  abbr:'GW', desc:'Srixon ZXi7'},
+    {id:'ba-sw',  abbr:'SW', desc:'54\u00b0 Cleveland RTZ'},
+    {id:'ba-lw',  abbr:'LW', desc:'58\u00b0 Cleveland RTZ'},
+    {id:'ba-pt',  abbr:'PT', desc:'SC Phantom 5.2 2026'}
   ]},
   { id:'bag-b', name:'Bag B', clubs:[
-    {abbr:'Dr',desc:'Ping G430 LST'},{abbr:'3w',desc:'Callaway Quantum TD'},
-    {abbr:'5w',desc:'Ping G440 Max'},{abbr:'2h',desc:'Srixon ZXi'},
-    {abbr:'3h',desc:'Srixon ZXi'},{abbr:'3i',desc:'Ping iDi'},
-    {abbr:'4i',desc:'Srixon ZXi5'},{abbr:'5i',desc:'Srixon ZXi5'},
-    {abbr:'6i',desc:'Srixon ZXi5'},{abbr:'7i',desc:'Srixon ZXi7'},
-    {abbr:'8i',desc:'Srixon ZXi7'},{abbr:'9i',desc:'Srixon ZXi7'},
-    {abbr:'PW',desc:'Srixon ZXi7'},{abbr:'GW',desc:'Srixon ZXi7'},
-    {abbr:'SW',desc:'54\u00b0 Cleveland RTZ'},{abbr:'LW',desc:'58\u00b0 Cleveland RTZ'},
-    {abbr:'PT',desc:'SC Phantom 5.2 2025'}
+    {id:'bb-dr',  abbr:'Dr', desc:'Ping G430 LST'},
+    {id:'bb-3w',  abbr:'3w', desc:'Callaway Quantum TD'},
+    {id:'bb-5w',  abbr:'5w', desc:'Ping G440 Max'},
+    {id:'bb-2h',  abbr:'2h', desc:'Srixon ZXi'},
+    {id:'bb-3h',  abbr:'3h', desc:'Srixon ZXi'},
+    {id:'bb-3i',  abbr:'3i', desc:'Ping iDi'},
+    {id:'bb-4i',  abbr:'4i', desc:'Srixon ZXi5'},
+    {id:'bb-5i',  abbr:'5i', desc:'Srixon ZXi5'},
+    {id:'bb-6i',  abbr:'6i', desc:'Srixon ZXi5'},
+    {id:'bb-7i',  abbr:'7i', desc:'Srixon ZXi7'},
+    {id:'bb-8i',  abbr:'8i', desc:'Srixon ZXi7'},
+    {id:'bb-9i',  abbr:'9i', desc:'Srixon ZXi7'},
+    {id:'bb-pw',  abbr:'PW', desc:'Srixon ZXi7'},
+    {id:'bb-gw',  abbr:'GW', desc:'Srixon ZXi7'},
+    {id:'bb-sw',  abbr:'SW', desc:'54\u00b0 Cleveland RTZ'},
+    {id:'bb-lw',  abbr:'LW', desc:'58\u00b0 Cleveland RTZ'},
+    {id:'bb-pt',  abbr:'PT', desc:'SC Phantom 5.2 2025'}
   ]}
 ];
 
@@ -1807,7 +1864,7 @@ function getBags() {
 function saveBags(bags) { localStorage.setItem('pjc_bags',JSON.stringify(bags)); }
 
 // ── BAG SELECT (pre-round) ────────────────────────────────────
-const BS = { bagId: null, activeClubs: [] };
+const BS = { bagId: null, activeClubs: [], shaftOverrides: {} };
 
 function initBagSelect() {
   BS.bagId = null; BS.activeClubs = [];
@@ -1834,6 +1891,7 @@ function bsGetCourseHistory(bagAbbrs) {
 
 function bsPickBag(id) {
   BS.bagId = id;
+  BS.shaftOverrides = {}; // reset per-round shaft overrides when bag changes
   const bags = getBags();
   const bag = bags.find(b=>b.id===id);
   document.querySelectorAll('#bs-bag-chips .tee-chip').forEach(c=>c.classList.remove('on'));
@@ -1879,6 +1937,8 @@ function renderBsClubGrid(bag) {
   // Update hint text
   const lbl = document.getElementById('bs-hint-lbl');
   if (lbl) lbl.textContent = hint;
+  // Update shaft override section
+  renderBsShaftSection();
 }
 
 function bsToggleClub(abbr) {
@@ -1896,16 +1956,51 @@ function bsSelectAll() {
   renderBsClubGrid(bag);
 }
 
-function buildClubSnapshot(activeClubs, bag) {
+function renderBsShaftSection() {
+  const bags = getBags();
+  const bag = bags.find(b=>b.id===BS.bagId);
+  if (!bag) return;
+  // Only show clubs that are active AND have a shaft defined
+  const shaftClubs = BS.activeClubs
+    .map(abbr => bag.clubs.find(c=>c.abbr===abbr))
+    .filter(c => c && c.shaft);
+  const sec = document.getElementById('bs-shaft-section');
+  const list = document.getElementById('bs-shaft-list');
+  if (!sec || !list) return;
+  if (!shaftClubs.length) { sec.style.display='none'; return; }
+  sec.style.display='';
+  list.innerHTML = shaftClubs.map(c => {
+    const override = BS.shaftOverrides[c.abbr];
+    return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border2)">
+      <span style="font-size:13px;font-weight:600;color:var(--chalk);min-width:32px">${c.abbr}</span>
+      <span style="font-size:12px;color:var(--chalk3);flex:1">${escHtml(c.shaft)}</span>
+      <input type="text" placeholder="Override shaft…"
+        style="width:140px;background:var(--ink3);border:1px solid ${override?'var(--gold)':'var(--border)'};border-radius:6px;padding:5px 8px;font-size:12px;color:var(--chalk);outline:none"
+        value="${escHtml(override||'')}"
+        onchange="bsSetShaftOverride('${c.abbr}',this.value)"
+        oninput="this.style.borderColor=this.value?'var(--gold)':'var(--border)'">
+    </div>`;
+  }).join('');
+}
+
+function bsSetShaftOverride(abbr, val) {
+  const v = val.trim();
+  if (v) BS.shaftOverrides[abbr] = v;
+  else delete BS.shaftOverrides[abbr];
+}
+
+function buildClubSnapshot(activeClubs, bag, shaftOverrides) {
   // Freeze full club profiles at the moment of round start — immutable for Byron analysis
   const snapshot = {};
   (activeClubs || []).forEach(abbr => {
     const club = (bag?.clubs || []).find(c => c.abbr === abbr);
     if (club) {
+      const shaftToUse = (shaftOverrides && shaftOverrides[abbr]) ? shaftOverrides[abbr] : (club.shaft || null);
       snapshot[abbr] = {
         desc: club.desc || '',
-        ...(club.shaft ? { shaft: club.shaft } : {}),
-        ...(club.carry ? { carry: club.carry } : {})
+        ...(shaftToUse ? { shaft: shaftToUse } : {}),
+        ...(club.carry ? { carry: club.carry } : {}),
+        clubId: club.id || null
       };
     }
   });
@@ -1920,9 +2015,7 @@ function startRoundFromBag() {
   wip.bagId = BS.bagId;
   wip.bagName = bag?.name || '';
   wip.bagClubs = [...BS.activeClubs];
-  wip.clubSnapshot = buildClubSnapshot(BS.activeClubs, bag);
-  saveWIP(wip);
-  showView('scoring');
+  wip.clubSnapshot = buildClubSnapshot(BS.activeClubs, bag, BS.shaftOverrides);
 }
 
 function importFromBag() {
@@ -1933,7 +2026,7 @@ function importFromBag() {
   wip.bagId = BS.bagId;
   wip.bagName = bag?.name || '';
   wip.bagClubs = [...BS.activeClubs];
-  wip.clubSnapshot = buildClubSnapshot(BS.activeClubs, bag);
+  wip.clubSnapshot = buildClubSnapshot(BS.activeClubs, bag, BS.shaftOverrides);
   saveWIP(wip);
   showView('photo-import');
 }
@@ -1984,10 +2077,11 @@ function bagCardHTML(b) {
         </div>
       </div>
       <div id="bgs-abbr-warn-${b.id}-${i}" style="display:none;font-size:11px;color:var(--gold);margin-bottom:8px">⚠ Changing abbr breaks carry/shaft lookup in historical rounds</div>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;margin-bottom:${getBags().length>1?'8':'0'}px">
         <button class="btn btn-gold btn-sm" style="flex:1" onclick="bgsSaveClubEdit('${b.id}',${i})">Save</button>
         <button class="btn btn-sm" style="flex:1;background:var(--ink2);color:var(--chalk3);border:1px solid var(--border)" onclick="bgsToggleClubEdit('${b.id}',${i})">Cancel</button>
       </div>
+      ${getBags().length>1?`<button class="btn btn-sm" style="width:100%;background:var(--ink2);color:var(--chalk3);border:1px solid var(--border);font-size:11px" onclick="bgsMoveClubToBag('${b.id}',${i})">Move to ${getBags().find(x=>x.id!==b.id)?.name||'Other Bag'} \u2192</button>`:''}
     </div>` : '';
     return `
     <div class="bag-club-row" style="${isEditing?'border-left:2px solid var(--gold);':''}">
@@ -2047,7 +2141,7 @@ function bgsAddClub(bagId) {
   const bags = getBags();
   const bag = bags.find(b=>b.id===bagId);
   if (!bag) return;
-  bag.clubs.push({abbr, desc:desc||'', ...(shaft?{shaft}:{}), ...(carry?{carry}:{})});
+  bag.clubs.push({id: genId(), abbr, desc:desc||'', ...(shaft?{shaft}:{}), ...(carry?{carry}:{})});
   saveBags(bags);
   BGS.showAddClub[bagId]=false;
   renderBgslist();
@@ -2095,7 +2189,7 @@ function bgsSaveClubEdit(bagId, idx) {
   const bags = getBags();
   const bag = bags.find(b=>b.id===bagId);
   if (!bag) return;
-  bag.clubs[idx] = { abbr, desc:desc||'', ...(shaft?{shaft}:{}), ...(carry?{carry}:{}) };
+  bag.clubs[idx] = { id: bag.clubs[idx].id || genId(), abbr, desc:desc||'', ...(shaft?{shaft}:{}), ...(carry?{carry}:{}) };
   saveBags(bags);
   BGS.editingClubIdx[bagId] = null;
   renderBgslist();
@@ -2110,6 +2204,23 @@ function bgsRemoveClub(bagId, idx) {
   bag.clubs.splice(idx,1);
   saveBags(bags);
   renderBgslist();
+}
+
+function bgsMoveClubToBag(fromBagId, idx) {
+  const bags = getBags();
+  const fromBag = bags.find(b=>b.id===fromBagId);
+  if (!fromBag) return;
+  const targetBag = bags.find(b=>b.id!==fromBagId);
+  if (!targetBag) { toast('No other bag to move to'); return; }
+  const club = fromBag.clubs[idx];
+  if (!club) return;
+  if (!confirm(`Move ${club.abbr} to ${targetBag.name}?`)) return;
+  targetBag.clubs.push({...club}); // preserve all fields including id
+  fromBag.clubs.splice(idx,1);
+  BGS.editingClubIdx[fromBagId] = null;
+  saveBags(bags);
+  renderBgslist();
+  toast(`${club.abbr} moved to ${targetBag.name} \u2713`);
 }
 
 function bgsDeleteBag(id) {
@@ -2920,36 +3031,36 @@ function saveHole(idx) {
   (hs.sequence||[]).forEach((item, seqIdx) => {
     switch(item.type) {
       case 'tee':
-        shots.push({type:'tee', club:item.club||null, position:item.position||null, isTeeShot:true});
+        shots.push({id:genId(), type:'tee', club:item.club||null, position:item.position||null, isTeeShot:true});
         break;
       case 'retee':
         if (hs.par === 3) {
           // Par 3 rehit = replay the tee shot = approach with isTeeShot:true
           const miss3 = deriveMissDirection(item.intendedZone, item.finishZone, item.result||'M');
-          shots.push({type:'approach', club:item.club||null, yardage:item.yardage||null,
+          shots.push({id:genId(), type:'approach', club:item.club||null, yardage:item.yardage||null,
             intendedZone:item.intendedZone||null, finishZone:item.finishZone||null,
             result:item.result||'M', lie:null, isTeeShot:true, missDirection:miss3, chokeUp:false});
         } else {
-          shots.push({type:'retee', club:item.club||null, position:item.position||null});
+          shots.push({id:genId(), type:'retee', club:item.club||null, position:item.position||null});
         }
         break;
       case 'approach': {
         const miss = deriveMissDirection(item.intendedZone, item.finishZone, item.result||'M');
-        shots.push({type:'approach', club:item.club||null, yardage:item.yardage||null,
+        shots.push({id:genId(), type:'approach', club:item.club||null, yardage:item.yardage||null,
           intendedZone:item.intendedZone||null, finishZone:item.finishZone||null,
           result:item.result||'M', lie:deriveLie(hs, seqIdx),
           isTeeShot:item.isTeeShot||false, missDirection:miss,
           chokeUp:item.chokeUp||false});
         break;
       }
-      case 'layup':    shots.push({type:'layup'}); break;
-      case 'chip':     shots.push({type:'chip'}); break;
-      case 'sand':     shots.push({type:'chip', lie:'Sd'}); break;
-      case 'recovery': shots.push({type:'recovery'}); break;
-      case 'drop':     shots.push({type:'drop'}); break;
-      case 'TW':       shots.push({type:'chip', club:'TW'}); break;
-      case 'HW':       shots.push({type:'chip', club:'HW'}); break;
-      case 'X':        shots.push({type:'untracked'}); break;
+      case 'layup':    shots.push({id:genId(), type:'layup'}); break;
+      case 'chip':     shots.push({id:genId(), type:'chip'}); break;
+      case 'sand':     shots.push({id:genId(), type:'chip', lie:'Sd'}); break;
+      case 'recovery': shots.push({id:genId(), type:'recovery'}); break;
+      case 'drop':     shots.push({id:genId(), type:'drop'}); break;
+      case 'TW':       shots.push({id:genId(), type:'chip', club:'TW'}); break;
+      case 'HW':       shots.push({id:genId(), type:'chip', club:'HW'}); break;
+      case 'X':        shots.push({id:genId(), type:'untracked'}); break;
       case 'putt':     break; // putts in hole.putts, not shots
     }
   });
@@ -3848,7 +3959,8 @@ function confirmRound() {
     const notation = h.notation !== null ? h.notation : (bh.notation_raw||'');
     const shots = (bh.shots||[]).map(sh => {
       validateShot(sh);
-      return sh.type==='approach' ? {...sh, missDirection: deriveMissDirection(sh.intendedZone, sh.finishZone, sh.result)} : sh;
+      const withId = sh.id ? sh : {...sh, id: genId()};
+      return withId.type==='approach' ? {...withId, missDirection: deriveMissDirection(withId.intendedZone, withId.finishZone, withId.result)} : withId;
     });
     const {gir, girPlusOne} = deriveGIR(shots, bh.par);
     const flagHistory = (bh.flags||[]).map(f => ({
@@ -4211,6 +4323,7 @@ function toast(msg,dur) {
 // ── INIT ─────────────────────────────────────────────────────
 (function init(){
   migrateV6Notes();
+  migrateEntityIds();
   if (localStorage.getItem('pjc_sun')==='1') {
     document.documentElement.classList.add('sun-mode');
     const btn=document.getElementById('sun-btn');
