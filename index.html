@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.25 · Apr 16, 2026 -->
+<!-- PJ Caddie v7.10.26 · Apr 16, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -98,12 +98,16 @@ body{display:flex;flex-direction:column}
 .home-logo span{color:var(--gold)}
 .sun-btn{background:none;border:none;font-size:18px;cursor:pointer;padding:4px;line-height:1;border-radius:8px}
 .sun-btn:active{background:rgba(255,255,255,.1)}
-.hub-hole-block{border-bottom:1px solid var(--border);padding:14px 0 10px}
+.hub-hole-block{border-bottom:1px solid var(--border);padding:0}
 .hub-hole-block:last-child{border-bottom:none}
-.hub-hole-hdr{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.hub-hole-hdr{display:flex;align-items:center;gap:10px;padding:13px 0 11px;cursor:pointer;user-select:none}
 .hub-h-num{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gold)}
 .hub-h-par{font-size:12px;color:var(--chalk2)}
 .hub-h-yds{font-size:12px;color:var(--chalk3);font-family:'DM Mono',monospace;margin-left:auto}
+.hub-h-chev{font-size:11px;color:var(--chalk3);transition:transform .2s;margin-left:6px}
+.hub-h-chev.open{transform:rotate(180deg)}
+.hub-hole-body{display:none;padding-bottom:12px}
+.hub-hole-body.open{display:block}
 .hub-field{margin-bottom:7px}
 .hub-field:last-child{margin-bottom:0}
 .hub-field-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--chalk3);margin-bottom:4px;display:block}
@@ -347,7 +351,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.25 · Apr 16, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.26 · Apr 16, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -739,7 +743,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.25 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.26 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -4224,9 +4228,11 @@ function renderCourseHubTees() {
   const course = getCourses().find(c => c.id === CH.courseId);
   if (!course) return;
   const el = document.getElementById('ch-tee-chips');
-  el.innerHTML = course.tees.length <= 1 ? '' : course.tees.map((t, i) =>
-    `<button class="tee-chip${CH.teeIdx === i ? ' on' : ''}" onclick="selectCourseHubTee(${i})">${t.name}</button>`
-  ).join('');
+  el.innerHTML = course.tees.length <= 1 ? '' :
+    `<span style="font-size:11px;color:var(--chalk3);font-weight:500;align-self:center">Stats:</span>` +
+    course.tees.map((t, i) =>
+      `<button class="tee-chip${CH.teeIdx === i ? ' on' : ''}" onclick="selectCourseHubTee(${i})">${t.name}</button>`
+    ).join('');
   // Master tee selector — only shown when 2+ tee sets exist
   const masterRow = document.getElementById('ch-notes-tee-bar');
   const masterSel = document.getElementById('ch-master-tee-select');
@@ -4261,7 +4267,14 @@ function renderCourseHubPJI(course) {
   let rangeHTML = '';
   if (range) {
     rangeHTML = `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-      <div style="font-size:10px;color:var(--chalk3);letter-spacing:.5px;margin-bottom:4px">POTENTIAL RANGE <span style="opacity:.6">(last ${range.holes} holes)</span></div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+        <div style="font-size:10px;color:var(--chalk3);letter-spacing:.5px;flex:1">POTENTIAL RANGE <span style="opacity:.6">(last ${range.holes} holes)</span></div>
+        <button onclick="toggleChTip('range')" id="cht-btn-range" style="width:17px;height:17px;border-radius:50%;border:1.5px solid var(--chalk2);background:transparent;color:var(--chalk2);font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;padding:0">i</button>
+      </div>
+      <div id="cht-tip-range" style="display:none;background:var(--ink3);border-left:2px solid var(--gold);border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:8px;font-size:12px;color:var(--chalk2);line-height:1.5">
+        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:3px">Potential Range</div>
+        Your realistic scoring window based on recent form at this course and tee. Ceiling = your top 20% holes averaged across 18. Floor = your median hole performance across 18. Closing the gap means greater consistency.
+      </div>
       <div style="display:flex;align-items:center;gap:8px">
         <div style="font-size:18px;color:var(--gold);font-family:'DM Serif Display',serif;font-weight:600">${range.ceiling}</div>
         <div class="pji-range-bar" style="flex:1"></div>
@@ -4276,20 +4289,28 @@ function renderCourseHubPJI(course) {
   }
   pjiEl.innerHTML = `<div class="card" style="padding:12px 14px">
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
-      <div style="font-size:11px;font-weight:600;letter-spacing:.8px;color:var(--chalk3);text-transform:uppercase">⚡ PJ Index</div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.8px;color:var(--chalk3);text-transform:uppercase">&#9889; PJ Index</div>
       <div style="font-size:10px;color:var(--chalk3);opacity:.7">${n} round${n!==1?'s':''}</div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
       <div style="width:36px;font-size:12px;color:var(--chalk2);font-weight:600">CMR</div>
       ${pjiBar(avgCMR)}
-      <div style="font-size:13px;color:var(--chalk);font-weight:600;min-width:32px">${avgCMR != null ? avgCMR+'%' : '—'}</div>
-      <div style="font-size:10px;color:var(--chalk3)">Decision + Execution</div>
+      <div style="font-size:13px;color:var(--chalk);font-weight:600;min-width:32px">${avgCMR != null ? avgCMR+'%' : '\u2014'}</div>
+      <button onclick="toggleChTip('cmr')" id="cht-btn-cmr" style="width:17px;height:17px;border-radius:50%;border:1.5px solid var(--chalk2);background:transparent;color:var(--chalk2);font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;padding:0">i</button>
     </div>
-    <div style="display:flex;align-items:center;gap:8px">
+    <div id="cht-tip-cmr" style="display:none;background:var(--ink3);border-left:2px solid var(--gold);border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;font-size:12px;color:var(--chalk2);line-height:1.5">
+      <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:3px">Course Manager Rating</div>
+      Your average decision + execution quality across ${n} round${n!==1?'s':''} at this course and tee. Measures tee strategy, aim point selection, and approach execution. 100% = every decision correct and well-executed.
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
       <div style="width:36px;font-size:12px;color:var(--chalk2);font-weight:600">DCI</div>
       ${pjiBar(avgDCI)}
-      <div style="font-size:13px;color:var(--chalk);font-weight:600;min-width:32px">${avgDCI != null ? avgDCI+'%' : '—'}</div>
-      <div style="font-size:10px;color:var(--chalk3)">Damage Control</div>
+      <div style="font-size:13px;color:var(--chalk);font-weight:600;min-width:32px">${avgDCI != null ? avgDCI+'%' : '\u2014'}</div>
+      <button onclick="toggleChTip('dci')" id="cht-btn-dci" style="width:17px;height:17px;border-radius:50%;border:1.5px solid var(--chalk2);background:transparent;color:var(--chalk2);font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1;padding:0">i</button>
+    </div>
+    <div id="cht-tip-dci" style="display:none;background:var(--ink3);border-left:2px solid var(--gold);border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:4px;font-size:12px;color:var(--chalk2);line-height:1.5">
+      <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:3px">Damage Control Index</div>
+      Your average damage limitation across ${n} round${n!==1?'s':''} at this course and tee. Measures how often bogeys become doubles and doubles become triples. 100% = you always recovered cleanly after bad shots.
     </div>
     ${rangeHTML}
   </div>`;
@@ -4318,36 +4339,61 @@ function renderCourseHubHoles(course) {
     const yds = tee.holeYards[i] || '\u2013';
     const n = notes[i] || {tee:'', approach:'', green:''};
     const parLabel = par === 3 ? 'Par 3' : par === 4 ? 'Par 4' : 'Par 5';
+    const hasNotes = n.tee || n.approach || n.green;
     return `<div class="hub-hole-block">
-      <div class="hub-hole-hdr">
+      <div class="hub-hole-hdr" onclick="toggleChHole(${i})">
         <span class="hub-h-num">H${h}</span>
         <span class="hub-h-par">${parLabel}</span>
+        ${hasNotes ? `<span style="font-size:8px;color:var(--gold)">&#9679;</span>` : ''}
         <span class="hub-h-yds">${yds} yds</span>
+        <span class="hub-h-chev" id="chh-chev-${i}">&#9660;</span>
       </div>
-      ${par !== 3 ? `<div class="hub-field">
-        <span class="hub-field-lbl">🏌️ Tee</span>
-        <textarea class="hub-note" rows="1"
-          placeholder="Aim point, shape, avoid\u2026"
-          onblur="saveCourseHubField(${i},'tee',this.value)"
-          oninput="autoGrowNote(this)">${esc(n.tee)}</textarea>
-      </div>` : ''}
-      <div class="hub-field">
-        <span class="hub-field-lbl">${par === 3 ? '🎯 Tee / Approach' : '🎯 Approach'}</span>
-        <textarea class="hub-note" rows="1"
-          placeholder="${par === 3 ? 'Club, aim, miss side\u2026' : 'Yardage, miss side, pin zones\u2026'}"
-          onblur="saveCourseHubField(${i},'approach',this.value)"
-          oninput="autoGrowNote(this)">${esc(n.approach)}</textarea>
-      </div>
-      <div class="hub-field">
-        <span class="hub-field-lbl">🟢 Green</span>
-        <textarea class="hub-note" rows="1"
-          placeholder="Slopes, speed, trouble areas\u2026"
-          onblur="saveCourseHubField(${i},'green',this.value)"
-          oninput="autoGrowNote(this)">${esc(n.green)}</textarea>
+      <div class="hub-hole-body" id="chh-body-${i}">
+        ${par !== 3 ? `<div class="hub-field">
+          <span class="hub-field-lbl">&#127948; Tee</span>
+          <textarea class="hub-note" rows="1"
+            placeholder="Aim point, shape, avoid\u2026"
+            onblur="saveCourseHubField(${i},'tee',this.value)"
+            oninput="autoGrowNote(this)">${esc(n.tee)}</textarea>
+        </div>` : ''}
+        <div class="hub-field">
+          <span class="hub-field-lbl">${par === 3 ? '&#127919; Tee / Approach' : '&#127919; Approach'}</span>
+          <textarea class="hub-note" rows="1"
+            placeholder="${par === 3 ? 'Club, aim, miss side\u2026' : 'Yardage, miss side, pin zones\u2026'}"
+            onblur="saveCourseHubField(${i},'approach',this.value)"
+            oninput="autoGrowNote(this)">${esc(n.approach)}</textarea>
+        </div>
+        <div class="hub-field">
+          <span class="hub-field-lbl">&#129001; Green</span>
+          <textarea class="hub-note" rows="1"
+            placeholder="Slopes, speed, trouble areas\u2026"
+            onblur="saveCourseHubField(${i},'green',this.value)"
+            oninput="autoGrowNote(this)">${esc(n.green)}</textarea>
+        </div>
       </div>
     </div>`;
   }).join('');
-  document.getElementById('ch-hole-rows').querySelectorAll('.hub-note').forEach(autoGrowNote);
+}
+
+function toggleChHole(i) {
+  const body = document.getElementById('chh-body-'+i);
+  const chev = document.getElementById('chh-chev-'+i);
+  const open = body.classList.toggle('open');
+  chev.classList.toggle('open', open);
+  if (open) body.querySelectorAll('.hub-note').forEach(autoGrowNote);
+}
+
+function toggleChTip(id) {
+  const ids = ['cmr','dci','range'];
+  ids.forEach(t => {
+    const tip = document.getElementById('cht-tip-'+t);
+    const btn = document.getElementById('cht-btn-'+t);
+    if (!tip || !btn) return;
+    const nowOpen = t === id ? tip.style.display === 'none' : false;
+    tip.style.display = nowOpen ? '' : 'none';
+    btn.style.borderColor = nowOpen ? 'var(--gold)' : 'var(--chalk2)';
+    btn.style.color = nowOpen ? 'var(--gold)' : 'var(--chalk2)';
+  });
 }
 
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
