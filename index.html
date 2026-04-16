@@ -682,10 +682,12 @@ body{display:flex;flex-direction:column}
           <input class="inp" id="set-gh-branch" type="text" placeholder="main" autocomplete="off">
         </div>
         <button class="btn btn-outline btn-sm" onclick="saveGHSettings()" style="margin-bottom:10px">Save Sync Settings</button>
-        <div style="display:flex;gap:8px;margin-bottom:6px">
-          <button class="btn btn-gold btn-sm" id="gh-push-btn" onclick="ghPush()" style="flex:1">Push ↑</button>
-          <button class="btn btn-outline btn-sm" id="gh-pull-btn" onclick="ghPull()" style="flex:1">Pull ↓</button>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <button class="btn btn-gold btn-sm" id="gh-push-notes-btn" onclick="ghPushNotes()" style="flex:1">Notes ↑</button>
+          <button class="btn btn-gold btn-sm" id="gh-push-game-btn" onclick="ghPushMyGame()" style="flex:1">My Game ↑</button>
+          <button class="btn btn-gold btn-sm" id="gh-push-bags-btn" onclick="ghPushBags()" style="flex:1">Bags ↑</button>
         </div>
+        <button class="btn btn-outline btn-sm" id="gh-pull-btn" onclick="ghPull()" style="width:100%;margin-bottom:6px">Pull ↓</button>
         <div id="gh-last-sync" style="font-size:10px;color:var(--chalk3);margin-bottom:4px"></div>
         <div id="gh-status" style="font-size:11px;color:var(--chalk3)"></div>
       </div>
@@ -1609,36 +1611,51 @@ function ghSetStatus(msg, color) {
   if (el) { el.textContent=msg; el.style.color=color||'var(--chalk3)'; }
 }
 
-async function ghPush() {
-  const pushBtn = document.getElementById('gh-push-btn');
+async function ghPushSection(label, btnId, sectionData) {
+  const btn = document.getElementById(btnId);
   try {
     ghValidate();
-    if (pushBtn) { pushBtn.disabled=true; pushBtn.textContent='Pushing\u2026'; }
+    if (btn) { btn.disabled=true; btn.textContent='Pushing\u2026'; }
     ghSetStatus('Connecting to GitHub\u2026');
     const current = await ghReadFile();
-    const meta = getSyncMeta();
     const now = Date.now();
-    const payload = {
-      syncedAt: now,
-      rounds: getRounds(),
-      courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'),
-      player: JSON.parse(localStorage.getItem('pjc_player')||'null'),
-      notesTs: meta.notesTs||now,
-      playerTs: meta.playerTs||now
-    };
+    const { fields, metaFields } = sectionData(now);
+    const payload = { ...(current?.content||{}), syncedAt: now, ...fields };
     await ghWriteFile(payload, current?.sha);
-    meta.lastPush=now;
+    const meta = getSyncMeta();
+    Object.assign(meta, { lastPush: now, ...metaFields });
     saveSyncMeta(meta);
     renderSettings();
     const t = new Date(now).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    ghSetStatus('\u2713 Pushed '+payload.rounds.length+' rounds \u00b7 notes & profile \u00b7 '+t, 'var(--green)');
+    ghSetStatus('\u2713 Pushed '+label+' \u00b7 '+t, 'var(--green)');
     toast('Pushed to GitHub \u2713');
   } catch(err) {
     ghSetStatus('\u2717 '+err.message, 'var(--red)');
     toast('Push failed');
   } finally {
-    if (pushBtn) { pushBtn.disabled=false; pushBtn.textContent='Push \u2191'; }
+    if (btn) { btn.disabled=false; btn.textContent=label+' \u2191'; }
   }
+}
+
+function ghPushNotes() {
+  return ghPushSection('Notes', 'gh-push-notes-btn', now => ({
+    fields: { courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), notesTs: now },
+    metaFields: { notesTs: now }
+  }));
+}
+
+function ghPushMyGame() {
+  return ghPushSection('My Game', 'gh-push-game-btn', now => ({
+    fields: { player: JSON.parse(localStorage.getItem('pjc_player')||'null'), playerTs: now },
+    metaFields: { playerTs: now }
+  }));
+}
+
+function ghPushBags() {
+  return ghPushSection('Bags', 'gh-push-bags-btn', now => ({
+    fields: { bags: JSON.parse(localStorage.getItem('pjc_bags')||'null'), bagsTs: now },
+    metaFields: { bagsTs: now }
+  }));
 }
 
 async function ghPull() {
@@ -1661,6 +1678,7 @@ async function ghPull() {
     const meta = getSyncMeta();
     const notesNewer = remote.notesTs && remote.notesTs>(meta.notesTs||0);
     const playerNewer = remote.playerTs && remote.playerTs>(meta.playerTs||0);
+    const bagsNewer = remote.bagsTs && remote.bagsTs>(meta.bagsTs||0);
     const syncDate = remote.syncedAt ? new Date(remote.syncedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}) : 'unknown';
     const msg = [
       'Remote snapshot: '+syncDate,
@@ -1669,6 +1687,7 @@ async function ghPull() {
       '',
       notesNewer ? '\u26a0\ufe0f Remote course notes are newer \u2014 will overwrite local.' : '\u2713 Local course notes are newer \u2014 keeping local.',
       playerNewer ? '\u26a0\ufe0f Remote player profile is newer \u2014 will overwrite local.' : '\u2713 Local player profile is newer \u2014 keeping local.',
+      bagsNewer ? '\u26a0\ufe0f Remote bag data is newer \u2014 will overwrite local.' : '\u2713 Local bag data is newer \u2014 keeping local.',
       '',
       'Proceed?'
     ].join('\n');
@@ -1685,6 +1704,10 @@ async function ghPull() {
     if (playerNewer && remote.player) {
       localStorage.setItem('pjc_player', JSON.stringify(remote.player));
       meta.playerTs = remote.playerTs;
+    }
+    if (bagsNewer && remote.bags) {
+      localStorage.setItem('pjc_bags', JSON.stringify(remote.bags));
+      meta.bagsTs = remote.bagsTs;
     }
     meta.lastPull = Date.now();
     saveSyncMeta(meta);
