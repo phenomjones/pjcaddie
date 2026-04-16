@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.22 · Apr 16, 2026 -->
+<!-- PJ Caddie v7.10.23 · Apr 16, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -345,7 +345,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.22 · Apr 16, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.23 · Apr 16, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -734,7 +734,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.22 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.23 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -782,7 +782,12 @@ body{display:flex;flex-direction:column}
         <span class="section-lbl">Course</span>
         <select class="hub-course-select" id="ch-course-select" onchange="onCourseHubCourseChange()"></select>
       </div>
-      <div id="ch-tee-chips" class="tee-chips" style="margin-bottom:16px"></div>
+      <div id="ch-tee-chips" class="tee-chips" style="margin-bottom:8px"></div>
+      <div id="ch-master-tee-row" style="display:none;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs)">
+        <span style="font-size:11px;color:var(--chalk3);white-space:nowrap">📝 Notes from</span>
+        <select id="ch-master-tee-select" onchange="onMasterTeeChange()" style="background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);color:var(--chalk);font-size:12px;padding:4px 8px;flex:1;outline:none"></select>
+        <span style="font-size:10px;color:var(--chalk3);white-space:nowrap">tees</span>
+      </div>
       <div id="ch-pji" style="margin-bottom:14px"></div>
       <div style="background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:0 14px">
         <div id="ch-hole-rows"></div>
@@ -973,12 +978,17 @@ function byronBuildBundle(round) {
   const stats = byronRoundStats(round, clubCarries);
   const rel = round.totalScore!=null&&round.par ? round.totalScore-round.par : null;
   const relStr = rel==null?'?':rel===0?'E':rel>0?'+'+rel:String(rel);
-  return {round, player, courseNotes, hist, stats, rel, relStr, courseName:round.course, clubCarries, clubShaftMap};
+  // Master tee — the tee set notes were written from (may differ from round tee)
+  const masterTee = getMasterTee(round.courseId);
+  // Current round tee set — look up by teeId first, fall back to name match
+  const roundTee = course?.tees.find(t => t.id === round.teeId) ||
+                   course?.tees.find(t => t.name === round.tees) || null;
+  return {round, player, courseNotes, hist, stats, rel, relStr, courseName:round.course, clubCarries, clubShaftMap, masterTee, roundTee};
 }
 
 // ── BYRON 3.0 PROMPTS ─────────────────────────────────────────
 function byronHolesPrompt(bundle) {
-  const {round, player, courseNotes, stats, relStr} = bundle;
+  const {round, player, courseNotes, stats, relStr, masterTee, roundTee} = bundle;
   const holesData = (round.holes||[]).sort((a,b)=>a.number-b.number).map(h=>{
     const tee=(h.shots||[]).find(s=>s.isTeeShot);
     const apps=(h.shots||[]).filter(s=>s.type==='approach'&&!s.isTeeShot);
@@ -998,7 +1008,23 @@ function byronHolesPrompt(bundle) {
   }).filter(Boolean).join('\n');
   const lowWarn = stats.approachCount<9?`Only ${stats.approachCount} approach shots \u2014 limited sample.`:null;
 
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nCOURSE NOTES:\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
+  // Build master tee / round tee delta context for notes adjustment
+  const masterName = masterTee?.name || null;
+  const roundTeeName = roundTee?.name || round.tees || null;
+  const teesMatch = !masterTee || !roundTee || masterTee.id === roundTee.id;
+  let notesHeader = `COURSE NOTES (written from ${masterName||'unknown'} tees):`;
+  let notesAdjustInstruction = '';
+  if (!teesMatch && masterTee?.holeYards && roundTee?.holeYards) {
+    const deltas = masterTee.holeYards.map((my, i) => {
+      const ry = roundTee.holeYards[i] || my;
+      return my - ry; // positive = master is longer; adjustment = note_yardage - delta
+    });
+    const deltaStr = deltas.map((d,i)=>`H${i+1}:${d>0?'-'+d:d<0?'+'+Math.abs(d):'0'}`).join(' ');
+    notesHeader = `COURSE NOTES (written from ${masterName} tees; this round played from ${roundTeeName} tees):`;
+    notesAdjustInstruction = `\nYARDAGE ADJUSTMENT RULE: Notes were written from ${masterName} tees. This round is from ${roundTeeName} tees. Per-hole delta (subtract from note yardage to get ${roundTeeName} yardage): ${deltaStr}\nFor every numeric yardage in the notes, apply the hole's delta and cite both values — e.g. "bunker at 190yd (250yd from ${masterName})". Holes with delta=0 need no adjustment. Non-numeric prose passes through unchanged.`;
+  }
+
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\n${notesHeader}${notesAdjustInstruction}\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
 }
 
 function byronPatternsPrompt(bundle, holesResult) {
@@ -1198,6 +1224,29 @@ function saveCourseNotes(courseId, notes) {
     localStorage.setItem('pjc_course_notes', JSON.stringify(all));
     const meta = getSyncMeta(); meta.notesTs = Date.now(); saveSyncMeta(meta);
   } catch {}
+}
+
+// ── MASTER TEE (notes reference tee) ─────────────────────────
+// pjc_master_tees = { [courseId]: teeId }
+function getMasterTeeId(courseId) {
+  try {
+    const all = JSON.parse(localStorage.getItem('pjc_master_tees') || '{}');
+    return all[courseId] || null;
+  } catch { return null; }
+}
+function setMasterTeeId(courseId, teeId) {
+  try {
+    const all = JSON.parse(localStorage.getItem('pjc_master_tees') || '{}');
+    all[courseId] = teeId;
+    localStorage.setItem('pjc_master_tees', JSON.stringify(all));
+    const meta = getSyncMeta(); meta.notesTs = Date.now(); saveSyncMeta(meta);
+  } catch {}
+}
+function getMasterTee(courseId) {
+  const course = getCourses().find(c => c.id === courseId);
+  if (!course) return null;
+  const masterTeeId = getMasterTeeId(courseId);
+  return course.tees.find(t => t.id === masterTeeId) || course.tees[0] || null;
 }
 
 // One-time migration from v6 caddie_hole_*_notes keys
@@ -1736,7 +1785,7 @@ function ghPushRounds() {
 }
 function ghPushCourses() {
   return ghPushSection('Courses', 'gh-push-courses-btn', now => ({
-    fields: { courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), notesTs: now },
+    fields: { courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), masterTees: JSON.parse(localStorage.getItem('pjc_master_tees')||'{}'), notesTs: now },
     metaFields: { notesTs: now }
   }));
 }
@@ -1791,6 +1840,7 @@ async function ghPullRounds() {
 function ghPullCourses() {
   return ghPullSection('Courses', 'gh-pull-courses-btn', 'notesTs', remote => {
     if (remote.courseNotes) localStorage.setItem('pjc_course_notes', JSON.stringify(remote.courseNotes));
+    if (remote.masterTees) localStorage.setItem('pjc_master_tees', JSON.stringify(remote.masterTees));
   });
 }
 function ghPullMyGame() {
@@ -4143,6 +4193,18 @@ function renderCourseHubTees() {
   el.innerHTML = course.tees.length <= 1 ? '' : course.tees.map((t, i) =>
     `<button class="tee-chip${CH.teeIdx === i ? ' on' : ''}" onclick="selectCourseHubTee(${i})">${t.name}</button>`
   ).join('');
+  // Master tee selector — only shown when 2+ tee sets exist
+  const masterRow = document.getElementById('ch-master-tee-row');
+  const masterSel = document.getElementById('ch-master-tee-select');
+  if (course.tees.length > 1) {
+    const currentMasterId = getMasterTeeId(CH.courseId) || course.tees[0].id;
+    masterSel.innerHTML = course.tees.map(t =>
+      `<option value="${t.id}"${t.id === currentMasterId ? ' selected' : ''}>${t.name}</option>`
+    ).join('');
+    masterRow.style.display = 'flex';
+  } else {
+    masterRow.style.display = 'none';
+  }
   renderCourseHubPJI(course);
   renderCourseHubHoles(course);
 }
@@ -4202,6 +4264,15 @@ function renderCourseHubPJI(course) {
 function selectCourseHubTee(idx) {
   CH.teeIdx = idx;
   renderCourseHubTees();
+}
+
+function onMasterTeeChange() {
+  const sel = document.getElementById('ch-master-tee-select');
+  if (!sel || !CH.courseId) return;
+  setMasterTeeId(CH.courseId, sel.value);
+  const course = getCourses().find(c => c.id === CH.courseId);
+  const tee = course?.tees.find(t => t.id === sel.value);
+  toast(`Notes reference: ${tee?.name || 'updated'} tees \u2713`);
 }
 
 function renderCourseHubHoles(course) {
