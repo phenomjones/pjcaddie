@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.16 · Apr 15, 2026 -->
+<!-- PJ Caddie v7.10.17 · Apr 15, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -345,7 +345,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.16 · Apr 15, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.17 · Apr 15, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -717,7 +717,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.16 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.17 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -933,10 +933,18 @@ function byronBuildBundle(round) {
   const course = courses.find(c=>c.id===round.courseId);
   const courseNotes = getCourseNotes(round.courseId, round.holesPlayed||18);
   const hist = byronHistoricalSummary(round.courseId, round.id);
-  // Build carry and shaft maps from the bag used this round
+  // Build carry and shaft maps — prefer immutable clubSnapshot (v7.10.17+),
+  // fall back to current bag lookup for rounds predating the snapshot
   const clubCarries = {};
   const clubShaftMap = {};
-  if (round.bagClubs?.length) {
+  if (round.clubSnapshot && Object.keys(round.clubSnapshot).length) {
+    // Snapshot path: ground-truth data frozen at round start
+    Object.entries(round.clubSnapshot).forEach(([abbr, profile]) => {
+      if (profile.carry) clubCarries[abbr] = profile.carry;
+      if (profile.shaft) clubShaftMap[abbr] = profile.shaft;
+    });
+  } else if (round.bagClubs?.length) {
+    // Legacy path: look up current bag state (pre-v7.10.17 rounds)
     const bag = round.bagId ? getBags().find(b=>b.id===round.bagId) : null;
     const allClubs = bag ? bag.clubs : getBags().flatMap(b=>b.clubs);
     round.bagClubs.forEach(abbr=>{
@@ -1840,6 +1848,22 @@ function bsSelectAll() {
   renderBsClubGrid(bag);
 }
 
+function buildClubSnapshot(activeClubs, bag) {
+  // Freeze full club profiles at the moment of round start — immutable for Byron analysis
+  const snapshot = {};
+  (activeClubs || []).forEach(abbr => {
+    const club = (bag?.clubs || []).find(c => c.abbr === abbr);
+    if (club) {
+      snapshot[abbr] = {
+        desc: club.desc || '',
+        ...(club.shaft ? { shaft: club.shaft } : {}),
+        ...(club.carry ? { carry: club.carry } : {})
+      };
+    }
+  });
+  return snapshot;
+}
+
 function startRoundFromBag() {
   const wip = getWIP();
   if (!wip) return;
@@ -1848,6 +1872,7 @@ function startRoundFromBag() {
   wip.bagId = BS.bagId;
   wip.bagName = bag?.name || '';
   wip.bagClubs = [...BS.activeClubs];
+  wip.clubSnapshot = buildClubSnapshot(BS.activeClubs, bag);
   saveWIP(wip);
   showView('scoring');
 }
@@ -1860,6 +1885,7 @@ function importFromBag() {
   wip.bagId = BS.bagId;
   wip.bagName = bag?.name || '';
   wip.bagClubs = [...BS.activeClubs];
+  wip.clubSnapshot = buildClubSnapshot(BS.activeClubs, bag);
   saveWIP(wip);
   showView('photo-import');
 }
@@ -1917,6 +1943,10 @@ function bagCardHTML(b) {
     </div>` : '';
     return `
     <div class="bag-club-row" style="${isEditing?'border-left:2px solid var(--gold);':''}">
+      <div style="display:flex;flex-direction:column;gap:1px;margin-right:4px">
+        <button style="background:none;border:none;color:${i===0?'var(--ink3)':'var(--chalk3)'};cursor:${i===0?'default':'pointer'};font-size:10px;padding:1px 4px;line-height:1" onclick="bgsMoveClub('${b.id}',${i},-1)" ${i===0?'disabled':''}>▲</button>
+        <button style="background:none;border:none;color:${i===b.clubs.length-1?'var(--ink3)':'var(--chalk3)'};cursor:${i===b.clubs.length-1?'default':'pointer'};font-size:10px;padding:1px 4px;line-height:1" onclick="bgsMoveClub('${b.id}',${i},1)" ${i===b.clubs.length-1?'disabled':''}>▼</button>
+      </div>
       <span class="bag-club-abbr">${c.abbr}</span>
       <span class="bag-club-desc" style="flex:1">${escHtml(c.desc||'')}${c.shaft?`<span style="color:var(--chalk3)"> · ${escHtml(c.shaft)}</span>`:''}${c.carry?`<span style="color:var(--chalk3);font-size:11px"> · ${c.carry}y</span>`:''}</span>
       <button style="background:none;border:none;color:${isEditing?'var(--gold)':'var(--chalk3)'};cursor:pointer;font-size:14px;padding:4px 8px;line-height:1" onclick="bgsToggleClubEdit('${b.id}',${i})">✏️</button>
@@ -1984,6 +2014,21 @@ function bgsSetCarry(bagId, idx, val) {
   if (carry > 0) bag.clubs[idx].carry = carry;
   else delete bag.clubs[idx].carry;
   saveBags(bags);
+}
+
+function bgsMoveClub(bagId, idx, dir) {
+  const bags = getBags();
+  const bag = bags.find(b=>b.id===bagId);
+  if (!bag) return;
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= bag.clubs.length) return;
+  const temp = bag.clubs[idx];
+  bag.clubs[idx] = bag.clubs[newIdx];
+  bag.clubs[newIdx] = temp;
+  saveBags(bags);
+  // Keep edit panel open on moved club if applicable
+  if (BGS.editingClubIdx[bagId] === idx) BGS.editingClubIdx[bagId] = newIdx;
+  renderBgslist();
 }
 
 function bgsToggleClubEdit(bagId, idx) {
