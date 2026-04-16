@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.17 · Apr 15, 2026 -->
+<!-- PJ Caddie v7.10.18 · Apr 15, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -345,7 +345,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.17 · Apr 15, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.18 · Apr 15, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -717,7 +717,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.17 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.18 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -933,7 +933,7 @@ function byronBuildBundle(round) {
   const course = courses.find(c=>c.id===round.courseId);
   const courseNotes = getCourseNotes(round.courseId, round.holesPlayed||18);
   const hist = byronHistoricalSummary(round.courseId, round.id);
-  // Build carry and shaft maps — prefer immutable clubSnapshot (v7.10.17+),
+  // Build carry and shaft maps — prefer immutable clubSnapshot (v7.10.18+),
   // fall back to current bag lookup for rounds predating the snapshot
   const clubCarries = {};
   const clubShaftMap = {};
@@ -944,7 +944,7 @@ function byronBuildBundle(round) {
       if (profile.shaft) clubShaftMap[abbr] = profile.shaft;
     });
   } else if (round.bagClubs?.length) {
-    // Legacy path: look up current bag state (pre-v7.10.17 rounds)
+    // Legacy path: look up current bag state (pre-v7.10.18 rounds)
     const bag = round.bagId ? getBags().find(b=>b.id===round.bagId) : null;
     const allClubs = bag ? bag.clubs : getBags().flatMap(b=>b.clubs);
     round.bagClubs.forEach(abbr=>{
@@ -982,22 +982,6 @@ function byronHolesPrompt(bundle) {
   const lowWarn = stats.approachCount<9?`Only ${stats.approachCount} approach shots \u2014 limited sample.`:null;
 
   return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nCOURSE NOTES:\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
-}
-
-function byronPatternsPrompt(bundle, holesResult) {
-  const {round, player, hist, stats, relStr, clubCarries, clubShaftMap} = bundle;
-  const histStr = hist
-    ? `${hist.roundCount} prior round(s) at ${round.course}. Per-hole history: ${JSON.stringify(hist.holes)}`
-    : `No prior rounds at ${round.course} on record.`;
-  const lowWarn = stats.approachCount<9?`Only ${stats.approachCount} approach shots \u2014 pattern confidence is low.`:null;
-  const carryLine = Object.keys(clubCarries||{}).length
-    ? `Club carry distances (full swing): ${JSON.stringify(clubCarries)}\nPartial swings detected (<${Math.round(PARTIAL_THRESHOLD*100)}% of carry): ${stats.partialShots.length?JSON.stringify(stats.partialShots):'none'}`
-    : 'No carry distances on file \u2014 skip partial swing analysis.';
-  const shaftLine = Object.keys(clubShaftMap||{}).length
-    ? `Club shaft assignments: ${JSON.stringify(clubShaftMap)}`
-    : null;
-
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 2: PATTERN ANALYSIS \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}\n\nROUND: ${round.course}, ${round.date}, Score ${round.totalScore} (${relStr})\n\nHOLES OUTPUT (Pass 1):\n${JSON.stringify(holesResult)}\n\nROUND STATS:\nApproaches: ${stats.approachCount} | GIR: ${stats.girCount}/${stats.totalHoles} | Putts: ${stats.totalPutts}\nMiss directions: L=${stats.missDir.left} R=${stats.missDir.right} Sh=${stats.missDir.short} Lg=${stats.missDir.long} C=${stats.missDir.center} (${stats.missTotal} total misses)\nPenalties: ${stats.penalties.length} \u2014 ${JSON.stringify(stats.penalties)}\nChip/recovery first-putt distances: ${stats.chipProx.length?stats.chipProx.join(', ')+'ft (avg '+stats.avgChipProx+'ft)':'no data'}\nClub data: ${JSON.stringify(stats.clubData)}\n${carryLine}\n${shaftLine?shaftLine+'\\n':''}\nHISTORICAL: ${histStr}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "missPattern": "Quantify miss direction with counts. E.g. '5 of 7 approach misses went right.' Note yardage bands if data supports. Compare to player primary miss.",\n  "clubValidation": "Are clubs matching yardage expectations? Flag systematic short/long by club. Cite specific shots.",\n  "partialSwings": "If carry data exists: compare GIR rate on partial swings vs full swings. Cite specific clubs and yardages. If no carry data: null.",\n  "penaltySummary": "Every penalty traced to the decision. Cite hole, club, position. Null if no penalties.",\n  "chipProximity": "First-putt distance after chips/recoveries. Avg, range, and what it costs in putts. Null if no data.",\n  "historicalComparison": "How does this round compare to prior rounds at this course? Cite specific holes or stats where history exists.",\n  "shaftAnalysis": "If shaft data exists: compare GIR rate and miss direction by shaft. Require minimum 5 shots per shaft variant. Null if no shaft data.",\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
 }
 
 function byronPatternsPrompt(bundle, holesResult) {
@@ -1099,6 +1083,7 @@ function createRound({ courseId, courseName, teeSet, date, holesPlayed, starting
     id: genId(), courseId, course: courseName, date, par,
     tees: teeSet.name, holesPlayed, startingHole, expectedHoles,
     holeYards: teeSet.holeYards || [],
+    holePars: teeSet.holePars ? [...teeSet.holePars] : [],
     totalScore: null, source: source||'manual',
     importSessionId: null, photoRef: null, holes: []
   };
@@ -2146,11 +2131,13 @@ function initScoring() {
   const teeSet = course?.tees.find(t=>t.name===round.tees);
   SCR.holes = round.expectedHoles.map(h => {
     const i = h-1;
+    // Prefer snapshotted holePars from round (v7.10.18+); fall back to live teeSet for old rounds
+    const par = round.holePars?.[i] || teeSet?.holePars?.[i] || 4;
     const savedHole = (round.holes||[]).find(sh=>sh.number===h);
     if (savedHole) {
       // Hole already saved — restore as saved state
       return {
-        holeNum:h, par:teeSet?.holePars[i]||4, yds:round.holeYards?.[i]||null,
+        holeNum:h, par, yds:round.holeYards?.[i]||null,
         sequence:[], phase:'sequence',
         detailTaskIdx:0, detailSubStepIdx:0,
         puttDistances:[], puttCalcIdx:0, puttCalcBuf:'',
@@ -2159,7 +2146,7 @@ function initScoring() {
       };
     }
     return {
-      holeNum:h, par:teeSet?.holePars[i]||4, yds:round.holeYards?.[i]||null,
+      holeNum:h, par, yds:round.holeYards?.[i]||null,
       sequence:[], phase:'sequence',
       detailTaskIdx:0, detailSubStepIdx:0,
       puttDistances:[], puttCalcIdx:0, puttCalcBuf:'',
@@ -3811,6 +3798,7 @@ function confirmRound() {
   round.importSessionId = genId();
   const rounds = getRounds();
   rounds.push(round);
+  byronClearRoundCache(round.id); // Guard: ensure no stale cache survives re-confirmation
   saveRounds(rounds);
   saveWIP(null);
   REV.round = null; REV.holes = [];
