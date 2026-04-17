@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.27 · Apr 16, 2026 -->
+<!-- PJ Caddie v7.10.28 · Apr 16, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -155,16 +155,28 @@ body{display:flex;flex-direction:column}
 .rc-edit{padding:12px 14px;border-top:1px solid var(--border2);background:var(--ink)}
 .confirm-bar{flex-shrink:0;background:var(--ink);border-top:1px solid var(--border);padding:12px max(28px,calc((100% - 460px)/2))}
 .confirm-bar .safe-pad{height:calc(env(safe-area-inset-bottom,20px) + 2px)}
-.stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+.stat-strip-2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px}
 .stat-tile{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:12px 10px;text-align:center}
-.stat-val{font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk);line-height:1}
-.stat-lbl{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--chalk3);margin-top:4px}
-.miss-strip{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:20px}
-.miss-row{display:flex;gap:0;justify-content:space-between;align-items:center}
-.miss-cell{text-align:center;flex:1}
-.miss-count{font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk);line-height:1}
-.miss-dir{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--chalk3);margin-top:3px}
-.miss-div{width:1px;background:var(--border);height:32px;flex-shrink:0}
+.stat-val{font-family:'DM Serif Display',serif;font-size:26px;color:var(--chalk);line-height:1}
+.stat-lbl{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--chalk3);margin-top:5px}
+.miss-strip{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:12px}
+.miss-cross{display:grid;grid-template-columns:1fr 80px 1fr;grid-template-rows:72px 72px 72px;gap:6px;max-width:280px;margin:0 auto}
+.miss-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--border);background:var(--ink3)}
+.miss-box.miss-active{border-color:var(--gold);background:rgba(200,168,75,.07)}
+.miss-box.miss-dominant{border-color:var(--gold);background:rgba(200,168,75,.07)}
+.miss-box.miss-zero{background:var(--ink3);border-color:var(--border2);opacity:.4}
+.miss-pin-cell{border-radius:10px;border:1px solid var(--border);background:var(--ink2);display:flex;align-items:center;justify-content:center}
+.miss-spacer{background:transparent;border:none}
+.miss-num{font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk);line-height:1}
+.miss-dir{font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:var(--chalk3);margin-top:3px}
+.miss-dir.active{color:var(--gold)}
+.tee-strip{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:20px}
+.tee-strip-row{display:flex;align-items:center}
+.tee-strip-cell{flex:1;text-align:center}
+.tee-strip-num{font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk);line-height:1}
+.tee-strip-lbl{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--chalk3);margin-top:3px}
+.tee-strip-div{width:1px;background:var(--border);height:32px}
 .dhc{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
 .dhc-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;transition:background .12s;user-select:none}
 .dhc-head:active{background:var(--ink3)}
@@ -351,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.27 · Apr 16, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.28 · Apr 16, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -561,8 +573,10 @@ body{display:flex;flex-direction:column}
     <div class="pad" style="padding-top:16px;padding-bottom:40px">
       <div id="det-score-hdr" style="margin-bottom:18px"></div>
       <div class="stat-strip" id="det-stats"></div>
-      <div id="det-pji" style="margin-bottom:16px"></div>
+      <div class="stat-strip-2" id="det-stats2"></div>
+      <div id="det-pji" style="margin-bottom:12px"></div>
       <div id="det-miss" style="margin-bottom:6px"></div>
+      <div id="det-tee" style="margin-bottom:6px"></div>
       <span class="section-lbl">Holes</span>
       <div id="det-holes"></div>
       <div id="byron-section" style="margin-top:20px">
@@ -748,7 +762,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.27 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.28 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -1019,13 +1033,21 @@ function byronHolesPrompt(bundle) {
     const tee=(h.shots||[]).find(s=>s.isTeeShot);
     const apps=(h.shots||[]).filter(s=>s.type==='approach'&&!s.isTeeShot);
     const sg=(h.shots||[]).filter(s=>['chip','recovery','layup'].includes(s.type));
+    const hasRecovery=(h.shots||[]).some(s=>s.type==='recovery');
+    const holeYds = round.holeYards?.[h.number-1] || null;
+    const firstApproachYds = apps[0]?.yardage || null;
+    const driveCombo = (holeYds && firstApproachYds && h.par > 3)
+      ? holeYds - firstApproachYds : null;
     return {
       hole:h.number,par:h.par,score:h.score,overPar:h.score&&h.par?h.score-h.par:null,
-      gir:h.gir,pinZone:h.pinZone,
+      gir:h.gir,pinZone:h.pinZone,holeYards:holeYds,
       putts:{count:h.putts?.count||0,distances:h.putts?.distances||[]},
       tee:tee?{club:tee.club,position:tee.position}:null,
       approaches:apps.map(a=>({club:a.club,yds:a.yardage,intended:a.intendedZone,finish:a.finishZone,result:a.result,miss:a.missDirection,lie:a.lie})),
-      shortGame:sg.map(s=>s.type)
+      shortGame:sg.map(s=>s.type),
+      hasRecovery,
+      driveCombo: hasRecovery ? driveCombo : null,
+      driveCarry: (!hasRecovery && driveCombo) ? driveCombo : null
     };
   });
   const noteLines = courseNotes.map((n,i)=>{
@@ -1050,7 +1072,7 @@ function byronHolesPrompt(bundle) {
     notesAdjustInstruction = `\nYARDAGE ADJUSTMENT RULE: Notes were written from ${masterName} tees. This round is from ${roundTeeName} tees. Per-hole delta (subtract from note yardage to get ${roundTeeName} yardage): ${deltaStr}\nFor every numeric yardage in the notes, apply the hole's delta and cite both values — e.g. "bunker at 190yd (250yd from ${masterName})". Holes with delta=0 need no adjustment. Non-numeric prose passes through unchanged.`;
   }
 
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\n${notesHeader}${notesAdjustInstruction}\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nDRIVE DISTANCE RULE: On par 4/5 holes, driveCarry = hole_yards - first_approach_yards (clean holes only). On holes with hasRecovery:true, driveCombo = hole_yards - first_approach_yards represents drive+recovery combined — do NOT cite as drive carry. On holes with a recovery, analyze tee shot position and score cost instead of distance.\n\n${notesHeader}${notesAdjustInstruction}\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
 }
 
 function byronPatternsPrompt(bundle, holesResult) {
@@ -1066,7 +1088,7 @@ function byronPatternsPrompt(bundle, holesResult) {
     ? `Club shaft assignments: ${JSON.stringify(clubShaftMap)}`
     : null;
 
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 2: PATTERN ANALYSIS \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}\n\nROUND: ${round.course}, ${round.date}, Score ${round.totalScore} (${relStr})\n\nHOLES OUTPUT (Pass 1):\n${JSON.stringify(holesResult)}\n\nROUND STATS:\nApproaches: ${stats.approachCount} | GIR: ${stats.girCount}/${stats.totalHoles} | Putts: ${stats.totalPutts}\nMiss directions: L=${stats.missDir.left} R=${stats.missDir.right} Sh=${stats.missDir.short} Lg=${stats.missDir.long} C=${stats.missDir.center} (${stats.missTotal} total misses)\nPenalties: ${stats.penalties.length} \u2014 ${JSON.stringify(stats.penalties)}\nChip/recovery first-putt distances: ${stats.chipProx.length?stats.chipProx.join(', ')+'ft (avg '+stats.avgChipProx+'ft)':'no data'}\nClub data: ${JSON.stringify(stats.clubData)}\n${carryLine}\n${shaftLine?shaftLine+'\\n':''}\nHISTORICAL: ${histStr}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "missPattern": "Quantify miss direction with counts. E.g. '5 of 7 approach misses went right.' Note yardage bands if data supports. Compare to player primary miss.",\n  "clubValidation": "Are clubs matching yardage expectations? Flag systematic short/long by club. Cite specific shots.",\n  "partialSwings": "If carry data exists: compare GIR rate on partial swings vs full swings. Cite specific clubs and yardages. If no carry data: null.",\n  "penaltySummary": "Every penalty traced to the decision. Cite hole, club, position. Null if no penalties.",\n  "chipProximity": "First-putt distance after chips/recoveries. Avg, range, and what it costs in putts. Null if no data.",\n  "historicalComparison": "How does this round compare to prior rounds at this course? Cite specific holes or stats where history exists.",\n  "shaftAnalysis": "If shaft data exists: compare GIR rate and miss direction by shaft. Require minimum 5 shots per shaft variant. Null if no shaft data.",\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 2: PATTERN ANALYSIS \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}\n\nROUND: ${round.course}, ${round.date}, Score ${round.totalScore} (${relStr})\n\nHOLES OUTPUT (Pass 1):\n${JSON.stringify(holesResult)}\n\nROUND STATS:\nApproaches: ${stats.approachCount} | GIR: ${stats.girCount}/${stats.totalHoles} | Putts: ${stats.totalPutts}\nMiss directions: L=${stats.missDir.left} R=${stats.missDir.right} Sh=${stats.missDir.short} Lg=${stats.missDir.long} C=${stats.missDir.center} (${stats.missTotal} total misses)\nPenalties: ${stats.penalties.length} \u2014 ${JSON.stringify(stats.penalties)}\nChip/recovery first-putt distances: ${stats.chipProx.length?stats.chipProx.join(', ')+'ft (avg '+stats.avgChipProx+'ft)':'no data'}\nClub data: ${JSON.stringify(stats.clubData)}\n${carryLine}\n${shaftLine?shaftLine+'\\n':''}\nHISTORICAL: ${histStr}\n\nDRIVE DISTANCE RULE: Use only driveCarry values (clean tee shots, no recovery) for club carry validation. Holes with hasRecovery:true — analyze by tee position and score outcome, not distance. For OBL/OBR/LL/RR patterns, calculate avg score on trouble holes vs in-play holes to quantify the true cost of the miss.\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "missPattern": "Quantify miss direction with counts. E.g. '5 of 7 approach misses went right.' Note yardage bands if data supports. Compare to player primary miss.",\n  "clubValidation": "Use only clean-hole driveCarry values for carry validation. Flag systematic short/long by club. Cite specific shots. Note if sample is small.",\n  "partialSwings": "If carry data exists: compare GIR rate on partial swings vs full swings. Cite specific clubs and yardages. If no carry data: null.",\n  "penaltySummary": "Every penalty traced to the decision. Cite hole, club, position. For trouble tee shots compare avg score on those holes vs in-play holes. Null if no penalties.",\n  "chipProximity": "First-putt distance after chips/recoveries. Avg, range, and what it costs in putts. Null if no data.",\n  "historicalComparison": "How does this round compare to prior rounds at this course? Cite specific holes or stats where history exists.",\n  "shaftAnalysis": "If shaft data exists: compare GIR rate and miss direction by shaft. Require minimum 5 shots per shaft variant. Null if no shaft data.",\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
 }
 
 function byronGameplanPrompt(bundle, holesResult, patternsResult) {
@@ -2031,9 +2053,10 @@ function bsSelectAll() {
 function renderBsCrossBar() {
   const bags = getBags();
   // Cross clubs = selected clubs NOT in the default bag
+  const homeBagId = BS.defaultBagId || BS.viewingBagId;
   const crossClubs = [];
   bags.forEach(bag => {
-    if (bag.id === BS.defaultBagId) return;
+    if (bag.id === homeBagId) return;
     bag.clubs.forEach(c => {
       if (BS.selectedClubIds.has(c.id)) crossClubs.push({...c, bagName: bag.name});
     });
@@ -2627,6 +2650,8 @@ function renderSequenceBuilder(hs, idx) {
 
 function seqItemLabel(item) {
   if (item.type==='approach' && item.isTeeShot) return 'Tee Shot (Approach)';
+  if (item.type==='approach' && item.result==='H') return 'Approach \u2014 On Green';
+  if (item.type==='approach' && item.result==='M') return 'Approach \u2014 Off Green';
   const t = SEQ_TYPES.find(s=>s.type===item.type);
   return t ? t.lbl : item.type;
 }
@@ -3468,10 +3493,9 @@ function renderDetail() {
     <div class="detail-score-hdr">
       <div class="detail-score-big ${scoreColorClass(rel)}">${round.totalScore ?? '\u2014'}</div>
       <div class="detail-score-rel ${scoreColorClass(rel)}">${relStr}</div>
-    </div>
-    <div class="detail-score-name">${rel != null ? scoreName(rel) : ''}</div>`;
+    </div>`;
 
-  // Stats
+  // Stats — row 1: GIR / Putts / Avg 1st Putt / Putts Made
   const holes = round.holes || [];
   const girCount = holes.filter(h => h.gir).length;
   const totalPutts = holes.reduce((a,h) => a + (h.putts?.count||0), 0);
@@ -3480,40 +3504,61 @@ function renderDetail() {
   const zonesTotal = allApproaches.length;
   const zonesFilled = allApproaches.filter(s => s.intendedZone && s.finishZone).length;
   const zonesVal = zonesTotal > 0 ? zonesFilled + '/' + zonesTotal : '\u2014';
+  // First putt distances (from holes that have putt distance data)
+  const firstPutts = holes.map(h => h.putts?.distances?.[0]).filter(d => d > 0);
+  const avgFirstPutt = firstPutts.length ? Math.round(firstPutts.reduce((a,b)=>a+b,0)/firstPutts.length) : null;
+  // Total distance of putts made = all putt distances except the first (first putt is the lag, rest are made)
+  const totalPuttsMade = holes.reduce((sum,h) => {
+    const dists = h.putts?.distances || [];
+    return sum + dists.slice(1).reduce((a,b)=>a+b,0);
+  }, 0);
   document.getElementById('det-stats').innerHTML = [
     {val: girCount + '/' + holes.length, lbl: 'GIR'},
     {val: totalPutts || '\u2014', lbl: 'Putts'},
-    {val: zonesVal, lbl: 'Zones'},
-    {val: source, lbl: 'Source'}
+    {val: avgFirstPutt ? avgFirstPutt+'ft' : '\u2014', lbl: 'Avg 1st Putt'},
+    {val: totalPuttsMade ? totalPuttsMade+'ft' : '\u2014', lbl: 'Putts Made'},
   ].map(s => `<div class="stat-tile"><div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join('');
+  // Row 2: Zones Captured / Source
+  document.getElementById('det-stats2').innerHTML = [
+    {val: zonesVal, lbl: 'Zones Captured'},
+    {val: source, lbl: 'Source'},
+  ].map(s => `<div class="stat-tile"><div class="stat-val" style="font-size:${s.lbl==='Source'?'18px':'26px'}">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join('');
 
-  // PJ Index
+  // PJ Index — with tappable tooltips (INDEX BENCHMARKS)
   const player = getPlayerProfile();
   const cmr = calcCMR(round, player);
   const dci = calcDCI(round);
   const pjiEl = document.getElementById('det-pji');
   if (cmr != null || dci != null) {
     pjiEl.innerHTML = `<div class="card" style="padding:12px 14px">
-      <div style="font-size:11px;font-weight:600;letter-spacing:.8px;color:var(--chalk3);text-transform:uppercase;margin-bottom:10px">⚡ PJ Index</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <div style="width:36px;font-size:12px;color:var(--chalk2);font-weight:600">CMR</div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.8px;color:var(--chalk3);text-transform:uppercase;margin-bottom:10px">\u26a1 PJ Index</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;cursor:pointer" onclick="toggleDetTip('cmr')">
+        <div style="width:36px;font-size:12px;color:var(--chalk);font-weight:600">CMR</div>
         ${pjiBar(cmr)}
-        <div style="font-size:13px;color:var(--chalk);font-weight:600;min-width:32px">${cmr != null ? cmr+'%' : '—'}</div>
-        <div style="font-size:10px;color:var(--chalk3)">Decision + Execution</div>
+        <div style="font-size:13px;color:var(--chalk);font-weight:600;min-width:32px">${cmr != null ? cmr+'%' : '\u2014'}</div>
+        <button id="det-tip-btn-cmr" style="width:17px;height:17px;border-radius:50%;border:1.5px solid var(--chalk2);background:transparent;color:var(--chalk2);font-size:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1">i</button>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div style="width:36px;font-size:12px;color:var(--chalk2);font-weight:600">DCI</div>
+      <div id="det-tip-cmr" style="display:none;background:var(--ink3);border-left:2px solid var(--gold);border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;font-size:12px;color:var(--chalk2);line-height:1.5">
+        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:3px">Course Manager Rating</div>
+        Decision + execution quality this round. Measures tee strategy, aim point selection, and approach execution. Target for 10 HCP: 70%+.
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;cursor:pointer" onclick="toggleDetTip('dci')">
+        <div style="width:36px;font-size:12px;color:var(--chalk);font-weight:600">DCI</div>
         ${pjiBar(dci)}
-        <div style="font-size:13px;color:var(--chalk);font-weight:600;min-width:32px">${dci != null ? dci+'%' : '—'}</div>
-        <div style="font-size:10px;color:var(--chalk3)">Damage Control</div>
+        <div style="font-size:13px;color:var(--chalk);font-weight:600;min-width:32px">${dci != null ? dci+'%' : '\u2014'}</div>
+        <button id="det-tip-btn-dci" style="width:17px;height:17px;border-radius:50%;border:1.5px solid var(--chalk2);background:transparent;color:var(--chalk2);font-size:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1">i</button>
+      </div>
+      <div id="det-tip-dci" style="display:none;background:var(--ink3);border-left:2px solid var(--gold);border-radius:0 6px 6px 0;padding:8px 10px;font-size:12px;color:var(--chalk2);line-height:1.5">
+        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:3px">Damage Control Index</div>
+        How well you limited the bleeding after bad shots this round. Measures whether bogeys become doubles and doubles become triples. Target for 10 HCP: 65%+.
       </div>
     </div>`;
   } else {
     pjiEl.innerHTML = '';
   }
 
-  // Miss breakdown
-  const misses = {left:0, right:0, short:0, long:0, center:0};
+  // Approach miss spatial grid (MISS GRID)
+  const misses = {left:0, right:0, short:0, long:0};
   holes.forEach(h => (h.shots||[]).forEach(sh => {
     if (sh.type==='approach' && sh.result==='M' && sh.missDirection && misses[sh.missDirection]!=null)
       misses[sh.missDirection]++;
@@ -3521,22 +3566,61 @@ function renderDetail() {
   const missTotal = Object.values(misses).reduce((a,b)=>a+b,0);
   const missEl = document.getElementById('det-miss');
   if (missTotal > 0) {
+    const maxMiss = Math.max(...Object.values(misses));
+    const missBox = (dir, count) => {
+      const isDom = count === maxMiss && count > 0;
+      const isActive = count > 0 && !isDom;
+      const cls = isDom ? 'miss-dominant' : isActive ? 'miss-active' : 'miss-zero';
+      return `<div class="miss-box ${cls}">
+        <div class="miss-num">${count}</div>
+        <div class="miss-dir${count>0?' active':''}">${dir}</div>
+      </div>`;
+    };
+    const pinSVG = `<svg width="32" height="48" viewBox="0 0 32 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="16" y1="4" x2="16" y2="44" stroke="var(--chalk2)" stroke-width="1.5" stroke-linecap="round"/>
+      <polygon points="16,4 28,10 16,16" fill="var(--gold)"/>
+      <ellipse cx="16" cy="44" rx="5" ry="2" fill="var(--border)"/>
+    </svg>`;
     missEl.innerHTML = `<div class="miss-strip">
-      <div class="section-lbl" style="margin-bottom:8px">Approach Misses (${missTotal})</div>
-      <div class="miss-row">
-        <div class="miss-cell"><div class="miss-count">${misses.left}</div><div class="miss-dir">Left</div></div>
-        <div class="miss-div"></div>
-        <div class="miss-cell"><div class="miss-count">${misses.right}</div><div class="miss-dir">Right</div></div>
-        <div class="miss-div"></div>
-        <div class="miss-cell"><div class="miss-count">${misses.short}</div><div class="miss-dir">Short</div></div>
-        <div class="miss-div"></div>
-        <div class="miss-cell"><div class="miss-count">${misses.long}</div><div class="miss-dir">Long</div></div>
-        <div class="miss-div"></div>
-        <div class="miss-cell"><div class="miss-count">${misses.center}</div><div class="miss-dir">Center</div></div>
+      <div class="section-lbl" style="margin-bottom:10px">Approach Misses (${missTotal})</div>
+      <div class="miss-cross">
+        <div class="miss-spacer"></div>
+        ${missBox('Long', misses.long)}
+        <div class="miss-spacer"></div>
+        ${missBox('Left', misses.left)}
+        <div class="miss-pin-cell">${pinSVG}</div>
+        ${missBox('Right', misses.right)}
+        <div class="miss-spacer"></div>
+        ${missBox('Short', misses.short)}
+        <div class="miss-spacer"></div>
       </div>
     </div>`;
   } else {
     missEl.innerHTML = '';
+  }
+
+  // Tee breakdown (TEE BREAKDOWN) — par 4 and par 5 tee shots only
+  const teeShots = holes.flatMap(h => (h.shots||[]).filter(s => s.isTeeShot && h.par > 3));
+  const teeEl = document.getElementById('det-tee');
+  if (teeShots.length > 0) {
+    const fw = teeShots.filter(s => s.position==='C').length;
+    const rgh = teeShots.filter(s => s.position==='L'||s.position==='R').length;
+    const oop = teeShots.filter(s => s.position==='LL'||s.position==='RR').length;
+    const ob = teeShots.filter(s => s.position==='OBL'||s.position==='OBR').length;
+    teeEl.innerHTML = `<div class="tee-strip">
+      <div class="section-lbl" style="margin-bottom:10px">Tee Shots (${teeShots.length})</div>
+      <div class="tee-strip-row">
+        <div class="tee-strip-cell"><div class="tee-strip-num">${fw}</div><div class="tee-strip-lbl">Fairway</div></div>
+        <div class="tee-strip-div"></div>
+        <div class="tee-strip-cell"><div class="tee-strip-num">${rgh}</div><div class="tee-strip-lbl">Rough</div></div>
+        <div class="tee-strip-div"></div>
+        <div class="tee-strip-cell"><div class="tee-strip-num" style="${oop>0?'color:var(--gold)':''}">${oop}</div><div class="tee-strip-lbl">OOP</div></div>
+        <div class="tee-strip-div"></div>
+        <div class="tee-strip-cell"><div class="tee-strip-num" style="${ob>0?'color:var(--red)':''}">${ob}</div><div class="tee-strip-lbl">OB</div></div>
+      </div>
+    </div>`;
+  } else {
+    teeEl.innerHTML = '';
   }
 
   // Hole cards
@@ -3931,6 +4015,18 @@ function fKey(f) { return f.type + (f.field||''); }
 function scoreColorClass(rel) {
   if (rel == null) return '';
   return rel < 0 ? 'c-under' : rel > 0 ? 'c-over' : 'c-even';
+}
+
+function toggleDetTip(id) {
+  ['cmr','dci'].forEach(t => {
+    const tip = document.getElementById('det-tip-'+t);
+    const btn = document.getElementById('det-tip-btn-'+t);
+    if (!tip || !btn) return;
+    const nowOpen = t === id ? tip.style.display === 'none' || !tip.style.display : false;
+    tip.style.display = nowOpen ? '' : 'none';
+    btn.style.borderColor = nowOpen ? 'var(--gold)' : 'var(--chalk2)';
+    btn.style.color = nowOpen ? 'var(--gold)' : 'var(--chalk2)';
+  });
 }
 
 function scoreName(rel) {
