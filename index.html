@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.29 · Apr 18, 2026 -->
+<!-- PJ Caddie v7.10.30 · Apr 18, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.29 · Apr 18, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.30 · Apr 18, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -772,7 +772,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.29 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.30 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -905,6 +905,10 @@ body{display:flex;flex-direction:column}
       <button class="btn btn-outline btn-sm" style="padding:4px 12px" onclick="closePinDrop()">Close</button>
     </div>
     <div id="pin-drop-instr" style="font-size:12px;color:var(--chalk2);text-align:center;padding:6px 8px;background:var(--ink3);border-radius:6px;margin-bottom:8px">Tap the <strong style="color:var(--gold)">tee box</strong> to drop pin 1</div>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
+      <input class="inp" id="pin-drop-coords" type="text" placeholder="Paste coords: 41.1365, -74.0059" style="flex:1;font-size:12px;padding:6px 8px" autocomplete="off">
+      <button class="btn btn-outline btn-sm" style="padding:6px 12px;font-size:11px" onclick="jumpToPastedCoords()">Go</button>
+    </div>
     <div id="pin-drop-map" style="flex:1;min-height:320px;border-radius:8px;overflow:hidden;background:var(--ink3)"></div>
     <div style="display:flex;gap:8px;padding:10px 0 4px 0">
       <button class="btn btn-outline btn-sm" id="pin-drop-reset" onclick="resetPinDrop()" style="flex:1">Reset pins</button>
@@ -1408,6 +1412,21 @@ function findGreenCoordsFromOtherTee(courseId, holeIdx, excludeTeeId) {
     }
   } catch {}
   return null;
+}
+// Per-course default center — last pin-drop location, used to open map in the right place next time
+function getCourseDefaultCenter(courseId) {
+  try {
+    const all = JSON.parse(localStorage.getItem('pjc_course_coords') || '{}');
+    return all[courseId+'_default'] || null;
+  } catch { return null; }
+}
+function setCourseDefaultCenter(courseId, latLng) {
+  try {
+    const all = JSON.parse(localStorage.getItem('pjc_course_coords') || '{}');
+    all[courseId+'_default'] = latLng;
+    localStorage.setItem('pjc_course_coords', JSON.stringify(all));
+    const meta = getSyncMeta(); meta.notesTs = Date.now(); saveSyncMeta(meta);
+  } catch {}
 }
 // Default course coords used to center the map on first pin-drop. Add more as courses are added.
 const COURSE_DEFAULT_COORDS = {
@@ -4676,6 +4695,7 @@ function renderCourseHubHoles(course) {
         <span class="hub-h-num">H${h}</span>
         <span class="hub-h-par">${parLabel}</span>
         ${hasNotes ? `<span style="font-size:8px;color:var(--gold)">&#9679;</span>` : ''}
+        ${hasGoogKey ? `<span class="ch-pin-tag" onclick="event.stopPropagation();openPinDrop(${i})" style="font-size:10px;padding:2px 7px;border-radius:10px;border:1px solid ${hasCoords?'var(--gold)':'var(--chalk3)'};color:${hasCoords?'var(--gold)':'var(--chalk3)'};cursor:pointer;white-space:nowrap;line-height:1.3">\u{1F4CD} ${elevLabel}</span>` : ''}
         <span class="hub-h-yds">${yds} yds</span>
         <span class="hub-h-chev" id="chh-chev-${i}">&#9660;</span>
       </div>
@@ -4701,10 +4721,6 @@ function renderCourseHubHoles(course) {
             onblur="saveCourseHubField(${i},'green',this.value)"
             oninput="autoGrowNote(this)">${esc(n.green)}</textarea>
         </div>
-        ${hasGoogKey ? `<div class="hub-field" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <span style="font-size:11px;color:var(--chalk3)">\u{1F4CD} ${hasCoords ? `<span style="color:var(--gold)">${elevLabel}</span>` : `<span>${elevLabel}</span>`}</span>
-          <button class="btn btn-outline btn-sm" style="padding:4px 10px;font-size:11px" onclick="openPinDrop(${i})">${hasCoords ? 'Edit pins' : 'Set location'}</button>
-        </div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -4778,7 +4794,9 @@ function openPinDrop(holeIdx) {
 function initPinDropMap(course) {
   const mapEl = document.getElementById('pin-drop-map');
   if (!mapEl || !window.google?.maps) return;
-  const center = PD.teePin || PD.greenPin || COURSE_DEFAULT_COORDS[course.id] || { lat: 41.1365, lng: -74.0059 };
+  // Center priority: existing tee pin → existing green pin → per-course saved center → hardcoded default → Paramount fallback
+  const savedCenter = getCourseDefaultCenter(course.id);
+  const center = PD.teePin || PD.greenPin || savedCenter || COURSE_DEFAULT_COORDS[course.id] || { lat: 41.1365, lng: -74.0059 };
   PD.map = new google.maps.Map(mapEl, {
     center,
     zoom: 18,
@@ -4791,6 +4809,13 @@ function initPinDropMap(course) {
   // Render any pre-populated pins
   if (PD.teePin) placePinMarker('tee', PD.teePin);
   if (PD.greenPin) placePinMarker('green', PD.greenPin);
+  // ZOOM FIT: if both pins already exist, fit bounds to include both
+  if (PD.teePin && PD.greenPin) {
+    const bounds = new google.maps.LatLngBounds();
+    bounds.extend(PD.teePin);
+    bounds.extend(PD.greenPin);
+    PD.map.fitBounds(bounds, 80); // 80px padding
+  }
   PD.map.addListener('click', (e) => {
     const coord = { lat: e.latLng.lat(), lng: e.latLng.lng() };
     if (PD.phase === 'tee') {
@@ -4871,6 +4896,8 @@ async function savePinDrop() {
   status.style.color = 'var(--chalk2)';
   status.textContent = 'Saving pins\u2026';
   setHoleCoords(CH.courseId, tee.id, PD.holeIdx, { tee: PD.teePin, green: PD.greenPin });
+  // NORTH STAR: remember this tee pin as the course's default center so next pin-drop opens here
+  setCourseDefaultCenter(CH.courseId, PD.teePin);
   status.textContent = 'Fetching elevation\u2026';
   const elev = await fetchHoleElevation(CH.courseId, tee.id, PD.holeIdx, PD.teePin, PD.greenPin);
   if (typeof elev === 'number') {
@@ -4888,6 +4915,31 @@ async function savePinDrop() {
 function closePinDrop() {
   document.getElementById('pin-drop-modal').style.display = 'none';
   // Leave PD state as-is; reopening will reset
+}
+
+// GLASS PANE — parse pasted coords and recenter map. Accepts: "41.1365, -74.0059", "41.1365,-74.0059",
+// "41.1365° N, 74.0059° W", or Google Maps share strings with embedded lat,lng.
+function jumpToPastedCoords() {
+  const el = document.getElementById('pin-drop-coords');
+  if (!el) return;
+  const raw = (el.value || '').trim();
+  if (!raw) { toast('Paste a lat, lng pair'); return; }
+  // Strip degree symbols and compass letters; normalize whitespace
+  const cleaned = raw.replace(/[°\u00b0NSEWnsew]/g, '').replace(/\s+/g, ' ');
+  // Match two signed floats separated by comma or whitespace
+  const m = cleaned.match(/(-?\d+\.?\d*)\s*[,\s]\s*(-?\d+\.?\d*)/);
+  if (!m) { toast('Couldn\u2019t read coords. Format: 41.1365, -74.0059'); return; }
+  const lat = parseFloat(m[1]);
+  const lng = parseFloat(m[2]);
+  if (isNaN(lat) || isNaN(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+    toast('Invalid lat/lng values'); return;
+  }
+  if (!PD.map) { toast('Map not ready yet'); return; }
+  PD.map.setCenter({ lat, lng });
+  PD.map.setZoom(18);
+  el.value = '';
+  const status = document.getElementById('pin-drop-status');
+  if (status) { status.style.color = 'var(--chalk2)'; status.textContent = `Centered at ${lat.toFixed(5)}, ${lng.toFixed(5)}`; }
 }
 
 function toggleChTip(id) {
