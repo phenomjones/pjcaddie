@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.28 · Apr 16, 2026 -->
+<!-- PJ Caddie v7.10.29 · Apr 18, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.28 · Apr 16, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.10.29 · Apr 18, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -700,6 +700,16 @@ body{display:flex;flex-direction:column}
         <div id="ant-key-status" style="font-size:11px;color:var(--chalk3);margin-top:8px"></div>
       </div>
       <div class="card" style="margin-bottom:10px">
+        <div class="section-lbl">Google Maps API</div>
+        <div class="inp-grp" style="margin-bottom:8px">
+          <label class="inp-label">API Key</label>
+          <input class="inp" id="set-goog-key" type="password" placeholder="AIza…" autocomplete="off">
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="saveGoogKey()">Save Key</button>
+        <div id="goog-key-status" style="font-size:11px;color:var(--chalk3);margin-top:8px"></div>
+        <div style="font-size:10px;color:var(--chalk3);margin-top:6px;line-height:1.4">Powers Course Hub pin drop + elevation. Restrict key to phenomjones.github.io/* and localhost/* in Google Cloud Console.</div>
+      </div>
+      <div class="card" style="margin-bottom:10px">
         <div class="section-lbl">GitHub Sync</div>
         <div class="inp-grp">
           <label class="inp-label">Personal Access Token</label>
@@ -762,7 +772,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.28 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.29 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -887,6 +897,23 @@ body{display:flex;flex-direction:column}
   </div>
 </div>
 
+<!-- PIN DROP MODAL -->
+<div id="pin-drop-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);padding:env(safe-area-inset-top) 10px env(safe-area-inset-bottom) 10px">
+  <div style="max-width:560px;margin:0 auto;height:100%;display:flex;flex-direction:column;padding:12px 0">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px 8px 4px">
+      <div style="font-size:14px;font-weight:700;color:var(--gold)" id="pin-drop-title">Set Location</div>
+      <button class="btn btn-outline btn-sm" style="padding:4px 12px" onclick="closePinDrop()">Close</button>
+    </div>
+    <div id="pin-drop-instr" style="font-size:12px;color:var(--chalk2);text-align:center;padding:6px 8px;background:var(--ink3);border-radius:6px;margin-bottom:8px">Tap the <strong style="color:var(--gold)">tee box</strong> to drop pin 1</div>
+    <div id="pin-drop-map" style="flex:1;min-height:320px;border-radius:8px;overflow:hidden;background:var(--ink3)"></div>
+    <div style="display:flex;gap:8px;padding:10px 0 4px 0">
+      <button class="btn btn-outline btn-sm" id="pin-drop-reset" onclick="resetPinDrop()" style="flex:1">Reset pins</button>
+      <button class="btn btn-gold btn-sm" id="pin-drop-save" onclick="savePinDrop()" style="flex:1" disabled>Save &amp; fetch elevation</button>
+    </div>
+    <div id="pin-drop-status" style="font-size:11px;color:var(--chalk3);text-align:center;padding:4px 0;min-height:16px"></div>
+  </div>
+</div>
+
 <div id="toast"></div>
 </div><!-- #app -->
 
@@ -895,7 +922,7 @@ body{display:flex;flex-direction:column}
 
 // ── CADDIE VOICE ─────────────────────────────────────────────
 const BYRON_VERSION = 'Byron 3.0';
-const BYRON_PERSONA = 'IDENTITY: You are Byron \u2014 elite caddie and data analyst. Your voice draws from four sources: Cory Jez / TourIQ (reads and synthesizes shot data into caddie intelligence), Scott Fawcett / DECADE (dispersion-based targets, probability framework, aim away from the big number), Jon Sherman / Practical Golf (tone calibration for 18-handicap reality, no false hope), and your own voice (direct, specific, dry, never preachy).\n\nLANGUAGE RULE: Never use the word \u201cStrackaline\u201d \u2014 refer to course yardage and green-reading materials as \u201cgreen book\u201d instead.\n\nWHAT YOU ARE NOT: You are not a swing instructor. Never give swing tips, mechanics advice, or range drills. Your job is course management, not technique.\n\nTONE: Direct. Specific. Dry when warranted. Never generic. Never preachy. Every insight must cite a hole, club, yardage, miss direction, or data point. If the data doesn\u2019t support a claim, don\u2019t make it.\n\nWRITING STYLE FOR MOBILE: Write SHORT. Maximum 3 sentences per block \u2014 then stop. No paragraph walls. Each sentence should stand alone.\n\n18-HANDICAP REALITY: Bogey is a good score on a hard hole. Double bogey is acceptable on the hardest holes. Scoring zones: PARITY TARGET (realistic par opportunity), DAMAGE CONTROL (bogey is fine, avoid doubles), SURVIVAL (bogey/double acceptable \u2014 just get out clean). Never chase scores that aren\u2019t there.';
+const BYRON_PERSONA = 'IDENTITY: You are Byron \u2014 elite caddie and data analyst. Your voice draws from four sources: Cory Jez / TourIQ (reads and synthesizes shot data into caddie intelligence), Scott Fawcett / DECADE (dispersion-based targets, probability framework, aim away from the big number), Jon Sherman / Practical Golf (tone calibration for 18-handicap reality, no false hope), and your own voice (direct, specific, dry, never preachy).\n\nLANGUAGE RULE: Never use the word \u201cStrackaline\u201d \u2014 refer to course yardage and green-reading materials as \u201cgreen book\u201d instead.\n\nWHAT YOU ARE NOT: You are not a swing instructor. Never give swing tips, mechanics advice, or range drills. Your job is course management, not technique.\n\nCOURSE NOTES AUTHORITY: COURSE NOTES are the player\u2019s pre-established course management decisions based on personal knowledge of the course. They represent binding strategic context, not flavor text. When a club selection, aim point, or strategy is consistent with documented hazards, distances, or conditions in the notes, DO NOT question it \u2014 analyze execution quality of the chosen strategy instead. Only question a decision when it contradicts or ignores the documented notes. If the notes document a hazard at 240y and the player laid up with a 3-wood, that is the correct play \u2014 evaluate the execution, not the choice.\n\nTONE: Direct. Specific. Dry when warranted. Never generic. Never preachy. Every insight must cite a hole, club, yardage, miss direction, or data point. If the data doesn\u2019t support a claim, don\u2019t make it.\n\nWRITING STYLE FOR MOBILE: Write SHORT. Maximum 3 sentences per block \u2014 then stop. No paragraph walls. Each sentence should stand alone.\n\n18-HANDICAP REALITY: Bogey is a good score on a hard hole. Double bogey is acceptable on the hardest holes. Scoring zones: PARITY TARGET (realistic par opportunity), DAMAGE CONTROL (bogey is fine, avoid doubles), SURVIVAL (bogey/double acceptable \u2014 just get out clean). Never chase scores that aren\u2019t there.';
 
 // ── BYRON 3.0 CACHE ───────────────────────────────────────────
 function byronGetCache(roundId, pass) {
@@ -1029,25 +1056,47 @@ function byronBuildBundle(round) {
 // ── BYRON 3.0 PROMPTS ─────────────────────────────────────────
 function byronHolesPrompt(bundle) {
   const {round, player, courseNotes, stats, relStr, masterTee, roundTee} = bundle;
+  // Adjust a raw yardage by elevation: +1y per 3ft uphill, -1y per 3ft downhill
+  const adjustY = (y, elev) => (typeof y === 'number' && typeof elev === 'number') ? Math.round(y + elev/3) : null;
   const holesData = (round.holes||[]).sort((a,b)=>a.number-b.number).map(h=>{
-    const tee=(h.shots||[]).find(s=>s.isTeeShot);
     const apps=(h.shots||[]).filter(s=>s.type==='approach'&&!s.isTeeShot);
-    const sg=(h.shots||[]).filter(s=>['chip','recovery','layup'].includes(s.type));
     const hasRecovery=(h.shots||[]).some(s=>s.type==='recovery');
     const holeYds = round.holeYards?.[h.number-1] || null;
     const firstApproachYds = apps[0]?.yardage || null;
     const driveCombo = (holeYds && firstApproachYds && h.par > 3)
       ? holeYds - firstApproachYds : null;
+    // Elevation for this hole, looked up by (courseId, teeId, holeIdx)
+    const teeIdForElev = round.teeId || roundTee?.id;
+    const elevFt = (round.courseId && teeIdForElev)
+      ? getHoleElevation(round.courseId, teeIdForElev, h.number-1) : null;
+    // SHOT SEQUENCE — preserve stored order so Byron reads shots linearly.
+    // Each entry includes shot type and whatever fields are relevant for that type.
+    const shotSequence = (h.shots||[]).map((s, idx) => {
+      const base = { order: idx+1, type: s.type };
+      if (s.club) base.club = s.club;
+      if (s.position) base.position = s.position;
+      if (typeof s.yardage === 'number') {
+        base.yds = s.yardage;
+        const adj = adjustY(s.yardage, elevFt);
+        if (adj != null && adj !== s.yardage) base.ydsEffective = adj;
+      }
+      if (s.intendedZone) base.intended = s.intendedZone;
+      if (s.finishZone) base.finish = s.finishZone;
+      if (s.result) base.result = s.result;
+      if (s.missDirection) base.miss = s.missDirection;
+      if (s.lie) base.lie = s.lie;
+      if (s.isTeeShot) base.isTeeShot = true;
+      return base;
+    });
     return {
       hole:h.number,par:h.par,score:h.score,overPar:h.score&&h.par?h.score-h.par:null,
       gir:h.gir,pinZone:h.pinZone,holeYards:holeYds,
-      putts:{count:h.putts?.count||0,distances:h.putts?.distances||[]},
-      tee:tee?{club:tee.club,position:tee.position}:null,
-      approaches:apps.map(a=>({club:a.club,yds:a.yardage,intended:a.intendedZone,finish:a.finishZone,result:a.result,miss:a.missDirection,lie:a.lie})),
-      shortGame:sg.map(s=>s.type),
-      hasRecovery,
+      elevationFt: elevFt,
       driveCombo: hasRecovery ? driveCombo : null,
-      driveCarry: (!hasRecovery && driveCombo) ? driveCombo : null
+      driveCarry: (!hasRecovery && driveCombo) ? driveCombo : null,
+      hasRecovery,
+      putts:{count:h.putts?.count||0,distances:h.putts?.distances||[]},
+      shotSequence
     };
   });
   const noteLines = courseNotes.map((n,i)=>{
@@ -1072,7 +1121,7 @@ function byronHolesPrompt(bundle) {
     notesAdjustInstruction = `\nYARDAGE ADJUSTMENT RULE: Notes were written from ${masterName} tees. This round is from ${roundTeeName} tees. Per-hole delta (subtract from note yardage to get ${roundTeeName} yardage): ${deltaStr}\nFor every numeric yardage in the notes, apply the hole's delta and cite both values — e.g. "bunker at 190yd (250yd from ${masterName})". Holes with delta=0 need no adjustment. Non-numeric prose passes through unchanged.`;
   }
 
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nDRIVE DISTANCE RULE: On par 4/5 holes, driveCarry = hole_yards - first_approach_yards (clean holes only). On holes with hasRecovery:true, driveCombo = hole_yards - first_approach_yards represents drive+recovery combined — do NOT cite as drive carry. On holes with a recovery, analyze tee shot position and score cost instead of distance.\n\n${notesHeader}${notesAdjustInstruction}\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nSHOT SEQUENCE RULE: Each hole has a shotSequence array where each entry has an order field (1, 2, 3, …). Read shots in order. Any yds field refers to the distance of THAT specific shot only — never attribute one shot's yardage to a different shot in the sequence.\n\nELEVATION RULE: Each hole may include elevationFt (signed, positive=uphill green vs tee, negative=downhill). When a shot has ydsEffective, that value already includes elevation adjustment (+1y per 3ft uphill, -1y per 3ft downhill). Cite BOTH when relevant, e.g. "6I from 190y raw / 208y effective (54ft uphill)". Do not re-apply the elevation correction — ydsEffective is pre-computed. If elevationFt is null, skip elevation commentary.\n\nDRIVE DISTANCE RULE: On par 4/5 holes, driveCarry = hole_yards - first_approach_yards (clean holes only). On holes with hasRecovery:true, driveCombo = hole_yards - first_approach_yards represents drive+recovery combined — do NOT cite as drive carry. On holes with a recovery, analyze tee shot position and score cost instead of distance.\n\n${notesHeader}${notesAdjustInstruction}\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
 }
 
 function byronPatternsPrompt(bundle, holesResult) {
@@ -1312,6 +1361,80 @@ function getMasterTee(courseId) {
   if (!course) return null;
   const masterTeeId = getMasterTeeId(courseId);
   return course.tees.find(t => t.id === masterTeeId) || course.tees[0] || null;
+}
+
+// ── COURSE COORDS + ELEVATION ─────────────────────────────────
+// pjc_course_coords = { [courseId_teeId_holeIdx]: {tee:{lat,lng}, green:{lat,lng}} }
+// pjc_elevation     = { [courseId_teeId_holeIdx]: elevationFt }  (signed, +ve = uphill)
+function coordKey(courseId, teeId, holeIdx) { return courseId+'_'+teeId+'_'+holeIdx; }
+function getHoleCoords(courseId, teeId, holeIdx) {
+  try {
+    const all = JSON.parse(localStorage.getItem('pjc_course_coords') || '{}');
+    return all[coordKey(courseId, teeId, holeIdx)] || null;
+  } catch { return null; }
+}
+function setHoleCoords(courseId, teeId, holeIdx, coords) {
+  try {
+    const all = JSON.parse(localStorage.getItem('pjc_course_coords') || '{}');
+    all[coordKey(courseId, teeId, holeIdx)] = coords;
+    localStorage.setItem('pjc_course_coords', JSON.stringify(all));
+    const meta = getSyncMeta(); meta.notesTs = Date.now(); saveSyncMeta(meta);
+  } catch {}
+}
+function getHoleElevation(courseId, teeId, holeIdx) {
+  try {
+    const all = JSON.parse(localStorage.getItem('pjc_elevation') || '{}');
+    const v = all[coordKey(courseId, teeId, holeIdx)];
+    return (typeof v === 'number') ? v : null;
+  } catch { return null; }
+}
+function setHoleElevation(courseId, teeId, holeIdx, elevationFt) {
+  try {
+    const all = JSON.parse(localStorage.getItem('pjc_elevation') || '{}');
+    all[coordKey(courseId, teeId, holeIdx)] = elevationFt;
+    localStorage.setItem('pjc_elevation', JSON.stringify(all));
+    const meta = getSyncMeta(); meta.notesTs = Date.now(); saveSyncMeta(meta);
+  } catch {}
+}
+// Find green coords from ANY tee on the same course+hole (so a new tee set can inherit green pin)
+function findGreenCoordsFromOtherTee(courseId, holeIdx, excludeTeeId) {
+  try {
+    const course = getCourses().find(c => c.id === courseId);
+    if (!course) return null;
+    for (const t of course.tees) {
+      if (t.id === excludeTeeId) continue;
+      const c = getHoleCoords(courseId, t.id, holeIdx);
+      if (c?.green?.lat && c?.green?.lng) return c.green;
+    }
+  } catch {}
+  return null;
+}
+// Default course coords used to center the map on first pin-drop. Add more as courses are added.
+const COURSE_DEFAULT_COORDS = {
+  'paramount':   { lat: 41.1365, lng: -74.0059 },
+  'westchester': { lat: 41.0534, lng: -73.8654 }
+};
+
+// Fetch tee+green elevation in a single API call. Caches the delta (positive=uphill).
+// Returns null on any failure — caller should treat as "elevation unknown" and continue.
+async function fetchHoleElevation(courseId, teeId, holeIdx, teeCoord, greenCoord) {
+  const key = localStorage.getItem('goog_maps_key');
+  if (!key) return null;
+  if (!teeCoord?.lat || !teeCoord?.lng || !greenCoord?.lat || !greenCoord?.lng) return null;
+  try {
+    const locs = `${teeCoord.lat},${teeCoord.lng}|${greenCoord.lat},${greenCoord.lng}`;
+    const url = `https://maps.googleapis.com/maps/api/elevation/json?locations=${encodeURIComponent(locs)}&key=${encodeURIComponent(key)}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.status !== 'OK' || !data.results || data.results.length < 2) return null;
+    const teeM = data.results[0].elevation;
+    const grnM = data.results[1].elevation;
+    if (typeof teeM !== 'number' || typeof grnM !== 'number') return null;
+    const deltaFt = Math.round((grnM - teeM) * 3.28084);
+    setHoleElevation(courseId, teeId, holeIdx, deltaFt);
+    return deltaFt;
+  } catch { return null; }
 }
 
 // One-time migration from v6 caddie_hole_*_notes keys
@@ -1659,6 +1782,9 @@ function startPhotoImport() {
 function renderSettings() {
   const antKey = localStorage.getItem('caddie_ant_key')||'';
   document.getElementById('set-ant-key').value = antKey?'••••••••':'';
+  const googKey = localStorage.getItem('goog_maps_key')||'';
+  const gkEl = document.getElementById('set-goog-key');
+  if (gkEl) gkEl.value = googKey?'••••••••':'';
   const ghToken = localStorage.getItem('gh_token')||'';
   document.getElementById('set-gh-token').value = ghToken?'••••••••':'';
   document.getElementById('set-gh-repo').value = localStorage.getItem('gh_repo')||'';
@@ -1671,6 +1797,11 @@ function renderSettings() {
   const keyStatus = document.getElementById('ant-key-status');
   keyStatus.textContent = antKey?'\u2713 API key saved':'No key saved';
   keyStatus.style.color = antKey?'var(--green)':'var(--chalk3)';
+  const gkStatus = document.getElementById('goog-key-status');
+  if (gkStatus) {
+    gkStatus.textContent = googKey?'\u2713 API key saved':'No key saved';
+    gkStatus.style.color = googKey?'var(--green)':'var(--chalk3)';
+  }
   const syncMeta = getSyncMeta();
   const lastSyncEl = document.getElementById('gh-last-sync');
   if (lastSyncEl) {
@@ -1689,6 +1820,16 @@ function saveAntKey() {
   document.getElementById('ant-key-status').textContent='\u2713 API key saved';
   document.getElementById('ant-key-status').style.color='var(--green)';
   toast('API key saved \u2713');
+}
+
+function saveGoogKey() {
+  const val = document.getElementById('set-goog-key').value.trim();
+  if (!val||val==='••••••••') { toast('Enter your API key'); return; }
+  localStorage.setItem('goog_maps_key',val);
+  document.getElementById('set-goog-key').value='••••••••';
+  document.getElementById('goog-key-status').textContent='\u2713 API key saved';
+  document.getElementById('goog-key-status').style.color='var(--green)';
+  toast('Google Maps key saved \u2713');
 }
 
 function saveGHSettings() {
@@ -1850,7 +1991,7 @@ function ghPushRounds() {
 }
 function ghPushCourses() {
   return ghPushSection('Courses', 'gh-push-courses-btn', now => ({
-    fields: { courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), masterTees: JSON.parse(localStorage.getItem('pjc_master_tees')||'{}'), courseBags: JSON.parse(localStorage.getItem('pjc_course_bags')||'{}'), notesTs: now },
+    fields: { courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), masterTees: JSON.parse(localStorage.getItem('pjc_master_tees')||'{}'), courseBags: JSON.parse(localStorage.getItem('pjc_course_bags')||'{}'), courseCoords: JSON.parse(localStorage.getItem('pjc_course_coords')||'{}'), elevation: JSON.parse(localStorage.getItem('pjc_elevation')||'{}'), notesTs: now },
     metaFields: { notesTs: now }
   }));
 }
@@ -1907,6 +2048,8 @@ function ghPullCourses() {
     if (remote.courseNotes) localStorage.setItem('pjc_course_notes', JSON.stringify(remote.courseNotes));
     if (remote.masterTees) localStorage.setItem('pjc_master_tees', JSON.stringify(remote.masterTees));
     if (remote.courseBags) localStorage.setItem('pjc_course_bags', JSON.stringify(remote.courseBags));
+    if (remote.courseCoords) localStorage.setItem('pjc_course_coords', JSON.stringify(remote.courseCoords));
+    if (remote.elevation) localStorage.setItem('pjc_elevation', JSON.stringify(remote.elevation));
   });
 }
 function ghPullMyGame() {
@@ -4517,12 +4660,17 @@ function renderCourseHubHoles(course) {
   const tee = course.tees[CH.teeIdx];
   if (!tee) return;
   const notes = getCourseNotes(CH.courseId, course.holes);
+  const hasGoogKey = !!localStorage.getItem('goog_maps_key');
   document.getElementById('ch-hole-rows').innerHTML = tee.holePars.map((par, i) => {
     const h = i + 1;
     const yds = tee.holeYards[i] || '\u2013';
     const n = notes[i] || {tee:'', approach:'', green:''};
     const parLabel = par === 3 ? 'Par 3' : par === 4 ? 'Par 4' : 'Par 5';
     const hasNotes = n.tee || n.approach || n.green;
+    const coords = getHoleCoords(CH.courseId, tee.id, i);
+    const elev = getHoleElevation(CH.courseId, tee.id, i);
+    const hasCoords = coords?.tee?.lat && coords?.green?.lat;
+    const elevLabel = (typeof elev === 'number') ? (elev > 0 ? '+'+elev+'ft up' : elev < 0 ? elev+'ft down' : 'flat') : (hasCoords ? 'pinned' : 'no pins');
     return `<div class="hub-hole-block">
       <div class="hub-hole-hdr" onclick="toggleChHole(${i})">
         <span class="hub-h-num">H${h}</span>
@@ -4553,6 +4701,10 @@ function renderCourseHubHoles(course) {
             onblur="saveCourseHubField(${i},'green',this.value)"
             oninput="autoGrowNote(this)">${esc(n.green)}</textarea>
         </div>
+        ${hasGoogKey ? `<div class="hub-field" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <span style="font-size:11px;color:var(--chalk3)">\u{1F4CD} ${hasCoords ? `<span style="color:var(--gold)">${elevLabel}</span>` : `<span>${elevLabel}</span>`}</span>
+          <button class="btn btn-outline btn-sm" style="padding:4px 10px;font-size:11px" onclick="openPinDrop(${i})">${hasCoords ? 'Edit pins' : 'Set location'}</button>
+        </div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -4564,6 +4716,178 @@ function toggleChHole(i) {
   const open = body.classList.toggle('open');
   chev.classList.toggle('open', open);
   if (open) body.querySelectorAll('.hub-note').forEach(autoGrowNote);
+}
+
+// ── PIN DROP (Google Maps) ────────────────────────────────────
+const PD = { holeIdx:null, teePin:null, greenPin:null, phase:'tee', map:null, markers:[] };
+
+function openPinDrop(holeIdx) {
+  const key = localStorage.getItem('goog_maps_key');
+  if (!key) { toast('Add Google Maps key in Settings first'); return; }
+  if (CH.teeIdx == null || !CH.courseId) { toast('Select a tee first'); return; }
+  const course = getCourses().find(c => c.id === CH.courseId);
+  const tee = course?.tees[CH.teeIdx];
+  if (!course || !tee) { toast('Course or tee missing'); return; }
+
+  PD.holeIdx = holeIdx;
+  PD.phase = 'tee';
+  PD.markers.forEach(m => m.setMap && m.setMap(null));
+  PD.markers = [];
+  PD.teePin = null;
+  PD.greenPin = null;
+
+  // Pre-populate green from another tee if available
+  const prefill = findGreenCoordsFromOtherTee(CH.courseId, holeIdx, tee.id);
+  if (prefill) PD.greenPin = { ...prefill };
+
+  // Pre-populate existing pins if set for this tee
+  const existing = getHoleCoords(CH.courseId, tee.id, holeIdx);
+  if (existing?.tee) PD.teePin = { ...existing.tee };
+  if (existing?.green) PD.greenPin = { ...existing.green };
+
+  PD.phase = PD.teePin ? (PD.greenPin ? 'done' : 'green') : 'tee';
+
+  document.getElementById('pin-drop-title').textContent = `H${holeIdx+1} · ${tee.name} \u2014 Set Pins`;
+  document.getElementById('pin-drop-status').textContent = '';
+  document.getElementById('pin-drop-modal').style.display = 'block';
+  updatePinDropUI();
+
+  // Load Google Maps JS API once, then init the map
+  if (window.google?.maps) { initPinDropMap(course); return; }
+  const scriptId = 'goog-maps-script';
+  if (document.getElementById(scriptId)) {
+    // Already loading — poll
+    const poll = setInterval(() => {
+      if (window.google?.maps) { clearInterval(poll); initPinDropMap(course); }
+    }, 150);
+    return;
+  }
+  const s = document.createElement('script');
+  s.id = scriptId;
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&loading=async&callback=__pjc_gmaps_ready`;
+  s.async = true;
+  s.defer = true;
+  window.__pjc_gmaps_ready = () => initPinDropMap(course);
+  s.onerror = () => {
+    document.getElementById('pin-drop-status').textContent = 'Failed to load Google Maps. Check API key and restrictions.';
+    document.getElementById('pin-drop-status').style.color = 'var(--red)';
+  };
+  document.head.appendChild(s);
+}
+
+function initPinDropMap(course) {
+  const mapEl = document.getElementById('pin-drop-map');
+  if (!mapEl || !window.google?.maps) return;
+  const center = PD.teePin || PD.greenPin || COURSE_DEFAULT_COORDS[course.id] || { lat: 41.1365, lng: -74.0059 };
+  PD.map = new google.maps.Map(mapEl, {
+    center,
+    zoom: 18,
+    mapTypeId: 'satellite',
+    tilt: 0,
+    disableDefaultUI: true,
+    zoomControl: true,
+    gestureHandling: 'greedy'
+  });
+  // Render any pre-populated pins
+  if (PD.teePin) placePinMarker('tee', PD.teePin);
+  if (PD.greenPin) placePinMarker('green', PD.greenPin);
+  PD.map.addListener('click', (e) => {
+    const coord = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+    if (PD.phase === 'tee') {
+      PD.teePin = coord;
+      placePinMarker('tee', coord);
+      PD.phase = PD.greenPin ? 'done' : 'green';
+    } else if (PD.phase === 'green') {
+      PD.greenPin = coord;
+      placePinMarker('green', coord);
+      PD.phase = 'done';
+    } else {
+      // Both set — next tap updates tee pin (cycle back)
+      PD.teePin = coord;
+      placePinMarker('tee', coord);
+    }
+    updatePinDropUI();
+  });
+}
+
+function placePinMarker(which, coord) {
+  if (!PD.map || !window.google?.maps) return;
+  // Remove any existing marker of this type
+  PD.markers = PD.markers.filter(m => {
+    if (m.__pjcType === which) { m.setMap(null); return false; }
+    return true;
+  });
+  const isTee = which === 'tee';
+  const marker = new google.maps.Marker({
+    position: coord,
+    map: PD.map,
+    label: { text: isTee ? 'T' : 'G', color: '#fff', fontWeight: 'bold', fontSize: '12px' },
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 12,
+      fillColor: isTee ? '#4a90e2' : '#c9a84c',
+      fillOpacity: 1,
+      strokeColor: '#fff',
+      strokeWeight: 2
+    }
+  });
+  marker.__pjcType = which;
+  PD.markers.push(marker);
+}
+
+function updatePinDropUI() {
+  const instr = document.getElementById('pin-drop-instr');
+  const saveBtn = document.getElementById('pin-drop-save');
+  if (!instr || !saveBtn) return;
+  if (PD.phase === 'tee') {
+    instr.innerHTML = 'Tap the <strong style="color:#4a90e2">tee box</strong> to drop pin <strong>T</strong>';
+  } else if (PD.phase === 'green') {
+    instr.innerHTML = 'Now tap the <strong style="color:var(--gold)">center of the green</strong> to drop pin <strong>G</strong>';
+  } else {
+    instr.innerHTML = 'Both pins set. Tap map again to re-place <strong>T</strong>, or Save to fetch elevation.';
+  }
+  saveBtn.disabled = !(PD.teePin && PD.greenPin);
+}
+
+function resetPinDrop() {
+  PD.markers.forEach(m => m.setMap && m.setMap(null));
+  PD.markers = [];
+  PD.teePin = null;
+  PD.greenPin = null;
+  PD.phase = 'tee';
+  document.getElementById('pin-drop-status').textContent = '';
+  updatePinDropUI();
+}
+
+async function savePinDrop() {
+  if (!PD.teePin || !PD.greenPin) { toast('Both pins required'); return; }
+  if (PD.holeIdx == null || CH.teeIdx == null || !CH.courseId) { toast('Missing context'); return; }
+  const course = getCourses().find(c => c.id === CH.courseId);
+  const tee = course?.tees[CH.teeIdx];
+  if (!tee) { toast('Tee missing'); return; }
+  const status = document.getElementById('pin-drop-status');
+  const saveBtn = document.getElementById('pin-drop-save');
+  saveBtn.disabled = true;
+  status.style.color = 'var(--chalk2)';
+  status.textContent = 'Saving pins\u2026';
+  setHoleCoords(CH.courseId, tee.id, PD.holeIdx, { tee: PD.teePin, green: PD.greenPin });
+  status.textContent = 'Fetching elevation\u2026';
+  const elev = await fetchHoleElevation(CH.courseId, tee.id, PD.holeIdx, PD.teePin, PD.greenPin);
+  if (typeof elev === 'number') {
+    status.style.color = 'var(--green)';
+    const label = elev > 0 ? '+'+elev+'ft uphill' : elev < 0 ? elev+'ft downhill' : 'flat';
+    status.textContent = `\u2713 Saved. H${PD.holeIdx+1}: ${label}`;
+    setTimeout(() => { closePinDrop(); renderCourseHubHoles(course); }, 900);
+  } else {
+    status.style.color = 'var(--gold)';
+    status.textContent = 'Pins saved. Elevation unavailable (no key / API error).';
+    setTimeout(() => { closePinDrop(); renderCourseHubHoles(course); }, 1400);
+  }
+}
+
+function closePinDrop() {
+  document.getElementById('pin-drop-modal').style.display = 'none';
+  // Leave PD state as-is; reopening will reset
 }
 
 function toggleChTip(id) {
