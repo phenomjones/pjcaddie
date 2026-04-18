@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.10.31 · Apr 18, 2026 -->
+<!-- PJ Caddie v7.11.0 · Apr 18, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.10.31 · Apr 18, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.11.0 · Apr 18, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -772,7 +772,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.10.31 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.11.0 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -1069,20 +1069,34 @@ function byronHolesPrompt(bundle) {
     const firstApproachYds = apps[0]?.yardage || null;
     const driveCombo = (holeYds && firstApproachYds && h.par > 3)
       ? holeYds - firstApproachYds : null;
-    // Elevation for this hole, looked up by (courseId, teeId, holeIdx)
+    // Elevation for this hole — net and per-segment if pinned
     const teeIdForElev = round.teeId || roundTee?.id;
     const elevFt = (round.courseId && teeIdForElev)
       ? getHoleElevation(round.courseId, teeIdForElev, h.number-1) : null;
+    const elevSegments = (round.courseId && teeIdForElev)
+      ? getHoleElevationSegments(round.courseId, teeIdForElev, h.number-1) : null;
+    // Per-shot elevation router: picks the right segment based on par, shot index, and isTeeShot
+    // Par 3: every non-putt shot uses net (tee→green is the only segment)
+    // Par 4/5 with segments: tee shot uses tee2land, all later shots use land2green
+    // Par 4/5 without segments: all shots use net
+    const elevForShot = (shot) => {
+      if (h.par === 3) return elevFt;
+      if (!elevSegments) return elevFt;
+      return shot.isTeeShot ? elevSegments.tee2land : elevSegments.land2green;
+    };
     // SHOT SEQUENCE — preserve stored order so Byron reads shots linearly.
-    // Each entry includes shot type and whatever fields are relevant for that type.
     const shotSequence = (h.shots||[]).map((s, idx) => {
       const base = { order: idx+1, type: s.type };
       if (s.club) base.club = s.club;
       if (s.position) base.position = s.position;
       if (typeof s.yardage === 'number') {
         base.yds = s.yardage;
-        const adj = adjustY(s.yardage, elevFt);
-        if (adj != null && adj !== s.yardage) base.ydsEffective = adj;
+        const shotElev = elevForShot(s);
+        const adj = adjustY(s.yardage, shotElev);
+        if (adj != null && adj !== s.yardage) {
+          base.ydsEffective = adj;
+          base.elevSegment = shotElev;
+        }
       }
       if (s.intendedZone) base.intended = s.intendedZone;
       if (s.finishZone) base.finish = s.finishZone;
@@ -1096,6 +1110,7 @@ function byronHolesPrompt(bundle) {
       hole:h.number,par:h.par,score:h.score,overPar:h.score&&h.par?h.score-h.par:null,
       gir:h.gir,pinZone:h.pinZone,holeYards:holeYds,
       elevationFt: elevFt,
+      elevationSegments: elevSegments,
       driveCombo: hasRecovery ? driveCombo : null,
       driveCarry: (!hasRecovery && driveCombo) ? driveCombo : null,
       hasRecovery,
@@ -1125,7 +1140,7 @@ function byronHolesPrompt(bundle) {
     notesAdjustInstruction = `\nYARDAGE ADJUSTMENT RULE: Notes were written from ${masterName} tees. This round is from ${roundTeeName} tees. Per-hole delta (subtract from note yardage to get ${roundTeeName} yardage): ${deltaStr}\nFor every numeric yardage in the notes, apply the hole's delta and cite both values — e.g. "bunker at 190yd (250yd from ${masterName})". Holes with delta=0 need no adjustment. Non-numeric prose passes through unchanged.`;
   }
 
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nSHOT SEQUENCE RULE: Each hole has a shotSequence array where each entry has an order field (1, 2, 3, …). Read shots in order. Any yds field refers to the distance of THAT specific shot only — never attribute one shot's yardage to a different shot in the sequence.\n\nELEVATION RULE: Each hole may include elevationFt (signed, positive=uphill green vs tee, negative=downhill). When a shot has ydsEffective, that value already includes elevation adjustment (+1y per 3ft uphill, -1y per 3ft downhill). Cite BOTH when relevant, e.g. "6I from 190y raw / 208y effective (54ft uphill)". Do not re-apply the elevation correction — ydsEffective is pre-computed. If elevationFt is null, skip elevation commentary.\n\nDRIVE DISTANCE RULE: On par 4/5 holes, driveCarry = hole_yards - first_approach_yards (clean holes only). On holes with hasRecovery:true, driveCombo = hole_yards - first_approach_yards represents drive+recovery combined — do NOT cite as drive carry. On holes with a recovery, analyze tee shot position and score cost instead of distance.\n\n${notesHeader}${notesAdjustInstruction}\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nSHOT SEQUENCE RULE: Each hole has a shotSequence array where each entry has an order field (1, 2, 3, …). Read shots in order. Any yds field refers to the distance of THAT specific shot only — never attribute one shot's yardage to a different shot in the sequence.\n\nELEVATION RULE: Each hole may include elevationFt (net tee-to-green delta, signed, positive=uphill) and optionally elevationSegments {tee2land, land2green} when a landing-area pin has been set. Shots include ydsEffective when elevation adjustment changed the raw distance; the app pre-computes ydsEffective per-shot using the correct segment (tee shot uses tee2land, later shots use land2green, par 3 uses net). An elevSegment field shows which segment elevation was applied for that shot. Cite BOTH raw and effective when the difference matters, e.g. "6I from 190y raw / 208y effective (+18y for uphill approach segment)". Never re-apply the elevation correction — ydsEffective is pre-computed. If elevationFt is null, skip elevation commentary entirely. If elevationSegments is null on a par 4/5, use net elevation for every shot but note that the segment data is not available.\n\nNOTES-OVERRIDE-ELEVATION: The numeric elevation values are an approximation based on 2-3 pinned points per hole — they do not capture every contour, cross-slope, or wind-tunnel effect. If COURSE NOTES document specific shot-level elevation behavior for a hole (e.g. "approach plays +10yd", "green sits in a bowl 8ft below the front", "drive kicks forward on downslope"), those player observations take PRECEDENCE over the numeric elevation for the affected shot. When notes and numeric elevation conflict, trust the notes.\n\nDRIVE DISTANCE RULE: On par 4/5 holes, driveCarry = hole_yards - first_approach_yards (clean holes only). On holes with hasRecovery:true, driveCombo = hole_yards - first_approach_yards represents drive+recovery combined — do NOT cite as drive carry. On holes with a recovery, analyze tee shot position and score cost instead of distance.\n\n${notesHeader}${notesAdjustInstruction}\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
 }
 
 function byronPatternsPrompt(bundle, holesResult) {
@@ -1400,6 +1415,25 @@ function setHoleElevation(courseId, teeId, holeIdx, elevationFt) {
     const meta = getSyncMeta(); meta.notesTs = Date.now(); saveSyncMeta(meta);
   } catch {}
 }
+// Segment elevations — per-shot deltas for par 4/5 holes with landing pin set.
+// Stored as {tee2land: number, land2green: number} in pjc_elevation_segments.
+// Not stored for par 3 (no landing pin). Callers fall back to net elevation when absent.
+function getHoleElevationSegments(courseId, teeId, holeIdx) {
+  try {
+    const all = JSON.parse(localStorage.getItem('pjc_elevation_segments') || '{}');
+    const v = all[coordKey(courseId, teeId, holeIdx)];
+    if (v && typeof v.tee2land === 'number' && typeof v.land2green === 'number') return v;
+    return null;
+  } catch { return null; }
+}
+function setHoleElevationSegments(courseId, teeId, holeIdx, segments) {
+  try {
+    const all = JSON.parse(localStorage.getItem('pjc_elevation_segments') || '{}');
+    all[coordKey(courseId, teeId, holeIdx)] = segments;
+    localStorage.setItem('pjc_elevation_segments', JSON.stringify(all));
+    const meta = getSyncMeta(); meta.notesTs = Date.now(); saveSyncMeta(meta);
+  } catch {}
+}
 // Find green coords from ANY tee on the same course+hole (so a new tee set can inherit green pin)
 function findGreenCoordsFromOtherTee(courseId, holeIdx, excludeTeeId) {
   try {
@@ -1434,48 +1468,63 @@ const COURSE_DEFAULT_COORDS = {
   'westchester': { lat: 41.0534, lng: -73.8654 }
 };
 
-// Fetch tee+green elevation in a single API call. Caches the delta (positive=uphill).
-// Returns { deltaFt, error }: deltaFt is a number on success, null on failure with error string set.
-// Uses google.maps.ElevationService (browser-safe, no CORS) rather than the server REST endpoint.
-async function fetchHoleElevation(courseId, teeId, holeIdx, teeCoord, greenCoord) {
+// Fetch tee/landing/green elevations in a single API call. Caches the net delta AND segments.
+// Returns { deltaFt, segments, error }:
+//   deltaFt:  net tee→green elevation delta (signed int, ft). Set on success.
+//   segments: {tee2land, land2green} when landing coord was provided; null otherwise.
+//   error:    string describing failure reason; null on success.
+// Uses google.maps.ElevationService (browser-safe, no CORS).
+async function fetchHoleElevation(courseId, teeId, holeIdx, teeCoord, greenCoord, landingCoord) {
   const key = localStorage.getItem('goog_maps_key');
-  if (!key) return { deltaFt: null, error: 'no API key' };
+  if (!key) return { deltaFt: null, segments: null, error: 'no API key' };
   if (!teeCoord?.lat || !teeCoord?.lng || !greenCoord?.lat || !greenCoord?.lng) {
-    return { deltaFt: null, error: 'missing coords' };
+    return { deltaFt: null, segments: null, error: 'missing coords' };
   }
   if (!window.google?.maps?.ElevationService) {
-    return { deltaFt: null, error: 'Maps JS not loaded' };
+    return { deltaFt: null, segments: null, error: 'Maps JS not loaded' };
   }
+  const hasLanding = !!(landingCoord?.lat && landingCoord?.lng);
   try {
     const svc = new google.maps.ElevationService();
+    const locations = hasLanding
+      ? [ {lat:teeCoord.lat,lng:teeCoord.lng}, {lat:landingCoord.lat,lng:landingCoord.lng}, {lat:greenCoord.lat,lng:greenCoord.lng} ]
+      : [ {lat:teeCoord.lat,lng:teeCoord.lng}, {lat:greenCoord.lat,lng:greenCoord.lng} ];
     const result = await new Promise((resolve) => {
-      svc.getElevationForLocations({
-        locations: [
-          { lat: teeCoord.lat, lng: teeCoord.lng },
-          { lat: greenCoord.lat, lng: greenCoord.lng }
-        ]
-      }, (results, status) => {
-        resolve({ results, status });
-      });
+      svc.getElevationForLocations({ locations }, (results, status) => resolve({ results, status }));
     });
     if (result.status !== 'OK') {
       console.warn('[fetchHoleElevation] status:', result.status);
-      return { deltaFt: null, error: String(result.status) };
+      return { deltaFt: null, segments: null, error: String(result.status) };
     }
-    if (!result.results || result.results.length < 2) {
-      return { deltaFt: null, error: 'incomplete response' };
+    if (!result.results || result.results.length < locations.length) {
+      return { deltaFt: null, segments: null, error: 'incomplete response' };
     }
+    const M_TO_FT = 3.28084;
     const teeM = result.results[0].elevation;
-    const grnM = result.results[1].elevation;
-    if (typeof teeM !== 'number' || typeof grnM !== 'number') {
-      return { deltaFt: null, error: 'non-numeric elevation' };
+    if (hasLanding) {
+      const landM = result.results[1].elevation;
+      const grnM  = result.results[2].elevation;
+      if ([teeM, landM, grnM].some(v => typeof v !== 'number')) {
+        return { deltaFt: null, segments: null, error: 'non-numeric elevation' };
+      }
+      const tee2land = Math.round((landM - teeM) * M_TO_FT);
+      const land2green = Math.round((grnM - landM) * M_TO_FT);
+      const deltaFt = Math.round((grnM - teeM) * M_TO_FT);
+      setHoleElevation(courseId, teeId, holeIdx, deltaFt);
+      setHoleElevationSegments(courseId, teeId, holeIdx, { tee2land, land2green });
+      return { deltaFt, segments: { tee2land, land2green }, error: null };
+    } else {
+      const grnM = result.results[1].elevation;
+      if ([teeM, grnM].some(v => typeof v !== 'number')) {
+        return { deltaFt: null, segments: null, error: 'non-numeric elevation' };
+      }
+      const deltaFt = Math.round((grnM - teeM) * M_TO_FT);
+      setHoleElevation(courseId, teeId, holeIdx, deltaFt);
+      return { deltaFt, segments: null, error: null };
     }
-    const deltaFt = Math.round((grnM - teeM) * 3.28084);
-    setHoleElevation(courseId, teeId, holeIdx, deltaFt);
-    return { deltaFt, error: null };
   } catch (e) {
     console.warn('[fetchHoleElevation] exception:', e);
-    return { deltaFt: null, error: e?.message || 'exception' };
+    return { deltaFt: null, segments: null, error: e?.message || 'exception' };
   }
 }
 
@@ -2033,7 +2082,7 @@ function ghPushRounds() {
 }
 function ghPushCourses() {
   return ghPushSection('Courses', 'gh-push-courses-btn', now => ({
-    fields: { courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), masterTees: JSON.parse(localStorage.getItem('pjc_master_tees')||'{}'), courseBags: JSON.parse(localStorage.getItem('pjc_course_bags')||'{}'), courseCoords: JSON.parse(localStorage.getItem('pjc_course_coords')||'{}'), elevation: JSON.parse(localStorage.getItem('pjc_elevation')||'{}'), notesTs: now },
+    fields: { courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), masterTees: JSON.parse(localStorage.getItem('pjc_master_tees')||'{}'), courseBags: JSON.parse(localStorage.getItem('pjc_course_bags')||'{}'), courseCoords: JSON.parse(localStorage.getItem('pjc_course_coords')||'{}'), elevation: JSON.parse(localStorage.getItem('pjc_elevation')||'{}'), elevationSegments: JSON.parse(localStorage.getItem('pjc_elevation_segments')||'{}'), notesTs: now },
     metaFields: { notesTs: now }
   }));
 }
@@ -2092,6 +2141,7 @@ function ghPullCourses() {
     if (remote.courseBags) localStorage.setItem('pjc_course_bags', JSON.stringify(remote.courseBags));
     if (remote.courseCoords) localStorage.setItem('pjc_course_coords', JSON.stringify(remote.courseCoords));
     if (remote.elevation) localStorage.setItem('pjc_elevation', JSON.stringify(remote.elevation));
+    if (remote.elevationSegments) localStorage.setItem('pjc_elevation_segments', JSON.stringify(remote.elevationSegments));
   });
 }
 function ghPullMyGame() {
@@ -4758,7 +4808,7 @@ function toggleChHole(i) {
 }
 
 // ── PIN DROP (Google Maps) ────────────────────────────────────
-const PD = { holeIdx:null, teePin:null, greenPin:null, phase:'tee', map:null, markers:[] };
+const PD = { holeIdx:null, par:null, teePin:null, landingPin:null, greenPin:null, phase:'tee', map:null, markers:[] };
 
 function openPinDrop(holeIdx) {
   const key = localStorage.getItem('goog_maps_key');
@@ -4769,10 +4819,11 @@ function openPinDrop(holeIdx) {
   if (!course || !tee) { toast('Course or tee missing'); return; }
 
   PD.holeIdx = holeIdx;
-  PD.phase = 'tee';
+  PD.par = tee.holePars[holeIdx] || 4;
   PD.markers.forEach(m => m.setMap && m.setMap(null));
   PD.markers = [];
   PD.teePin = null;
+  PD.landingPin = null;
   PD.greenPin = null;
 
   // Pre-populate green from another tee if available
@@ -4782,9 +4833,10 @@ function openPinDrop(holeIdx) {
   // Pre-populate existing pins if set for this tee
   const existing = getHoleCoords(CH.courseId, tee.id, holeIdx);
   if (existing?.tee) PD.teePin = { ...existing.tee };
+  if (existing?.landing) PD.landingPin = { ...existing.landing };
   if (existing?.green) PD.greenPin = { ...existing.green };
 
-  PD.phase = PD.teePin ? (PD.greenPin ? 'done' : 'green') : 'tee';
+  PD.phase = nextPinPhase();
 
   document.getElementById('pin-drop-title').textContent = `H${holeIdx+1} · ${tee.name} \u2014 Set Pins`;
   document.getElementById('pin-drop-status').textContent = '';
@@ -4795,7 +4847,6 @@ function openPinDrop(holeIdx) {
   if (window.google?.maps) { initPinDropMap(course); return; }
   const scriptId = 'goog-maps-script';
   if (document.getElementById(scriptId)) {
-    // Already loading — poll
     const poll = setInterval(() => {
       if (window.google?.maps) { clearInterval(poll); initPinDropMap(course); }
     }, 150);
@@ -4814,12 +4865,19 @@ function openPinDrop(holeIdx) {
   document.head.appendChild(s);
 }
 
+// Compute next phase given current PD state and par (par 3 has no landing)
+function nextPinPhase() {
+  if (!PD.teePin) return 'tee';
+  if (PD.par !== 3 && !PD.landingPin) return 'landing';
+  if (!PD.greenPin) return 'green';
+  return 'done';
+}
+
 function initPinDropMap(course) {
   const mapEl = document.getElementById('pin-drop-map');
   if (!mapEl || !window.google?.maps) return;
-  // Center priority: existing tee pin → existing green pin → per-course saved center → hardcoded default → Paramount fallback
   const savedCenter = getCourseDefaultCenter(course.id);
-  const center = PD.teePin || PD.greenPin || savedCenter || COURSE_DEFAULT_COORDS[course.id] || { lat: 41.1365, lng: -74.0059 };
+  const center = PD.teePin || PD.landingPin || PD.greenPin || savedCenter || COURSE_DEFAULT_COORDS[course.id] || { lat: 41.1365, lng: -74.0059 };
   PD.map = new google.maps.Map(mapEl, {
     center,
     zoom: 18,
@@ -4831,29 +4889,35 @@ function initPinDropMap(course) {
   });
   // Render any pre-populated pins
   if (PD.teePin) placePinMarker('tee', PD.teePin);
+  if (PD.landingPin) placePinMarker('landing', PD.landingPin);
   if (PD.greenPin) placePinMarker('green', PD.greenPin);
-  // ZOOM FIT: if both pins already exist, fit bounds to include both
-  if (PD.teePin && PD.greenPin) {
+  // ZOOM FIT: if all required pins exist, fit bounds
+  const required = PD.par === 3 ? [PD.teePin, PD.greenPin] : [PD.teePin, PD.landingPin, PD.greenPin];
+  if (required.every(Boolean)) {
     const bounds = new google.maps.LatLngBounds();
-    bounds.extend(PD.teePin);
-    bounds.extend(PD.greenPin);
-    PD.map.fitBounds(bounds, 80); // 80px padding
+    required.forEach(p => bounds.extend(p));
+    PD.map.fitBounds(bounds, 80);
   }
   PD.map.addListener('click', (e) => {
     const coord = { lat: e.latLng.lat(), lng: e.latLng.lng() };
     if (PD.phase === 'tee') {
       PD.teePin = coord;
       placePinMarker('tee', coord);
-      PD.phase = PD.greenPin ? 'done' : 'green';
+    } else if (PD.phase === 'landing') {
+      PD.landingPin = coord;
+      placePinMarker('landing', coord);
     } else if (PD.phase === 'green') {
       PD.greenPin = coord;
       placePinMarker('green', coord);
-      PD.phase = 'done';
     } else {
-      // Both set — next tap updates tee pin (cycle back)
+      // All pins set — cycle: next tap re-places tee pin
       PD.teePin = coord;
       placePinMarker('tee', coord);
+      PD.phase = 'done'; // stay in done; user taps Reset to change landing/green
+      updatePinDropUI();
+      return;
     }
+    PD.phase = nextPinPhase();
     updatePinDropUI();
   });
 }
@@ -4865,15 +4929,21 @@ function placePinMarker(which, coord) {
     if (m.__pjcType === which) { m.setMap(null); return false; }
     return true;
   });
-  const isTee = which === 'tee';
+  // Color + label per marker type: tee=blue, landing=gray, green=gold
+  const styles = {
+    tee:     { fill: '#4a90e2', label: 'T' },
+    landing: { fill: '#9ca3af', label: 'L' },
+    green:   { fill: '#c9a84c', label: 'G' }
+  };
+  const st = styles[which] || styles.tee;
   const marker = new google.maps.Marker({
     position: coord,
     map: PD.map,
-    label: { text: isTee ? 'T' : 'G', color: '#fff', fontWeight: 'bold', fontSize: '12px' },
+    label: { text: st.label, color: '#fff', fontWeight: 'bold', fontSize: '12px' },
     icon: {
       path: google.maps.SymbolPath.CIRCLE,
       scale: 12,
-      fillColor: isTee ? '#4a90e2' : '#c9a84c',
+      fillColor: st.fill,
       fillOpacity: 1,
       strokeColor: '#fff',
       strokeWeight: 2
@@ -4889,18 +4959,24 @@ function updatePinDropUI() {
   if (!instr || !saveBtn) return;
   if (PD.phase === 'tee') {
     instr.innerHTML = 'Tap the <strong style="color:#4a90e2">tee box</strong> to drop pin <strong>T</strong>';
+  } else if (PD.phase === 'landing') {
+    instr.innerHTML = 'Now tap your typical <strong style="color:#9ca3af">landing area</strong> to drop pin <strong>L</strong>';
   } else if (PD.phase === 'green') {
-    instr.innerHTML = 'Now tap the <strong style="color:var(--gold)">center of the green</strong> to drop pin <strong>G</strong>';
+    instr.innerHTML = 'Tap the <strong style="color:var(--gold)">center of the green</strong> to drop pin <strong>G</strong>';
   } else {
-    instr.innerHTML = 'Both pins set. Tap map again to re-place <strong>T</strong>, or Save to fetch elevation.';
+    const extra = PD.par === 3 ? '' : ', <strong>L</strong> (landing),';
+    instr.innerHTML = `All pins set. Tap map to re-place <strong>T</strong>${extra} or Save. Use Reset to redo from scratch.`;
   }
-  saveBtn.disabled = !(PD.teePin && PD.greenPin);
+  // Require all pins for this par type
+  const hasAllPins = PD.par === 3 ? (PD.teePin && PD.greenPin) : (PD.teePin && PD.landingPin && PD.greenPin);
+  saveBtn.disabled = !hasAllPins;
 }
 
 function resetPinDrop() {
   PD.markers.forEach(m => m.setMap && m.setMap(null));
   PD.markers = [];
   PD.teePin = null;
+  PD.landingPin = null;
   PD.greenPin = null;
   PD.phase = 'tee';
   document.getElementById('pin-drop-status').textContent = '';
@@ -4908,7 +4984,8 @@ function resetPinDrop() {
 }
 
 async function savePinDrop() {
-  if (!PD.teePin || !PD.greenPin) { toast('Both pins required'); return; }
+  const hasAllPins = PD.par === 3 ? (PD.teePin && PD.greenPin) : (PD.teePin && PD.landingPin && PD.greenPin);
+  if (!hasAllPins) { toast(PD.par === 3 ? 'Both pins required' : 'All 3 pins required'); return; }
   if (PD.holeIdx == null || CH.teeIdx == null || !CH.courseId) { toast('Missing context'); return; }
   const course = getCourses().find(c => c.id === CH.courseId);
   const tee = course?.tees[CH.teeIdx];
@@ -4918,16 +4995,26 @@ async function savePinDrop() {
   saveBtn.disabled = true;
   status.style.color = 'var(--chalk2)';
   status.textContent = 'Saving pins\u2026';
-  setHoleCoords(CH.courseId, tee.id, PD.holeIdx, { tee: PD.teePin, green: PD.greenPin });
+  const coordsToSave = { tee: PD.teePin, green: PD.greenPin };
+  if (PD.landingPin) coordsToSave.landing = PD.landingPin;
+  setHoleCoords(CH.courseId, tee.id, PD.holeIdx, coordsToSave);
   // NORTH STAR: remember this tee pin as the course's default center so next pin-drop opens here
   setCourseDefaultCenter(CH.courseId, PD.teePin);
   status.textContent = 'Fetching elevation\u2026';
-  const { deltaFt, error } = await fetchHoleElevation(CH.courseId, tee.id, PD.holeIdx, PD.teePin, PD.greenPin);
+  const { deltaFt, segments, error } = await fetchHoleElevation(
+    CH.courseId, tee.id, PD.holeIdx,
+    PD.teePin, PD.greenPin, PD.landingPin
+  );
   if (typeof deltaFt === 'number') {
     status.style.color = 'var(--green)';
-    const label = deltaFt > 0 ? '+'+deltaFt+'ft uphill' : deltaFt < 0 ? deltaFt+'ft downhill' : 'flat';
-    status.textContent = `\u2713 Saved. H${PD.holeIdx+1}: ${label}`;
-    setTimeout(() => { closePinDrop(); renderCourseHubHoles(course); }, 900);
+    const netLabel = deltaFt > 0 ? '+'+deltaFt+'ft uphill' : deltaFt < 0 ? deltaFt+'ft downhill' : 'flat';
+    let msg = `\u2713 Saved. H${PD.holeIdx+1}: ${netLabel}`;
+    if (segments) {
+      const seg = (n) => n > 0 ? '+'+n : n < 0 ? String(n) : '0';
+      msg += ` (drive ${seg(segments.tee2land)}ft, appr ${seg(segments.land2green)}ft)`;
+    }
+    status.textContent = msg;
+    setTimeout(() => { closePinDrop(); renderCourseHubHoles(course); }, 1400);
   } else {
     status.style.color = 'var(--gold)';
     status.textContent = `Pins saved. Elevation failed: ${error||'unknown'}`;
