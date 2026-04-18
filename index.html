@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.11.0 · Apr 18, 2026 -->
+<!-- PJ Caddie v7.11.1 · Apr 18, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.11.0 · Apr 18, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.11.1 · Apr 18, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -772,7 +772,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.11.0 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.11.1 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -1075,13 +1075,51 @@ function byronHolesPrompt(bundle) {
       ? getHoleElevation(round.courseId, teeIdForElev, h.number-1) : null;
     const elevSegments = (round.courseId && teeIdForElev)
       ? getHoleElevationSegments(round.courseId, teeIdForElev, h.number-1) : null;
-    // Per-shot elevation router: picks the right segment based on par, shot index, and isTeeShot
-    // Par 3: every non-putt shot uses net (tee→green is the only segment)
-    // Par 4/5 with segments: tee shot uses tee2land, all later shots use land2green
-    // Par 4/5 without segments: all shots use net
+    // ROLLING GRADIENT — compute per-shot elevation based on actual drive carry when available
+    // Only activates when v2 segments exist (have absolute elevations + landing distance)
+    const isV2 = elevSegments?.schemaVersion === 2
+      && typeof elevSegments.teeElevFt === 'number'
+      && typeof elevSegments.landElevFt === 'number'
+      && typeof elevSegments.greenElevFt === 'number'
+      && typeof elevSegments.tee2landYd === 'number';
+    let driveCarryEst = null;       // estimated drive carry in yards (for rolling gradient)
+    let driveFinishElevFt = null;   // interpolated elevation at drive-finish point
+    let driveElevDelta = null;      // elevation change: tee → drive-finish (for tee shot)
+    let approachElevDelta = null;   // elevation change: drive-finish → green (for approach)
+    if (isV2 && h.par > 3 && driveCombo && !hasRecovery) {
+      driveCarryEst = driveCombo;
+      const { teeElevFt, landElevFt, greenElevFt, tee2landYd } = elevSegments;
+      // Piecewise linear interpolation along the tee → landing → green path
+      if (driveCarryEst <= 0) {
+        driveFinishElevFt = teeElevFt;
+      } else if (driveCarryEst <= tee2landYd) {
+        // Between tee and landing pin
+        const ratio = tee2landYd > 0 ? driveCarryEst / tee2landYd : 0;
+        driveFinishElevFt = Math.round(teeElevFt + ratio * (landElevFt - teeElevFt));
+      } else {
+        // Past landing pin — interpolate between landing and green
+        const remainingY = holeYds - tee2landYd;
+        const pastLandingY = Math.min(driveCarryEst - tee2landYd, remainingY);
+        const ratio = remainingY > 0 ? pastLandingY / remainingY : 0;
+        driveFinishElevFt = Math.round(landElevFt + ratio * (greenElevFt - landElevFt));
+      }
+      driveElevDelta = driveFinishElevFt - teeElevFt;
+      approachElevDelta = greenElevFt - driveFinishElevFt;
+    }
+    // Per-shot elevation router, with rolling-gradient interpolation when available
+    // Priority:
+    //   1. Par 3: net elevation for every shot
+    //   2. Par 4/5 with v2 segments AND computed drive carry: interpolated delta
+    //   3. Par 4/5 with v1 segments only: fixed tee2land / land2green split
+    //   4. No segments: net elevation for every shot
     const elevForShot = (shot) => {
       if (h.par === 3) return elevFt;
       if (!elevSegments) return elevFt;
+      // Interpolated path
+      if (isV2 && driveElevDelta != null && approachElevDelta != null) {
+        return shot.isTeeShot ? driveElevDelta : approachElevDelta;
+      }
+      // Legacy fixed-segment fallback
       return shot.isTeeShot ? elevSegments.tee2land : elevSegments.land2green;
     };
     // SHOT SEQUENCE — preserve stored order so Byron reads shots linearly.
@@ -1111,6 +1149,9 @@ function byronHolesPrompt(bundle) {
       gir:h.gir,pinZone:h.pinZone,holeYards:holeYds,
       elevationFt: elevFt,
       elevationSegments: elevSegments,
+      driveCarryEst,        // estimated actual drive carry used for interpolation (null if N/A)
+      driveElevDelta,       // interpolated elevation change during drive (null if not interpolated)
+      approachElevDelta,    // interpolated elevation change during approach (null if not interpolated)
       driveCombo: hasRecovery ? driveCombo : null,
       driveCarry: (!hasRecovery && driveCombo) ? driveCombo : null,
       hasRecovery,
@@ -1140,7 +1181,7 @@ function byronHolesPrompt(bundle) {
     notesAdjustInstruction = `\nYARDAGE ADJUSTMENT RULE: Notes were written from ${masterName} tees. This round is from ${roundTeeName} tees. Per-hole delta (subtract from note yardage to get ${roundTeeName} yardage): ${deltaStr}\nFor every numeric yardage in the notes, apply the hole's delta and cite both values — e.g. "bunker at 190yd (250yd from ${masterName})". Holes with delta=0 need no adjustment. Non-numeric prose passes through unchanged.`;
   }
 
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nSHOT SEQUENCE RULE: Each hole has a shotSequence array where each entry has an order field (1, 2, 3, …). Read shots in order. Any yds field refers to the distance of THAT specific shot only — never attribute one shot's yardage to a different shot in the sequence.\n\nELEVATION RULE: Each hole may include elevationFt (net tee-to-green delta, signed, positive=uphill) and optionally elevationSegments {tee2land, land2green} when a landing-area pin has been set. Shots include ydsEffective when elevation adjustment changed the raw distance; the app pre-computes ydsEffective per-shot using the correct segment (tee shot uses tee2land, later shots use land2green, par 3 uses net). An elevSegment field shows which segment elevation was applied for that shot. Cite BOTH raw and effective when the difference matters, e.g. "6I from 190y raw / 208y effective (+18y for uphill approach segment)". Never re-apply the elevation correction — ydsEffective is pre-computed. If elevationFt is null, skip elevation commentary entirely. If elevationSegments is null on a par 4/5, use net elevation for every shot but note that the segment data is not available.\n\nNOTES-OVERRIDE-ELEVATION: The numeric elevation values are an approximation based on 2-3 pinned points per hole — they do not capture every contour, cross-slope, or wind-tunnel effect. If COURSE NOTES document specific shot-level elevation behavior for a hole (e.g. "approach plays +10yd", "green sits in a bowl 8ft below the front", "drive kicks forward on downslope"), those player observations take PRECEDENCE over the numeric elevation for the affected shot. When notes and numeric elevation conflict, trust the notes.\n\nDRIVE DISTANCE RULE: On par 4/5 holes, driveCarry = hole_yards - first_approach_yards (clean holes only). On holes with hasRecovery:true, driveCombo = hole_yards - first_approach_yards represents drive+recovery combined — do NOT cite as drive carry. On holes with a recovery, analyze tee shot position and score cost instead of distance.\n\n${notesHeader}${notesAdjustInstruction}\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nSHOT SEQUENCE RULE: Each hole has a shotSequence array where each entry has an order field (1, 2, 3, …). Read shots in order. Any yds field refers to the distance of THAT specific shot only — never attribute one shot's yardage to a different shot in the sequence.\n\nELEVATION RULE: Each hole may include elevationFt (net tee-to-green delta, signed, positive=uphill) and optionally elevationSegments for par 4/5 with a pinned landing area. The app pre-computes ydsEffective per-shot using the correct elevation for THAT shot. When elevationSegments.schemaVersion is 2, the app uses ROLLING GRADIENT interpolation: it estimates actual drive carry from (holeYards - firstApproachYds), interpolates along the pinned tee→landing→green path, and emits driveElevDelta (tee→drive-finish) and approachElevDelta (drive-finish→green). The elevSegment field on each shot shows which elevation delta was applied. Cite BOTH raw and effective when the difference matters, e.g. "6I from 190y raw / 208y effective (+18y for uphill approach segment)". Never re-apply the elevation correction — ydsEffective is pre-computed. If elevationFt is null, skip elevation commentary entirely. For par 5 middle shots (layups) and holes with recoveries, segment data may be less precise — use judgment.\n\nDOGLEG GUARD: Rolling gradient interpolation assumes the hole plays roughly straight from tee to landing to green. If COURSE NOTES for a hole describe a dogleg, blind carry, or mention "corner" / "turns left" / "turns right" / "kick" in a way that implies the terrain between tee and landing deviates from a straight line, REDUCE confidence in driveElevDelta and approachElevDelta. In that case, prefer the fixed segment values elevationSegments.tee2land (tee shot) and elevationSegments.land2green (later shots), or defer to the player's own written observation.\n\nNOTES-OVERRIDE-ELEVATION: The numeric elevation values are an approximation based on 2-3 pinned points per hole — they do not capture every contour, cross-slope, or wind-tunnel effect. If COURSE NOTES document specific shot-level elevation behavior for a hole (e.g. "approach plays +10yd", "green sits in a bowl 8ft below the front", "drive kicks forward on downslope"), those player observations take PRECEDENCE over the numeric elevation for the affected shot. When notes and numeric elevation conflict, trust the notes.\n\nDRIVE DISTANCE RULE: On par 4/5 holes, driveCarry = hole_yards - first_approach_yards (clean holes only). On holes with hasRecovery:true, driveCombo = hole_yards - first_approach_yards represents drive+recovery combined — do NOT cite as drive carry. On holes with a recovery, analyze tee shot position and score cost instead of distance.\n\n${notesHeader}${notesAdjustInstruction}\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
 }
 
 function byronPatternsPrompt(bundle, holesResult) {
@@ -1416,8 +1457,9 @@ function setHoleElevation(courseId, teeId, holeIdx, elevationFt) {
   } catch {}
 }
 // Segment elevations — per-shot deltas for par 4/5 holes with landing pin set.
-// Stored as {tee2land: number, land2green: number} in pjc_elevation_segments.
-// Not stored for par 3 (no landing pin). Callers fall back to net elevation when absent.
+// v2 shape: {tee2land, land2green, teeElevFt, landElevFt, greenElevFt, tee2landYd, schemaVersion:2}
+// v1 (legacy) shape: {tee2land, land2green} — no absolute elevations, no distance
+// Callers that need v2 fields (rolling gradient interpolation) check schemaVersion.
 function getHoleElevationSegments(courseId, teeId, holeIdx) {
   try {
     const all = JSON.parse(localStorage.getItem('pjc_elevation_segments') || '{}');
@@ -1433,6 +1475,19 @@ function setHoleElevationSegments(courseId, teeId, holeIdx, segments) {
     localStorage.setItem('pjc_elevation_segments', JSON.stringify(all));
     const meta = getSyncMeta(); meta.notesTs = Date.now(); saveSyncMeta(meta);
   } catch {}
+}
+// Haversine distance between two lat/lng points, returned in yards.
+// Used to measure tee-pin-to-landing-pin straight-line distance for rolling gradient interpolation.
+function haversineYards(a, b) {
+  if (!a?.lat || !a?.lng || !b?.lat || !b?.lng) return null;
+  const R = 6371000; // Earth radius in meters
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const lat1 = toRad(a.lat), lat2 = toRad(b.lat);
+  const h = Math.sin(dLat/2)**2 + Math.sin(dLng/2)**2 * Math.cos(lat1)*Math.cos(lat2);
+  const meters = 2 * R * Math.asin(Math.sqrt(h));
+  return Math.round(meters * 1.09361); // meters → yards
 }
 // Find green coords from ANY tee on the same course+hole (so a new tee set can inherit green pin)
 function findGreenCoordsFromOtherTee(courseId, holeIdx, excludeTeeId) {
@@ -1507,12 +1562,22 @@ async function fetchHoleElevation(courseId, teeId, holeIdx, teeCoord, greenCoord
       if ([teeM, landM, grnM].some(v => typeof v !== 'number')) {
         return { deltaFt: null, segments: null, error: 'non-numeric elevation' };
       }
-      const tee2land = Math.round((landM - teeM) * M_TO_FT);
-      const land2green = Math.round((grnM - landM) * M_TO_FT);
-      const deltaFt = Math.round((grnM - teeM) * M_TO_FT);
+      const teeElevFt   = Math.round(teeM  * M_TO_FT);
+      const landElevFt  = Math.round(landM * M_TO_FT);
+      const greenElevFt = Math.round(grnM  * M_TO_FT);
+      const tee2land   = landElevFt  - teeElevFt;
+      const land2green = greenElevFt - landElevFt;
+      const deltaFt    = greenElevFt - teeElevFt;
+      // Straight-line distance from tee pin to landing pin, in yards (used for rolling gradient interp)
+      const tee2landYd = haversineYards(teeCoord, landingCoord);
       setHoleElevation(courseId, teeId, holeIdx, deltaFt);
-      setHoleElevationSegments(courseId, teeId, holeIdx, { tee2land, land2green });
-      return { deltaFt, segments: { tee2land, land2green }, error: null };
+      setHoleElevationSegments(courseId, teeId, holeIdx, {
+        tee2land, land2green,
+        teeElevFt, landElevFt, greenElevFt,
+        tee2landYd,
+        schemaVersion: 2
+      });
+      return { deltaFt, segments: { tee2land, land2green, teeElevFt, landElevFt, greenElevFt, tee2landYd, schemaVersion: 2 }, error: null };
     } else {
       const grnM = result.results[1].elevation;
       if ([teeM, grnM].some(v => typeof v !== 'number')) {
