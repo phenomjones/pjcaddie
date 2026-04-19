@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.13.1 · Apr 19, 2026 -->
+<!-- PJ Caddie v7.13.2 · Apr 19, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.13.1 · Apr 19, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.13.2 · Apr 19, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -772,7 +772,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.13.1 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.13.2 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -1416,7 +1416,12 @@ function getRounds() {
   try { return JSON.parse(localStorage.getItem('pjc_rounds')||'[]'); }
   catch { return []; }
 }
-function saveRounds(r) { localStorage.setItem('pjc_rounds',JSON.stringify(r)); }
+function saveRounds(r) {
+  localStorage.setItem('pjc_rounds',JSON.stringify(r));
+  // NEBULA ORCHID — rounds changed, profile inference may be stale. Fires after
+  // new round commit, hole edit, delete, and sync merge. Safe if profile missing.
+  recomputePlayerProfile();
+}
 
 function getWIP() {
   try { return JSON.parse(localStorage.getItem('pjc_wip')||'null'); }
@@ -1759,6 +1764,88 @@ function getPlayerProfile() {
 function savePlayerProfile(profile) {
   localStorage.setItem('pjc_player', JSON.stringify(profile));
   const meta = getSyncMeta(); meta.playerTs = Date.now(); saveSyncMeta(meta);
+}
+
+// ── MISS PROFILE INFERENCE (NEBULA ORCHID) ───────────────────
+// Pure function: takes the rounds array and returns the inferred miss profile.
+// Walks newest rounds first, collects up to 20 approach misses, derives per-axis
+// tendency via dominance threshold, and reports confidence based on sample size.
+// 'center' missDirection counts toward sampleSize but toward neither axis.
+// Returns {lat, long, sampleSize, confidence, counts}.
+function computeMissProfile(rounds) {
+  const arr = Array.isArray(rounds) ? rounds : [];
+  // Newest first — rounds are stored oldest-first in pjc_rounds, so reverse.
+  const newestFirst = arr.slice().reverse();
+  const misses = [];
+  outer: for (const r of newestFirst) {
+    for (const h of (r.holes||[])) {
+      for (const s of (h.shots||[])) {
+        if (s.type === 'approach' && s.result === 'M' && s.missDirection) {
+          misses.push(s.missDirection);
+          if (misses.length >= 20) break outer;
+        }
+      }
+    }
+  }
+  const c = {left:0, right:0, short:0, long:0, center:0};
+  misses.forEach(d => { if (c[d] != null) c[d]++; });
+  const latTotal = c.left + c.right;
+  const longTotal = c.short + c.long;
+  const sampleSize = misses.length;
+  let lat, long, confidence;
+  if (sampleSize < 10) {
+    lat = 'unset'; long = 'unset'; confidence = 'low';
+  } else {
+    // Lateral axis
+    if (latTotal < 3) lat = 'none';
+    else if (c.left  / latTotal >= 0.60) lat = 'left';
+    else if (c.right / latTotal >= 0.60) lat = 'right';
+    else lat = 'either';
+    // Longitudinal axis
+    if (longTotal < 3) long = 'none';
+    else if (c.short / longTotal >= 0.60) long = 'short';
+    else if (c.long  / longTotal >= 0.60) long = 'long';
+    else long = 'either';
+    confidence = sampleSize >= 20 ? 'confident' : 'preliminary';
+  }
+  return { lat, long, sampleSize, confidence, counts: c };
+}
+
+// Applies inference to the player profile. Only axes in 'inferred' mode are updated;
+// 'manual' axes retain their values. Sample metadata is always refreshed so the UI
+// can show current data context even when both axes are manual. Safe to call often —
+// wrapped in try/catch so a broken compute never takes down a round save.
+function recomputePlayerProfile() {
+  try {
+    const raw = localStorage.getItem('pjc_player');
+    if (!raw) return false; // no record — nothing to update
+    const profile = JSON.parse(raw);
+    if (!profile || (profile.schemaVersion||0) < 2) return false; // not migrated
+    const rounds = getRounds();
+    const result = computeMissProfile(rounds);
+    let changed = false;
+    if (profile.primaryMissLatMode === 'inferred' && profile.primaryMissLat !== result.lat) {
+      profile.primaryMissLat = result.lat; changed = true;
+    }
+    if (profile.primaryMissLongMode === 'inferred' && profile.primaryMissLong !== result.long) {
+      profile.primaryMissLong = result.long; changed = true;
+    }
+    if (profile.profileSampleSize !== result.sampleSize) { profile.profileSampleSize = result.sampleSize; changed = true; }
+    if (profile.profileConfidence !== result.confidence) { profile.profileConfidence = result.confidence; changed = true; }
+    profile.profileComputedTs = Date.now();
+    if (changed) {
+      // Value changed — persist and bump playerTs so sync propagates
+      savePlayerProfile(profile);
+    } else {
+      // Only the timestamp moved; persist without bumping playerTs to avoid
+      // spurious sync pushes for no real content change
+      localStorage.setItem('pjc_player', JSON.stringify(profile));
+    }
+    return changed;
+  } catch(e) {
+    console.warn('recomputePlayerProfile error:', e);
+    return false;
+  }
 }
 
 // ── STATE ────────────────────────────────────────────────────
@@ -5358,6 +5445,10 @@ function toast(msg,dur) {
   // migrated records this is a cheap no-op read. Guarantees schemaVersion:2 lands
   // on every device's first v7.13.0 open regardless of which screen the user visits.
   getPlayerProfile();
+  // NEBULA ORCHID — run inference once on boot so a device upgrading to v7.13.2
+  // has populated sampleSize/confidence and (for inferred axes) tendency values
+  // before any screen that reads them.
+  recomputePlayerProfile();
   if (localStorage.getItem('pjc_sun')==='1') {
     document.documentElement.classList.add('sun-mode');
     const btn=document.getElementById('sun-btn');
