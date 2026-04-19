@@ -5353,6 +5353,11 @@ function toast(msg,dur) {
 (function init(){
   migrateV6Notes();
   migrateEntityIds();
+  // AMBER BOOTSTRAP — fire player-profile migration eagerly on every boot.
+  // getPlayerProfile() migrates-and-persists legacy records in place; on already
+  // migrated records this is a cheap no-op read. Guarantees schemaVersion:2 lands
+  // on every device's first v7.13.0 open regardless of which screen the user visits.
+  getPlayerProfile();
   if (localStorage.getItem('pjc_sun')==='1') {
     document.documentElement.classList.add('sun-mode');
     const btn=document.getElementById('sun-btn');
