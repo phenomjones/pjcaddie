@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.11.3 · Apr 18, 2026 -->
+<!-- PJ Caddie v7.12.1 · Apr 18, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.11.3 · Apr 18, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.12.1 · Apr 18, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -772,7 +772,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.11.3 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.12.1 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -929,15 +929,35 @@ const BYRON_VERSION = 'Byron 3.0';
 const BYRON_PERSONA = 'IDENTITY: You are Byron \u2014 elite caddie and data analyst. Your voice draws from four sources: Cory Jez / TourIQ (reads and synthesizes shot data into caddie intelligence), Scott Fawcett / DECADE (dispersion-based targets, probability framework, aim away from the big number), Jon Sherman / Practical Golf (tone calibration for 18-handicap reality, no false hope), and your own voice (direct, specific, dry, never preachy).\n\nLANGUAGE RULE: Never use the word \u201cStrackaline\u201d \u2014 refer to course yardage and green-reading materials as \u201cgreen book\u201d instead.\n\nWHAT YOU ARE NOT: You are not a swing instructor. Never give swing tips, mechanics advice, or range drills. Your job is course management, not technique.\n\nCOURSE NOTES AUTHORITY: COURSE NOTES are the player\u2019s pre-established course management decisions based on personal knowledge of the course. They represent binding strategic context, not flavor text. When a club selection, aim point, or strategy is consistent with documented hazards, distances, or conditions in the notes, DO NOT question it \u2014 analyze execution quality of the chosen strategy instead. Only question a decision when it contradicts or ignores the documented notes. If the notes document a hazard at 240y and the player laid up with a 3-wood, that is the correct play \u2014 evaluate the execution, not the choice.\n\nTONE: Direct. Specific. Dry when warranted. Never generic. Never preachy. Every insight must cite a hole, club, yardage, miss direction, or data point. If the data doesn\u2019t support a claim, don\u2019t make it.\n\nWRITING STYLE FOR MOBILE: Write SHORT. Maximum 3 sentences per block \u2014 then stop. No paragraph walls. Each sentence should stand alone.\n\n18-HANDICAP REALITY: Bogey is a good score on a hard hole. Double bogey is acceptable on the hardest holes. Scoring zones: PARITY TARGET (realistic par opportunity), DAMAGE CONTROL (bogey is fine, avoid doubles), SURVIVAL (bogey/double acceptable \u2014 just get out clean). Never chase scores that aren\u2019t there.';
 
 // ── BYRON 3.0 CACHE ───────────────────────────────────────────
+// BYRON_PROMPT_VERSION \u2014 bump whenever a prompt change invalidates prior outputs.
+// Caches without this version or with a mismatched version are treated as stale (cache miss).
+const BYRON_PROMPT_VERSION = 1;
+
 function byronGetCache(roundId, pass) {
-  try { return JSON.parse(localStorage.getItem('byron3_'+roundId+'_'+pass)||'null'); }
-  catch { return null; }
+  try {
+    const raw = JSON.parse(localStorage.getItem('byron3_'+roundId+'_'+pass)||'null');
+    if (!raw) return null;
+    if (raw.promptVersion !== BYRON_PROMPT_VERSION) return null;
+    return raw;
+  } catch { return null; }
 }
 function byronSetCache(roundId, pass, result) {
-  localStorage.setItem('byron3_'+roundId+'_'+pass, JSON.stringify({result, ts: Date.now()}));
+  localStorage.setItem('byron3_'+roundId+'_'+pass, JSON.stringify({result, ts: Date.now(), promptVersion: BYRON_PROMPT_VERSION}));
 }
 function byronClearRoundCache(roundId) {
   ['holes','patterns','gameplan'].forEach(p => localStorage.removeItem('byron3_'+roundId+'_'+p));
+}
+// BYRON BRIDGE \u2014 collect all byron3_* cache entries for cross-device sync
+function collectByronCache() {
+  const out = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('byron3_')) {
+      try { out[k] = JSON.parse(localStorage.getItem(k)); }
+      catch { /* skip malformed */ }
+    }
+  }
+  return out;
 }
 
 // ── BYRON 3.0 DATA ASSEMBLY ───────────────────────────────────
@@ -1154,6 +1174,7 @@ function byronHolesPrompt(bundle) {
       approachElevDelta,    // interpolated elevation change during approach (null if not interpolated)
       driveCombo: hasRecovery ? driveCombo : null,
       driveCarry: (!hasRecovery && driveCombo) ? driveCombo : null,
+      driveCarryEffective: (!hasRecovery && driveCombo != null && driveElevDelta != null) ? Math.round(driveCombo + driveElevDelta/3) : null,
       hasRecovery,
       putts:{count:h.putts?.count||0,distances:h.putts?.distances||[]},
       shotSequence
@@ -1181,7 +1202,7 @@ function byronHolesPrompt(bundle) {
     notesAdjustInstruction = `\nYARDAGE ADJUSTMENT RULE: Notes were written from ${masterName} tees. This round is from ${roundTeeName} tees. Per-hole delta (subtract from note yardage to get ${roundTeeName} yardage): ${deltaStr}\nFor every numeric yardage in the notes, apply the hole's delta and cite both values — e.g. "bunker at 190yd (250yd from ${masterName})". Holes with delta=0 need no adjustment. Non-numeric prose passes through unchanged.`;
   }
 
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nSHOT SEQUENCE RULE: Each hole has a shotSequence array where each entry has an order field (1, 2, 3, …). Read shots in order. Any yds field refers to the distance of THAT specific shot only — never attribute one shot's yardage to a different shot in the sequence.\n\nELEVATION RULE: Each hole may include elevationFt (net tee-to-green delta, signed, positive=uphill) and optionally elevationSegments for par 4/5 with a pinned landing area. The app pre-computes ydsEffective per-shot using the correct elevation for THAT shot. When elevationSegments.schemaVersion is 2, the app uses ROLLING GRADIENT interpolation: it estimates actual drive carry from (holeYards - firstApproachYds), interpolates along the pinned tee→landing→green path, and emits driveElevDelta (tee→drive-finish) and approachElevDelta (drive-finish→green). The elevSegment field on each shot shows which elevation delta was applied. Cite BOTH raw and effective when the difference matters, e.g. "6I from 190y raw / 208y effective (+18y for uphill approach segment)". Never re-apply the elevation correction — ydsEffective is pre-computed. If elevationFt is null, skip elevation commentary entirely. For par 5 middle shots (layups) and holes with recoveries, segment data may be less precise — use judgment.\n\nDOGLEG GUARD: Rolling gradient interpolation assumes the hole plays roughly straight from tee to landing to green. If COURSE NOTES for a hole describe a dogleg, blind carry, or mention "corner" / "turns left" / "turns right" / "kick" in a way that implies the terrain between tee and landing deviates from a straight line, REDUCE confidence in driveElevDelta and approachElevDelta. In that case, prefer the fixed segment values elevationSegments.tee2land (tee shot) and elevationSegments.land2green (later shots), or defer to the player's own written observation.\n\nNOTES-OVERRIDE-ELEVATION: The numeric elevation values are an approximation based on 2-3 pinned points per hole — they do not capture every contour, cross-slope, or wind-tunnel effect. If COURSE NOTES document specific shot-level elevation behavior for a hole (e.g. "approach plays +10yd", "green sits in a bowl 8ft below the front", "drive kicks forward on downslope"), those player observations take PRECEDENCE over the numeric elevation for the affected shot. When notes and numeric elevation conflict, trust the notes.\n\nDRIVE DISTANCE RULE: On par 4/5 holes, driveCarry = hole_yards - first_approach_yards (clean holes only). On holes with hasRecovery:true, driveCombo = hole_yards - first_approach_yards represents drive+recovery combined — do NOT cite as drive carry. On holes with a recovery, analyze tee shot position and score cost instead of distance.\n\n${notesHeader}${notesAdjustInstruction}\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline for collapsed display",\n      "detail": "1-3 sentences. Cite hole, club, zone, or yardage in every sentence. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If approach intended+miss pattern lands in trouble flag the correct aim zone. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nSHOT SEQUENCE RULE: Each hole has a shotSequence array where each entry has an order field (1, 2, 3, …). Read shots in order. Any yds field refers to the distance of THAT specific shot only — never attribute one shot's yardage to a different shot in the sequence.\n\nELEVATION RULE: Each hole may include elevationFt (net tee-to-green delta, signed, positive=uphill) and optionally elevationSegments for par 4/5 with a pinned landing area. The app pre-computes ydsEffective per-shot using the correct elevation for THAT shot. When elevationSegments.schemaVersion is 2, the app uses ROLLING GRADIENT interpolation: it estimates actual drive carry from (holeYards - firstApproachYds), interpolates along the pinned tee→landing→green path, and emits driveElevDelta (tee→drive-finish) and approachElevDelta (drive-finish→green). The elevSegment field on each shot shows which elevation delta was applied. Cite BOTH raw and effective when the difference matters, e.g. "6I from 190y raw / 208y effective (+18y for uphill approach segment)". Never re-apply the elevation correction — ydsEffective is pre-computed. If elevationFt is null, skip elevation commentary entirely. For par 5 middle shots (layups) and holes with recoveries, segment data may be less precise — use judgment.\n\nDOGLEG GUARD: Rolling gradient interpolation assumes the hole plays roughly straight from tee to landing to green. If COURSE NOTES for a hole describe a dogleg, blind carry, or mention "corner" / "turns left" / "turns right" / "kick" in a way that implies the terrain between tee and landing deviates from a straight line, REDUCE confidence in driveElevDelta and approachElevDelta. In that case, prefer the fixed segment values elevationSegments.tee2land (tee shot) and elevationSegments.land2green (later shots), or defer to the player's own written observation.\n\nNOTES-OVERRIDE-ELEVATION: The numeric elevation values are an approximation based on 2-3 pinned points per hole — they do not capture every contour, cross-slope, or wind-tunnel effect. If COURSE NOTES document specific shot-level elevation behavior for a hole (e.g. "approach plays +10yd", "green sits in a bowl 8ft below the front", "drive kicks forward on downslope"), those player observations take PRECEDENCE over the numeric elevation for the affected shot. When notes and numeric elevation conflict, trust the notes.\n\nDRIVE DISTANCE RULE: On par 4/5 holes, driveCarry = hole_yards - first_approach_yards (clean holes only). When driveCarryEffective is present and differs from driveCarry, cite BOTH raw and effective — e.g. "220y raw / 240y effective drive (+20y for uphill drive segment)." On holes with hasRecovery:true, driveCombo = hole_yards - first_approach_yards represents drive+recovery combined — do NOT cite as drive carry. On holes with a recovery, analyze tee shot position and score cost instead of distance.\n\n${notesHeader}${notesAdjustInstruction}\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nEVERY HOLE PLAYED must appear in the holes array \u2014 no exceptions, including clean pars. Pars get brief confirmation; problem holes get full analysis.\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline. For clean par holes, a brief confirmation like 'Solid par \u2014 plan executed'. For problem holes, the headline of what happened.",\n      "detail": "1-3 sentences for problem holes (penalty, miss pattern, aim issue, trouble); 1 brief sentence for clean par holes. Cite hole, club, zone, or yardage where relevant. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If the original intendedZone was the mistake (e.g. aimed at a front pin on a firm green, aimed adjacent to OB), prescribe a corrected aim zone. If the aim was sound by DECADE principles but the miss pattern exposed the bad side of the pin, call that out as a miss-pattern or club-selection issue — do NOT prescribe an alternative aim. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
 }
 
 function byronPatternsPrompt(bundle, holesResult) {
@@ -2145,7 +2166,7 @@ async function ghPullSection(label, btnId, tsKey, restoreFn) {
 
 function ghPushRounds() {
   return ghPushSection('Rounds', 'gh-push-rounds-btn', now => ({
-    fields: { rounds: getRounds() },
+    fields: { rounds: getRounds(), byronCache: collectByronCache() },
     metaFields: {}
   }));
 }
@@ -2189,12 +2210,40 @@ async function ghPullRounds() {
       return;
     }
     saveRounds(merged);
+    // BYRON BRIDGE \u2014 merge byron cache; per roundId_pass last-write-wins by ts; clean orphans
+    const remoteBC = remote.byronCache || {};
+    const mergedRoundIds = new Set(merged.map(r => r.id));
+    let bcUpdated = 0;
+    Object.keys(remoteBC).forEach(k => {
+      const m = k.match(/^byron3_(.+)_(holes|patterns|gameplan)$/);
+      if (!m) return;
+      if (!mergedRoundIds.has(m[1])) return; // orphan on remote side \u2014 don't import
+      const remoteEntry = remoteBC[k];
+      if (!remoteEntry || typeof remoteEntry !== 'object') return;
+      const localRaw = localStorage.getItem(k);
+      let localEntry = null;
+      if (localRaw) { try { localEntry = JSON.parse(localRaw); } catch {} }
+      if (!localEntry || (remoteEntry.ts||0) > (localEntry.ts||0)) {
+        localStorage.setItem(k, JSON.stringify(remoteEntry));
+        bcUpdated++;
+      }
+    });
+    // Clean orphan byron3_* keys (round no longer exists in merged)
+    const orphanKeys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith('byron3_')) continue;
+      const m = k.match(/^byron3_(.+)_(holes|patterns|gameplan)$/);
+      if (m && !mergedRoundIds.has(m[1])) orphanKeys.push(k);
+    }
+    orphanKeys.forEach(k => localStorage.removeItem(k));
     const meta = getSyncMeta();
     meta.lastPull = Date.now();
     saveSyncMeta(meta);
     renderSettings();
     const t = new Date(meta.lastPull).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    ghSetStatus('\u2713 Pulled Rounds \u00b7 '+merged.length+' rounds \u00b7 '+t, 'var(--green)');
+    const bcStr = bcUpdated>0 ? ' \u00b7 '+bcUpdated+' analyses' : '';
+    ghSetStatus('\u2713 Pulled Rounds \u00b7 '+merged.length+' rounds'+bcStr+' \u00b7 '+t, 'var(--green)');
     toast('Pulled Rounds \u2713');
   } catch(err) {
     ghSetStatus('\u2717 Rounds: '+(err.message||'unknown error'), 'var(--red)');
@@ -3960,28 +4009,33 @@ function detailHoleHTML(h, idx, round) {
   let bodyHTML = '';
   if (isOpen) {
     if (isEditing) {
-      // Approach/tee shots eligible for zone editing
-      const appShots = (h.shots||[]).filter(s =>
-        s.type === 'approach' || (s.type === 'tee' && h.par === 3)
-      );
-      const approachHTML = appShots.map((sh, si) => `
-        <div class="dhc-edit-row" style="flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:12px">
-          <span class="dhc-edit-lbl">${h.par===3&&si===0?'Tee/Approach':'Approach'}</span>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <select id="det-edit-res-${idx}-${si}" style="background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--chalk);font-size:13px;outline:none">
-              <option value="H" ${sh.result==='H'?'selected':''}>H \u2014 Hit</option>
-              <option value="M" ${sh.result!=='H'?'selected':''}>M \u2014 Miss</option>
-            </select>
-            <span style="font-size:11px;color:var(--chalk3)">Intended</span>
-            <input id="det-edit-iz-${idx}-${si}" type="number" min="1" max="9"
-              style="width:44px;background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 6px;color:var(--chalk);font-size:13px;text-align:center;outline:none"
-              value="${sh.intendedZone||''}" placeholder="z">
-            <span style="font-size:11px;color:var(--chalk3)">\u2192 Finish</span>
-            <input id="det-edit-fz-${idx}-${si}" type="number" min="1" max="9"
-              style="width:44px;background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 6px;color:var(--chalk);font-size:13px;text-align:center;outline:none"
-              value="${sh.finishZone||''}" placeholder="z">
-          </div>
-        </div>`).join('');
+      // SHOT DIAL \u2014 full shot list; editable per type (tee position, club, zones)
+      const SHOT_TYPE_LBL = {tee:h.par===3?'Tee/Approach':'Tee', approach:'Approach', chip:'Chip', recovery:'Recovery', layup:'Layup', drop:'Drop', retee:'Re-tee', untracked:'Shot'};
+      const selStyle = 'background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--chalk);font-size:13px;outline:none';
+      const inpStyle = 'width:44px;background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 6px;color:var(--chalk);font-size:13px;text-align:center;outline:none';
+      const shotRows = (h.shots||[]).map((sh, si) => {
+        const typeLabel = SHOT_TYPE_LBL[sh.type] || sh.type || 'Shot';
+        const ydsStr = typeof sh.yardage === 'number' ? ` \u00b7 ${sh.yardage}y` : '';
+        const isTeePar45 = sh.type === 'tee' && h.par > 3;
+        const isZoneShot = sh.type === 'approach' || (sh.type === 'tee' && h.par === 3);
+        const clubOpts = CLUBS.map(c => `<option value="${c}" ${sh.club===c?'selected':''}>${c}</option>`).join('');
+        const clubSel = `<select id="det-edit-club-${idx}-${si}" style="${selStyle}">${clubOpts}</select>`;
+        let fieldsHTML;
+        if (isTeePar45) {
+          const posOpts = TEE_POSITIONS.map(p => `<option value="${p}" ${(sh.position||'').toUpperCase()===p?'selected':''}>${p}</option>`).join('');
+          fieldsHTML = `${clubSel}<select id="det-edit-pos-${idx}-${si}" style="${selStyle}">${posOpts}</select>`;
+        } else if (isZoneShot) {
+          fieldsHTML = `${clubSel}<select id="det-edit-res-${idx}-${si}" style="${selStyle}"><option value="H" ${sh.result==='H'?'selected':''}>H \u2014 Hit</option><option value="M" ${sh.result!=='H'?'selected':''}>M \u2014 Miss</option></select><span style="font-size:11px;color:var(--chalk3)">Intended</span><input id="det-edit-iz-${idx}-${si}" type="number" min="1" max="9" style="${inpStyle}" value="${sh.intendedZone||''}" placeholder="z"><span style="font-size:11px;color:var(--chalk3)">\u2192 Finish</span><input id="det-edit-fz-${idx}-${si}" type="number" min="1" max="9" style="${inpStyle}" value="${sh.finishZone||''}" placeholder="z">`;
+        } else {
+          const parts = [];
+          if (sh.club) parts.push(sh.club);
+          if (sh.result) parts.push(sh.result);
+          if (sh.finishZone) parts.push('z'+sh.finishZone);
+          fieldsHTML = `<span style="font-size:12px;color:var(--chalk3)">${parts.join(' \u00b7 ')||'\u2014'}</span>`;
+        }
+        return `<div class="dhc-edit-row" style="flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:12px"><span class="dhc-edit-lbl">${si+1}. ${typeLabel}${ydsStr}</span><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${fieldsHTML}</div></div>`;
+      }).join('');
+      const approachHTML = shotRows ? `<div style="font-size:12px;color:var(--chalk2);margin:10px 0 6px;font-weight:600;letter-spacing:.5px">SHOTS</div>${shotRows}<div style="font-size:11px;color:var(--chalk3);margin-top:-4px;margin-bottom:8px;font-style:italic">Edits change shot details only. To add, remove, or change shot type, re-enter the hole.</div>` : '';
 
       bodyHTML = `<div class="dhc-body">
         <div class="dhc-edit-panel">
@@ -4074,18 +4128,23 @@ function saveHoleEdit(idx) {
     }
   }
 
-  // Approach / par-3 tee shots — update result, zones, re-derive missDirection
-  let si = 0;
-  (hole.shots||[]).forEach(sh => {
-    if (sh.type !== 'approach' && !(sh.type === 'tee' && hole.par === 3)) return;
-    const resEl = document.getElementById('det-edit-res-'+idx+'-'+si);
-    const izEl  = document.getElementById('det-edit-iz-'+idx+'-'+si);
-    const fzEl  = document.getElementById('det-edit-fz-'+idx+'-'+si);
-    if (resEl) sh.result = resEl.value;
-    if (izEl && izEl.value !== '') { const v = parseInt(izEl.value); if (v>=1&&v<=9) sh.intendedZone = v; }
-    if (fzEl && fzEl.value !== '') { const v = parseInt(fzEl.value); if (v>=1&&v<=9) sh.finishZone = v; }
-    sh.missDirection = deriveMissDirection(sh.intendedZone, sh.finishZone, sh.result);
-    si++;
+  // SHOT DIAL \u2014 update all editable shots (club universal; position for tee par 4/5; zones + result for approach/par-3 tee)
+  (hole.shots||[]).forEach((sh, si) => {
+    const clubEl = document.getElementById('det-edit-club-'+idx+'-'+si);
+    if (clubEl && clubEl.value) sh.club = clubEl.value;
+    if (sh.type === 'tee' && hole.par > 3) {
+      const posEl = document.getElementById('det-edit-pos-'+idx+'-'+si);
+      if (posEl && posEl.value) sh.position = posEl.value;
+    }
+    if (sh.type === 'approach' || (sh.type === 'tee' && hole.par === 3)) {
+      const resEl = document.getElementById('det-edit-res-'+idx+'-'+si);
+      const izEl  = document.getElementById('det-edit-iz-'+idx+'-'+si);
+      const fzEl  = document.getElementById('det-edit-fz-'+idx+'-'+si);
+      if (resEl) sh.result = resEl.value;
+      if (izEl && izEl.value !== '') { const v = parseInt(izEl.value); if (v>=1&&v<=9) sh.intendedZone = v; }
+      if (fzEl && fzEl.value !== '') { const v = parseInt(fzEl.value); if (v>=1&&v<=9) sh.finishZone = v; }
+      sh.missDirection = deriveMissDirection(sh.intendedZone, sh.finishZone, sh.result);
+    }
   });
 
   // Re-derive GIR
@@ -4122,8 +4181,10 @@ function detStepPutts(idx, delta) {
 
 function deleteRound() {
   if (!confirm('Delete this round? This cannot be undone.')) return;
-  const rounds = getRounds().filter(r => r.id !== DET.roundId);
+  const deletedId = DET.roundId;
+  const rounds = getRounds().filter(r => r.id !== deletedId);
   saveRounds(rounds);
+  byronClearRoundCache(deletedId); // BYRON BRIDGE \u2014 clean associated Byron cache
   DET.roundId = null;
   showView('history');
   toast('Round deleted');
