@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.13.2 · Apr 19, 2026 -->
+<!-- PJ Caddie v7.13.3 · Apr 19, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.13.2 · Apr 19, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.13.3 · Apr 19, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -772,7 +772,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.13.2 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.13.3 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -851,15 +851,31 @@ body{display:flex;flex-direction:column}
   <div class="scroll-body">
     <div class="pad pad-b">
       <div class="card" style="margin-bottom:10px">
-        <div class="section-lbl">Shot Tendencies</div>
+        <div class="section-lbl">Miss Profile</div>
+        <div id="mp-status" style="font-size:11px;color:var(--chalk3);margin-bottom:10px;line-height:1.45"></div>
         <div class="player-field">
-          <span class="player-field-lbl">Primary Miss Direction</span>
-          <div class="tgl-group" id="ph-miss-group">
-            <button class="tgl" id="ph-miss-L" onclick="setPlayerToggle('primaryMiss','L',this)">Left</button>
-            <button class="tgl" id="ph-miss-C" onclick="setPlayerToggle('primaryMiss','C',this)">Center</button>
-            <button class="tgl" id="ph-miss-R" onclick="setPlayerToggle('primaryMiss','R',this)">Right</button>
+          <span class="player-field-lbl">Lateral</span>
+          <div class="tgl-group" id="mp-lat-group">
+            <button class="tgl" id="mp-lat-left"   onclick="setMissProfileAxis('lat','left')">Left</button>
+            <button class="tgl" id="mp-lat-right"  onclick="setMissProfileAxis('lat','right')">Right</button>
+            <button class="tgl" id="mp-lat-either" onclick="setMissProfileAxis('lat','either')">Either</button>
+            <button class="tgl" id="mp-lat-none"   onclick="setMissProfileAxis('lat','none')">None</button>
           </div>
+          <div id="mp-lat-mode" style="font-size:11px;color:var(--chalk3);margin-top:5px"></div>
         </div>
+        <div class="player-field">
+          <span class="player-field-lbl">Longitudinal</span>
+          <div class="tgl-group" id="mp-long-group">
+            <button class="tgl" id="mp-long-short"  onclick="setMissProfileAxis('long','short')">Short</button>
+            <button class="tgl" id="mp-long-long"   onclick="setMissProfileAxis('long','long')">Long</button>
+            <button class="tgl" id="mp-long-either" onclick="setMissProfileAxis('long','either')">Either</button>
+            <button class="tgl" id="mp-long-none"   onclick="setMissProfileAxis('long','none')">None</button>
+          </div>
+          <div id="mp-long-mode" style="font-size:11px;color:var(--chalk3);margin-top:5px"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:10px">
+        <div class="section-lbl">Shot Tendencies</div>
         <div class="player-field">
           <span class="player-field-lbl">Driver Shape</span>
           <div class="tgl-group">
@@ -4767,9 +4783,26 @@ function confirmRound() {
 // DCI: Damage Control Index (0-100%) — how well you recover from trouble
 // Potential Range: floor/ceiling from last 90 holes at course/tee
 
+// QUARTZ MERIDIAN — two-axis CMR aim-correctness helper.
+// Returns true when the approach miss direction did NOT match the player's
+// tendency on either axis. Profiles of 'unset' or 'none' don't penalize (no
+// known tendency to avoid). Two-way profiles ('either') penalize both sides
+// of that axis — only GIR or the opposite axis can earn the bonus.
+function aimedCorrectly(missDir, latProfile, longProfile) {
+  const latMatch =
+    (latProfile === 'left'   && missDir === 'left')  ||
+    (latProfile === 'right'  && missDir === 'right') ||
+    (latProfile === 'either' && (missDir === 'left' || missDir === 'right'));
+  const longMatch =
+    (longProfile === 'short' && missDir === 'short') ||
+    (longProfile === 'long'  && missDir === 'long')  ||
+    (longProfile === 'either' && (missDir === 'short' || missDir === 'long'));
+  return !latMatch && !longMatch;
+}
+
 function calcCMR(round, playerProfile) {
-  const missMap = {L:'left', C:'center', R:'right'};
-  const pmDir = missMap[(playerProfile?.primaryMiss||'').toUpperCase()] || null;
+  const latProfile  = playerProfile?.primaryMissLat  || 'unset';
+  const longProfile = playerProfile?.primaryMissLong || 'unset';
   let totalPoints = 0, maxPoints = 0;
   for (const hole of (round.holes||[])) {
     if (!hole.score || !hole.par) continue;
@@ -4793,8 +4826,8 @@ function calcCMR(round, playerProfile) {
     if (approachShot) {
       const res = approachShot.result || 'M';
       const missDir = approachShot.missDirection || null;
-      // Aimed correctly: hit green, or missed to non-primary side
-      if (res === 'H' || (pmDir && missDir && missDir !== pmDir) || (!pmDir && res === 'H')) {
+      // Aimed correctly: hit green, or missed opposite to every known tendency axis
+      if (res === 'H' || aimedCorrectly(missDir, latProfile, longProfile)) {
         hp += 1;
       }
       // On green
@@ -5380,11 +5413,9 @@ function saveCourseHubField(idx, field, val) {
 // ── PLAYER HUB ───────────────────────────────────────────────
 function initPlayerHub() {
   const p = getPlayerProfile();
-  // Restore toggles
-  ['L','C','R'].forEach(v => {
-    const btn = document.getElementById('ph-miss-'+v);
-    if (btn) btn.classList.toggle('on', p.primaryMiss===v);
-  });
+  // BRONZE SEXTANT — render the two-axis miss profile section
+  renderMissProfile();
+  // Driver / Approach shape toggles (unchanged)
   ['draw','straight','fade'].forEach(v => {
     const b1 = document.getElementById('ph-drv-'+v);
     if (b1) b1.classList.toggle('on', p.driverShape===v);
@@ -5397,6 +5428,91 @@ function initPlayerHub() {
   if (s) s.value = p.strengths||'';
   if (w) w.value = p.weaknesses||'';
   if (n) n.value = p.notes||'';
+}
+
+// ── BRONZE SEXTANT — MISS PROFILE UI ─────────────────────────
+// Renders the two-axis miss profile card on the My Game screen. Reads current
+// player profile and updates button highlights + mode labels + status line to
+// reflect inferred-vs-manual state and sample-size context.
+function renderMissProfile() {
+  const p = getPlayerProfile();
+  // Status line — confidence + sample size context
+  const statusEl = document.getElementById('mp-status');
+  if (statusEl) {
+    const n = p.profileSampleSize;
+    const conf = p.profileConfidence;
+    let status = '';
+    if (!p.schemaVersion) {
+      status = 'Profile loading\u2026';
+    } else if (conf === 'confident') {
+      status = `Based on your last ${n} approach misses \xb7 Confident`;
+    } else if (conf === 'preliminary') {
+      status = `Preliminary \u2014 based on ${n} approach misses \xb7 keep playing for stronger inference`;
+    } else {
+      // low-data or null
+      const have = n || 0;
+      status = `Not enough data yet \u2014 you've logged ${have} approach ${have===1?'miss':'misses'}. Need 10+ to start inferring. You can also tap any button below to set manually.`;
+    }
+    statusEl.textContent = status;
+  }
+  // Lateral axis buttons + mode label
+  ['left','right','either','none'].forEach(v => {
+    const btn = document.getElementById('mp-lat-'+v);
+    if (btn) btn.classList.toggle('on', p.primaryMissLat === v);
+  });
+  const latMode = document.getElementById('mp-lat-mode');
+  if (latMode) {
+    const mode = p.primaryMissLatMode || 'inferred';
+    if (mode === 'manual') {
+      latMode.innerHTML = `Manual \xb7 <span onclick="resetMissProfileAxis('lat')" style="color:var(--gold);cursor:pointer;text-decoration:underline">Reset to inferred</span>`;
+    } else {
+      latMode.textContent = p.primaryMissLat === 'unset' ? 'Inferred \xb7 awaiting data' : 'Inferred';
+    }
+  }
+  // Longitudinal axis buttons + mode label
+  ['short','long','either','none'].forEach(v => {
+    const btn = document.getElementById('mp-long-'+v);
+    if (btn) btn.classList.toggle('on', p.primaryMissLong === v);
+  });
+  const longMode = document.getElementById('mp-long-mode');
+  if (longMode) {
+    const mode = p.primaryMissLongMode || 'inferred';
+    if (mode === 'manual') {
+      longMode.innerHTML = `Manual \xb7 <span onclick="resetMissProfileAxis('long')" style="color:var(--gold);cursor:pointer;text-decoration:underline">Reset to inferred</span>`;
+    } else {
+      longMode.textContent = p.primaryMissLong === 'unset' ? 'Inferred \xb7 awaiting data' : 'Inferred';
+    }
+  }
+}
+
+// Tapping any axis button sets that axis to manual mode + the chosen value.
+function setMissProfileAxis(axis, val) {
+  const profile = getPlayerProfile();
+  if (!profile.schemaVersion) { toast('Profile not ready'); return; }
+  if (axis === 'lat') {
+    profile.primaryMissLat = val;
+    profile.primaryMissLatMode = 'manual';
+  } else if (axis === 'long') {
+    profile.primaryMissLong = val;
+    profile.primaryMissLongMode = 'manual';
+  }
+  savePlayerProfile(profile);
+  renderMissProfile();
+  toast('Saved \u2713');
+}
+
+// Reset-to-inferred: flips mode back to 'inferred' and runs a fresh compute so
+// the axis picks up whatever the current round data says (possibly 'unset' if
+// sampleSize < 10). Preserves the other axis's mode.
+function resetMissProfileAxis(axis) {
+  const profile = getPlayerProfile();
+  if (!profile.schemaVersion) return;
+  if (axis === 'lat') profile.primaryMissLatMode = 'inferred';
+  else if (axis === 'long') profile.primaryMissLongMode = 'inferred';
+  savePlayerProfile(profile);
+  recomputePlayerProfile();
+  renderMissProfile();
+  toast('Reset to inferred');
 }
 
 function setPlayerToggle(field, val, btn) {
