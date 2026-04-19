@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.12.1 · Apr 18, 2026 -->
+<!-- PJ Caddie v7.12.2 · Apr 18, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.12.1 · Apr 18, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.12.2 · Apr 18, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -772,7 +772,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.12.1 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.12.2 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -931,7 +931,7 @@ const BYRON_PERSONA = 'IDENTITY: You are Byron \u2014 elite caddie and data anal
 // ── BYRON 3.0 CACHE ───────────────────────────────────────────
 // BYRON_PROMPT_VERSION \u2014 bump whenever a prompt change invalidates prior outputs.
 // Caches without this version or with a mismatched version are treated as stale (cache miss).
-const BYRON_PROMPT_VERSION = 1;
+const BYRON_PROMPT_VERSION = 2;
 
 function byronGetCache(roundId, pass) {
   try {
@@ -1019,6 +1019,36 @@ function byronRoundStats(round, clubCarries) {
     if(isPartial) partialShots.push({hole:holes.find(h=>(h.shots||[]).includes(s))?.number,club:s.club,yds:s.yardage,carry,pct:Math.round(s.yardage/carry*100),result:s.result,miss:s.missDirection});
     clubData[s.club].push({yds:s.yardage,result:s.result,intended:s.intendedZone,finish:s.finishZone,miss:s.missDirection,isPartial});
   });
+  // DRIVE STATS — per-hole tee-shot carry data for Pass 2 driver validation.
+  // Raw carry uses clean-hole math (holeYds - firstApproachYds, no recovery).
+  // Effective carry applies net elevation folklore (+1y per 3ft uphill) — a coarser
+  // approximation than Pass 1's rolling-gradient, but sufficient for multi-hole averaging.
+  const driveStats = [];
+  holes.forEach(h => {
+    if (!h.par || h.par <= 3) return;
+    const shots = h.shots || [];
+    const teeShot = shots.find(s => s.isTeeShot);
+    if (!teeShot) return;
+    const hasRec = shots.some(s => s.type === 'recovery');
+    const apps = shots.filter(s => s.type === 'approach' && !s.isTeeShot);
+    const holeYds = round.holeYards?.[h.number-1] || null;
+    const firstAppYds = apps[0]?.yardage || null;
+    const rawCarry = (holeYds && firstAppYds) ? holeYds - firstAppYds : null;
+    const teeIdForElev = round.teeId;
+    const elevFt = (round.courseId && teeIdForElev)
+      ? getHoleElevation(round.courseId, teeIdForElev, h.number-1) : null;
+    const effCarry = (rawCarry != null && typeof elevFt === 'number')
+      ? Math.round(rawCarry + elevFt/3) : null;
+    driveStats.push({
+      hole: h.number,
+      club: teeShot.club || null,
+      position: teeShot.position || null,
+      hasRecovery: hasRec,
+      driveCarry: (!hasRec && rawCarry != null) ? rawCarry : null,
+      driveCarryEffective: (!hasRec && effCarry != null) ? effCarry : null,
+      elevationFt: elevFt
+    });
+  });
   return {
     approachCount:approaches.length,
     girCount:holes.filter(h=>h.gir).length,
@@ -1029,7 +1059,8 @@ function byronRoundStats(round, clubCarries) {
     chipProx,
     avgChipProx:chipProx.length?Math.round(chipProx.reduce((a,b)=>a+b,0)/chipProx.length):null,
     clubData,
-    partialShots
+    partialShots,
+    driveStats
   };
 }
 
@@ -1218,7 +1249,7 @@ function byronPatternsPrompt(bundle, holesResult) {
     ? `Club shaft assignments: ${JSON.stringify(clubShaftMap)}`
     : null;
 
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 2: PATTERN ANALYSIS \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}\n\nROUND: ${round.course}, ${round.date}, Score ${round.totalScore} (${relStr})\n\nHOLES OUTPUT (Pass 1):\n${JSON.stringify(holesResult)}\n\nROUND STATS:\nApproaches: ${stats.approachCount} | GIR: ${stats.girCount}/${stats.totalHoles} | Putts: ${stats.totalPutts}\nMiss directions: L=${stats.missDir.left} R=${stats.missDir.right} Sh=${stats.missDir.short} Lg=${stats.missDir.long} C=${stats.missDir.center} (${stats.missTotal} total misses)\nPenalties: ${stats.penalties.length} \u2014 ${JSON.stringify(stats.penalties)}\nChip/recovery first-putt distances: ${stats.chipProx.length?stats.chipProx.join(', ')+'ft (avg '+stats.avgChipProx+'ft)':'no data'}\nClub data: ${JSON.stringify(stats.clubData)}\n${carryLine}\n${shaftLine?shaftLine+'\\n':''}\nHISTORICAL: ${histStr}\n\nDRIVE DISTANCE RULE: Use only driveCarry values (clean tee shots, no recovery) for club carry validation. Holes with hasRecovery:true — analyze by tee position and score outcome, not distance. For OBL/OBR/LL/RR patterns, calculate avg score on trouble holes vs in-play holes to quantify the true cost of the miss.\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "missPattern": "Quantify miss direction with counts. E.g. '5 of 7 approach misses went right.' Note yardage bands if data supports. Compare to player primary miss.",\n  "clubValidation": "Use only clean-hole driveCarry values for carry validation. Flag systematic short/long by club. Cite specific shots. Note if sample is small.",\n  "partialSwings": "If carry data exists: compare GIR rate on partial swings vs full swings. Cite specific clubs and yardages. If no carry data: null.",\n  "penaltySummary": "Every penalty traced to the decision. Cite hole, club, position. For trouble tee shots compare avg score on those holes vs in-play holes. Null if no penalties.",\n  "chipProximity": "First-putt distance after chips/recoveries. Avg, range, and what it costs in putts. Null if no data.",\n  "historicalComparison": "How does this round compare to prior rounds at this course? Cite specific holes or stats where history exists.",\n  "shaftAnalysis": "If shaft data exists: compare GIR rate and miss direction by shaft. Require minimum 5 shots per shaft variant. Null if no shaft data.",\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
+  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 2: PATTERN ANALYSIS \u2501\u2501\u2501\n\nPLAYER: Primary miss=${player.primaryMiss||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}\n\nROUND: ${round.course}, ${round.date}, Score ${round.totalScore} (${relStr})\n\nHOLES OUTPUT (Pass 1):\n${JSON.stringify(holesResult)}\n\nROUND STATS:\nApproaches: ${stats.approachCount} | GIR: ${stats.girCount}/${stats.totalHoles} | Putts: ${stats.totalPutts}\nMiss directions: ${stats.missTotal} total approach misses. Breakdown: {long: ${stats.missDir.long}, right: ${stats.missDir.right}, short: ${stats.missDir.short}, left: ${stats.missDir.left}, center: ${stats.missDir.center}}. Read these numbers literally \u2014 do not count the number of non-zero categories.\nPenalties: ${stats.penalties.length} \u2014 ${JSON.stringify(stats.penalties)}\nChip/recovery first-putt distances: ${stats.chipProx.length?stats.chipProx.join(', ')+'ft (avg '+stats.avgChipProx+'ft)':'no data'}\nClub data: ${JSON.stringify(stats.clubData)}\nDrive data (per par 4/5 tee shot): ${JSON.stringify(stats.driveStats)}\n${carryLine}\n${shaftLine?shaftLine+'\\n':''}\nHISTORICAL: ${histStr}\n\nDRIVE DISTANCE RULE: Use only driveCarry values (clean tee shots, no recovery) for club carry validation. Holes with hasRecovery:true — analyze by tee position and score outcome, not distance. For OBL/OBR/LL/RR patterns, calculate avg score on trouble holes vs in-play holes to quantify the true cost of the miss.\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "missPattern": "Read the breakdown counts literally \u2014 the number of non-zero buckets is NOT the miss count. If any single direction is >= 40% of total misses AND the count of that direction is >= 2, name the tendency with explicit counts, e.g. '3 of 5 misses went long.' Add a sample-size caveat if total misses < 8 but do NOT suppress the flag. Do NOT say 'no pattern established' when a direction reaches the threshold. Compare to player primary miss where applicable. Note yardage bands if club data supports it.",\n  "clubValidation": "Use driveStats entries where hasRecovery is false AND driveCarry is not null \u2014 these are the clean drives for carry validation. Compute the average driveCarry (and driveCarryEffective if available) per club, and compare to the club's carry target from the carry distances map. If avg differs from target by > 15y with at least 3 clean drives, flag systematic short/long and cite the specific holes. If fewer than 3 clean drives, report the data points with 'sample too small for definitive call' and skip the flag. Drives with hasRecovery:true are NOT carry data \u2014 they are trouble-drive instances and belong to the penalty/position analysis instead. Null if no clean drives.",\n  "partialSwings": "If carry data exists: compare GIR rate on partial swings vs full swings. Cite specific clubs and yardages. If no carry data: null.",\n  "penaltySummary": "Every penalty traced to the decision. Cite hole, club, position. For trouble tee shots compare avg score on those holes vs in-play holes. Null if no penalties.",\n  "chipProximity": "First-putt distance after chips/recoveries. Avg, range, and what it costs in putts. Null if no data.",\n  "historicalComparison": "How does this round compare to prior rounds at this course? Cite specific holes or stats where history exists.",\n  "shaftAnalysis": "If shaft data exists: compare GIR rate and miss direction by shaft. Require minimum 5 shots per shaft variant. Null if no shaft data.",\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
 }
 
 function byronGameplanPrompt(bundle, holesResult, patternsResult) {
