@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.12.3 · Apr 19, 2026 -->
+<!-- PJ Caddie v7.13.0 · Apr 19, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.12.3 · Apr 19, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.13.0 · Apr 19, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -772,7 +772,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.12.3 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.13.0 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -1714,9 +1714,47 @@ function migrateEntityIds() {
 }
 
 
+// ── MISS PROFILE MIGRATION (IVORY PELICAN) ───────────────────
+// Legacy pjc_player had a single primaryMiss field ('L'|'C'|'R'|undefined).
+// v7.13.0 expands to two-axis (lat + long) with inferred/manual mode per axis.
+// migratePlayerProfile is idempotent: records with schemaVersion>=2 pass through.
+// Called inline by getPlayerProfile on read when schemaVersion is missing.
+function migratePlayerProfile(profile) {
+  if (!profile || typeof profile !== 'object') profile = {};
+  if ((profile.schemaVersion||0) >= 2) return profile;
+  const m = Object.assign({}, profile);
+  const legacy = m.primaryMiss;
+  // Lateral axis: derive from legacy value, mark as manual (preserves player assertion)
+  if (legacy === 'L') { m.primaryMissLat = 'left';  m.primaryMissLatMode = 'manual'; }
+  else if (legacy === 'R') { m.primaryMissLat = 'right'; m.primaryMissLatMode = 'manual'; }
+  else if (legacy === 'C') { m.primaryMissLat = 'none';  m.primaryMissLatMode = 'manual'; }
+  else { m.primaryMissLat = 'unset'; m.primaryMissLatMode = 'inferred'; }
+  // Longitudinal axis: legacy model had no longitudinal data — always unset.
+  // Mode follows lateral: manual if the user had asserted anything, inferred otherwise.
+  m.primaryMissLong = 'unset';
+  m.primaryMissLongMode = (legacy === 'L' || legacy === 'R' || legacy === 'C') ? 'manual' : 'inferred';
+  // Inference metadata — populated on first recompute (NEBULA ORCHID)
+  m.profileComputedTs = null;
+  m.profileSampleSize = null;
+  m.profileConfidence = null;
+  // Schema stamp
+  m.schemaVersion = 2;
+  // Legacy primaryMiss field is preserved on the record for one cycle (rollback safety).
+  return m;
+}
+
 function getPlayerProfile() {
-  try { return JSON.parse(localStorage.getItem('pjc_player')||'null') || {}; }
-  catch { return {}; }
+  try {
+    const raw = localStorage.getItem('pjc_player');
+    if (!raw) return {}; // no record yet — return empty, don't create one
+    const parsed = JSON.parse(raw) || {};
+    if ((parsed.schemaVersion||0) >= 2) return parsed;
+    // Legacy record — migrate and persist
+    const migrated = migratePlayerProfile(parsed);
+    localStorage.setItem('pjc_player', JSON.stringify(migrated));
+    const meta = getSyncMeta(); meta.playerTs = Date.now(); saveSyncMeta(meta);
+    return migrated;
+  } catch { return {}; }
 }
 function savePlayerProfile(profile) {
   localStorage.setItem('pjc_player', JSON.stringify(profile));
