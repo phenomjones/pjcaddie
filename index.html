@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.11.1 · Apr 18, 2026 -->
+<!-- PJ Caddie v7.11.3 · Apr 18, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.11.1 · Apr 18, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.11.3 · Apr 18, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -772,7 +772,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.11.1 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.11.3 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -2115,11 +2115,15 @@ async function ghPullSection(label, btnId, tsKey, restoreFn) {
     const meta = getSyncMeta();
     const remoteTs = remote[tsKey]||0;
     const localTs = meta[tsKey]||0;
-    if (remoteTs <= localTs) {
-      ghSetStatus('\u2713 '+label+' already up to date.', 'var(--chalk3)');
-      return;
+    const remoteTime = remoteTs ? new Date(remoteTs).toLocaleString() : 'unknown';
+    const localTime = localTs ? new Date(localTs).toLocaleString() : 'never';
+    let msg;
+    if (localTs > remoteTs) {
+      msg = '\u26a0 You have newer changes on this device.\nContinuing will erase them.\n\nSaved on this device: '+localTime+'\nSaved online: '+remoteTime+'\n\nContinue anyway?';
+    } else {
+      msg = 'Saved online: '+remoteTime+'\nSaved on this device: '+localTime+'\n\nReplace your '+label+' with the version saved online?';
     }
-    if (!confirm('Remote '+label+' is newer.\nOverwrite local '+label+'?')) {
+    if (!confirm(msg)) {
       ghSetStatus('Pull cancelled.', 'var(--chalk3)');
       return;
     }
