@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.13.7 · Apr 19, 2026 -->
+<!-- PJ Caddie v7.13.10 · Apr 20, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.13.7 · Apr 19, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.13.10 · Apr 20, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -772,7 +772,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.13.7 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.13.10 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -1050,6 +1050,7 @@ function byronRoundStats(round, clubCarries) {
     const teeShot = shots.find(s => s.isTeeShot);
     if (!teeShot) return;
     const hasRec = shots.some(s => s.type === 'recovery');
+    const hasLay = shots.some(s => s.type === 'layup');
     const apps = shots.filter(s => s.type === 'approach' && !s.isTeeShot);
     const holeYds = round.holeYards?.[h.number-1] || null;
     const firstAppYds = apps[0]?.yardage || null;
@@ -1064,8 +1065,9 @@ function byronRoundStats(round, clubCarries) {
       club: teeShot.club || null,
       position: teeShot.position || null,
       hasRecovery: hasRec,
-      driveCarry: (!hasRec && rawCarry != null) ? rawCarry : null,
-      driveCarryEffective: (!hasRec && effCarry != null) ? effCarry : null,
+      hasLayup: hasLay,
+      driveCarry: (!hasRec && !hasLay && rawCarry != null) ? rawCarry : null,
+      driveCarryEffective: (!hasRec && !hasLay && effCarry != null) ? effCarry : null,
       elevationFt: elevFt
     });
   });
@@ -1167,6 +1169,7 @@ function byronHolesPrompt(bundle) {
   const holesData = (round.holes||[]).sort((a,b)=>a.number-b.number).map(h=>{
     const apps=(h.shots||[]).filter(s=>s.type==='approach'&&!s.isTeeShot);
     const hasRecovery=(h.shots||[]).some(s=>s.type==='recovery');
+    const hasLayup=(h.shots||[]).some(s=>s.type==='layup');
     const holeYds = round.holeYards?.[h.number-1] || null;
     const firstApproachYds = apps[0]?.yardage || null;
     const driveCombo = (holeYds && firstApproachYds && h.par > 3)
@@ -1188,7 +1191,7 @@ function byronHolesPrompt(bundle) {
     let driveFinishElevFt = null;   // interpolated elevation at drive-finish point
     let driveElevDelta = null;      // elevation change: tee → drive-finish (for tee shot)
     let approachElevDelta = null;   // elevation change: drive-finish → green (for approach)
-    if (isV2 && h.par > 3 && driveCombo && !hasRecovery) {
+    if (isV2 && h.par > 3 && driveCombo && !hasRecovery && !hasLayup) {
       driveCarryEst = driveCombo;
       const { teeElevFt, landElevFt, greenElevFt, tee2landYd } = elevSegments;
       // Piecewise linear interpolation along the tee → landing → green path
@@ -1254,10 +1257,11 @@ function byronHolesPrompt(bundle) {
       driveCarryEst,        // estimated actual drive carry used for interpolation (null if N/A)
       driveElevDelta,       // interpolated elevation change during drive (null if not interpolated)
       approachElevDelta,    // interpolated elevation change during approach (null if not interpolated)
-      driveCombo: hasRecovery ? driveCombo : null,
-      driveCarry: (!hasRecovery && driveCombo) ? driveCombo : null,
-      driveCarryEffective: (!hasRecovery && driveCombo != null && driveElevDelta != null) ? Math.round(driveCombo + driveElevDelta/3) : null,
+      driveCombo: (hasRecovery || hasLayup) ? driveCombo : null,
+      driveCarry: (!hasRecovery && !hasLayup && driveCombo) ? driveCombo : null,
+      driveCarryEffective: (!hasRecovery && !hasLayup && driveCombo != null && driveElevDelta != null) ? Math.round(driveCombo + driveElevDelta/3) : null,
       hasRecovery,
+      hasLayup,
       putts:{count:h.putts?.count||0,distances:h.putts?.distances||[]},
       shotSequence
     };
@@ -3027,11 +3031,16 @@ function initScoring() {
     const i = h-1;
     // Prefer snapshotted holePars from round (v7.10.18+); fall back to live teeSet for old rounds
     const par = round.holePars?.[i] || teeSet?.holePars?.[i] || 4;
+    const yds = round.holeYards?.[i] || null;
+    // COBALT RIVER — single-hole re-entry: preload wizard state from saved hole
+    if (round.singleHoleMode && round.preloadedHoleData && round.preloadedHoleData.number === h) {
+      return preloadHoleIntoSCR(round.preloadedHoleData, yds);
+    }
     const savedHole = (round.holes||[]).find(sh=>sh.number===h);
     if (savedHole) {
       // Hole already saved — restore as saved state
       return {
-        holeNum:h, par, yds:round.holeYards?.[i]||null,
+        holeNum:h, par, yds,
         sequence:[], phase:'sequence',
         detailTaskIdx:0, detailSubStepIdx:0,
         puttDistances:[], puttCalcIdx:0, puttCalcBuf:'',
@@ -3040,13 +3049,19 @@ function initScoring() {
       };
     }
     return {
-      holeNum:h, par, yds:round.holeYards?.[i]||null,
+      holeNum:h, par, yds,
       sequence:[], phase:'sequence',
       detailTaskIdx:0, detailSubStepIdx:0,
       puttDistances:[], puttCalcIdx:0, puttCalcBuf:'',
       pinZone:null, editingSeqIdx:null, saved:false
     };
   });
+  // COBALT RIVER — land user directly in the wizard for the single hole, skipping overview
+  if (round.singleHoleMode) {
+    SCR.activeIdx = 0;
+    renderScoringScreen();
+    return;
+  }
   SCR.activeIdx = null;
   renderScoringScreen();
 }
@@ -3113,6 +3128,141 @@ function makeSeqItem(type, isTeeShot) {
   return {type, isTeeShot:!!isTeeShot, club:null, position:null,
     yardage:null, approachLie:null, intendedZone:null, finishZone:null,
     result:null, wizYds:''};
+}
+
+// ── COBALT RIVER — SINGLE-HOLE RE-ENTRY ──────────────────────────────────────
+// Reverses saveHole's sequence→shots conversion so a previously-saved hole can
+// be pre-populated into the wizard. Returns an SCR.holes entry ready for the
+// scoring flow, with saved=false so the user can edit and re-save.
+function preloadHoleIntoSCR(savedHole, holeYards) {
+  const sequence = [];
+  let par3TeeSeen = false;
+  (savedHole.shots || []).forEach(sh => {
+    const item = makeSeqItem(sh.type || 'approach', false);
+    if (sh.type === 'approach' && sh.isTeeShot && savedHole.par === 3) {
+      // Par 3 tee shot (first such shot) or retee (any subsequent)
+      item.type = par3TeeSeen ? 'retee' : 'approach';
+      item.isTeeShot = true;
+      par3TeeSeen = true;
+      item.club = sh.club || null;
+      item.yardage = sh.yardage || null;
+      item.wizYds = sh.yardage ? String(sh.yardage) : '';
+      item.intendedZone = sh.intendedZone || null;
+      item.finishZone = sh.finishZone || null;
+      item.result = sh.result || null;
+    } else if (sh.type === 'tee') {
+      item.type = 'tee';
+      item.isTeeShot = true;
+      item.club = sh.club || null;
+      item.position = sh.position || null;
+    } else if (sh.type === 'retee') {
+      item.type = 'retee';
+      item.club = sh.club || null;
+      item.position = sh.position || null;
+    } else if (sh.type === 'approach') {
+      item.type = 'approach';
+      item.isTeeShot = !!sh.isTeeShot;
+      item.club = sh.club || null;
+      item.yardage = sh.yardage || null;
+      item.wizYds = sh.yardage ? String(sh.yardage) : '';
+      item.intendedZone = sh.intendedZone || null;
+      item.finishZone = sh.finishZone || null;
+      item.result = sh.result || null;
+    } else if (sh.type === 'chip') {
+      // chip(lie=Sd) → sand; chip(club=TW) → TW; chip(club=HW) → HW; else chip
+      if (sh.lie === 'Sd') item.type = 'sand';
+      else if (sh.club === 'TW') item.type = 'TW';
+      else if (sh.club === 'HW') item.type = 'HW';
+      else item.type = 'chip';
+    } else if (sh.type === 'untracked') {
+      item.type = 'X';
+    } else {
+      // layup, recovery, drop — pass through as-is
+      item.type = sh.type;
+    }
+    sequence.push(item);
+  });
+  // Append N putt items matching saved putt count; restore distances array too.
+  const puttCount = savedHole.putts?.count || 0;
+  for (let i = 0; i < puttCount; i++) sequence.push(makeSeqItem('putt', false));
+  return {
+    holeNum: savedHole.number,
+    par: savedHole.par,
+    yds: holeYards,
+    sequence,
+    phase: 'sequence',
+    detailTaskIdx: 0,
+    detailSubStepIdx: 0,
+    puttDistances: [...(savedHole.putts?.distances || [])],
+    puttCalcIdx: 0,
+    puttCalcBuf: '',
+    pinZone: savedHole.pinZone || null,
+    editingSeqIdx: null,
+    saved: false
+  };
+}
+
+// Entry point for re-entering a single hole on a committed round.
+// Callable from console or (eventually) from the JASPER BEACON button.
+function startHoleReentry(sourceRoundId, holeNumber) {
+  if (getWIP()) {
+    alert('You have a round in progress. Finish or abandon it before re-entering a hole.');
+    return;
+  }
+  const srcRound = getRounds().find(r => r.id === sourceRoundId);
+  if (!srcRound) { alert('Round not found.'); return; }
+  const srcHole = (srcRound.holes || []).find(h => h.number === holeNumber);
+  if (!srcHole) { alert('Hole not found in this round.'); return; }
+  // Scratchpad WIP wrapping the source round's metadata for the wizard.
+  // singleHoleMode + sourceRoundId + sourceHoleNumber route the commit/abandon paths.
+  const wip = {
+    id: srcRound.id,
+    courseId: srcRound.courseId,
+    course: srcRound.course,
+    tees: srcRound.tees,
+    teeId: srcRound.teeId || null,
+    date: srcRound.date,
+    holesPlayed: srcRound.holesPlayed,
+    startingHole: srcRound.startingHole,
+    expectedHoles: [holeNumber],
+    holeYards: srcRound.holeYards || [],
+    holePars: srcRound.holePars || [],
+    par: srcRound.par,
+    clubSnapshot: srcRound.clubSnapshot,
+    totalScore: srcRound.totalScore,
+    source: srcRound.source || 'manual',
+    holes: [],
+    singleHoleMode: true,
+    sourceRoundId,
+    sourceHoleNumber: holeNumber,
+    preloadedHoleData: srcHole
+  };
+  saveWIP(wip);
+  showView('scoring');
+}
+
+// Commit the edited single hole back into the source round in pjc_rounds.
+// Called from saveHole when SCR.round.singleHoleMode is true.
+function commitSingleHoleBack() {
+  const wip = SCR.round;
+  if (!wip || !wip.singleHoleMode) return;
+  const updatedHole = (wip.holes || []).find(h => h.number === wip.sourceHoleNumber);
+  if (!updatedHole) return;
+  const allRounds = getRounds();
+  const ri = allRounds.findIndex(r => r.id === wip.sourceRoundId);
+  if (ri < 0) { saveWIP(null); showView('home'); return; }
+  const srcRound = allRounds[ri];
+  const hi = (srcRound.holes || []).findIndex(h => h.number === wip.sourceHoleNumber);
+  if (hi >= 0) srcRound.holes[hi] = updatedHole; else srcRound.holes.push(updatedHole);
+  calcRoundTotal(srcRound);
+  allRounds[ri] = srcRound;
+  saveRounds(allRounds);
+  byronClearRoundCache(srcRound.id);
+  saveWIP(null);
+  SCR.round = null; SCR.holes = [];
+  DET.roundId = srcRound.id; DET.openHoles.clear();
+  toast('Hole saved \u2713');
+  showView('detail');
 }
 
 // ── PHASE 1: SEQUENCE BUILDER ──────────────────────────────────
@@ -3810,6 +3960,12 @@ function saveHole(idx) {
   hs.saved = true;
   hs.savedScore = score;
 
+  // COBALT RIVER — single-hole re-entry: commit back to source round, skip auto-advance
+  if (SCR.round?.singleHoleMode) {
+    commitSingleHoleBack();
+    return;
+  }
+
   const nextIdx = SCR.holes.findIndex((h,i)=>i>idx&&!h.saved);
   if (nextIdx>=0) openWizHole(nextIdx);
   else { SCR.activeIdx=null; renderScoringScreen(); }
@@ -3855,6 +4011,16 @@ function finishManualRound() {
 }
 
 function abandonRound() {
+  // COBALT RIVER — single-hole re-entry: abandon = discard changes, return to round detail
+  if (SCR.round?.singleHoleMode) {
+    if (!confirm('Cancel re-entry? Your original hole data will be preserved.')) return;
+    const srcId = SCR.round.sourceRoundId;
+    saveWIP(null);
+    SCR.round = null; SCR.holes = [];
+    DET.roundId = srcId; DET.openHoles.clear();
+    showView('detail');
+    return;
+  }
   if (!confirm('Abandon entry? Your progress is saved in WIP and you can resume later.')) return;
   showView('home');
 }
@@ -4260,6 +4426,10 @@ function detailHoleHTML(h, idx, round) {
             <button onclick="cancelHoleEdit(${idx})" class="btn btn-outline btn-sm" style="flex:1">Cancel</button>
             <button onclick="saveHoleEdit(${idx})" class="btn btn-gold btn-sm" style="flex:1">Save</button>
           </div>
+          <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--border2)">
+            <button onclick="confirmReenterHole(${idx})" class="btn btn-danger btn-sm" style="width:100%">\u21bb Re-enter hole</button>
+            <div style="font-size:10px;color:var(--chalk3);margin-top:4px;text-align:center">Walk through the hole again \u2014 current data pre-fills the wizard</div>
+          </div>
         </div>
       </div>`;
     } else {
@@ -4365,6 +4535,20 @@ function saveHoleEdit(idx) {
   DET.editHoles.delete(idx);
   renderDetail();
   toast('Hole updated \u2713');
+}
+
+// JASPER BEACON — confirm + dispatch to COBALT RIVER re-entry flow
+function confirmReenterHole(idx) {
+  const round = getRounds().find(r => r.id === DET.roundId);
+  if (!round) return;
+  const holes = (round.holes||[]).sort((a,b)=>a.number-b.number);
+  const hole = holes[idx];
+  if (!hole) return;
+  const msg = 'Re-enter H' + hole.number + '?\n\n'
+    + 'You\'ll walk through the full hole again. Current shots, putts, and score will be pre-filled \u2014 change any, or keep them.\n\n'
+    + 'Saving overwrites the hole and resets Byron\'s analysis for this round.';
+  if (!confirm(msg)) return;
+  startHoleReentry(round.id, hole.number);
 }
 
 function detStepScore(idx, delta) {
