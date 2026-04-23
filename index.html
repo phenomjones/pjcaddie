@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.13.11 · Apr 22, 2026 -->
+<!-- PJ Caddie v7.13.12 · Apr 22, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.13.11 · Apr 22, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.13.12 · Apr 22, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -772,7 +772,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.13.11 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.13.12 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -3330,13 +3330,21 @@ function renderSequenceBuilder(hs, idx) {
         const canEdit = item.type==='tee' || item.type==='approach';
         const isEditing = hs.editingSeqIdx === i;
         const editPanel = canEdit && isEditing ? seqEditPanel(idx, i, item, hs) : '';
+        // IRON GARDEN — inline ↑/↓ reorder arrows. Shown only on reorderable shot types;
+        // disabled when the adjacent neighbor blocks the swap (e.g. locked par-3 tee approach).
+        const showReorder = isReorderable(item, i, hs);
+        const upOK = canMoveSeqItem(hs, i, -1);
+        const dnOK = canMoveSeqItem(hs, i, 1);
+        const arrowBtn = (dir, ok, glyph) => `<button ${ok?'':'disabled'} onclick="moveSeqItem(${idx},${i},${dir})" style="background:none;border:none;color:${ok?'var(--gold)':'var(--chalk3)'};opacity:${ok?'.75':'.22'};cursor:${ok?'pointer':'not-allowed'};font-size:15px;padding:4px 3px;line-height:1">${glyph}</button>`;
+        const reorderHTML = showReorder ? arrowBtn(-1, upOK, '\u2191') + arrowBtn(1, dnOK, '\u2193') : '';
         return `<div style="background:var(--ink2);border:1px solid ${isEditing?'var(--gold)':'var(--border)'};border-radius:var(--rs);margin-bottom:6px;overflow:hidden">
-          <div style="display:flex;align-items:center;gap:10px;padding:9px 12px">
+          <div style="display:flex;align-items:center;gap:6px;padding:9px 12px">
             <span style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);min-width:24px">${i+1}</span>
-            <div style="flex:1">
+            <div style="flex:1;min-width:0">
               <div style="font-size:14px;font-weight:500;color:var(--chalk)">${seqItemLabel(item)}</div>
               ${detail?`<div style="font-size:11px;color:var(--chalk3);margin-top:1px">${detail}</div>`:''}
             </div>
+            ${reorderHTML}
             ${canEdit?`<button style="background:none;border:none;color:${isEditing?'var(--gold)':'var(--chalk3)'};cursor:pointer;font-size:15px;padding:4px 6px;line-height:1" onclick="toggleSeqEdit(${idx},${i})">\u270f\ufe0f</button>`:''}
             <button style="background:none;border:none;color:var(--chalk3);cursor:pointer;font-size:18px;padding:4px 8px;line-height:1" onclick="removeFromSequence(${idx},${i})">\u00d7</button>
           </div>
@@ -3416,6 +3424,34 @@ function addToSequence(idx, type) {
   renderScoringScreen();
 }
 
+// IRON GARDEN — sequence reorder helpers.
+// Reorderable = real shot types. Non-reorderable: putt (must stay at end),
+// retee/drop (penalty semantics tied to surrounding shots), and the par-3 mandatory
+// first approach (isTeeShot, must stay at position 0).
+function isReorderable(item, seqIdx, hs) {
+  if (!item) return false;
+  if (item.type === 'putt' || item.type === 'retee' || item.type === 'drop') return false;
+  if (hs.par === 3 && seqIdx === 0 && item.isTeeShot) return false;
+  return true;
+}
+function canMoveSeqItem(hs, seqIdx, direction) {
+  const newIdx = seqIdx + direction;
+  if (newIdx < 0 || newIdx >= hs.sequence.length) return false;
+  if (!isReorderable(hs.sequence[seqIdx], seqIdx, hs)) return false;
+  if (!isReorderable(hs.sequence[newIdx], newIdx, hs)) return false;
+  return true;
+}
+function moveSeqItem(idx, seqIdx, direction) {
+  const hs = SCR.holes[idx];
+  if (!canMoveSeqItem(hs, seqIdx, direction)) return;
+  const newIdx = seqIdx + direction;
+  [hs.sequence[seqIdx], hs.sequence[newIdx]] = [hs.sequence[newIdx], hs.sequence[seqIdx]];
+  // If the moved item was being edited, keep the edit panel following it
+  if (hs.editingSeqIdx === seqIdx) hs.editingSeqIdx = newIdx;
+  else if (hs.editingSeqIdx === newIdx) hs.editingSeqIdx = seqIdx;
+  renderScoringScreen();
+}
+
 function toggleSeqEdit(idx, seqIdx) {
   const hs = SCR.holes[idx];
   hs.editingSeqIdx = hs.editingSeqIdx === seqIdx ? null : seqIdx;
@@ -3423,19 +3459,31 @@ function toggleSeqEdit(idx, seqIdx) {
 }
 
 function seqEditPanel(idx, seqIdx, item, hs) {
+  // BRONZE LADDER — resolve the round's club list once, used by both tee and approach
+  // edit panels. Matches the detail wizard's resolution: dedupe by abbr from bagClubs.
+  const wip = SCR.round;
+  const todayClubs = wip?.bagClubs?.length
+    ? getBags().flatMap(b=>b.clubs).filter((c,_,a)=>wip.bagClubs.includes(c.abbr)&&a.findIndex(x=>x.abbr===c.abbr)===_)
+    : [];
+  const clubChipHTML = (currentAbbr) => {
+    if (!todayClubs.length) {
+      return `<div style="font-size:11px;color:var(--chalk3);padding:6px 0">No bag snapshot on this round \u2014 club edit unavailable.</div>`;
+    }
+    return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">${todayClubs.map(c => {
+      const sel = currentAbbr === c.abbr;
+      return `<button onclick="seqEditSetClub(${idx},${seqIdx},'${c.abbr}')" style="padding:7px 2px;font-size:12px;font-weight:500;background:${sel?'var(--gold)':'var(--ink3)'};color:${sel?'var(--ink)':'var(--chalk2)'};border:1px solid ${sel?'var(--gold)':'var(--border)'};border-radius:6px;cursor:pointer;font-family:'DM Mono',monospace">${c.abbr}</button>`;
+    }).join('')}</div>`;
+  };
+
   if (item.type === 'tee') {
     const positions = ['OBL','LL','L','C','R','RR','OBR'];
     const posBtns = positions.map(p =>
       `<button onclick="seqEditSetPos(${idx},${seqIdx},'${p}')" style="flex:1;padding:8px 2px;font-size:11px;font-weight:500;background:${item.position===p?'var(--gold)':'var(--ink3)'};color:${item.position===p?'var(--ink)':'var(--chalk2)'};border:1px solid ${item.position===p?'var(--gold)':'var(--border)'};border-radius:6px;cursor:pointer">${p}</button>`
     ).join('');
     return `<div style="padding:10px 12px 12px;border-top:1px solid var(--border2)">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-        <span style="font-size:12px;color:var(--chalk3);min-width:40px">Club</span>
-        <input type="text" value="${item.club||''}" placeholder="e.g. Dr" maxlength="4"
-          oninput="seqEditSetClub(${idx},${seqIdx},this.value)"
-          style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--chalk);font-size:14px;font-family:inherit">
-      </div>
-      <div style="font-size:12px;color:var(--chalk3);margin-bottom:6px">Position</div>
+      <div style="font-size:12px;color:var(--chalk3);margin-bottom:6px">Club</div>
+      ${clubChipHTML(item.club)}
+      <div style="font-size:12px;color:var(--chalk3);margin:10px 0 6px">Position</div>
       <div style="display:flex;gap:4px">${posBtns}</div>
     </div>`;
   }
@@ -3448,19 +3496,13 @@ function seqEditPanel(idx, seqIdx, item, hs) {
       return `<button ${dis?'disabled':''} onclick="seqEditSetZone(${idx},${seqIdx},'${field}',${z})" style="flex:1;padding:8px 0;font-size:12px;font-weight:500;background:${sel?'var(--gold)':'var(--ink3)'};color:${sel?'var(--ink)':dis?'var(--chalk3)':'var(--chalk2)'};border:1px solid ${sel?'var(--gold)':'var(--border)'};border-radius:4px;cursor:${dis?'not-allowed':'pointer'};opacity:${dis?'.32':'1'}">${z}</button>`;
     };
     return `<div style="padding:10px 12px 12px;border-top:1px solid var(--border2)">
-      <div style="display:flex;gap:10px;margin-bottom:10px">
-        <div style="flex:1;display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px;color:var(--chalk3);min-width:40px">Club</span>
-          <input type="text" value="${item.club||''}" placeholder="e.g. 7i" maxlength="4"
-            oninput="seqEditSetClub(${idx},${seqIdx},this.value)"
-            style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--chalk);font-size:14px;font-family:inherit">
-        </div>
-        <div style="flex:1;display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px;color:var(--chalk3);min-width:30px">Yds</span>
-          <input type="number" value="${item.yardage||''}" placeholder="145" min="1" max="300"
-            oninput="seqEditSetYards(${idx},${seqIdx},this.value)"
-            style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--chalk);font-size:14px;font-family:inherit">
-        </div>
+      <div style="font-size:12px;color:var(--chalk3);margin-bottom:6px">Club</div>
+      ${clubChipHTML(item.club)}
+      <div style="display:flex;align-items:center;gap:8px;margin:10px 0">
+        <span style="font-size:12px;color:var(--chalk3);min-width:30px">Yds</span>
+        <input type="number" value="${item.yardage||''}" placeholder="145" min="1" max="300"
+          oninput="seqEditSetYards(${idx},${seqIdx},this.value)"
+          style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--chalk);font-size:14px;font-family:inherit">
       </div>
       <div style="display:flex;gap:8px;margin-bottom:10px">
         <button onclick="seqEditSetResult(${idx},${seqIdx},'H')" style="flex:1;padding:10px;font-size:13px;font-weight:500;background:${item.result==='H'?'rgba(94,200,94,.18)':'var(--ink3)'};color:${item.result==='H'?'var(--green)':'var(--chalk2)'};border:1px solid ${item.result==='H'?'var(--green)':'var(--border)'};border-radius:var(--rs);cursor:pointer">\u2705 On Green</button>
@@ -3482,7 +3524,10 @@ function seqEditPanel(idx, seqIdx, item, hs) {
 }
 
 function seqEditSetClub(idx, seqIdx, val) {
-  SCR.holes[idx].sequence[seqIdx].club = val.trim() || null;
+  // BRONZE LADDER — val is now always a valid abbr from the round's bag snapshot
+  // (chip picker constrains entry). Re-render to update chip selection highlight.
+  SCR.holes[idx].sequence[seqIdx].club = val || null;
+  renderScoringScreen();
 }
 
 function seqEditSetPos(idx, seqIdx, val) {
