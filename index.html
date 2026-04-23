@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.13.10 · Apr 20, 2026 -->
+<!-- PJ Caddie v7.13.11 · Apr 22, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.13.10 · Apr 20, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.13.11 · Apr 22, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -772,7 +772,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.13.10 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.13.11 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -1474,6 +1474,17 @@ function getWIP() {
 }
 function saveWIP(r) { r ? localStorage.setItem('pjc_wip',JSON.stringify(r)) : localStorage.removeItem('pjc_wip'); }
 
+// AMBER COMPASS — Re-entry WIP is a SEPARATE storage slot from active-round WIP.
+// This lets a user re-enter a hole on a committed round while an active round is in
+// progress. The two WIPs are orthogonal: pjc_wip holds the active round (resumable,
+// shown in Home banner), pjc_wip_reentry holds the transient single-hole edit session
+// (not resumable, not shown anywhere — disappears on save/abandon).
+function getReentryWIP() {
+  try { return JSON.parse(localStorage.getItem('pjc_wip_reentry')||'null'); }
+  catch { return null; }
+}
+function saveReentryWIP(r) { r ? localStorage.setItem('pjc_wip_reentry',JSON.stringify(r)) : localStorage.removeItem('pjc_wip_reentry'); }
+
 // ── COURSE NOTES STORAGE ─────────────────────────────────────
 // Storage format: pjc_course_notes = { [courseId]: [{tee,approach,green}, ...] }
 
@@ -1931,11 +1942,12 @@ function renderHome() {
     const holesIn = wip.holes?.length || 0;
     const total = wip.holesPlayed || 0;
     const isPhoto = wip.source === 'photo_import';
-    wipEl.innerHTML = `<div style="background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.4);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px">
-      <div style="flex:1">
+    wipEl.innerHTML = `<div style="background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.4);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:600;color:var(--gold)">${isPhoto?'📷':'🏌️'} Round in Progress</div>
         <div style="font-size:11px;color:var(--chalk3);margin-top:3px">${wip.course||''} \xb7 ${d} \xb7 ${holesIn}/${total} holes saved</div>
       </div>
+      <button class="btn btn-danger btn-sm" onclick="abandonWIPFromHome()">Abandon</button>
       <button class="btn btn-gold btn-sm" onclick="resumeWIP()">Resume \u2192</button>
     </div>`;
     wipEl.style.display = '';
@@ -1952,9 +1964,22 @@ function renderHome() {
   el.innerHTML = rounds.map(roundRowHTML).join('');
 }
 
+// SLATE SHORE — abandon the active-round WIP from the home banner. Works whether the
+// WIP is a real in-progress round or a ghost from a crashed session.
+function abandonWIPFromHome() {
+  if (!confirm('Abandon this round in progress? Any unsaved holes will be lost.')) return;
+  saveWIP(null);
+  toast('Round abandoned');
+  renderHome();
+}
+
 function resumeWIP() {
   const wip = getWIP();
   if (!wip) return;
+  // AMBER COMPASS — resume is always active-round intent; clear any orphan re-entry
+  // WIP so initScoring picks up the right session. Re-entries are transient; if one
+  // was abandoned via navigation rather than Save/Abandon, it dies here.
+  saveReentryWIP(null);
   if (wip.source === 'photo_import') showView('photo-import');
   else showView('scoring');
 }
@@ -2489,6 +2514,7 @@ function confirmClearAll() {
   localStorage.removeItem('pjc_rounds');
   localStorage.removeItem('pjc_courses');
   localStorage.removeItem('pjc_wip');
+  localStorage.removeItem('pjc_wip_reentry'); // AMBER COMPASS
   toast('Data cleared');
   renderSettings();
 }
@@ -2690,6 +2716,9 @@ function startRoundFromBag() {
   }).filter(Boolean);
   wip.clubSnapshot = buildClubSnapshot(BS.selectedClubIds, bags, BS.shaftOverrides);
   saveWIP(wip);
+  // AMBER COMPASS — starting a new round is active-round intent; clear any orphan
+  // re-entry WIP so initScoring reads the fresh round WIP, not the stale re-entry.
+  saveReentryWIP(null);
   showView('scoring');
 }
 
@@ -3021,7 +3050,10 @@ function getDetailTasks(hs) {
 }
 
 function initScoring() {
-  const round = getWIP();
+  // AMBER COMPASS — re-entry WIP takes priority. If startHoleReentry ran, it wrote to
+  // pjc_wip_reentry. resumeWIP clears that slot before routing here, so seeing a
+  // re-entry WIP means the caller was startHoleReentry. Otherwise use active-round WIP.
+  const round = getReentryWIP() || getWIP();
   if (!round) { showView('home'); return; }
   SCR.round = round;
   const courses = getCourses();
@@ -3204,11 +3236,9 @@ function preloadHoleIntoSCR(savedHole, holeYards) {
 
 // Entry point for re-entering a single hole on a committed round.
 // Callable from console or (eventually) from the JASPER BEACON button.
+// AMBER COMPASS — no collision guard. Re-entry WIP lives in its own storage slot
+// (pjc_wip_reentry) so an active round in progress (pjc_wip) is never disturbed.
 function startHoleReentry(sourceRoundId, holeNumber) {
-  if (getWIP()) {
-    alert('You have a round in progress. Finish or abandon it before re-entering a hole.');
-    return;
-  }
   const srcRound = getRounds().find(r => r.id === sourceRoundId);
   if (!srcRound) { alert('Round not found.'); return; }
   const srcHole = (srcRound.holes || []).find(h => h.number === holeNumber);
@@ -3237,7 +3267,7 @@ function startHoleReentry(sourceRoundId, holeNumber) {
     sourceHoleNumber: holeNumber,
     preloadedHoleData: srcHole
   };
-  saveWIP(wip);
+  saveReentryWIP(wip); // AMBER COMPASS — separate slot
   showView('scoring');
 }
 
@@ -3250,7 +3280,7 @@ function commitSingleHoleBack() {
   if (!updatedHole) return;
   const allRounds = getRounds();
   const ri = allRounds.findIndex(r => r.id === wip.sourceRoundId);
-  if (ri < 0) { saveWIP(null); showView('home'); return; }
+  if (ri < 0) { saveReentryWIP(null); showView('home'); return; } // AMBER COMPASS
   const srcRound = allRounds[ri];
   const hi = (srcRound.holes || []).findIndex(h => h.number === wip.sourceHoleNumber);
   if (hi >= 0) srcRound.holes[hi] = updatedHole; else srcRound.holes.push(updatedHole);
@@ -3258,7 +3288,7 @@ function commitSingleHoleBack() {
   allRounds[ri] = srcRound;
   saveRounds(allRounds);
   byronClearRoundCache(srcRound.id);
-  saveWIP(null);
+  saveReentryWIP(null); // AMBER COMPASS — only clear re-entry; active round WIP untouched
   SCR.round = null; SCR.holes = [];
   DET.roundId = srcRound.id; DET.openHoles.clear();
   toast('Hole saved \u2713');
@@ -3955,7 +3985,9 @@ function saveHole(idx) {
   const round = SCR.round;
   const ei = round.holes.findIndex(h=>h.number===hs.holeNum);
   if (ei>=0) round.holes[ei]=hole; else round.holes.push(hole);
-  saveWIP(round);
+  // AMBER COMPASS — persist to the correct slot based on mode. In single-hole mode
+  // this keeps the active-round WIP untouched; in regular mode behavior is unchanged.
+  if (round.singleHoleMode) saveReentryWIP(round); else saveWIP(round);
 
   hs.saved = true;
   hs.savedScore = score;
@@ -4015,7 +4047,7 @@ function abandonRound() {
   if (SCR.round?.singleHoleMode) {
     if (!confirm('Cancel re-entry? Your original hole data will be preserved.')) return;
     const srcId = SCR.round.sourceRoundId;
-    saveWIP(null);
+    saveReentryWIP(null); // AMBER COMPASS — only clear re-entry; active round WIP untouched
     SCR.round = null; SCR.holes = [];
     DET.roundId = srcId; DET.openHoles.clear();
     showView('detail');
