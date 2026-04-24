@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.14.2 · Apr 22, 2026 -->
+<!-- PJ Caddie v7.14.3 · Apr 22, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.14.2 · Apr 22, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.14.3 · Apr 22, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -689,7 +689,7 @@ body{display:flex;flex-direction:column}
   <div class="scroll-body">
     <div class="pad pad-b">
       <div style="font-size:12px;color:var(--chalk3);margin-bottom:10px;line-height:1.5">Upload a screenshot (Bluegolf or similar) or a photo of a physical scorecard. Byron will extract the course structure and tee yardages.</div>
-      <input type="file" id="ci-file-input" accept="image/*" capture="environment" style="display:none" onchange="onCourseImportFileSelected(this.files)">
+      <input type="file" id="ci-file-input" accept="image/*" style="display:none" onchange="onCourseImportFileSelected(this.files)">
       <div class="pi-drop" id="ci-drop-zone" onclick="document.getElementById('ci-file-input').click()">
         <div class="pi-drop-icon">📇</div>
         <div class="pi-drop-msg">Tap to select scorecard photo<br><span style="font-size:12px;opacity:.6">Bluegolf screenshot or physical card</span></div>
@@ -824,7 +824,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.14.2 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.14.3 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
