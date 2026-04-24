@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.14.4 · Apr 22, 2026 -->
+<!-- PJ Caddie v7.14.5 · Apr 22, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.14.4 · Apr 22, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.14.5 · Apr 22, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -824,7 +824,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.14.4 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.14.5 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -2500,8 +2500,11 @@ function ghPushRounds() {
   }));
 }
 function ghPushCourses() {
+  // AZURE CASCADE — include pjc_courses (the course LIST with tees/pars/yards)
+  // in the push payload. Previously only course annotations were synced; the
+  // actual course records were never propagated between devices.
   return ghPushSection('Courses', 'gh-push-courses-btn', now => ({
-    fields: { courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), masterTees: JSON.parse(localStorage.getItem('pjc_master_tees')||'{}'), courseBags: JSON.parse(localStorage.getItem('pjc_course_bags')||'{}'), courseCoords: JSON.parse(localStorage.getItem('pjc_course_coords')||'{}'), elevation: JSON.parse(localStorage.getItem('pjc_elevation')||'{}'), elevationSegments: JSON.parse(localStorage.getItem('pjc_elevation_segments')||'{}'), notesTs: now },
+    fields: { courses: JSON.parse(localStorage.getItem('pjc_courses')||'[]'), courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), masterTees: JSON.parse(localStorage.getItem('pjc_master_tees')||'{}'), courseBags: JSON.parse(localStorage.getItem('pjc_course_bags')||'{}'), courseCoords: JSON.parse(localStorage.getItem('pjc_course_coords')||'{}'), elevation: JSON.parse(localStorage.getItem('pjc_elevation')||'{}'), elevationSegments: JSON.parse(localStorage.getItem('pjc_elevation_segments')||'{}'), notesTs: now },
     metaFields: { notesTs: now }
   }));
 }
@@ -2583,6 +2586,10 @@ async function ghPullRounds() {
 }
 function ghPullCourses() {
   return ghPullSection('Courses', 'gh-pull-courses-btn', 'notesTs', remote => {
+    // AZURE CASCADE — restore pjc_courses. Guard with Array.isArray so a malformed
+    // payload doesn't overwrite local courses with a non-array. Existing fields
+    // retain their object-shape guards below.
+    if (Array.isArray(remote.courses)) localStorage.setItem('pjc_courses', JSON.stringify(remote.courses));
     if (remote.courseNotes) localStorage.setItem('pjc_course_notes', JSON.stringify(remote.courseNotes));
     if (remote.masterTees) localStorage.setItem('pjc_master_tees', JSON.stringify(remote.masterTees));
     if (remote.courseBags) localStorage.setItem('pjc_course_bags', JSON.stringify(remote.courseBags));
