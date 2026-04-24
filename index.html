@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.13.12 · Apr 22, 2026 -->
+<!-- PJ Caddie v7.14.0 · Apr 22, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.13.12 · Apr 22, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.14.0 · Apr 22, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -679,6 +679,57 @@ body{display:flex;flex-direction:column}
   </div>
 </div>
 
+<!-- VIOLET MARSH — COURSE IMPORT -->
+<div class="view" id="view-course-import">
+  <div class="safe-top"></div>
+  <div class="hdr">
+    <div class="hdr-row"><button class="back-btn" onclick="showView('course-hub')">Back</button></div>
+    <div class="hdr-title">Import Scorecard</div>
+  </div>
+  <div class="scroll-body">
+    <div class="pad pad-b">
+      <div style="font-size:12px;color:var(--chalk3);margin-bottom:10px;line-height:1.5">Upload a screenshot (Bluegolf or similar) or a photo of a physical scorecard. Byron will extract the course structure and tee yardages.</div>
+      <input type="file" id="ci-file-input" accept="image/*" capture="environment" style="display:none" onchange="onCourseImportFileSelected(this.files)">
+      <div class="pi-drop" id="ci-drop-zone" onclick="document.getElementById('ci-file-input').click()">
+        <div class="pi-drop-icon">📇</div>
+        <div class="pi-drop-msg">Tap to select scorecard photo<br><span style="font-size:12px;opacity:.6">Bluegolf screenshot or physical card</span></div>
+      </div>
+      <div class="pi-thumb" id="ci-thumb" style="display:none">
+        <img id="ci-thumb-img" alt="Selected scorecard">
+        <div class="pi-thumb-meta" id="ci-thumb-meta"></div>
+      </div>
+      <div class="pi-status" id="ci-status"></div>
+      <button class="btn btn-gold" id="ci-parse-btn" onclick="parseScorecardWithByron()" disabled>Parse scorecard →</button>
+      <button class="btn btn-outline" style="margin-top:8px" id="ci-change-btn" onclick="document.getElementById('ci-file-input').click()">Change photo</button>
+    </div>
+  </div>
+</div>
+
+<!-- COPPER BROOK — COURSE REVIEW -->
+<div class="view" id="view-course-review">
+  <div class="safe-top"></div>
+  <div class="hdr">
+    <div class="hdr-row"><button class="back-btn" onclick="showView('course-import')">Back</button></div>
+    <div class="hdr-title">Review Scorecard</div>
+  </div>
+  <div class="scroll-body">
+    <div class="pad pad-b" id="cr-body"></div>
+  </div>
+</div>
+
+<!-- INDIGO FORGE — COURSE EDIT -->
+<div class="view" id="view-course-edit">
+  <div class="safe-top"></div>
+  <div class="hdr">
+    <div class="hdr-row"><button class="back-btn" onclick="showView('course-hub')">Back</button></div>
+    <div class="hdr-title">Edit Course</div>
+  </div>
+  <div class="scroll-body">
+    <div class="pad pad-b" id="ce-body"></div>
+  </div>
+</div>
+
+
 <!-- SETTINGS -->
 <div class="view" id="view-settings">
   <div class="safe-top"></div>
@@ -772,7 +823,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.13.12 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.14.0 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -811,6 +862,10 @@ body{display:flex;flex-direction:column}
   <div class="hdr">
     <div class="hdr-row">
       <button class="back-btn" onclick="showView('settings')">Back</button>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-outline btn-sm" onclick="openCourseEdit()">Edit</button>
+        <button class="btn btn-gold btn-sm" onclick="openCourseImport()">+ Import</button>
+      </div>
     </div>
     <div class="hdr-title">Course Hub</div>
   </div>
@@ -1316,7 +1371,13 @@ function byronGameplanPrompt(bundle, holesResult, patternsResult) {
 // Club list \u2014 used by scoring screen (Phase 4)
 const CLUBS = ['Dr','3w','5w','2h','3h','4h','5h','3i','4i','5i','6i','7i','8i','9i','PW','GW','SW','LW','PT','TW','HW','?'];
 
-// Byron parser prompt — new notation system (v7)
+// JADE SUMMIT — Scorecard parser prompt. Reads a scorecard image (Bluegolf screenshot
+// or physical scorecard photo) and extracts course name, hole pars, and one or more
+// tee sets with yardages. Ignores handwritten round data, player names, dates, ads.
+const BYRON_SCORECARD_PROMPT = `You are Byron, a golf course scorecard parser. You are reading a photo of a golf scorecard and extracting the course structure: name, hole count, par per hole, and one or more tee sets with yardages.\n\nSOURCES YOU WILL SEE:\n1. Bluegolf.com screenshots \u2014 tight crop of a table, usually ONE tee set at a time\n2. Physical scorecards (photos) \u2014 wider image, OFTEN MULTIPLE tee sets, may include ads, logos, handwritten round data\n3. Course website screenshots \u2014 varies\n\nSTEP 1 \u2014 IDENTIFY THE COURSE\nFind the course name. Usually a large title at the top or a logo/letterhead. Use the printed name verbatim (e.g. "Paramount Country Club", not "Paramount CC"). If unreadable, return parseable:false.\n\nSTEP 2 \u2014 IDENTIFY THE SCORECARD GRID\nLook for the tabular structure showing hole numbers 1 through 9 or 1 through 18 across the top (or down the side). Each row (or column) represents either a tee set or a reference row (Par, Handicap/HDCP). Find:\n- The Par row \u2014 contains 9 or 18 par values, typically 3/4/5\n- One or more tee-set rows \u2014 each labeled with a color or descriptor (Blue, White, Red, Black, Championship, Senior, Forward, Gold, etc.) and containing 9 or 18 yardage values\n\nSTEP 3 \u2014 EXTRACT TEES\nFor each tee-set row found, emit: {name, holePars, holeYards}\n- name: the label used on the scorecard VERBATIM (e.g. "Blue", "Championship", "Silver Tees"). Do not normalize, translate, or reword.\n- holePars: array of integers from the Par row, length matches hole count\n- holeYards: array of integers from this tee row, length matches hole count\nIf only front 9 or back 9 is visible, emit 9 values. If 18 holes visible, emit 18.\n\nSTEP 4 \u2014 IGNORE\nDo NOT extract or emit:\n- Handicap / HDCP / Stroke Index rows\n- Player names, scores, dates, handwritten marks\n- Slope / Rating / Course Rating numbers\n- Advertisements, sponsor logos\n- Total / OUT / IN / 9 summary columns (use individual hole values only)\n\nSTEP 5 \u2014 VALIDATE\n- holePars length must equal holes count (9 or 18)\n- holeYards length per tee must equal holes count\n- All pars in range 3-6, all yardages in range 50-750\nIf any tee row has mismatched length or invalid values, either fix obvious OCR slips (e.g. 4O\u21924O0 unlikely, flag) or flag in parseNotes.\n\nSTEP 6 \u2014 OUTPUT\nReturn ONLY valid JSON. No preamble, no markdown fences.\nIf the image is not a readable scorecard: {"parseable":false,"parseError":"<short reason>"}\nOtherwise:\n{"parseable":true,"courseName":"Paramount Country Club","holes":18,"tees":[{"name":"Blue","holePars":[4,4,3,5,4,4,3,5,4,4,4,3,5,4,4,3,4,5],"holeYards":[402,387,178,510,420,395,165,525,398,410,395,180,495,405,410,170,390,520]},{"name":"White","holePars":[4,4,3,5,4,4,3,5,4,4,4,3,5,4,4,3,4,5],"holeYards":[378,365,162,490,400,378,148,505,378,392,375,162,475,385,388,155,370,495]}],"confidence":"high","parseNotes":""}\n\nCONFIDENCE: high=clear scan, all values readable, lengths match / medium=minor uncertainty on 1-2 cells / low=multiple uncertain values or structural issues\n\nRULES THAT OVERRIDE EVERYTHING:\n1. Use the course name verbatim. Do not abbreviate.\n2. Use tee labels verbatim. Do not translate "Championship" to "Black".\n3. Never emit a handicap or slope row as pars/yards.\n4. Never include Total/OUT/IN columns in the arrays.\n5. If only front 9 or back 9 visible, emit 9 values \u2014 do not fabricate the missing nine.\n6. Do not parse handwritten round data \u2014 scorecard structure only.\n7. Return only JSON.`;
+
+
+// Byron parser prompt — handwritten round notation (v7)
 const BYRON_PARSER_PROMPT = `You are Byron, a golf shot data parser. You are reading a photo of handwritten golf notes and extracting structured shot data hole by hole.\n\nROUND CONTEXT:\nCourse: {{course}}\nDate: {{date}}\nExpected holes: {{expectedHoles}}\nPar per hole: {{holePars}}\n\nSTEP 1 \u2014 FIND THE HOLES\nEach hole begins with a label in the format H1, H2, H3 \u2026 H18 written by hand.\n- Scan the entire image for these labels before parsing anything.\n- Do not assume holes are sequential by position on the page \u2014 always read the written label.\n- Do not infer a hole number if you cannot read it clearly \u2014 flag it instead.\n- Everything written between H[n] and the next H[n+anything] belongs to hole n.\n- The first hole may appear at the very top edge of the image \u2014 do not skip it.\n- Ignore all pre-printed text. Parse handwritten content only.\nAfter finding all holes, compare against expectedHoles. Any expected hole not found must be flagged as missing.\n\nSTEP 2 \u2014 PARSE EACH HOLE\nShots are separated by \u00b7 (middle dot). Element order within each shot is flexible.\n\nTEE SHOT (par 4 and par 5 holes only):\nFirst shot is the tee shot. Contains:\n- Club: Dr, 3w, 5w, 2h, 3h, 4h, 5h, 3i, 4i, 5i, 6i, 7i, 8i, 9i, PW, GW, SW, LW, Rh\n- Position (exactly one of): OBL, OBR, LL, RR, L, R, C\n  OBL=OB or hazard left, OBR=OB or hazard right, LL=left out of position, RR=right out of position, L=left in play, R=right in play, C=center/fairway\n- After OBL or OBR expect RT or Rehit [club] [position] (rehit from original spot) or D (drop). Flag if neither follows.\nCRITICAL \u2014 L vs LY: L as tee position is single capital letter in tee shot context. LY or LAY is a layup appearing after tee shot. Never confuse these.\n\nPAR 3 TEE SHOT: Par 3 holes have NO tee shot line. First shot is approach. Do not look for position values.\n\nAPPROACH SHOT:\n- Yardage: standalone integer (e.g. 145)\n- Zone pair: two digits separated by ' or : (e.g. 2'7 or 2:7). First=intendedZone(1-9), second=finishZone(1-9)\n- Result: H (hit green) or M (missed)\n- Optional club, optional lie: Rh (rough) or Sd (sand). Omit=fairway.\nZone grid: 7|8|9 (long) / 4|5|6 (mid) / 1|2|3 (short) \u2014 L|C|R\n\nSHORT GAME: Ch=chip, REC or RC=recovery, LAY or LY=layup, X=untracked, D=drop, RT or Rehit [club] [pos]=rehit from original spot, TW=Texas Wedge (putt from off green), HW=Hybrid Wedge (putt with hybrid from off green)\n\nPIN: p followed by digit 1-9 (e.g. p6)\n\nPUTTING: begins with \\ or / or |\n- Single number = count only (e.g. \\ 2)\n- Multiple numbers = distances in feet (e.g. \\ 15 3)\n\nSCORE: standalone number. Read the written score. Do not calculate. Compare to shot count and flag if different.\n\nSTEP 3 \u2014 VALIDATE\n1. SCORE_MISMATCH: shot count vs written score differ\n2. HOLE_MISSING: expected hole not in image\n3. FIELD_UNCLEAR: cannot read a specific field\n4. FIELD_MISSING: required field absent\n5. OB_UNRESOLVED: OBL/OBR not followed by RT or D\n6. SCORE_UNCLEAR: cannot read written score\nConfidence: high=all clear+score matches, medium=minor uncertainty, low=multiple issues or mismatch\n\nSTEP 4 \u2014 OUTPUT\nReturn ONLY valid JSON. No preamble, no markdown fences.\nIf no H[n] labels found: {"parseable":false,"parseError":"No hole labels found"}\nOtherwise:\n{"parseable":true,"holes":[{"number":4,"par":5,"score":6,"notation_raw":"Dr RR \u00b7 LY \u00b7 Rh 170 2'7 M \u00b7 p4 \\\\ 3 60","confidence":"high","flags":[],"pinZone":4,"shots":[{"type":"tee","club":"Dr","position":"RR","isTeeShot":true},{"type":"layup"},{"type":"approach","club":"Rh","yardage":170,"intendedZone":2,"finishZone":7,"result":"M","lie":"Rh","isTeeShot":false}],"putts":{"count":2,"distances":[3,60]}}],"missingHoles":[],"parseNotes":""}\n\nFLAG FORMAT: {"type":"score_mismatch","field":"score","detail":"Byron counts 6, written score reads 7"}\nSHOT TYPES: tee|approach|chip|recovery|layup|untracked|retee|drop\nRESULT (approach): H|M\nLIE (approach): null|"Rh"|"Sd"\nPOSITION (tee/retee): OBL|OBR|LL|RR|L|R|C\n\nRULES THAT OVERRIDE EVERYTHING:\n1. Never skip the first hole even at the top edge.\n2. Never infer a hole number \u2014 always read H[n].\n3. Never parse pre-printed scorecard text.\n4. Par 3 holes: no tee shot, first shot is approach.\n5. L (position) and LY/LAY (layup) are never interchangeable.\n6. OBL or OBR must be followed by RT/Rehit or D. Flag if not.\n7. Read the written score. Do not calculate it.\n8. Flag uncertainty \u2014 never guess silently.\n9. Return only JSON.`;
 
 // ── PRELOADED COURSES ────────────────────────────────────────
@@ -1930,6 +1991,9 @@ function showView(id) {
   if (id==='review') renderReview();
   if (id==='course-hub') initCourseHub();
   if (id==='player-hub') initPlayerHub();
+  if (id==='course-import') initCourseImport();   // VIOLET MARSH
+  if (id==='course-review') renderCourseReview(); // COPPER BROOK
+  if (id==='course-edit') renderCourseEdit();     // INDIGO FORGE
 }
 
 // ── HOME ─────────────────────────────────────────────────────
@@ -5829,6 +5893,459 @@ function toast(msg,dur) {
   const el=document.getElementById('toast');
   el.textContent=msg; el.classList.add('show');
   clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),dur||2400);
+}
+
+
+// ── VIOLET MARSH · COPPER BROOK · INDIGO FORGE ───────────────
+// Scorecard import + course edit. Shares one Claude vision parser
+// (BYRON_SCORECARD_PROMPT) handling single-tee Bluegolf screenshots
+// and multi-tee physical scorecard photos. Destination picker on the
+// review screen routes either to createCourse (new) or appends tees
+// to an existing course. INDIGO FORGE provides direct tee edit.
+
+const CI = { file:null, base64:null, mediaType:null, parsed:null };
+
+function openCourseImport() {
+  CI.file = null; CI.base64 = null; CI.mediaType = null; CI.parsed = null;
+  showView('course-import');
+}
+
+function initCourseImport() {
+  // Reset UI each time
+  const drop = document.getElementById('ci-drop-zone');
+  const thumb = document.getElementById('ci-thumb');
+  const status = document.getElementById('ci-status');
+  const parseBtn = document.getElementById('ci-parse-btn');
+  const changeBtn = document.getElementById('ci-change-btn');
+  if (drop) drop.style.display = CI.file ? 'none' : '';
+  if (thumb) thumb.style.display = CI.file ? '' : 'none';
+  if (status) { status.textContent = ''; status.className = 'pi-status'; }
+  if (parseBtn) parseBtn.disabled = !CI.file;
+  if (changeBtn) changeBtn.style.display = CI.file ? '' : 'none';
+  if (CI.file && CI.base64) {
+    document.getElementById('ci-thumb-img').src = 'data:' + CI.mediaType + ';base64,' + CI.base64;
+    document.getElementById('ci-thumb-meta').textContent = CI.file.name + ' \xb7 ' + Math.round(CI.file.size/1024) + ' KB';
+  }
+}
+
+function onCourseImportFileSelected(files) {
+  if (!files?.length) return;
+  const f = files[0];
+  if (!f.type.startsWith('image/')) {
+    const s = document.getElementById('ci-status');
+    s.textContent = 'Please select an image file.';
+    s.className = 'pi-status error';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = reader.result;
+    const comma = dataUrl.indexOf(',');
+    CI.file = f;
+    CI.mediaType = f.type;
+    CI.base64 = dataUrl.slice(comma + 1);
+    initCourseImport();
+  };
+  reader.readAsDataURL(f);
+}
+
+async function parseScorecardWithByron() {
+  const antKey = localStorage.getItem('caddie_ant_key');
+  if (!antKey) {
+    const s = document.getElementById('ci-status');
+    s.textContent = 'Anthropic API key not set. Add it in Settings.';
+    s.className = 'pi-status error';
+    return;
+  }
+  if (!CI.base64) return;
+  document.getElementById('ci-parse-btn').disabled = true;
+  const status = document.getElementById('ci-status');
+  status.textContent = 'Byron is reading the scorecard…';
+  status.className = 'pi-status';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': antKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        messages: [{ role:'user', content: [
+          { type:'image', source:{ type:'base64', media_type: CI.mediaType, data: CI.base64 } },
+          { type:'text', text: BYRON_SCORECARD_PROMPT }
+        ]}]
+      })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message || 'API error');
+    const raw = (data.content?.[0]?.text || '').trim();
+    const result = JSON.parse(raw);
+    if (!result.parseable) {
+      status.textContent = '\u26a0\ufe0f ' + (result.parseError || 'Could not parse scorecard');
+      status.className = 'pi-status error';
+      document.getElementById('ci-parse-btn').disabled = false;
+      return;
+    }
+    // Initialize destination state — default "new"
+    CI.parsed = {
+      courseName: result.courseName || '',
+      holes: result.holes || (result.tees?.[0]?.holePars?.length) || 18,
+      tees: (result.tees || []).map(t => ({
+        name: t.name || '',
+        holePars: [...(t.holePars || [])],
+        holeYards: [...(t.holeYards || [])]
+      })),
+      confidence: result.confidence || 'medium',
+      parseNotes: result.parseNotes || '',
+      destination: 'new',     // 'new' | 'existing'
+      existingCourseId: null  // set when destination === 'existing'
+    };
+    showView('course-review');
+  } catch(err) {
+    status.textContent = 'Error: ' + err.message;
+    status.className = 'pi-status error';
+    document.getElementById('ci-parse-btn').disabled = false;
+  }
+}
+
+// ── COPPER BROOK — Course review screen ─────────────────────
+// Destination picker at top (new vs existing), editable course name,
+// editable tee cards with inline par/yards grids. On save, routes to
+// createCourse OR appends tees to the existing course with tee-name
+// collisions resolved by REPLACE (user decision).
+
+function renderCourseReview() {
+  const p = CI.parsed;
+  const body = document.getElementById('cr-body');
+  if (!p) { body.innerHTML = '<div class="empty-msg">No scorecard loaded.</div>'; return; }
+
+  const existingCourses = getCourses().filter(c => !PRELOADED_COURSES.find(pc => pc.id === c.id));
+  const existingOptions = existingCourses.map(c =>
+    `<option value="${c.id}"${p.existingCourseId===c.id?' selected':''}>${escHtml(c.name)}</option>`
+  ).join('');
+
+  // Confidence badge
+  const confColor = p.confidence === 'high' ? 'var(--green)' : p.confidence === 'low' ? 'var(--red)' : 'var(--gold)';
+  const confBadge = `<span style="font-size:10px;padding:2px 8px;border-radius:100px;background:${confColor};color:var(--ink);font-weight:600;letter-spacing:1px;text-transform:uppercase">${p.confidence}</span>`;
+
+  // Destination picker
+  const destHTML = `<div class="card" style="margin-bottom:12px">
+    <div class="section-lbl" style="margin-bottom:8px">Destination</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <button onclick="crSetDestination('new')" style="flex:1;padding:10px;font-size:12px;font-weight:500;background:${p.destination==='new'?'var(--gold)':'var(--ink3)'};color:${p.destination==='new'?'var(--ink)':'var(--chalk2)'};border:1px solid ${p.destination==='new'?'var(--gold)':'var(--border)'};border-radius:var(--rs);cursor:pointer">New course</button>
+      <button onclick="crSetDestination('existing')" ${existingCourses.length===0?'disabled':''} style="flex:1;padding:10px;font-size:12px;font-weight:500;background:${p.destination==='existing'?'var(--gold)':'var(--ink3)'};color:${p.destination==='existing'?'var(--ink)':'var(--chalk2)'};border:1px solid ${p.destination==='existing'?'var(--gold)':'var(--border)'};border-radius:var(--rs);cursor:${existingCourses.length===0?'not-allowed':'pointer'};opacity:${existingCourses.length===0?'.4':'1'}">Add to existing</button>
+    </div>
+    ${p.destination==='new'
+      ? `<div class="inp-grp"><label class="inp-label">Course name</label><input class="inp" id="cr-name" value="${escHtml(p.courseName)}" oninput="crSetName(this.value)"></div>`
+      : `<div class="inp-grp"><label class="inp-label">Add these tees to</label><select class="inp" onchange="crSetExistingCourse(this.value)"><option value="">Select course\u2026</option>${existingOptions}</select></div>`
+    }
+  </div>`;
+
+  // Tee cards
+  const teeHTML = p.tees.map((t, ti) => teeReviewCardHTML(t, ti, p.holes)).join('');
+
+  // Collision warning for existing destination
+  let collisionWarn = '';
+  if (p.destination === 'existing' && p.existingCourseId) {
+    const ec = existingCourses.find(c => c.id === p.existingCourseId);
+    if (ec) {
+      const dupes = p.tees.filter(nt => ec.tees.some(et => et.name.toLowerCase() === (nt.name||'').toLowerCase())).map(t=>t.name);
+      if (dupes.length) {
+        collisionWarn = `<div style="padding:10px 12px;background:rgba(201,64,64,.10);border:1px solid rgba(201,64,64,.3);border-radius:var(--rs);margin-bottom:12px;font-size:12px;color:var(--chalk2)"><strong style="color:var(--red)">Will replace:</strong> tee name${dupes.length>1?'s':''} ${dupes.map(d=>'"'+escHtml(d)+'"').join(', ')} already exist${dupes.length>1?'':'s'} on ${escHtml(ec.name)} and will be replaced.</div>`;
+      }
+    }
+  }
+
+  // Parse notes
+  const notesHTML = p.parseNotes
+    ? `<div style="padding:8px 12px;background:var(--ink3);border-radius:var(--rs);margin-bottom:12px;font-size:11px;color:var(--chalk3);line-height:1.5"><strong style="color:var(--chalk2)">Byron's notes:</strong> ${escHtml(p.parseNotes)}</div>`
+    : '';
+
+  body.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span class="section-lbl">Parse confidence</span>${confBadge}
+    </div>
+    <div style="font-size:11px;color:var(--chalk3);margin-bottom:12px;line-height:1.5">Review and edit before saving. Pars and yardages are tappable.</div>
+    ${notesHTML}
+    ${destHTML}
+    ${collisionWarn}
+    <div style="margin-bottom:10px"><span class="section-lbl">Tees (${p.tees.length})</span></div>
+    ${teeHTML}
+    <button class="btn btn-gold" style="margin-top:14px" onclick="saveCourseReview()">Save</button>
+    <button class="btn btn-outline" style="margin-top:8px" onclick="if(confirm('Discard parsed scorecard?')) showView('course-hub')">Discard</button>
+  `;
+}
+
+function teeReviewCardHTML(t, ti, holes) {
+  const parInput = (i) => {
+    const v = t.holePars[i] ?? '';
+    return `<input type="number" min="3" max="6" value="${v}" oninput="crSetTeeCell(${ti},'holePars',${i},this.value)" style="width:100%;padding:5px 2px;background:var(--ink3);border:1px solid var(--border);border-radius:4px;color:var(--chalk);font-size:12px;text-align:center;font-family:'DM Mono',monospace">`;
+  };
+  const ydInput = (i) => {
+    const v = t.holeYards[i] ?? '';
+    return `<input type="number" min="50" max="750" value="${v}" oninput="crSetTeeCell(${ti},'holeYards',${i},this.value)" style="width:100%;padding:5px 2px;background:var(--ink3);border:1px solid var(--border);border-radius:4px;color:var(--chalk);font-size:12px;text-align:center;font-family:'DM Mono',monospace">`;
+  };
+  const parTotal = (t.holePars||[]).reduce((a,b)=>a+(Number(b)||0),0);
+  const ydTotal  = (t.holeYards||[]).reduce((a,b)=>a+(Number(b)||0),0);
+  const front9Par = Array.from({length:Math.min(9,holes)}, (_,i) => parInput(i)).join('');
+  const back9Par  = holes === 18 ? Array.from({length:9}, (_,i) => parInput(i+9)).join('') : '';
+  const front9Yd  = Array.from({length:Math.min(9,holes)}, (_,i) => ydInput(i)).join('');
+  const back9Yd   = holes === 18 ? Array.from({length:9}, (_,i) => ydInput(i+9)).join('') : '';
+  const removeBtn = CI.parsed.tees.length > 1
+    ? `<button onclick="crRemoveTee(${ti})" style="background:none;border:none;color:var(--chalk3);font-size:18px;cursor:pointer;padding:4px 6px;line-height:1">\u00d7</button>`
+    : '';
+
+  return `<div class="card" style="margin-bottom:10px;padding:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <input type="text" value="${escHtml(t.name)}" placeholder="Tee name (Blue, White\u2026)" oninput="crSetTeeName(${ti},this.value)" style="flex:1;padding:7px 10px;background:var(--ink3);border:1px solid var(--border);border-radius:6px;color:var(--chalk);font-size:14px;font-weight:500">
+      <div style="font-size:10px;color:var(--chalk3);text-align:right;line-height:1.3">Par ${parTotal||'-'}<br>${ydTotal||'-'} y</div>
+      ${removeBtn}
+    </div>
+    <div style="font-size:10px;color:var(--chalk3);letter-spacing:1px;margin-bottom:4px">PAR${holes===18?' \xb7 front 9':''}</div>
+    <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:3px;margin-bottom:${holes===18?'6':'8'}px">${front9Par}</div>
+    ${holes===18 ? `<div style="font-size:10px;color:var(--chalk3);letter-spacing:1px;margin-bottom:4px;opacity:.7">PAR \xb7 back 9</div><div style="display:grid;grid-template-columns:repeat(9,1fr);gap:3px;margin-bottom:8px">${back9Par}</div>` : ''}
+    <div style="font-size:10px;color:var(--chalk3);letter-spacing:1px;margin-bottom:4px">YARDS${holes===18?' \xb7 front 9':''}</div>
+    <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:3px">${front9Yd}</div>
+    ${holes===18 ? `<div style="font-size:10px;color:var(--chalk3);letter-spacing:1px;margin:6px 0 4px;opacity:.7">YARDS \xb7 back 9</div><div style="display:grid;grid-template-columns:repeat(9,1fr);gap:3px">${back9Yd}</div>` : ''}
+  </div>`;
+}
+
+// Helper reserved for future use in COPPER BROOK — kept as no-op to prevent ReferenceError
+// from any stale call site. Safe to delete after next COMMENT AUDIT.
+function teeGridBack9() { return ''; }
+function teeGridSection() { return ''; }
+
+function crSetName(v) { if (CI.parsed) CI.parsed.courseName = v; }
+function crSetDestination(dest) {
+  if (!CI.parsed) return;
+  CI.parsed.destination = dest;
+  if (dest === 'new') CI.parsed.existingCourseId = null;
+  renderCourseReview();
+}
+function crSetExistingCourse(id) {
+  if (!CI.parsed) return;
+  CI.parsed.existingCourseId = id || null;
+  renderCourseReview();
+}
+function crSetTeeName(ti, v) { if (CI.parsed) CI.parsed.tees[ti].name = v; }
+function crSetTeeCell(ti, field, i, v) {
+  if (!CI.parsed) return;
+  const n = parseInt(v);
+  CI.parsed.tees[ti][field][i] = Number.isFinite(n) ? n : 0;
+}
+function crRemoveTee(ti) {
+  if (!CI.parsed || CI.parsed.tees.length <= 1) return;
+  if (!confirm('Remove tee "' + (CI.parsed.tees[ti].name||'unnamed') + '" from this import?')) return;
+  CI.parsed.tees.splice(ti, 1);
+  renderCourseReview();
+}
+
+function saveCourseReview() {
+  const p = CI.parsed;
+  if (!p) return;
+
+  // Validate tees
+  for (let i = 0; i < p.tees.length; i++) {
+    const t = p.tees[i];
+    if (!t.name.trim()) { toast('Tee #' + (i+1) + ' needs a name'); return; }
+    if (t.holePars.length !== p.holes || t.holePars.some(v => !v || v < 3 || v > 6)) {
+      toast('Tee "' + t.name + '" has invalid pars'); return;
+    }
+    if (t.holeYards.length !== p.holes || t.holeYards.some(v => !v || v < 50 || v > 750)) {
+      toast('Tee "' + t.name + '" has invalid yardages'); return;
+    }
+  }
+
+  const all = getCourses();
+
+  if (p.destination === 'new') {
+    const name = p.courseName.trim();
+    if (!name) { toast('Course name required'); return; }
+    // Name collision check (excluding preloaded — those are immutable references)
+    if (all.find(c => c.name.toLowerCase() === name.toLowerCase() && !PRELOADED_COURSES.find(pc => pc.id === c.id))) {
+      toast('A course with this name already exists. Use "Add to existing" instead.'); return;
+    }
+    const tees = p.tees.map(t => ({ id: genId(), name: t.name.trim(), holePars: [...t.holePars], holeYards: [...t.holeYards] }));
+    const course = createCourse({ name, holes: p.holes, tees });
+    all.push(course);
+    saveUserCourses(all);
+    CH.courseId = course.id;
+    CH.teeIdx = 0;
+    toast('Course saved \u2713');
+    showView('course-hub');
+    return;
+  }
+
+  // destination === 'existing'
+  if (!p.existingCourseId) { toast('Select a course to add to'); return; }
+  const course = all.find(c => c.id === p.existingCourseId);
+  if (!course) { toast('Course not found'); return; }
+  if (course.holes !== p.holes) { toast('Hole count mismatch (' + p.holes + ' vs ' + course.holes + ')'); return; }
+
+  // Append tees — REPLACE on name collision per user decision
+  p.tees.forEach(nt => {
+    const name = nt.name.trim();
+    const existingIdx = course.tees.findIndex(et => et.name.toLowerCase() === name.toLowerCase());
+    const newTee = { id: existingIdx >= 0 ? course.tees[existingIdx].id : genId(), name, holePars: [...nt.holePars], holeYards: [...nt.holeYards] };
+    if (existingIdx >= 0) course.tees[existingIdx] = newTee;
+    else course.tees.push(newTee);
+  });
+  saveUserCourses(all);
+  CH.courseId = course.id;
+  CH.teeIdx = 0;
+  toast('Tees added to ' + course.name + ' \u2713');
+  showView('course-hub');
+}
+
+// ── INDIGO FORGE — Direct course editing ─────────────────────
+// Edit course name, per-tee name/pars/yards, delete tee, delete course.
+// No retroactive update to rounds already played — notice shown at top.
+// Preloaded courses (Paramount, Westchester) cannot be edited here.
+
+const CE = { courseId: null };
+
+function openCourseEdit() {
+  if (!CH.courseId) { toast('Select a course first'); return; }
+  const course = getCourses().find(c => c.id === CH.courseId);
+  if (!course) return;
+  if (PRELOADED_COURSES.find(pc => pc.id === course.id)) {
+    toast('Preloaded courses can\'t be edited. Import a replacement instead.');
+    return;
+  }
+  CE.courseId = CH.courseId;
+  showView('course-edit');
+}
+
+function renderCourseEdit() {
+  const body = document.getElementById('ce-body');
+  const course = getCourses().find(c => c.id === CE.courseId);
+  if (!course) { body.innerHTML = '<div class="empty-msg">Course not found.</div>'; return; }
+
+  const teesHTML = course.tees.map((t, ti) => teeEditCardHTML(t, ti, course.holes)).join('');
+
+  body.innerHTML = `
+    <div style="padding:10px 12px;background:var(--ink3);border-radius:var(--rs);margin-bottom:12px;font-size:11px;color:var(--chalk3);line-height:1.5">Editing tees does not change rounds already played \u2014 old rounds keep their original yardages.</div>
+    <div class="inp-grp" style="margin-bottom:12px">
+      <label class="inp-label">Course name</label>
+      <input class="inp" id="ce-name" value="${escHtml(course.name)}">
+    </div>
+    <div style="margin-bottom:10px"><span class="section-lbl">Tees (${course.tees.length})</span></div>
+    ${teesHTML}
+    <button class="btn btn-outline btn-sm" style="margin-top:4px" onclick="ceAddTee()">+ Add tee</button>
+    <button class="btn btn-gold" style="margin-top:18px" onclick="saveCourseEdit()">Save changes</button>
+    <button class="btn btn-danger" style="margin-top:8px" onclick="ceDeleteCourse()">Delete course</button>
+  `;
+}
+
+function teeEditCardHTML(t, ti, holes) {
+  const parInputs = Array.from({length:holes}, (_,i) => {
+    const v = t.holePars[i] ?? '';
+    return `<input type="number" min="3" max="6" value="${v}" id="ce-par-${ti}-${i}" style="width:100%;padding:5px 2px;background:var(--ink3);border:1px solid var(--border);border-radius:4px;color:var(--chalk);font-size:12px;text-align:center;font-family:'DM Mono',monospace">`;
+  });
+  const ydInputs = Array.from({length:holes}, (_,i) => {
+    const v = t.holeYards[i] ?? '';
+    return `<input type="number" min="50" max="750" value="${v}" id="ce-yd-${ti}-${i}" style="width:100%;padding:5px 2px;background:var(--ink3);border:1px solid var(--border);border-radius:4px;color:var(--chalk);font-size:12px;text-align:center;font-family:'DM Mono',monospace">`;
+  });
+  const front9Par = parInputs.slice(0,9).join('');
+  const back9Par  = holes === 18 ? parInputs.slice(9,18).join('') : '';
+  const front9Yd  = ydInputs.slice(0,9).join('');
+  const back9Yd   = holes === 18 ? ydInputs.slice(9,18).join('') : '';
+  const parTotal  = (t.holePars||[]).reduce((a,b)=>a+(Number(b)||0),0);
+  const ydTotal   = (t.holeYards||[]).reduce((a,b)=>a+(Number(b)||0),0);
+
+  return `<div class="card" style="margin-bottom:10px;padding:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <input type="text" value="${escHtml(t.name)}" id="ce-name-${ti}" placeholder="Tee name" style="flex:1;padding:7px 10px;background:var(--ink3);border:1px solid var(--border);border-radius:6px;color:var(--chalk);font-size:14px;font-weight:500">
+      <div style="font-size:10px;color:var(--chalk3);text-align:right;line-height:1.3">Par ${parTotal||'-'}<br>${ydTotal||'-'} y</div>
+      <button onclick="ceDeleteTee(${ti})" style="background:none;border:none;color:var(--chalk3);font-size:18px;cursor:pointer;padding:4px 6px;line-height:1">\u00d7</button>
+    </div>
+    <div style="font-size:10px;color:var(--chalk3);letter-spacing:1px;margin-bottom:4px">PAR${holes===18?' \xb7 front 9':''}</div>
+    <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:3px;margin-bottom:${holes===18?'6':'8'}px">${front9Par}</div>
+    ${holes===18?`<div style="font-size:10px;color:var(--chalk3);letter-spacing:1px;margin-bottom:4px;opacity:.7">PAR \xb7 back 9</div><div style="display:grid;grid-template-columns:repeat(9,1fr);gap:3px;margin-bottom:8px">${back9Par}</div>`:''}
+    <div style="font-size:10px;color:var(--chalk3);letter-spacing:1px;margin-bottom:4px">YARDS${holes===18?' \xb7 front 9':''}</div>
+    <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:3px">${front9Yd}</div>
+    ${holes===18?`<div style="font-size:10px;color:var(--chalk3);letter-spacing:1px;margin:6px 0 4px;opacity:.7">YARDS \xb7 back 9</div><div style="display:grid;grid-template-columns:repeat(9,1fr);gap:3px">${back9Yd}</div>`:''}
+  </div>`;
+}
+
+function ceAddTee() {
+  const all = getCourses();
+  const course = all.find(c => c.id === CE.courseId);
+  if (!course) return;
+  course.tees.push({ id: genId(), name: '', holePars: Array(course.holes).fill(4), holeYards: Array(course.holes).fill(350) });
+  saveUserCourses(all);
+  renderCourseEdit();
+}
+
+function ceDeleteTee(ti) {
+  const all = getCourses();
+  const course = all.find(c => c.id === CE.courseId);
+  if (!course || course.tees.length <= 1) { toast('Course must have at least one tee'); return; }
+  if (!confirm('Delete tee "' + (course.tees[ti].name || 'unnamed') + '"? Rounds already played on this tee are unaffected.')) return;
+  course.tees.splice(ti, 1);
+  saveUserCourses(all);
+  renderCourseEdit();
+}
+
+function ceDeleteCourse() {
+  const all = getCourses();
+  const course = all.find(c => c.id === CE.courseId);
+  if (!course) return;
+  if (!confirm('Delete course "' + course.name + '"? Rounds already played on this course are preserved but their course reference will become orphaned.')) return;
+  const idx = all.findIndex(c => c.id === CE.courseId);
+  if (idx >= 0) { all.splice(idx, 1); saveUserCourses(all); }
+  CH.courseId = null;
+  toast('Course deleted');
+  showView('course-hub');
+}
+
+function saveCourseEdit() {
+  const all = getCourses();
+  const course = all.find(c => c.id === CE.courseId);
+  if (!course) return;
+
+  const name = document.getElementById('ce-name').value.trim();
+  if (!name) { toast('Course name required'); return; }
+  if (all.find(c => c.id !== course.id && c.name.toLowerCase() === name.toLowerCase() && !PRELOADED_COURSES.find(pc => pc.id === c.id))) {
+    toast('Another course already has that name'); return;
+  }
+
+  // Collect edited values
+  const newTees = course.tees.map((t, ti) => {
+    const newName = document.getElementById('ce-name-'+ti).value.trim();
+    const newPars = Array.from({length:course.holes}, (_,i) => {
+      const el = document.getElementById('ce-par-'+ti+'-'+i);
+      return parseInt(el.value) || 0;
+    });
+    const newYards = Array.from({length:course.holes}, (_,i) => {
+      const el = document.getElementById('ce-yd-'+ti+'-'+i);
+      return parseInt(el.value) || 0;
+    });
+    return { id: t.id, name: newName, holePars: newPars, holeYards: newYards };
+  });
+
+  // Validate
+  for (let i = 0; i < newTees.length; i++) {
+    const t = newTees[i];
+    if (!t.name) { toast('Tee #' + (i+1) + ' needs a name'); return; }
+    if (t.holePars.some(v => v < 3 || v > 6)) { toast('Tee "' + t.name + '" has invalid pars'); return; }
+    if (t.holeYards.some(v => v < 50 || v > 750)) { toast('Tee "' + t.name + '" has invalid yardages'); return; }
+  }
+  // Tee-name duplicates within course
+  const names = newTees.map(t => t.name.toLowerCase());
+  if (new Set(names).size !== names.length) { toast('Tee names must be unique within a course'); return; }
+
+  course.name = name;
+  course.tees = newTees;
+  saveUserCourses(all);
+  CH.teeIdx = 0;
+  toast('Course updated \u2713');
+  showView('course-hub');
 }
 
 // ── INIT ─────────────────────────────────────────────────────
