@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.14.0 · Apr 22, 2026 -->
+<!-- PJ Caddie v7.14.2 · Apr 22, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -363,7 +363,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.14.0 · Apr 22, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.14.2 · Apr 22, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -694,6 +694,7 @@ body{display:flex;flex-direction:column}
         <div class="pi-drop-icon">📇</div>
         <div class="pi-drop-msg">Tap to select scorecard photo<br><span style="font-size:12px;opacity:.6">Bluegolf screenshot or physical card</span></div>
       </div>
+      <button class="btn btn-outline btn-sm" id="ci-paste-btn" style="width:100%;margin-bottom:10px" onclick="pasteScorecardFromClipboard()">📋 Paste from clipboard</button>
       <div class="pi-thumb" id="ci-thumb" style="display:none">
         <img id="ci-thumb-img" alt="Selected scorecard">
         <div class="pi-thumb-meta" id="ci-thumb-meta"></div>
@@ -823,7 +824,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.14.0 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.14.2 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -1441,6 +1442,23 @@ const ZONE_ROWS = z => Math.ceil(z / 3);
 // ── DATA LAYER \u2014 SCHEMA ────────────────────────────────────────
 function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
+// MARBLE BEACON — defensive JSON parse for Byron vision responses. Claude sometimes
+// wraps JSON output in markdown fences despite being told not to. Strip them before
+// parsing. If parse still fails, throw an error including the raw text so the UI can
+// surface what Byron actually returned instead of a cryptic generic JSON error.
+function parseByronJSON(raw) {
+  if (!raw) throw new Error('Empty response from Byron');
+  let cleaned = raw.trim();
+  // Strip ```json ... ``` or ``` ... ``` fences if present (flexible on language tag/whitespace)
+  cleaned = cleaned.replace(/^```(?:json|JSON)?\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch (err) {
+    const preview = cleaned.slice(0, 200).replace(/\s+/g, ' ');
+    throw new Error('Byron returned unparseable output. First 200 chars: ' + preview);
+  }
+}
+
 function createCourse({ name, holes, tees }) {
   return { id: genId(), name, holes, tees };
 }
@@ -1514,8 +1532,13 @@ function getCourses() {
 }
 
 function saveUserCourses(courses) {
-  const userOnly = courses.filter(c=>!PRELOADED_COURSES.find(p=>p.id===c.id));
-  localStorage.setItem('pjc_courses', JSON.stringify(userOnly));
+  // EMERALD RAVINE — persist the full courses array, including edited preloaded
+  // courses. getCourses reads saved IDs first and the PRELOADED_COURSES constant
+  // only supplies courses whose IDs are NOT already in saved storage. So an edited
+  // preloaded course (e.g. edited Paramount with id 'paramount') is stored under
+  // the same ID and shadows the hardcoded default on next read.
+  // Preloaded constants become seed defaults, not immutable records.
+  localStorage.setItem('pjc_courses', JSON.stringify(courses));
 }
 
 function getRounds() {
@@ -2131,7 +2154,10 @@ function saveCourseSetup() {
   const holeYards = S.courseHoleYards.map(y=>y!==''?Number(y):0);
   const newTee = { id: genId(), name: teeName, holePars:[...S.courseHolePars], holeYards };
   const all = getCourses();
-  const existing = all.find(c=>c.name.toLowerCase()===name.toLowerCase()&&!PRELOADED_COURSES.find(p=>p.id===c.id));
+  // EMERALD RAVINE — include preloaded courses in the append-tee path. Typing the
+  // name of a preloaded course in the manual form now appends a tee to it instead
+  // of silently creating a duplicate.
+  const existing = all.find(c=>c.name.toLowerCase()===name.toLowerCase());
   if (existing) {
     existing.tees.push(newTee);
     saveUserCourses(all);
@@ -4789,7 +4815,7 @@ async function parsePhotoWithByron() {
     const data = await resp.json();
     if (data.error) throw new Error(data.error.message || 'API error');
     const raw = (data.content?.[0]?.text || '').trim();
-    const result = JSON.parse(raw);
+    const result = parseByronJSON(raw); // MARBLE BEACON
     initReview(result);
   } catch(err) {
     showView('photo-import');
@@ -5930,23 +5956,82 @@ function initCourseImport() {
 
 function onCourseImportFileSelected(files) {
   if (!files?.length) return;
-  const f = files[0];
-  if (!f.type.startsWith('image/')) {
+  ingestCourseImportImage(files[0]);
+}
+
+// SILVER INLET — shared image ingestion path. Takes a File or Blob from either file
+// picker, clipboard paste button, or window-level paste listener. Validates image,
+// reads to base64, updates CI state, re-renders UI. Single source of truth for
+// "scorecard image is now loaded and ready to parse."
+function ingestCourseImportImage(blob) {
+  if (!blob || !blob.type || !blob.type.startsWith('image/')) {
     const s = document.getElementById('ci-status');
-    s.textContent = 'Please select an image file.';
-    s.className = 'pi-status error';
+    if (s) { s.textContent = 'Please select or paste an image file.'; s.className = 'pi-status error'; }
     return;
   }
+  // Clipboard blobs often don't have a `name` property; synthesize one for UI display
+  const name = blob.name || ('pasted-' + new Date().toISOString().slice(0,19).replace(/[:T]/g,'-') + '.png');
+  const size = blob.size || 0;
   const reader = new FileReader();
   reader.onload = () => {
     const dataUrl = reader.result;
     const comma = dataUrl.indexOf(',');
-    CI.file = f;
-    CI.mediaType = f.type;
+    CI.file = { name, size, type: blob.type };
+    CI.mediaType = blob.type;
     CI.base64 = dataUrl.slice(comma + 1);
     initCourseImport();
   };
-  reader.readAsDataURL(f);
+  reader.readAsDataURL(blob);
+}
+
+// SILVER INLET — explicit clipboard paste button. Uses the Clipboard API which
+// requires user-gesture + secure context (https or localhost). Falls back to a
+// clear error message if the browser denies or has no image on the clipboard.
+async function pasteScorecardFromClipboard() {
+  if (!navigator.clipboard || !navigator.clipboard.read) {
+    const s = document.getElementById('ci-status');
+    s.textContent = 'Clipboard paste not supported in this browser. Try the file picker or Cmd/Ctrl+V.';
+    s.className = 'pi-status error';
+    return;
+  }
+  try {
+    const items = await navigator.clipboard.read();
+    for (const item of items) {
+      const imgType = item.types.find(t => t.startsWith('image/'));
+      if (imgType) {
+        const blob = await item.getType(imgType);
+        ingestCourseImportImage(blob);
+        return;
+      }
+    }
+    const s = document.getElementById('ci-status');
+    s.textContent = 'No image on clipboard. Copy a screenshot first.';
+    s.className = 'pi-status error';
+  } catch (err) {
+    const s = document.getElementById('ci-status');
+    s.textContent = 'Clipboard access denied: ' + err.message;
+    s.className = 'pi-status error';
+  }
+}
+
+// SILVER INLET — window-level paste listener. Only active while the course-import
+// view is visible. Catches Cmd+V / Ctrl+V from anywhere on the page when the user
+// is on the import screen, picks up any image on the clipboard, routes it through
+// the same ingestion pipeline. Desktop convenience; mobile users use the button.
+function ciPasteListener(e) {
+  const view = document.getElementById('view-course-import');
+  if (!view || !view.classList.contains('active')) return;
+  const items = e.clipboardData?.items || [];
+  for (const it of items) {
+    if (it.type && it.type.startsWith('image/')) {
+      const blob = it.getAsFile();
+      if (blob) {
+        e.preventDefault();
+        ingestCourseImportImage(blob);
+        return;
+      }
+    }
+  }
 }
 
 async function parseScorecardWithByron() {
@@ -5984,7 +6069,7 @@ async function parseScorecardWithByron() {
     const data = await resp.json();
     if (data.error) throw new Error(data.error.message || 'API error');
     const raw = (data.content?.[0]?.text || '').trim();
-    const result = JSON.parse(raw);
+    const result = parseByronJSON(raw); // MARBLE BEACON
     if (!result.parseable) {
       status.textContent = '\u26a0\ufe0f ' + (result.parseError || 'Could not parse scorecard');
       status.className = 'pi-status error';
@@ -6024,7 +6109,10 @@ function renderCourseReview() {
   const body = document.getElementById('cr-body');
   if (!p) { body.innerHTML = '<div class="empty-msg">No scorecard loaded.</div>'; return; }
 
-  const existingCourses = getCourses().filter(c => !PRELOADED_COURSES.find(pc => pc.id === c.id));
+  // EMERALD RAVINE — "Add to existing" destination includes preloaded courses.
+  // Appending a new tee set to preloaded Paramount writes the modified course to
+  // localStorage (via EMERALD RAVINE's saveUserCourses fix), shadowing the default.
+  const existingCourses = getCourses();
   const existingOptions = existingCourses.map(c =>
     `<option value="${c.id}"${p.existingCourseId===c.id?' selected':''}>${escHtml(c.name)}</option>`
   ).join('');
@@ -6166,8 +6254,9 @@ function saveCourseReview() {
   if (p.destination === 'new') {
     const name = p.courseName.trim();
     if (!name) { toast('Course name required'); return; }
-    // Name collision check (excluding preloaded — those are immutable references)
-    if (all.find(c => c.name.toLowerCase() === name.toLowerCase() && !PRELOADED_COURSES.find(pc => pc.id === c.id))) {
+    // EMERALD RAVINE — collision check includes preloaded courses now that they're
+    // editable. Prevents importing a "new" course with the same name as preloaded.
+    if (all.find(c => c.name.toLowerCase() === name.toLowerCase())) {
       toast('A course with this name already exists. Use "Add to existing" instead.'); return;
     }
     const tees = p.tees.map(t => ({ id: genId(), name: t.name.trim(), holePars: [...t.holePars], holeYards: [...t.holeYards] }));
@@ -6213,10 +6302,8 @@ function openCourseEdit() {
   if (!CH.courseId) { toast('Select a course first'); return; }
   const course = getCourses().find(c => c.id === CH.courseId);
   if (!course) return;
-  if (PRELOADED_COURSES.find(pc => pc.id === course.id)) {
-    toast('Preloaded courses can\'t be edited. Import a replacement instead.');
-    return;
-  }
+  // EMERALD RAVINE — preloaded courses are now editable. Edits persist in
+  // localStorage under the same ID and shadow the hardcoded default on next boot.
   CE.courseId = CH.courseId;
   showView('course-edit');
 }
@@ -6311,7 +6398,10 @@ function saveCourseEdit() {
 
   const name = document.getElementById('ce-name').value.trim();
   if (!name) { toast('Course name required'); return; }
-  if (all.find(c => c.id !== course.id && c.name.toLowerCase() === name.toLowerCase() && !PRELOADED_COURSES.find(pc => pc.id === c.id))) {
+  // EMERALD RAVINE — name collision checks ALL courses now, not just non-preloaded.
+  // Preloaded courses are editable, so renaming onto another preloaded's name would
+  // previously have silently collided. Check the merged set.
+  if (all.find(c => c.id !== course.id && c.name.toLowerCase() === name.toLowerCase())) {
     toast('Another course already has that name'); return;
   }
 
@@ -6366,6 +6456,9 @@ function saveCourseEdit() {
     const btn=document.getElementById('sun-btn');
     if (btn) btn.textContent='☀️';
   }
+  // SILVER INLET — register clipboard paste listener once. Listener self-gates on
+  // view-course-import being active, so it's a no-op on every other screen.
+  window.addEventListener('paste', ciPasteListener);
   renderHome();
 })();
 </script>
