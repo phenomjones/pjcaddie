@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.14.6 · Apr 24, 2026 -->
+<!-- PJ Caddie v7.14.7 · Apr 25, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -88,6 +88,11 @@ body{display:flex;flex-direction:column}
 .tee-chip:active{opacity:.7}
 .settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border2)}
 .settings-row:last-child{border-bottom:none}
+/* TIMESTAMP PARITY — per-section sync row layout */
+.ts-section-list{display:flex;flex-direction:column}
+.ts-section-row{padding:8px 0;border-bottom:1px solid var(--border2)}
+.ts-section-row:last-child{border-bottom:none}
+.ts-section-meta{font-size:10px;color:var(--chalk3);margin-top:4px;min-height:12px;letter-spacing:.2px}
 .sr-label{font-size:14px;color:var(--chalk)}
 .sr-sub{font-size:11px;color:var(--chalk3);margin-top:2px}
 .sr-val{font-size:13px;color:var(--chalk3)}
@@ -363,7 +368,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.14.6 · Apr 24, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.14.7 · Apr 25, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -776,25 +781,41 @@ body{display:flex;flex-direction:column}
           <input class="inp" id="set-gh-branch" type="text" placeholder="main" autocomplete="off">
         </div>
         <button class="btn btn-outline btn-sm" onclick="saveGHSettings()" style="margin-bottom:10px">Save Sync Settings</button>
-        <div style="display:grid;grid-template-columns:68px 1fr 1fr;gap:6px;align-items:center;margin-bottom:10px">
-          <div></div>
-          <div style="text-align:center;font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:.8px">Push \u2191</div>
-          <div style="text-align:center;font-size:10px;color:var(--chalk3);text-transform:uppercase;letter-spacing:.8px">Pull \u2193</div>
-          <div style="font-size:12px;color:var(--chalk2)">Rounds</div>
-          <button class="btn btn-gold btn-sm" id="gh-push-rounds-btn" onclick="ghPushRounds()">Push</button>
-          <button class="btn btn-outline btn-sm" id="gh-pull-rounds-btn" onclick="ghPullRounds()">Pull</button>
-          <div style="font-size:12px;color:var(--chalk2)">Courses</div>
-          <button class="btn btn-gold btn-sm" id="gh-push-courses-btn" onclick="ghPushCourses()">Push</button>
-          <button class="btn btn-outline btn-sm" id="gh-pull-courses-btn" onclick="ghPullCourses()">Pull</button>
-          <div style="font-size:12px;color:var(--chalk2)">My Game</div>
-          <button class="btn btn-gold btn-sm" id="gh-push-game-btn" onclick="ghPushMyGame()">Push</button>
-          <button class="btn btn-outline btn-sm" id="gh-pull-game-btn" onclick="ghPullMyGame()">Pull</button>
-          <div style="font-size:12px;color:var(--chalk2)">Bags</div>
-          <button class="btn btn-gold btn-sm" id="gh-push-bags-btn" onclick="ghPushBags()">Push</button>
-          <button class="btn btn-outline btn-sm" id="gh-pull-bags-btn" onclick="ghPullBags()">Pull</button>
+        <div class="ts-section-list">
+          <div class="ts-section-row">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="flex:1;font-size:13px;color:var(--chalk2)">Rounds</div>
+              <button class="btn btn-gold btn-sm" id="gh-push-rounds-btn" onclick="ghPushRounds()">Push</button>
+              <button class="btn btn-outline btn-sm" id="gh-pull-rounds-btn" onclick="ghPullRounds()">Pull</button>
+            </div>
+            <div id="ts-rounds" class="ts-section-meta"></div>
+          </div>
+          <div class="ts-section-row">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="flex:1;font-size:13px;color:var(--chalk2)">Courses</div>
+              <button class="btn btn-gold btn-sm" id="gh-push-courses-btn" onclick="ghPushCourses()">Push</button>
+              <button class="btn btn-outline btn-sm" id="gh-pull-courses-btn" onclick="ghPullCourses()">Pull</button>
+            </div>
+            <div id="ts-courses" class="ts-section-meta"></div>
+          </div>
+          <div class="ts-section-row">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="flex:1;font-size:13px;color:var(--chalk2)">My Game</div>
+              <button class="btn btn-gold btn-sm" id="gh-push-game-btn" onclick="ghPushMyGame()">Push</button>
+              <button class="btn btn-outline btn-sm" id="gh-pull-game-btn" onclick="ghPullMyGame()">Pull</button>
+            </div>
+            <div id="ts-myGame" class="ts-section-meta"></div>
+          </div>
+          <div class="ts-section-row">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="flex:1;font-size:13px;color:var(--chalk2)">Bags</div>
+              <button class="btn btn-gold btn-sm" id="gh-push-bags-btn" onclick="ghPushBags()">Push</button>
+              <button class="btn btn-outline btn-sm" id="gh-pull-bags-btn" onclick="ghPullBags()">Pull</button>
+            </div>
+            <div id="ts-bags" class="ts-section-meta"></div>
+          </div>
         </div>
-        <div id="gh-last-sync" style="font-size:10px;color:var(--chalk3);margin-bottom:4px"></div>
-        <div id="gh-status" style="font-size:11px;color:var(--chalk3)"></div>
+        <div id="gh-status" style="font-size:11px;color:var(--chalk3);margin-top:8px"></div>
       </div>
       <div class="card" style="margin-bottom:10px">
         <div class="section-lbl">Reference</div>
@@ -824,7 +845,7 @@ body{display:flex;flex-direction:column}
       </div>
       <div class="card">
         <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.14.6 · Phase 5</div></div>
+        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.14.7 · Phase 5</div></div>
         <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
         <div class="settings-row" style="border:none">
           <div class="sr-label">Sun Mode</div>
@@ -2309,13 +2330,29 @@ function renderSettings() {
     gkStatus.style.color = googKey?'var(--green)':'var(--chalk3)';
   }
   const syncMeta = getSyncMeta();
-  const lastSyncEl = document.getElementById('gh-last-sync');
-  if (lastSyncEl) {
+  // TIMESTAMP PARITY — per-section timestamp rendering
+  ['rounds','courses','myGame','bags'].forEach(k => {
+    const el = document.getElementById('ts-'+k);
+    if (!el) return;
+    const s = (syncMeta.sections && syncMeta.sections[k]) || {};
+    const lastTouch = Math.max(s.localPush||0, s.localPull||0);
+    const remoteTs = s.remoteTs||0;
+    if (!lastTouch && !remoteTs) {
+      el.textContent = 'Never synced';
+      return;
+    }
     const parts = [];
-    if (syncMeta.lastPush) parts.push('Last push: '+new Date(syncMeta.lastPush).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}));
-    if (syncMeta.lastPull) parts.push('Last pull: '+new Date(syncMeta.lastPull).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}));
-    lastSyncEl.textContent = parts.join(' · ') || 'Never synced';
-  }
+    parts.push('this device: '+formatSyncTimestamp(lastTouch));
+    parts.push('online: '+formatSyncTimestamp(remoteTs));
+    // Highlight when remote is newer than this device's last touch (i.e. pull recommended)
+    if (remoteTs && lastTouch && remoteTs > lastTouch + 30000) {
+      el.style.color = 'var(--gold)';
+      el.textContent = parts.join(' \u00b7 ') + ' \u2014 pull recommended';
+    } else {
+      el.style.color = 'var(--chalk3)';
+      el.textContent = parts.join(' \u00b7 ');
+    }
+  });
 }
 
 function saveAntKey() {
@@ -2354,11 +2391,39 @@ function saveGHSettings() {
 const SYNC_FILE = 'pjcaddie-sync.json';
 
 function getSyncMeta() {
-  try { return JSON.parse(localStorage.getItem('pjc_sync_meta')||'{}'); }
-  catch { return {}; }
+  let meta;
+  try { meta = JSON.parse(localStorage.getItem('pjc_sync_meta')||'{}'); }
+  catch { meta = {}; }
+  // TIMESTAMP PARITY — ensure per-section structure exists
+  if (!meta.sections) meta.sections = {};
+  ['rounds','courses','myGame','bags'].forEach(k => {
+    if (!meta.sections[k]) meta.sections[k] = {};
+  });
+  return meta;
 }
 function saveSyncMeta(meta) {
   localStorage.setItem('pjc_sync_meta', JSON.stringify(meta));
+}
+
+// TIMESTAMP PARITY — format a timestamp as "just now", "3m ago", "2h ago",
+// "yesterday", or absolute date for older. Returns '\u2014' for missing.
+function formatSyncTimestamp(ts) {
+  if (!ts) return '\u2014';
+  const now = Date.now();
+  const diff = now - ts;
+  if (diff < 0) return 'just now'; // clock skew safety
+  const sec = Math.floor(diff / 1000);
+  if (sec < 30) return 'just now';
+  if (sec < 60) return sec + 's ago';
+  const min = Math.floor(sec / 60);
+  if (min < 60) return min + 'm ago';
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return hr + 'h ago';
+  const day = Math.floor(hr / 24);
+  if (day === 1) return 'yesterday';
+  if (day < 7) return day + 'd ago';
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
 }
 
 function ghHeaders() {
@@ -2424,7 +2489,7 @@ function ghSetStatus(msg, color) {
   if (el) { el.textContent=msg; el.style.color=color||'var(--chalk3)'; }
 }
 
-async function ghPushSection(label, btnId, sectionData) {
+async function ghPushSection(label, btnId, sectionData, sectionKey) {
   const btn = document.getElementById(btnId);
   try {
     ghValidate();
@@ -2437,6 +2502,11 @@ async function ghPushSection(label, btnId, sectionData) {
     await ghWriteFile(payload, current?.sha);
     const meta = getSyncMeta();
     Object.assign(meta, { lastPush: now, ...metaFields });
+    // TIMESTAMP PARITY — record per-section local push + remote ts (push moves both)
+    if (sectionKey && meta.sections[sectionKey]) {
+      meta.sections[sectionKey].localPush = now;
+      meta.sections[sectionKey].remoteTs = now;
+    }
     saveSyncMeta(meta);
     renderSettings();
     const t = new Date(now).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
@@ -2450,7 +2520,7 @@ async function ghPushSection(label, btnId, sectionData) {
   }
 }
 
-async function ghPullSection(label, btnId, tsKey, restoreFn) {
+async function ghPullSection(label, btnId, tsKey, restoreFn, sectionKey) {
   const btn = document.getElementById(btnId);
   try {
     ghValidate();
@@ -2480,6 +2550,11 @@ async function ghPullSection(label, btnId, tsKey, restoreFn) {
     restoreFn(remote);
     meta[tsKey] = remoteTs;
     meta.lastPull = Date.now();
+    // TIMESTAMP PARITY — record per-section local pull + observed remote ts
+    if (sectionKey && meta.sections[sectionKey]) {
+      meta.sections[sectionKey].localPull = meta.lastPull;
+      meta.sections[sectionKey].remoteTs = remoteTs || meta.sections[sectionKey].remoteTs;
+    }
     saveSyncMeta(meta);
     renderSettings();
     const t = new Date(meta.lastPull).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
@@ -2495,9 +2570,9 @@ async function ghPullSection(label, btnId, tsKey, restoreFn) {
 
 function ghPushRounds() {
   return ghPushSection('Rounds', 'gh-push-rounds-btn', now => ({
-    fields: { rounds: getRounds(), byronCache: collectByronCache() },
-    metaFields: {}
-  }));
+    fields: { rounds: getRounds(), byronCache: collectByronCache(), roundsTs: now },
+    metaFields: { roundsTs: now }
+  }), 'rounds');
 }
 function ghPushCourses() {
   // AZURE CASCADE — include pjc_courses (the course LIST with tees/pars/yards)
@@ -2506,19 +2581,19 @@ function ghPushCourses() {
   return ghPushSection('Courses', 'gh-push-courses-btn', now => ({
     fields: { courses: JSON.parse(localStorage.getItem('pjc_courses')||'[]'), courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), masterTees: JSON.parse(localStorage.getItem('pjc_master_tees')||'{}'), courseBags: JSON.parse(localStorage.getItem('pjc_course_bags')||'{}'), courseCoords: JSON.parse(localStorage.getItem('pjc_course_coords')||'{}'), elevation: JSON.parse(localStorage.getItem('pjc_elevation')||'{}'), elevationSegments: JSON.parse(localStorage.getItem('pjc_elevation_segments')||'{}'), notesTs: now },
     metaFields: { notesTs: now }
-  }));
+  }), 'courses');
 }
 function ghPushMyGame() {
   return ghPushSection('My Game', 'gh-push-game-btn', now => ({
     fields: { player: JSON.parse(localStorage.getItem('pjc_player')||'null'), playerTs: now },
     metaFields: { playerTs: now }
-  }));
+  }), 'myGame');
 }
 function ghPushBags() {
   return ghPushSection('Bags', 'gh-push-bags-btn', now => ({
     fields: { bags: JSON.parse(localStorage.getItem('pjc_bags')||'null'), bagsTs: now },
     metaFields: { bagsTs: now }
-  }));
+  }), 'bags');
 }
 
 async function ghPullRounds() {
@@ -2571,6 +2646,12 @@ async function ghPullRounds() {
     orphanKeys.forEach(k => localStorage.removeItem(k));
     const meta = getSyncMeta();
     meta.lastPull = Date.now();
+    // TIMESTAMP PARITY — record per-section pull + observed remote ts for Rounds
+    if (meta.sections.rounds) {
+      meta.sections.rounds.localPull = meta.lastPull;
+      const remoteRoundsTs = remote.roundsTs || remote.syncedAt || meta.sections.rounds.remoteTs;
+      if (remoteRoundsTs) meta.sections.rounds.remoteTs = remoteRoundsTs;
+    }
     saveSyncMeta(meta);
     renderSettings();
     const t = new Date(meta.lastPull).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
@@ -2596,17 +2677,17 @@ function ghPullCourses() {
     if (remote.courseCoords) localStorage.setItem('pjc_course_coords', JSON.stringify(remote.courseCoords));
     if (remote.elevation) localStorage.setItem('pjc_elevation', JSON.stringify(remote.elevation));
     if (remote.elevationSegments) localStorage.setItem('pjc_elevation_segments', JSON.stringify(remote.elevationSegments));
-  });
+  }, 'courses');
 }
 function ghPullMyGame() {
   return ghPullSection('My Game', 'gh-pull-game-btn', 'playerTs', remote => {
     if (remote.player) localStorage.setItem('pjc_player', JSON.stringify(remote.player));
-  });
+  }, 'myGame');
 }
 function ghPullBags() {
   return ghPullSection('Bags', 'gh-pull-bags-btn', 'bagsTs', remote => {
     if (remote.bags) localStorage.setItem('pjc_bags', JSON.stringify(remote.bags));
-  });
+  }, 'bags');
 }
 
 function confirmClearAll() {
@@ -3233,10 +3314,25 @@ function openWizHole(idx) {
   document.getElementById('scr-scroll').scrollTo(0,0);
 }
 
+// CRIMSON LEDGER + AMBER LANTERN — Tapping a saved hole opens it for view/edit
+// without flipping saved=false and without a misleading confirmation. Save status
+// only changes when the user explicitly saves new changes or hits Start Over.
 function reopenHole(idx) {
-  if (!confirm('Re-entering this hole clears your sequence — your score and shot data are safe. Continue?')) return;
-  SCR.holes[idx].saved = false;
   SCR.holes[idx].phase = 'sequence';
+  openWizHole(idx);
+}
+
+// JADE COMPASS — Deliberate destructive reset for the current hole. Wipes the
+// sequence, flips saved=false (since we're discarding committed data), and
+// re-initializes the first shot based on par. Stays in the wizard.
+function startOverHole(idx) {
+  const hs = SCR.holes[idx];
+  if (!confirm('Start over for hole H' + hs.holeNum + '? This clears all entered shots.')) return;
+  hs.sequence = [];
+  hs.puttDistances = [];
+  hs.saved = false;
+  hs.savedScore = null;
+  hs.phase = 'sequence';
   openWizHole(idx);
   updateScrHeader();
 }
@@ -3469,14 +3565,22 @@ function renderSequenceBuilder(hs, idx) {
       ? `<button class="btn btn-gold btn-sm" onclick="continueToDetail(${idx})">Continue \u2192</button>`
       : `<button class="btn btn-gold btn-sm" style="opacity:.35;cursor:not-allowed" disabled>Continue \u2192</button>`}`;
 
-  // Nav: Overview back only
+  // Nav: Overview back + JADE COMPASS Start Over (when there's data to clear)
   document.getElementById('wiz-nav').style.display = '';
   const seqBackBtn = document.getElementById('wiz-back-btn');
   seqBackBtn.textContent = '\u2190 Overview';
   seqBackBtn.onclick = () => { SCR.activeIdx=null; renderScoringScreen(); };
   const seqNextBtn = document.getElementById('wiz-next-btn');
-  seqNextBtn.style.cssText = '';
-  seqNextBtn.style.display = 'none';
+  if (canContinue) {
+    seqNextBtn.style.cssText = 'flex:1;background:none;border:1px solid var(--border);color:var(--chalk2);border-radius:var(--rs);padding:13px 20px;font-family:\'DM Sans\',sans-serif;font-size:15px;cursor:pointer';
+    seqNextBtn.style.display = '';
+    seqNextBtn.textContent = '\u21ba Start Over';
+    seqNextBtn.onclick = () => startOverHole(idx);
+  } else {
+    seqNextBtn.style.cssText = '';
+    seqNextBtn.style.display = 'none';
+    seqNextBtn.onclick = null;
+  }
 
   document.getElementById('scr-content').innerHTML = `
     ${groupsHTML}
