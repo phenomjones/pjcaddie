@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.14.10 · Apr 26, 2026 -->
+<!-- PJ Caddie v7.14.11 · Apr 26, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -86,6 +86,7 @@ body{display:flex;flex-direction:column}
 .tee-chip{background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:8px 16px;font-size:13px;color:var(--chalk2);cursor:pointer;transition:all .15s}
 .tee-chip.on{background:rgba(200,168,75,.18);border-color:var(--gold);color:var(--gold);font-weight:600}
 .tee-chip:active{opacity:.7}
+.tee-chip-yds{margin-left:6px;font-size:11px;font-weight:400;color:var(--chalk3);opacity:.75}
 .settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border2)}
 .settings-row:last-child{border-bottom:none}
 /* VERMILION ATELIER — sync rows: name + Push/Pull buttons left, ts trails right */
@@ -389,7 +390,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.14.10 · Apr 26, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.14.11 · Apr 26, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -5488,7 +5489,37 @@ function pjiBar(pct) {
 }
 
 // ── COURSE HUB ───────────────────────────────────────────────
-const CH = { courseId: null, teeIdx: 0 };
+const CH = { courseId: null, teeId: null };
+
+// JADE FAIRWAY — total yardage for a tee, or null if data is incomplete
+function getTeeTotalYards(tee, holesCount) {
+  if (!tee || !Array.isArray(tee.holeYards) || tee.holeYards.length < holesCount) return null;
+  let total = 0;
+  for (let i = 0; i < holesCount; i++) {
+    const y = tee.holeYards[i];
+    if (typeof y !== 'number' || y <= 0) return null;
+    total += y;
+  }
+  return total;
+}
+
+// JADE FAIRWAY — Course Hub render-time sort: longest tees first, incomplete-data tees to bottom
+function sortTeesForHub(tees, holesCount) {
+  return [...tees].sort((a, b) => {
+    const ya = getTeeTotalYards(a, holesCount);
+    const yb = getTeeTotalYards(b, holesCount);
+    if (ya == null && yb == null) return 0;
+    if (ya == null) return 1;
+    if (yb == null) return -1;
+    return yb - ya;
+  });
+}
+
+// JADE FAIRWAY — id-based active tee lookup, falls back to first tee or null
+function getActiveTee(course) {
+  if (!course?.tees?.length) return null;
+  return course.tees.find(t => t.id === CH.teeId) || course.tees[0];
+}
 
 function initCourseHub() {
   migrateV6Notes();
@@ -5496,25 +5527,39 @@ function initCourseHub() {
   const sel = document.getElementById('ch-course-select');
   sel.innerHTML = courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   CH.courseId = courses[0]?.id || null;
-  CH.teeIdx = 0;
-  if (CH.courseId) renderCourseHubTees();
+  if (CH.courseId) {
+    const sortedTees = sortTeesForHub(courses[0].tees, courses[0].holes);
+    CH.teeId = sortedTees[0]?.id || null;
+    renderCourseHubTees();
+  } else {
+    CH.teeId = null;
+  }
 }
 
 function onCourseHubCourseChange() {
   CH.courseId = document.getElementById('ch-course-select').value;
-  CH.teeIdx = 0;
+  const course = getCourses().find(c => c.id === CH.courseId);
+  if (course) {
+    const sortedTees = sortTeesForHub(course.tees, course.holes);
+    CH.teeId = sortedTees[0]?.id || null;
+  } else {
+    CH.teeId = null;
+  }
   renderCourseHubTees();
 }
 
 function renderCourseHubTees() {
   const course = getCourses().find(c => c.id === CH.courseId);
   if (!course) return;
+  const sortedTees = sortTeesForHub(course.tees, course.holes);
   const el = document.getElementById('ch-tee-chips');
-  el.innerHTML = course.tees.length <= 1 ? '' :
-    `<span style="font-size:11px;color:var(--chalk3);font-weight:500;align-self:center">Stats:</span>` +
-    course.tees.map((t, i) =>
-      `<button class="tee-chip${CH.teeIdx === i ? ' on' : ''}" onclick="selectCourseHubTee(${i})">${t.name}</button>`
-    ).join('');
+  el.innerHTML = sortedTees.length <= 1 ? '' :
+    `<span style="font-size:11px;color:var(--chalk3);font-weight:500;align-self:center">Tee:</span>` +
+    sortedTees.map((t, i) => {
+      const total = getTeeTotalYards(t, course.holes);
+      const ydsHtml = total != null ? `<span class="tee-chip-yds">${total}y</span>` : '';
+      return `<button class="tee-chip${CH.teeId === t.id ? ' on' : ''}" onclick="selectCourseHubTee(${i})">${t.name}${ydsHtml}</button>`;
+    }).join('');
   // Default bag selector — always shown (any course can have a default bag)
   const bagSel = document.getElementById('ch-default-bag-select');
   const bagBar = document.getElementById('ch-default-bag-bar');
@@ -5542,7 +5587,7 @@ function renderCourseHubTees() {
 }
 
 function renderCourseHubPJI(course) {
-  const tee = course.tees[CH.teeIdx];
+  const tee = getActiveTee(course);
   if (!tee) return;
   const pjiEl = document.getElementById('ch-pji');
   if (!pjiEl) return;
@@ -5609,7 +5654,12 @@ function renderCourseHubPJI(course) {
 }
 
 function selectCourseHubTee(idx) {
-  CH.teeIdx = idx;
+  const course = getCourses().find(c => c.id === CH.courseId);
+  if (!course) return;
+  const sortedTees = sortTeesForHub(course.tees, course.holes);
+  const tee = sortedTees[idx];
+  if (!tee) return;
+  CH.teeId = tee.id;
   renderCourseHubTees();
 }
 
@@ -5640,7 +5690,7 @@ function onCourseDefaultBagChange() {
 }
 
 function renderCourseHubHoles(course) {
-  const tee = course.tees[CH.teeIdx];
+  const tee = getActiveTee(course);
   if (!tee) return;
   const notes = getCourseNotes(CH.courseId, course.holes);
   const hasGoogKey = !!localStorage.getItem('goog_maps_key');
@@ -5704,9 +5754,9 @@ const PD = { holeIdx:null, par:null, teePin:null, landingPin:null, greenPin:null
 function openPinDrop(holeIdx) {
   const key = localStorage.getItem('goog_maps_key');
   if (!key) { toast('Add Google Maps key in Settings first'); return; }
-  if (CH.teeIdx == null || !CH.courseId) { toast('Select a tee first'); return; }
+  if (CH.teeId == null || !CH.courseId) { toast('Select a tee first'); return; }
   const course = getCourses().find(c => c.id === CH.courseId);
-  const tee = course?.tees[CH.teeIdx];
+  const tee = getActiveTee(course);
   if (!course || !tee) { toast('Course or tee missing'); return; }
 
   PD.holeIdx = holeIdx;
@@ -5877,9 +5927,9 @@ function resetPinDrop() {
 async function savePinDrop() {
   const hasAllPins = PD.par === 3 ? (PD.teePin && PD.greenPin) : (PD.teePin && PD.landingPin && PD.greenPin);
   if (!hasAllPins) { toast(PD.par === 3 ? 'Both pins required' : 'All 3 pins required'); return; }
-  if (PD.holeIdx == null || CH.teeIdx == null || !CH.courseId) { toast('Missing context'); return; }
+  if (PD.holeIdx == null || CH.teeId == null || !CH.courseId) { toast('Missing context'); return; }
   const course = getCourses().find(c => c.id === CH.courseId);
-  const tee = course?.tees[CH.teeIdx];
+  const tee = getActiveTee(course);
   if (!tee) { toast('Tee missing'); return; }
   const status = document.getElementById('pin-drop-status');
   const saveBtn = document.getElementById('pin-drop-save');
@@ -6452,7 +6502,7 @@ function saveCourseReview() {
     all.push(course);
     saveUserCourses(all);
     CH.courseId = course.id;
-    CH.teeIdx = 0;
+    CH.teeId = sortTeesForHub(course.tees, course.holes)[0]?.id || null;
     toast('Course saved \u2713');
     showView('course-hub');
     return;
@@ -6474,7 +6524,7 @@ function saveCourseReview() {
   });
   saveUserCourses(all);
   CH.courseId = course.id;
-  CH.teeIdx = 0;
+  CH.teeId = sortTeesForHub(course.tees, course.holes)[0]?.id || null;
   toast('Tees added to ' + course.name + ' \u2713');
   showView('course-hub');
 }
@@ -6621,7 +6671,7 @@ function saveCourseEdit() {
   course.name = name;
   course.tees = newTees;
   saveUserCourses(all);
-  CH.teeIdx = 0;
+  CH.teeId = sortTeesForHub(course.tees, course.holes)[0]?.id || null;
   toast('Course updated \u2713');
   showView('course-hub');
 }
