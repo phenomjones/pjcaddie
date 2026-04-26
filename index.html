@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.14.8 · Apr 26, 2026 -->
+<!-- PJ Caddie v7.14.9 · Apr 26, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -91,14 +91,14 @@ body{display:flex;flex-direction:column}
 /* VERMILION ATELIER — sync rows: name + Push/Pull buttons left, ts trails right */
 .va-sync-row{padding:9px 0;border-bottom:1px solid var(--border2)}
 .va-sync-row:last-child{border-bottom:none}
-.va-sync-cluster{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
-.va-sync-name{font-size:14px;color:var(--chalk);font-weight:500;min-width:64px;flex-shrink:0}
+/* VERMILION REPRISE — grid columns lock Push/Pull buttons into the same X
+   position across all 4 rows. Timestamp lives in the trailing 1fr column. */
+.va-sync-cluster{display:grid;grid-template-columns:72px auto auto 1fr;align-items:center;gap:10px}
+.va-sync-name{font-size:14px;color:var(--chalk);font-weight:500}
 .va-sync-name.stale{color:var(--orange)}
-.va-sync-cluster .btn-sm{padding:6px 12px;font-size:12px;flex-shrink:0}
-.va-sync-ts{font-size:10px;color:var(--chalk3);letter-spacing:.2px;margin-left:auto;text-align:right;line-height:1.4;flex-shrink:1;min-width:0}
-.va-sync-ts span{color:var(--gold);opacity:.85;font-weight:500}
+.va-sync-cluster .btn-sm{padding:6px 12px;font-size:12px;width:auto;display:inline-block}
+.va-sync-ts{font-size:10px;color:var(--chalk3);letter-spacing:.2px;text-align:right;line-height:1.4;min-width:0;padding-left:8px}
 .va-sync-ts.stale{color:var(--orange)}
-.va-sync-ts.stale span{color:var(--orange);opacity:1}
 /* VERMILION ATELIER — collapsible setup rows for API keys */
 .va-coll-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border2);cursor:pointer}
 .va-coll-row:last-child{border-bottom:none}
@@ -386,7 +386,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.14.8 · Apr 26, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.14.9 · Apr 26, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -889,7 +889,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v7.14.8 · Spec v2.1</span>
+        <span>v7.14.9 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -2380,12 +2380,18 @@ function renderSettings() {
     const lastTouch = Math.max(s.localPush||0, s.localPull||0);
     const remoteTs = s.remoteTs||0;
     const stale = vaIsStale(lastTouch, remoteTs);
+    // VERMILION REPRISE — natural-language timestamps. No legend required.
+    // "Synced X ago" = this device's last successful push/pull.
+    // "GitHub X ago" = when GitHub's copy was last written.
     if (!lastTouch && !remoteTs) {
-      el.innerHTML = 'Never synced';
+      el.textContent = 'Never synced';
+    } else if (!lastTouch && remoteTs) {
+      el.textContent = 'Not on this device · GitHub ' + formatSyncTimestamp(remoteTs);
+    } else if (lastTouch && !remoteTs) {
+      el.textContent = 'Synced ' + formatSyncTimestamp(lastTouch);
     } else {
-      const lStr = lastTouch ? formatSyncCompact(lastTouch) : 'never';
-      const rStr = remoteTs ? formatSyncCompact(remoteTs) : 'never';
-      el.innerHTML = '<span>L</span> '+lStr+' · <span>R</span> '+rStr;
+      el.textContent = 'Synced ' + formatSyncTimestamp(lastTouch)
+        + ' · GitHub ' + formatSyncTimestamp(remoteTs);
     }
     el.classList.toggle('stale', stale);
     if (nameEl) nameEl.classList.toggle('stale', stale);
@@ -2482,32 +2488,21 @@ function formatSyncTimestamp(ts) {
   return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
 }
 
-// VERMILION ATELIER — compact form ("3m", "2h", "5d", "Apr 18") for the
-// L 3m · R 3m sync row. No "ago" suffix to keep the row tight.
-function formatSyncCompact(ts) {
-  if (!ts) return 'never';
-  const now = Date.now();
-  const diff = now - ts;
-  if (diff < 0) return 'now';
-  const sec = Math.floor(diff / 1000);
-  if (sec < 60) return 'now';
-  const min = Math.floor(sec / 60);
-  if (min < 60) return min + 'm';
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return hr + 'h';
-  const day = Math.floor(hr / 24);
-  if (day < 7) return day + 'd';
-  const d = new Date(ts);
-  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-}
-
-// VERMILION ATELIER — stale = remote missing OR local-vs-remote drift > 24h either way.
+// VERMILION REPRISE — staleness corrected: a section is stale only when GitHub
+// has data this device hasn't received yet. Not when "data is old" — old data
+// the user already has is fine. The signal we want is "you should pull".
+//   stale = remoteTs > lastTouch + 60s_clock_skew
+// Edge cases:
+//   - both 0 (never synced anywhere): not stale, just empty
+//   - remoteTs=0, localPush>0: not stale (we wrote, no one's touched it remotely)
+//   - lastTouch=0, remoteTs>0: stale (GitHub has something this device doesn't)
+//   - just pushed: localPush == remoteTs → not stale
+//   - just pulled: localPull >= remoteTs → not stale
 function vaIsStale(localTs, remoteTs) {
-  const STALE_MS = 24*60*60*1000;
-  if (!remoteTs && !localTs) return false; // never synced isn't "stale", it's empty
-  if (!remoteTs) return true;               // local exists, remote missing
-  if (!localTs) return true;                // remote exists, local missing
-  return Math.abs(localTs - remoteTs) > STALE_MS;
+  const SKEW_MS = 60*1000;
+  if (!remoteTs) return false;          // nothing on GitHub to be behind
+  if (!localTs) return true;            // remote exists, this device has never synced
+  return remoteTs > (localTs + SKEW_MS); // GitHub moved ahead of this device
 }
 
 // VERMILION ATELIER — collapsible setup rows (Anthropic / Google / GitHub).
