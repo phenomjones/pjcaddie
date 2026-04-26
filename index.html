@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.14.7 · Apr 25, 2026 -->
+<!-- PJ Caddie v7.14.8 · Apr 26, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -88,11 +88,29 @@ body{display:flex;flex-direction:column}
 .tee-chip:active{opacity:.7}
 .settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border2)}
 .settings-row:last-child{border-bottom:none}
-/* TIMESTAMP PARITY — per-section sync row layout */
-.ts-section-list{display:flex;flex-direction:column}
-.ts-section-row{padding:8px 0;border-bottom:1px solid var(--border2)}
-.ts-section-row:last-child{border-bottom:none}
-.ts-section-meta{font-size:10px;color:var(--chalk3);margin-top:4px;min-height:12px;letter-spacing:.2px}
+/* VERMILION ATELIER — sync rows: name + Push/Pull buttons left, ts trails right */
+.va-sync-row{padding:9px 0;border-bottom:1px solid var(--border2)}
+.va-sync-row:last-child{border-bottom:none}
+.va-sync-cluster{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}
+.va-sync-name{font-size:14px;color:var(--chalk);font-weight:500;min-width:64px;flex-shrink:0}
+.va-sync-name.stale{color:var(--orange)}
+.va-sync-cluster .btn-sm{padding:6px 12px;font-size:12px;flex-shrink:0}
+.va-sync-ts{font-size:10px;color:var(--chalk3);letter-spacing:.2px;margin-left:auto;text-align:right;line-height:1.4;flex-shrink:1;min-width:0}
+.va-sync-ts span{color:var(--gold);opacity:.85;font-weight:500}
+.va-sync-ts.stale{color:var(--orange)}
+.va-sync-ts.stale span{color:var(--orange);opacity:1}
+/* VERMILION ATELIER — collapsible setup rows for API keys */
+.va-coll-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border2);cursor:pointer}
+.va-coll-row:last-child{border-bottom:none}
+.va-coll-status{font-size:11px;color:var(--green);margin-top:2px;letter-spacing:.2px}
+.va-coll-status.muted{color:var(--chalk3)}
+.va-coll-chev{font-size:12px;color:var(--chalk3);opacity:.7;transition:transform .15s}
+.va-coll-row.expanded .va-coll-chev{transform:rotate(180deg)}
+.va-coll-body{padding:8px 0 4px;display:none}
+.va-coll-row.expanded + .va-coll-body{display:block}
+/* VERMILION ATELIER — flat About row at bottom of Settings */
+.va-about-flat{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--chalk3);padding:14px 4px 4px;letter-spacing:.3px}
+.va-about-flat .va-about-sun{background:none;border:none;color:var(--gold);opacity:.85;font-size:11px;cursor:pointer;padding:0}
 .sr-label{font-size:14px;color:var(--chalk)}
 .sr-sub{font-size:11px;color:var(--chalk3);margin-top:2px}
 .sr-val{font-size:13px;color:var(--chalk3)}
@@ -368,7 +386,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.14.7 · Apr 25, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.14.8 · Apr 26, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -747,76 +765,7 @@ body{display:flex;flex-direction:column}
   </div>
   <div class="scroll-body">
     <div class="pad pad-b">
-      <div class="card" style="margin-bottom:10px">
-        <div class="section-lbl">Byron — Anthropic API</div>
-        <div class="inp-grp" style="margin-bottom:8px">
-          <label class="inp-label">API Key</label>
-          <input class="inp" id="set-ant-key" type="password" placeholder="sk-ant-…" autocomplete="off">
-        </div>
-        <button class="btn btn-outline btn-sm" onclick="saveAntKey()">Save Key</button>
-        <div id="ant-key-status" style="font-size:11px;color:var(--chalk3);margin-top:8px"></div>
-      </div>
-      <div class="card" style="margin-bottom:10px">
-        <div class="section-lbl">Google Maps API</div>
-        <div class="inp-grp" style="margin-bottom:8px">
-          <label class="inp-label">API Key</label>
-          <input class="inp" id="set-goog-key" type="password" placeholder="AIza…" autocomplete="off">
-        </div>
-        <button class="btn btn-outline btn-sm" onclick="saveGoogKey()">Save Key</button>
-        <div id="goog-key-status" style="font-size:11px;color:var(--chalk3);margin-top:8px"></div>
-        <div style="font-size:10px;color:var(--chalk3);margin-top:6px;line-height:1.4">Powers Course Hub pin drop + elevation. Restrict key to phenomjones.github.io/* and localhost/* in Google Cloud Console.</div>
-      </div>
-      <div class="card" style="margin-bottom:10px">
-        <div class="section-lbl">GitHub Sync</div>
-        <div class="inp-grp">
-          <label class="inp-label">Personal Access Token</label>
-          <input class="inp" id="set-gh-token" type="password" placeholder="ghp_…" autocomplete="off">
-        </div>
-        <div class="inp-grp">
-          <label class="inp-label">Repo (owner/repo)</label>
-          <input class="inp" id="set-gh-repo" type="text" placeholder="phenomjones/pjcaddie-data" autocomplete="off">
-        </div>
-        <div class="inp-grp" style="margin-bottom:8px">
-          <label class="inp-label">Branch</label>
-          <input class="inp" id="set-gh-branch" type="text" placeholder="main" autocomplete="off">
-        </div>
-        <button class="btn btn-outline btn-sm" onclick="saveGHSettings()" style="margin-bottom:10px">Save Sync Settings</button>
-        <div class="ts-section-list">
-          <div class="ts-section-row">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="flex:1;font-size:13px;color:var(--chalk2)">Rounds</div>
-              <button class="btn btn-gold btn-sm" id="gh-push-rounds-btn" onclick="ghPushRounds()">Push</button>
-              <button class="btn btn-outline btn-sm" id="gh-pull-rounds-btn" onclick="ghPullRounds()">Pull</button>
-            </div>
-            <div id="ts-rounds" class="ts-section-meta"></div>
-          </div>
-          <div class="ts-section-row">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="flex:1;font-size:13px;color:var(--chalk2)">Courses</div>
-              <button class="btn btn-gold btn-sm" id="gh-push-courses-btn" onclick="ghPushCourses()">Push</button>
-              <button class="btn btn-outline btn-sm" id="gh-pull-courses-btn" onclick="ghPullCourses()">Pull</button>
-            </div>
-            <div id="ts-courses" class="ts-section-meta"></div>
-          </div>
-          <div class="ts-section-row">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="flex:1;font-size:13px;color:var(--chalk2)">My Game</div>
-              <button class="btn btn-gold btn-sm" id="gh-push-game-btn" onclick="ghPushMyGame()">Push</button>
-              <button class="btn btn-outline btn-sm" id="gh-pull-game-btn" onclick="ghPullMyGame()">Pull</button>
-            </div>
-            <div id="ts-myGame" class="ts-section-meta"></div>
-          </div>
-          <div class="ts-section-row">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="flex:1;font-size:13px;color:var(--chalk2)">Bags</div>
-              <button class="btn btn-gold btn-sm" id="gh-push-bags-btn" onclick="ghPushBags()">Push</button>
-              <button class="btn btn-outline btn-sm" id="gh-pull-bags-btn" onclick="ghPullBags()">Pull</button>
-            </div>
-            <div id="ts-bags" class="ts-section-meta"></div>
-          </div>
-        </div>
-        <div id="gh-status" style="font-size:11px;color:var(--chalk3);margin-top:8px"></div>
-      </div>
+      <!-- VERMILION ATELIER — Reference moved to top (most-used destinations) -->
       <div class="card" style="margin-bottom:10px">
         <div class="section-lbl">Reference</div>
         <div class="settings-row" style="cursor:pointer" onclick="showView('bag-settings')">
@@ -828,10 +777,48 @@ body{display:flex;flex-direction:column}
           <div class="sr-val">→</div>
         </div>
         <div class="settings-row" style="cursor:pointer;border-bottom:none" onclick="showView('player-hub')">
-          <div><div class="sr-label">🏌️ My Game</div><div class="sr-sub">Personal tendencies &amp; profile for Byron</div></div>
+          <div><div class="sr-label">🎯 My Game</div><div class="sr-sub">Personal tendencies &amp; profile for Byron</div></div>
           <div class="sr-val">→</div>
         </div>
       </div>
+      <!-- VERMILION ATELIER — GitHub Sync: 4 rows, buttons left next to name, ts trailing right -->
+      <div class="card" style="margin-bottom:10px">
+        <div class="section-lbl">GitHub Sync</div>
+        <div class="va-sync-row">
+          <div class="va-sync-cluster">
+            <div class="va-sync-name" id="va-name-rounds">Rounds</div>
+            <button class="btn btn-gold btn-sm" id="gh-push-rounds-btn" onclick="ghPushRounds()">Push</button>
+            <button class="btn btn-outline btn-sm" id="gh-pull-rounds-btn" onclick="ghPullRounds()">Pull</button>
+            <div id="ts-rounds" class="va-sync-ts"></div>
+          </div>
+        </div>
+        <div class="va-sync-row">
+          <div class="va-sync-cluster">
+            <div class="va-sync-name" id="va-name-courses">Courses</div>
+            <button class="btn btn-gold btn-sm" id="gh-push-courses-btn" onclick="ghPushCourses()">Push</button>
+            <button class="btn btn-outline btn-sm" id="gh-pull-courses-btn" onclick="ghPullCourses()">Pull</button>
+            <div id="ts-courses" class="va-sync-ts"></div>
+          </div>
+        </div>
+        <div class="va-sync-row">
+          <div class="va-sync-cluster">
+            <div class="va-sync-name" id="va-name-myGame">My Game</div>
+            <button class="btn btn-gold btn-sm" id="gh-push-game-btn" onclick="ghPushMyGame()">Push</button>
+            <button class="btn btn-outline btn-sm" id="gh-pull-game-btn" onclick="ghPullMyGame()">Pull</button>
+            <div id="ts-myGame" class="va-sync-ts"></div>
+          </div>
+        </div>
+        <div class="va-sync-row">
+          <div class="va-sync-cluster">
+            <div class="va-sync-name" id="va-name-bags">Bags</div>
+            <button class="btn btn-gold btn-sm" id="gh-push-bags-btn" onclick="ghPushBags()">Push</button>
+            <button class="btn btn-outline btn-sm" id="gh-pull-bags-btn" onclick="ghPullBags()">Pull</button>
+            <div id="ts-bags" class="va-sync-ts"></div>
+          </div>
+        </div>
+        <div id="gh-status" style="font-size:11px;color:var(--chalk3);margin-top:8px"></div>
+      </div>
+      <!-- VERMILION ATELIER — Data card (rounds count + size, courses count) -->
       <div class="card" style="margin-bottom:10px">
         <div class="section-lbl">Data</div>
         <div class="settings-row">
@@ -843,14 +830,67 @@ body{display:flex;flex-direction:column}
         </div>
         <button class="btn btn-danger btn-sm" style="margin-top:12px" onclick="confirmClearAll()">Clear All Data</button>
       </div>
-      <div class="card">
-        <div class="section-lbl">About</div>
-        <div class="settings-row"><div class="sr-label">Version</div><div class="sr-val">v7.14.7 · Phase 5</div></div>
-        <div class="settings-row"><div class="sr-label">Data Model</div><div class="sr-val">Spec v2.1</div></div>
-        <div class="settings-row" style="border:none">
-          <div class="sr-label">Sun Mode</div>
-          <button class="btn btn-outline btn-sm" onclick="toggleSunMode()">☀️ Toggle</button>
+      <!-- VERMILION ATELIER — Setup & API Keys: 3 collapsible rows, default collapsed -->
+      <div class="card" style="margin-bottom:10px">
+        <div class="section-lbl">Setup &amp; API Keys</div>
+        <div class="va-coll-row" id="va-coll-ant" onclick="vaToggleColl('ant')">
+          <div>
+            <div class="sr-label">Anthropic key</div>
+            <div class="va-coll-status" id="va-coll-ant-status">—</div>
+          </div>
+          <div class="va-coll-chev">▾</div>
         </div>
+        <div class="va-coll-body" id="va-coll-ant-body">
+          <div class="inp-grp" style="margin-bottom:8px">
+            <label class="inp-label">API Key</label>
+            <input class="inp" id="set-ant-key" type="password" placeholder="sk-ant-…" autocomplete="off">
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="saveAntKey()">Save Key</button>
+          <div id="ant-key-status" style="font-size:11px;color:var(--chalk3);margin-top:8px"></div>
+        </div>
+        <div class="va-coll-row" id="va-coll-goog" onclick="vaToggleColl('goog')">
+          <div>
+            <div class="sr-label">Google Maps key</div>
+            <div class="va-coll-status" id="va-coll-goog-status">—</div>
+          </div>
+          <div class="va-coll-chev">▾</div>
+        </div>
+        <div class="va-coll-body" id="va-coll-goog-body">
+          <div class="inp-grp" style="margin-bottom:8px">
+            <label class="inp-label">API Key</label>
+            <input class="inp" id="set-goog-key" type="password" placeholder="AIza…" autocomplete="off">
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="saveGoogKey()">Save Key</button>
+          <div id="goog-key-status" style="font-size:11px;color:var(--chalk3);margin-top:8px"></div>
+          <div style="font-size:10px;color:var(--chalk3);margin-top:6px;line-height:1.4">Powers Course Hub pin drop + elevation. Restrict key to phenomjones.github.io/* and localhost/* in Google Cloud Console.</div>
+        </div>
+        <div class="va-coll-row" id="va-coll-gh" onclick="vaToggleColl('gh')">
+          <div>
+            <div class="sr-label">GitHub repo &amp; token</div>
+            <div class="va-coll-status muted" id="va-coll-gh-status">—</div>
+          </div>
+          <div class="va-coll-chev">▾</div>
+        </div>
+        <div class="va-coll-body" id="va-coll-gh-body">
+          <div class="inp-grp">
+            <label class="inp-label">Personal Access Token</label>
+            <input class="inp" id="set-gh-token" type="password" placeholder="ghp_…" autocomplete="off">
+          </div>
+          <div class="inp-grp">
+            <label class="inp-label">Repo (owner/repo)</label>
+            <input class="inp" id="set-gh-repo" type="text" placeholder="phenomjones/pjcaddie-data" autocomplete="off">
+          </div>
+          <div class="inp-grp" style="margin-bottom:8px">
+            <label class="inp-label">Branch</label>
+            <input class="inp" id="set-gh-branch" type="text" placeholder="main" autocomplete="off">
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="saveGHSettings()">Save Sync Settings</button>
+        </div>
+      </div>
+      <!-- VERMILION ATELIER — flat About row, no card wrapper -->
+      <div class="va-about-flat">
+        <span>v7.14.8 · Spec v2.1</span>
+        <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
   </div>
@@ -2330,29 +2370,45 @@ function renderSettings() {
     gkStatus.style.color = googKey?'var(--green)':'var(--chalk3)';
   }
   const syncMeta = getSyncMeta();
-  // TIMESTAMP PARITY — per-section timestamp rendering
+  // VERMILION ATELIER — compact "L 3m · R 3m" rendering with stale flag.
+  // Stale = remote missing entirely OR drift between local & remote > 24h either direction.
   ['rounds','courses','myGame','bags'].forEach(k => {
     const el = document.getElementById('ts-'+k);
+    const nameEl = document.getElementById('va-name-'+k);
     if (!el) return;
     const s = (syncMeta.sections && syncMeta.sections[k]) || {};
     const lastTouch = Math.max(s.localPush||0, s.localPull||0);
     const remoteTs = s.remoteTs||0;
+    const stale = vaIsStale(lastTouch, remoteTs);
     if (!lastTouch && !remoteTs) {
-      el.textContent = 'Never synced';
-      return;
-    }
-    const parts = [];
-    parts.push('this device: '+formatSyncTimestamp(lastTouch));
-    parts.push('online: '+formatSyncTimestamp(remoteTs));
-    // Highlight when remote is newer than this device's last touch (i.e. pull recommended)
-    if (remoteTs && lastTouch && remoteTs > lastTouch + 30000) {
-      el.style.color = 'var(--gold)';
-      el.textContent = parts.join(' \u00b7 ') + ' \u2014 pull recommended';
+      el.innerHTML = 'Never synced';
     } else {
-      el.style.color = 'var(--chalk3)';
-      el.textContent = parts.join(' \u00b7 ');
+      const lStr = lastTouch ? formatSyncCompact(lastTouch) : 'never';
+      const rStr = remoteTs ? formatSyncCompact(remoteTs) : 'never';
+      el.innerHTML = '<span>L</span> '+lStr+' · <span>R</span> '+rStr;
     }
+    el.classList.toggle('stale', stale);
+    if (nameEl) nameEl.classList.toggle('stale', stale);
   });
+  // VERMILION ATELIER — collapsible setup row statuses
+  const antStatus = document.getElementById('va-coll-ant-status');
+  if (antStatus) {
+    antStatus.textContent = antKey ? 'Configured' : 'Not configured';
+    antStatus.classList.toggle('muted', !antKey);
+  }
+  const googStatus = document.getElementById('va-coll-goog-status');
+  if (googStatus) {
+    googStatus.textContent = googKey ? 'Configured' : 'Not configured';
+    googStatus.classList.toggle('muted', !googKey);
+  }
+  const ghStatus = document.getElementById('va-coll-gh-status');
+  if (ghStatus) {
+    const repo = localStorage.getItem('gh_repo')||'';
+    const tok = !!localStorage.getItem('gh_token');
+    if (tok && repo) { ghStatus.textContent = repo; ghStatus.classList.add('muted'); }
+    else if (tok) { ghStatus.textContent = 'Token set, no repo'; ghStatus.classList.remove('muted'); }
+    else { ghStatus.textContent = 'Not configured'; ghStatus.classList.add('muted'); }
+  }
 }
 
 function saveAntKey() {
@@ -2424,6 +2480,41 @@ function formatSyncTimestamp(ts) {
   if (day < 7) return day + 'd ago';
   const d = new Date(ts);
   return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+// VERMILION ATELIER — compact form ("3m", "2h", "5d", "Apr 18") for the
+// L 3m · R 3m sync row. No "ago" suffix to keep the row tight.
+function formatSyncCompact(ts) {
+  if (!ts) return 'never';
+  const now = Date.now();
+  const diff = now - ts;
+  if (diff < 0) return 'now';
+  const sec = Math.floor(diff / 1000);
+  if (sec < 60) return 'now';
+  const min = Math.floor(sec / 60);
+  if (min < 60) return min + 'm';
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return hr + 'h';
+  const day = Math.floor(hr / 24);
+  if (day < 7) return day + 'd';
+  const d = new Date(ts);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+// VERMILION ATELIER — stale = remote missing OR local-vs-remote drift > 24h either way.
+function vaIsStale(localTs, remoteTs) {
+  const STALE_MS = 24*60*60*1000;
+  if (!remoteTs && !localTs) return false; // never synced isn't "stale", it's empty
+  if (!remoteTs) return true;               // local exists, remote missing
+  if (!localTs) return true;                // remote exists, local missing
+  return Math.abs(localTs - remoteTs) > STALE_MS;
+}
+
+// VERMILION ATELIER — collapsible setup rows (Anthropic / Google / GitHub).
+// Toggling adds/removes 'expanded' on the row; CSS sibling selector reveals body.
+function vaToggleColl(which) {
+  const row = document.getElementById('va-coll-'+which);
+  if (row) row.classList.toggle('expanded');
 }
 
 function ghHeaders() {
