@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.14.13 · Apr 26, 2026 -->
+<!-- PJ Caddie v7.14.14 · Apr 27, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -390,7 +390,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.14.13 · Apr 26, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.14.14 · Apr 27, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -5687,7 +5687,9 @@ function renderCourseHubTees() {
   const masterSel = document.getElementById('ch-master-tee-select');
   if (course.tees.length > 1) {
     const currentMasterId = getMasterTeeId(CH.courseId) || course.tees[0].id;
-    masterSel.innerHTML = course.tees.map(t =>
+    // PARCHMENT FAIRWAY — sort dropdown longest-tee-first to match Course Hub chip-row convention
+    const sortedTees = sortTeesForHub(course.tees, course.holes);
+    masterSel.innerHTML = sortedTees.map(t =>
       `<option value="${t.id}"${t.id === currentMasterId ? ' selected' : ''}>${t.name}</option>`
     ).join('');
     masterRow.style.display = 'flex';
@@ -5993,6 +5995,7 @@ function placePinMarker(which, coord) {
   const marker = new google.maps.Marker({
     position: coord,
     map: PD.map,
+    clickable: false,  // OBSIDIAN PIN — let map taps pass through to the map's click listener
     label: { text: st.label, color: '#fff', fontWeight: 'bold', fontSize: '12px' },
     icon: {
       path: google.maps.SymbolPath.CIRCLE,
