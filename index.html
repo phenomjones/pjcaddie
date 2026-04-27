@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.14.12 · Apr 26, 2026 -->
+<!-- PJ Caddie v7.14.13 · Apr 26, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -390,7 +390,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.14.12 · Apr 26, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.14.13 · Apr 26, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -1042,6 +1042,11 @@ body{display:flex;flex-direction:column}
       <button class="btn btn-outline btn-sm" style="padding:4px 12px" onclick="closePinDrop()">Close</button>
     </div>
     <div id="pin-drop-instr" style="font-size:12px;color:var(--chalk2);text-align:center;padding:6px 8px;background:var(--ink3);border-radius:6px;margin-bottom:8px">Tap the <strong style="color:var(--gold)">tee box</strong> to drop pin 1</div>
+    <div id="pin-drop-edit-row" style="display:none;gap:6px;margin-bottom:8px">
+      <button class="btn btn-outline btn-sm" id="pin-drop-edit-t" onclick="selectPinPhase('tee')" style="flex:1;font-size:12px;padding:6px 0">Re-place T</button>
+      <button class="btn btn-outline btn-sm" id="pin-drop-edit-l" onclick="selectPinPhase('landing')" style="flex:1;font-size:12px;padding:6px 0">Re-place L</button>
+      <button class="btn btn-outline btn-sm" id="pin-drop-edit-g" onclick="selectPinPhase('green')" style="flex:1;font-size:12px;padding:6px 0">Re-place G</button>
+    </div>
     <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
       <input class="inp" id="pin-drop-coords" type="text" placeholder="Paste coords: 41.1365, -74.0059" style="flex:1;font-size:12px;padding:6px 8px" autocomplete="off">
       <button class="btn btn-outline btn-sm" style="padding:6px 12px;font-size:11px" onclick="jumpToPastedCoords()">Go</button>
@@ -5962,11 +5967,8 @@ function initPinDropMap(course) {
       PD.greenPin = coord;
       placePinMarker('green', coord);
     } else {
-      // All pins set — cycle: next tap re-places tee pin
-      PD.teePin = coord;
-      placePinMarker('tee', coord);
-      PD.phase = 'done'; // stay in done; user taps Reset to change landing/green
-      updatePinDropUI();
+      // AMETHYST POINT — 'done' phase: ignore map taps. User must tap a
+      // Re-place button (T/L/G) to enter a phase before placing a pin.
       return;
     }
     PD.phase = nextPinPhase();
@@ -6008,6 +6010,8 @@ function placePinMarker(which, coord) {
 function updatePinDropUI() {
   const instr = document.getElementById('pin-drop-instr');
   const saveBtn = document.getElementById('pin-drop-save');
+  const editRow = document.getElementById('pin-drop-edit-row');
+  const editL = document.getElementById('pin-drop-edit-l');
   if (!instr || !saveBtn) return;
   if (PD.phase === 'tee') {
     instr.innerHTML = 'Tap the <strong style="color:#4a90e2">tee box</strong> to drop pin <strong>T</strong>';
@@ -6016,12 +6020,25 @@ function updatePinDropUI() {
   } else if (PD.phase === 'green') {
     instr.innerHTML = 'Tap the <strong style="color:var(--gold)">center of the green</strong> to drop pin <strong>G</strong>';
   } else {
-    const extra = PD.par === 3 ? '' : ', <strong>L</strong> (landing),';
-    instr.innerHTML = `All pins set. Tap map to re-place <strong>T</strong>${extra} or Save. Use Reset to redo from scratch.`;
+    instr.innerHTML = 'All pins set. Tap a button below to re-place a pin, or Save.';
+  }
+  // AMETHYST POINT — show edit buttons only in 'done' phase. Hide L button on par 3.
+  if (editRow) {
+    editRow.style.display = PD.phase === 'done' ? 'flex' : 'none';
+    if (editL) editL.style.display = PD.par === 3 ? 'none' : '';
   }
   // Require all pins for this par type
   const hasAllPins = PD.par === 3 ? (PD.teePin && PD.greenPin) : (PD.teePin && PD.landingPin && PD.greenPin);
   saveBtn.disabled = !hasAllPins;
+}
+
+// AMETHYST POINT — switch pin-drop phase to a specific pin so the next map
+// tap re-places that pin. Called from the Re-place T/L/G buttons in 'done' phase.
+function selectPinPhase(which) {
+  if (which !== 'tee' && which !== 'landing' && which !== 'green') return;
+  if (which === 'landing' && PD.par === 3) return; // par 3 has no landing
+  PD.phase = which;
+  updatePinDropUI();
 }
 
 function resetPinDrop() {
