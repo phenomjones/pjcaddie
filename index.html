@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v7.14.11 · Apr 26, 2026 -->
+<!-- PJ Caddie v7.14.12 · Apr 26, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -390,7 +390,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v7.14.11 · Apr 26, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v7.14.12 · Apr 26, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -1764,18 +1764,85 @@ function haversineYards(a, b) {
   const meters = 2 * R * Math.asin(Math.sqrt(h));
   return Math.round(meters * 1.09361); // meters → yards
 }
-// Find green coords from ANY tee on the same course+hole (so a new tee set can inherit green pin)
-function findGreenCoordsFromOtherTee(courseId, holeIdx, excludeTeeId) {
+
+// SAFFRON COMPASS — initial bearing from A to B in radians (0=north, π/2=east).
+function bearingRad(a, b) {
+  if (!a?.lat || !a?.lng || !b?.lat || !b?.lng) return null;
+  const toRad = d => d * Math.PI / 180;
+  const f1 = toRad(a.lat), f2 = toRad(b.lat);
+  const dl = toRad(b.lng - a.lng);
+  const y = Math.sin(dl) * Math.cos(f2);
+  const x = Math.cos(f1) * Math.sin(f2) - Math.sin(f1) * Math.cos(f2) * Math.cos(dl);
+  return Math.atan2(y, x);
+}
+
+// SAFFRON COMPASS — destination point given start, bearing (radians), distance (yards).
+// Negative yards travels in the opposite direction.
+function destinationPoint(start, bearing, yards) {
+  if (!start?.lat || !start?.lng || bearing == null || !isFinite(yards)) return null;
+  const R = 6371000;
+  const meters = yards / 1.09361;
+  const d = meters / R;
+  const toRad = deg => deg * Math.PI / 180;
+  const toDeg = rad => rad * 180 / Math.PI;
+  const f1 = toRad(start.lat), l1 = toRad(start.lng);
+  const f2 = Math.asin(Math.sin(f1) * Math.cos(d) + Math.cos(f1) * Math.sin(d) * Math.cos(bearing));
+  const l2 = l1 + Math.atan2(Math.sin(bearing) * Math.sin(d) * Math.cos(f1),
+                              Math.cos(d) - Math.sin(f1) * Math.sin(f2));
+  return { lat: toDeg(f2), lng: toDeg(l2) };
+}
+// SAFFRON COMPASS — infer all 3 pins for a target tee from any other tee on the
+// same hole that has pins. Green is identical across tees (same point on the
+// course). Tee and landing are shifted along the green→tee axis by the yardage
+// differential between target and reference tees: if target tee is 30y longer,
+// its tee box is 30y further from green, and its landing point lands 30y further
+// from green too (assuming same player carry).
+//
+// Returns { tee, landing, green } — any or all may be null if inference can't
+// be made (e.g. no reference tee has pins, or yardage data missing).
+function inferHolePinsFromOtherTee(courseId, holeIdx, targetTeeId) {
+  const result = { tee: null, landing: null, green: null };
   try {
     const course = getCourses().find(c => c.id === courseId);
-    if (!course) return null;
+    if (!course) return result;
+    // Find a reference tee (any other tee on this hole) with at least a green pinned.
+    let refTee = null, refCoords = null;
     for (const t of course.tees) {
-      if (t.id === excludeTeeId) continue;
+      if (t.id === targetTeeId) continue;
       const c = getHoleCoords(courseId, t.id, holeIdx);
-      if (c?.green?.lat && c?.green?.lng) return c.green;
+      if (c?.green?.lat && c?.green?.lng) { refTee = t; refCoords = c; break; }
+    }
+    if (!refTee || !refCoords) return result;
+
+    // Green: identical point regardless of tee.
+    result.green = { ...refCoords.green };
+
+    // For tee/landing inference we need yardage on both tees + an axis anchor.
+    const targetTee = course.tees.find(t => t.id === targetTeeId);
+    if (!targetTee) return result;
+    const refYards = Array.isArray(refTee.holeYards) ? refTee.holeYards[holeIdx] : null;
+    const targetYards = Array.isArray(targetTee.holeYards) ? targetTee.holeYards[holeIdx] : null;
+    if (typeof refYards !== 'number' || typeof targetYards !== 'number'
+        || refYards <= 0 || targetYards <= 0) return result;
+    const delta = targetYards - refYards; // +ve if target tee is LONGER (further from green)
+
+    // Axis: bearing from green to ref-tee (= "away from green" direction).
+    // Prefer using the ref tee pin to define the axis; fall back to ref landing if no tee pin.
+    const axisAnchor = (refCoords?.tee?.lat && refCoords?.tee?.lng) ? refCoords.tee
+                     : (refCoords?.landing?.lat && refCoords?.landing?.lng) ? refCoords.landing
+                     : null;
+    if (!axisAnchor) return result;
+    const awayFromGreen = bearingRad(result.green, axisAnchor);
+    if (awayFromGreen == null) return result;
+
+    if (refCoords?.tee?.lat && refCoords?.tee?.lng) {
+      result.tee = destinationPoint(refCoords.tee, awayFromGreen, delta);
+    }
+    if (refCoords?.landing?.lat && refCoords?.landing?.lng) {
+      result.landing = destinationPoint(refCoords.landing, awayFromGreen, delta);
     }
   } catch {}
-  return null;
+  return result;
 }
 // Per-course default center — last pin-drop location, used to open map in the right place next time
 function getCourseDefaultCenter(courseId) {
@@ -2419,6 +2486,8 @@ function renderSettings() {
     else if (tok) { ghStatus.textContent = 'Token set, no repo'; ghStatus.classList.remove('muted'); }
     else { ghStatus.textContent = 'Not configured'; ghStatus.classList.add('muted'); }
   }
+  // AZURE PULSE — fire async remote-freshness check. Cache prevents loop-back on re-render.
+  ghCheckRemoteFreshness();
 }
 
 function saveAntKey() {
@@ -2577,6 +2646,44 @@ function mergeRounds(local, remote) {
 function ghSetStatus(msg, color) {
   const el = document.getElementById('gh-status');
   if (el) { el.textContent=msg; el.style.color=color||'var(--chalk3)'; }
+}
+
+// AZURE PULSE — refresh per-section remoteTs cache from GitHub on Settings open.
+// Without this, the displayed "GitHub X ago" only reflects this device's last sync,
+// not actual current remote state — so changes pushed by another device or external
+// edits go undetected until the user manually pulls.
+let _azurePulseLastCheck = 0;
+async function ghCheckRemoteFreshness() {
+  const now = Date.now();
+  if (now - _azurePulseLastCheck < 30000) return;        // 30s cache to dedup rapid renders
+  if (!localStorage.getItem('gh_token') || !localStorage.getItem('gh_repo')) return;
+  _azurePulseLastCheck = now;
+  try {
+    const result = await ghReadFile();
+    if (!result?.content) return;
+    const remote = result.content;
+    const meta = getSyncMeta();
+    const sectionMap = [
+      ['rounds', 'roundsTs'],
+      ['courses', 'notesTs'],
+      ['myGame', 'playerTs'],
+      ['bags', 'bagsTs']
+    ];
+    let changed = false;
+    for (const [sectionKey, tsKey] of sectionMap) {
+      const remoteTs = remote[tsKey] || 0;
+      if (remoteTs && remoteTs !== (meta.sections[sectionKey].remoteTs || 0)) {
+        meta.sections[sectionKey].remoteTs = remoteTs;
+        changed = true;
+      }
+    }
+    if (changed) {
+      saveSyncMeta(meta);
+      // Re-render only if Settings is currently visible (avoid wasted work)
+      const settingsView = document.getElementById('view-settings');
+      if (settingsView && settingsView.style.display !== 'none') renderSettings();
+    }
+  } catch {}  // silent — leave cache as-is on network/parse errors
 }
 
 async function ghPushSection(label, btnId, sectionData, sectionKey) {
@@ -5767,11 +5874,15 @@ function openPinDrop(holeIdx) {
   PD.landingPin = null;
   PD.greenPin = null;
 
-  // Pre-populate green from another tee if available
-  const prefill = findGreenCoordsFromOtherTee(CH.courseId, holeIdx, tee.id);
-  if (prefill) PD.greenPin = { ...prefill };
+  // SAFFRON COMPASS — auto-prefill all 3 pins from another tee on this hole.
+  // Green is identical; tee + landing are shifted by yardage differential along
+  // the green→tee axis. User can drag any pin to refine before saving.
+  const inferred = inferHolePinsFromOtherTee(CH.courseId, holeIdx, tee.id);
+  if (inferred.tee)     PD.teePin     = { ...inferred.tee };
+  if (inferred.landing) PD.landingPin = { ...inferred.landing };
+  if (inferred.green)   PD.greenPin   = { ...inferred.green };
 
-  // Pre-populate existing pins if set for this tee
+  // Pre-populate existing pins if set for this tee (overrides inferred values)
   const existing = getHoleCoords(CH.courseId, tee.id, holeIdx);
   if (existing?.tee) PD.teePin = { ...existing.tee };
   if (existing?.landing) PD.landingPin = { ...existing.landing };
