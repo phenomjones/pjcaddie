@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.1.2 · Apr 30, 2026 -->
+<!-- PJ Caddie v8.1.3 · Apr 30, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -457,7 +457,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.1.2 · Apr 30, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.1.3 · Apr 30, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -1019,7 +1019,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.1.2 · Spec v2.1</span>
+        <span>v8.1.3 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -3157,7 +3157,15 @@ function glacierFinishRound() {
   const rel = wip.totalScore - relPar;
   const relStr = rel === 0 ? 'E' : (rel > 0 ? '+'+rel : String(rel));
   toast(`Round saved \xb7 ${wip.totalScore} (${relStr})`);
-  showView('home');
+  // SUMMIT MIRROR (v8.1.3) — route to the just-saved round's summary instead
+  // of dropping the user back to home with only a toast. The capture flow
+  // ended without any terminal "here's what you shot" state pre-v8.1.3,
+  // making the most rewarding moment of the round invisible. Setting
+  // DET.roundId before showView('detail') primes renderDetail to find the
+  // freshly-pushed round in pjc_rounds. Back button on view-detail still
+  // routes to History (acceptable; revisit if the flow feels off).
+  DET.roundId = wip.id;
+  showView('detail');
 }
 
 // renderDetailV2 — minimum-legibility Round Detail for schemaVersion: 2 rounds.
@@ -3181,10 +3189,17 @@ function renderDetailV2(round) {
   const relPar = round.playedPar != null ? round.playedPar : round.par;
   const rel = round.totalScore != null ? round.totalScore - relPar : null;
   const relStr = rel == null ? '\u2014' : rel === 0 ? 'E' : rel > 0 ? '+'+rel : String(rel);
+  // AMBER LANTERN (v8.1.3) — scoreColorClass helper was deleted in OBSIDIAN
+  // PURGE alongside the v1 detail chain, but renderDetailV2 still referenced
+  // it here, throwing ReferenceError and aborting before the score header,
+  // stat strips, and per-hole list could render. Inlining the same ternary
+  // already used at roundRowHTML (line ~2596) and the per-hole list below
+  // (line ~3244) keeps a single shared expression pattern, no helper needed.
+  const scRel = rel==null?'':rel<0?'c-under':rel>0?'c-over':'c-even';
   document.getElementById('det-score-hdr').innerHTML = `
     <div class="detail-score-hdr">
-      <div class="detail-score-big ${scoreColorClass(rel)}">${round.totalScore ?? '\u2014'}</div>
-      <div class="detail-score-rel ${scoreColorClass(rel)}">${relStr}</div>
+      <div class="detail-score-big ${scRel}">${round.totalScore ?? '\u2014'}</div>
+      <div class="detail-score-rel ${scRel}">${relStr}</div>
     </div>`;
 
   // Stats — derive from new shape, restricted to played holes only.
