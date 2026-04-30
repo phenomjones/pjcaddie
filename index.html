@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.1.1 · Apr 30, 2026 -->
+<!-- PJ Caddie v8.1.2 · Apr 30, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -378,26 +378,33 @@ body{display:flex;flex-direction:column}
 .byron-warn{font-size:11px;color:var(--gold);background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.2);border-radius:var(--rs);padding:8px 10px;margin-bottom:10px;line-height:1.5}
 
 /* GLACIER CAPTURE (v8.1.0) — per-hole capture screen.
-   GLACIER POLISH (v8.1.1) — club grid (auto-fill min 70px), yardage flex-wrap
-   centered so 7-chip overflow row centers, top section steppers tightened
-   (label inline, value+buttons grouped), pin column tightened.
+   GLACIER POLISH (v8.1.1) — club grid, yardage centered, top section tightened.
+   GLACIER REFINE (v8.1.2) — score pills (replaces stepper), pin/penalty row,
+   tee result chips with skull/arrow glyphs only (no text), yardage 4+3 layout
+   with bigger chips. PIN mini-label dropped (Matt knows what they are).
    Three color-zoned sections per locked v10 spec: tee=blue, approach=gold, putts=green.
    All chips use 44px+ tap targets. Selected state inverts to gold-on-ink. */
 .gc-nav-arrow{background:var(--ink2);border:1px solid var(--border);color:var(--gold);width:42px;height:42px;border-radius:50%;font-size:24px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1}
 .gc-nav-arrow:disabled{opacity:.3;cursor:default}
 .gc-nav-arrow:active:not(:disabled){background:var(--ink3)}
-.gc-top-row{display:flex;gap:8px;margin-bottom:14px;align-items:stretch}
-.gc-top-left{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
-.gc-top-right{flex:0 0 96px;display:flex;flex-direction:column}
-.gc-stepper-card{background:var(--ink2);border:1px solid var(--border2);border-radius:var(--rs);padding:6px 10px;display:flex;align-items:center;gap:6px;min-height:46px}
-.gc-stepper-lbl{font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--chalk3);flex-shrink:0;font-weight:600}
-.gc-stepper{display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end}
+/* Score pill card — replaces v8.1.1 stepper. Row 1 = 2,3,4,5,6,7 + ▾ expand. */
+.gc-score-card{background:var(--ink2);border:1px solid var(--border2);border-radius:var(--rs);padding:8px;margin-bottom:8px}
+.gc-score-row{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.gc-score-row-2{grid-template-columns:repeat(6,1fr);margin-top:5px}
+.gc-pill{min-height:46px;background:var(--ink3);border:1px solid var(--border2);color:var(--chalk);font-size:18px;font-weight:700;font-family:'DM Serif Display',serif;padding:0;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.gc-pill.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.gc-pill-expand{font-family:'DM Sans',sans-serif;font-size:16px;color:var(--chalk3);font-weight:600}
+.gc-pill-expand.on{background:var(--ink3);color:var(--gold);border-color:var(--border)}
+/* Pin (horizontal) + Penalty (compact stepper) — single row */
+.gc-pin-pen-row{display:flex;gap:8px;margin-bottom:14px;align-items:stretch}
+.gc-pin-h-row{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;flex:1;min-width:0}
+.gc-pin-chip-h{background:var(--ink2);border:1px solid var(--border2);color:var(--chalk2);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;padding:0 6px;border-radius:8px;cursor:pointer;min-height:42px;display:flex;align-items:center;justify-content:center;line-height:1.1}
+.gc-pin-chip-h.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.gc-penalty-card{background:var(--ink2);border:1px solid var(--border2);border-radius:8px;padding:0 8px;display:flex;align-items:center;gap:5px;flex-shrink:0;height:42px}
+.gc-penalty-lbl{font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--chalk3);font-weight:600;flex-shrink:0}
 .gc-stepper-btn{background:var(--ink3);border:1px solid var(--border);color:var(--chalk);width:30px;height:30px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;padding:0;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .gc-stepper-btn:active{background:var(--gold);color:var(--ink)}
-.gc-stepper-val{font-family:'DM Serif Display',serif;font-size:22px;color:var(--gold);min-width:22px;text-align:center;font-weight:700;line-height:1}
-.gc-pin-stack{display:flex;flex-direction:column;gap:4px}
-.gc-pin-chip{background:var(--ink2);border:1px solid var(--border2);color:var(--chalk2);font-size:13px;font-weight:600;padding:9px 8px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif}
-.gc-pin-chip.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.gc-stepper-val{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gold);min-width:20px;text-align:center;font-weight:700;line-height:1}
 .gc-mini-lbl{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--chalk3);font-weight:600}
 .gc-section{background:var(--ink2);border:1px solid var(--border2);border-radius:var(--r);padding:14px;margin-bottom:14px;border-left-width:3px}
 .gc-section-tee{border-left-color:var(--blue);background:linear-gradient(90deg,rgba(90,140,200,.06) 0%,var(--ink2) 100%)}
@@ -414,16 +421,16 @@ body{display:flex;flex-direction:column}
 .gc-chip.dim{opacity:.4}
 .gc-chip-fairway{background:transparent;border:1.5px dashed var(--green);color:var(--green);min-height:42px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;border-radius:8px;cursor:pointer}
 .gc-chip-fairway.on{background:var(--green);color:var(--ink);border-style:solid}
-/* Tee result chips: 6-column grid; arrow text adds slight visual weight to direction */
+/* Tee result chips: glyph-only (skull + arrows). Larger glyph for readability. */
 .gc-tee-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
-.gc-tee-grid .gc-chip{font-size:12px;padding:0 4px}
-/* Yardage: flex-wrap centered so overflow rows (e.g. 7 chips → 4+3) are center-balanced */
+.gc-chip-arrow{font-size:18px;letter-spacing:-1px;padding:0 4px;font-weight:700;min-height:46px}
+/* Yardage: explicit 4-per-row → 7 chips wraps as 4+3 with row 2 centered. */
 .gc-yards-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
-.gc-yards-row .gc-chip{flex:0 1 auto;min-width:70px;font-size:12px;padding:0 10px}
+.gc-yards-row .gc-chip{flex:0 0 calc((100% - 18px) / 4);min-height:48px;font-size:14px;padding:0 6px}
 /* Tee club chips: auto-fill grid so each chip has readable min-width regardless
    of bag count. 70px min works for "PW", "GW", "5I" through "Driver" labels. */
 .gc-club-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:5px}
-.gc-club-grid .gc-chip{font-size:12px;padding:0 6px;min-height:42px}
+.gc-club-grid .gc-chip{font-size:13px;padding:0 6px;min-height:42px}
 .gc-zone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .gc-zone-cell{min-height:50px;background:var(--ink3);border:1px solid var(--border2);color:var(--chalk2);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;padding:0 4px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1.1;white-space:nowrap}
 .gc-zone-cell.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
@@ -450,7 +457,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.1.1 · Apr 30, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.1.2 · Apr 30, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -556,46 +563,17 @@ body{display:flex;flex-direction:column}
         </div>
       </div>
       <button class="btn btn-gold" id="rs-start-btn" onclick="startRoundSetup()" disabled>Start Round →</button>
-      <button class="btn btn-outline" id="rs-import-btn" onclick="startPhotoImport()" disabled>📷 Import from Photo →</button>
-    </div>
-  </div>
-</div>
-
-<!-- GLACIER PLACEHOLDER (v8.0.0 / TUNDRA REWRITE) -->
-<!-- Shown when the user clicks Start Round or Import from Photo while GLACIER
-     CAPTURE is still in development. Replaces the legacy wizard entry points
-     until v8.1.0 ships the new per-hole capture flow. Removed in OBSIDIAN PURGE
-     once GLACIER is validated on a real round.
-     SILVER SPIRE (v8.0.1) — header Back goes to Home, not Round Setup. Round
-     Setup's initRoundSetup() resets all selections on view entry, so sending
-     the user back to a half-reset form was dishonest UX. -->
-<div class="view" id="view-glacier-placeholder">
-  <div class="safe-top"></div>
-  <div class="hdr">
-    <div class="hdr-row"><button class="back-btn" onclick="showView('home')">Home</button></div>
-    <div class="hdr-title">Round Capture</div>
-  </div>
-  <div class="scroll-body">
-    <div class="pad pad-b" style="display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:48px">
-      <div style="font-size:48px;margin-bottom:18px">🧊</div>
-      <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--gold);margin-bottom:14px;line-height:1.3">Round capture is being rebuilt</div>
-      <div style="font-size:14px;color:var(--chalk2);max-width:340px;line-height:1.55;margin-bottom:22px">
-        The shot-by-shot wizard has been retired. A faster, single-screen-per-hole capture flow is shipping next as <span style="color:var(--gold);font-weight:600">GLACIER CAPTURE (v8.1.0)</span>.
-      </div>
-      <div style="font-size:13px;color:var(--chalk3);max-width:340px;line-height:1.55;margin-bottom:30px">
-        Course Hub, pin positions, course notes, your bag, and your player profile all carry over. Past rounds were cleared as part of the schema break — Byron analysis returns when GLACIER lands.
-      </div>
-      <button class="btn btn-outline" onclick="showView('home')" style="min-width:200px">Back to Home</button>
     </div>
   </div>
 </div>
 
 <!-- GLACIER CAPTURE (v8.1.0) — single-screen-per-hole capture flow.
-     GLACIER POLISH (v8.1.1) — directional tee chips, renamed sub-labels,
-     top action button (above scroll), hole title shows just "Hole N",
-     course notes footer removed (Matt validation: never read during capture).
+     GLACIER POLISH (v8.1.1) — directional tee chips, top action button.
+     GLACIER REFINE (v8.1.2) — score pills replace stepper, hole title single
+     line "Hole N · Yds · Par P", tee result chips use skull+arrow glyphs only,
+     yardage 4+3 layout, club chip bug fix (abbr field).
      State lives in the round WIP (pjc_wip, schemaVersion: 2). GC.holeIdx tracks
-     the currently-displayed hole. -->
+     the currently-displayed hole; GC.scoreExpand is per-hole expand state. -->
 <div class="view" id="view-glacier-capture">
   <div class="safe-top"></div>
   <div class="hdr" style="flex-shrink:0">
@@ -607,7 +585,6 @@ body{display:flex;flex-direction:column}
       <button class="gc-nav-arrow" id="gc-prev-btn" onclick="glacierGotoHole(-1)" aria-label="Previous hole">‹</button>
       <div style="text-align:center;flex:1;min-width:0">
         <div class="hdr-title" id="gc-hole-title" style="font-size:18px"></div>
-        <div id="gc-hole-meta" style="font-size:12px;color:var(--chalk3);margin-top:2px"></div>
       </div>
       <button class="gc-nav-arrow" id="gc-next-btn" onclick="glacierGotoHole(1)" aria-label="Next hole">›</button>
     </div>
@@ -615,39 +592,42 @@ body{display:flex;flex-direction:column}
   <div class="scroll-body">
     <div class="pad" style="padding-top:14px;padding-bottom:60px">
 
-      <!-- TOP action button — visible without scrolling.
-           GLACIER POLISH (v8.1.1) — Mara permanent UX rule: action buttons
-           above the scroll. Mirrored at bottom of form. Both fire the same
-           handler and are kept label-synced by glacierRenderHole. -->
+      <!-- TOP action button — Mara permanent UX rule: action buttons above scroll. -->
       <button class="btn btn-gold" id="gc-action-btn-top" onclick="glacierActionTap()" style="margin-bottom:14px;width:100%">Next Hole →</button>
 
-      <!-- Top row: Score/Penalty (left col) | Pin position (right col) -->
-      <div class="gc-top-row">
-        <div class="gc-top-left">
-          <div class="gc-stepper-card">
-            <div class="gc-stepper-lbl">Score</div>
-            <div class="gc-stepper">
-              <button class="gc-stepper-btn" onclick="glacierAdjustScore(-1)" aria-label="Decrease score">−</button>
-              <div class="gc-stepper-val" id="gc-score-val">—</div>
-              <button class="gc-stepper-btn" onclick="glacierAdjustScore(1)" aria-label="Increase score">+</button>
-            </div>
-          </div>
-          <div class="gc-stepper-card">
-            <div class="gc-stepper-lbl">Penalty</div>
-            <div class="gc-stepper">
-              <button class="gc-stepper-btn" onclick="glacierAdjustPenalty(-1)" aria-label="Decrease penalty">−</button>
-              <div class="gc-stepper-val" id="gc-penalty-val">0</div>
-              <button class="gc-stepper-btn" onclick="glacierAdjustPenalty(1)" aria-label="Increase penalty">+</button>
-            </div>
-          </div>
+      <!-- SCORE pills (row 1: 2-7 + expand chevron). Re-tap clears. -->
+      <div class="gc-score-card">
+        <div class="gc-score-row">
+          <button class="gc-pill" data-score="2" onclick="glacierSetScore(2)">2</button>
+          <button class="gc-pill" data-score="3" onclick="glacierSetScore(3)">3</button>
+          <button class="gc-pill" data-score="4" onclick="glacierSetScore(4)">4</button>
+          <button class="gc-pill" data-score="5" onclick="glacierSetScore(5)">5</button>
+          <button class="gc-pill" data-score="6" onclick="glacierSetScore(6)">6</button>
+          <button class="gc-pill" data-score="7" onclick="glacierSetScore(7)">7</button>
+          <button class="gc-pill gc-pill-expand" id="gc-score-expand" onclick="glacierToggleScoreExpand()" aria-label="Show more scores">▾</button>
         </div>
-        <div class="gc-top-right">
-          <div class="gc-mini-lbl" style="margin-bottom:6px">Pin</div>
-          <div class="gc-pin-stack">
-            <button class="gc-pin-chip" data-pin="front" onclick="glacierSetField('pinPos','front')">Front</button>
-            <button class="gc-pin-chip" data-pin="middle" onclick="glacierSetField('pinPos','middle')">Middle</button>
-            <button class="gc-pin-chip" data-pin="back" onclick="glacierSetField('pinPos','back')">Back</button>
-          </div>
+        <div class="gc-score-row gc-score-row-2" id="gc-score-row-2" style="display:none">
+          <button class="gc-pill" data-score="1" onclick="glacierSetScore(1)">1</button>
+          <button class="gc-pill" data-score="8" onclick="glacierSetScore(8)">8</button>
+          <button class="gc-pill" data-score="9" onclick="glacierSetScore(9)">9</button>
+          <button class="gc-pill" data-score="10" onclick="glacierSetScore(10)">10</button>
+          <button class="gc-pill" data-score="11" onclick="glacierSetScore(11)">11</button>
+          <button class="gc-pill" data-score="12" onclick="glacierSetScore(12)">12</button>
+        </div>
+      </div>
+
+      <!-- Pin (horizontal) + Penalty (compact stepper) — single row -->
+      <div class="gc-pin-pen-row">
+        <div class="gc-pin-h-row">
+          <button class="gc-pin-chip-h" data-pin="front" onclick="glacierSetField('pinPos','front')">Front</button>
+          <button class="gc-pin-chip-h" data-pin="middle" onclick="glacierSetField('pinPos','middle')">Mid</button>
+          <button class="gc-pin-chip-h" data-pin="back" onclick="glacierSetField('pinPos','back')">Back</button>
+        </div>
+        <div class="gc-penalty-card">
+          <div class="gc-penalty-lbl">Pen</div>
+          <button class="gc-stepper-btn" onclick="glacierAdjustPenalty(-1)" aria-label="Decrease penalty">−</button>
+          <div class="gc-stepper-val" id="gc-penalty-val">0</div>
+          <button class="gc-stepper-btn" onclick="glacierAdjustPenalty(1)" aria-label="Increase penalty">+</button>
         </div>
       </div>
 
@@ -659,12 +639,12 @@ body{display:flex;flex-direction:column}
         <div id="gc-tee-result-block">
           <div class="gc-mini-lbl" style="margin:14px 0 8px">Tee Result</div>
           <div class="gc-tee-grid">
-            <button class="gc-chip" data-tee="OBL" onclick="glacierSetField('teeResult','OBL')">«&nbsp;OBL</button>
-            <button class="gc-chip" data-tee="LL" onclick="glacierSetField('teeResult','LL')">‹&nbsp;LL</button>
-            <button class="gc-chip" data-tee="L" onclick="glacierSetField('teeResult','L')">‹&nbsp;L</button>
-            <button class="gc-chip" data-tee="R" onclick="glacierSetField('teeResult','R')">R&nbsp;›</button>
-            <button class="gc-chip" data-tee="RR" onclick="glacierSetField('teeResult','RR')">RR&nbsp;›</button>
-            <button class="gc-chip" data-tee="OBR" onclick="glacierSetField('teeResult','OBR')">OBR&nbsp;»</button>
+            <button class="gc-chip gc-chip-arrow" data-tee="OBL" onclick="glacierSetField('teeResult','OBL')" aria-label="Out of bounds left">💀‹</button>
+            <button class="gc-chip gc-chip-arrow" data-tee="LL" onclick="glacierSetField('teeResult','LL')" aria-label="Far left">‹‹</button>
+            <button class="gc-chip gc-chip-arrow" data-tee="L" onclick="glacierSetField('teeResult','L')" aria-label="Left">‹</button>
+            <button class="gc-chip gc-chip-arrow" data-tee="R" onclick="glacierSetField('teeResult','R')" aria-label="Right">›</button>
+            <button class="gc-chip gc-chip-arrow" data-tee="RR" onclick="glacierSetField('teeResult','RR')" aria-label="Far right">››</button>
+            <button class="gc-chip gc-chip-arrow" data-tee="OBR" onclick="glacierSetField('teeResult','OBR')" aria-label="Out of bounds right">›💀</button>
           </div>
           <button class="gc-chip gc-chip-fairway" data-tee="fairway" onclick="glacierSetField('teeResult','fairway')" style="margin-top:6px;width:100%">Fairway</button>
         </div>
@@ -746,47 +726,6 @@ body{display:flex;flex-direction:column}
   <div class="safe-bot"></div>
 </div>
 
-<!-- BAG SELECT (pre-round) -->
-<div class="view" id="view-bag-select">
-  <div class="safe-top"></div>
-  <div class="hdr" style="flex-shrink:0">
-    <div class="hdr-row"><button class="back-btn" onclick="showView('round-setup')">Back</button></div>
-    <div class="hdr-title">Today's Bag</div>
-    <div id="bs-course-sub" style="font-size:12px;color:var(--chalk3);margin-top:2px"></div>
-  </div>
-  <div class="scroll-body">
-    <div class="pad pad-b">
-      <div class="tee-chips" id="bs-bag-chips" style="margin-bottom:12px"></div>
-      <div id="bs-clubs-section" style="display:none">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <label class="inp-label" style="margin:0" id="bs-hint-lbl">Tap clubs you're bringing today</label>
-          <button style="background:none;border:none;color:var(--gold);font-size:12px;cursor:pointer" onclick="bsSelectAll()">All</button>
-        </div>
-        <div class="club-grid" id="bs-club-grid"></div>
-        <div id="bs-shaft-section" style="display:none;margin-top:16px">
-          <div onclick="bsToggleShaftSection()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:6px 0;border-bottom:1px solid var(--border2);margin-bottom:2px">
-            <span class="inp-label" style="margin:0">Shaft Overrides <span style="font-size:10px;color:var(--chalk3);font-weight:400">— for this round only</span></span>
-            <span id="bs-shaft-chevron" style="font-size:13px;color:var(--chalk3);transition:transform .2s">▼</span>
-          </div>
-          <div id="bs-shaft-list" style="display:none"></div>
-        </div>
-      </div>
-      <div id="bs-cross-bar" style="display:none;margin-top:12px">
-        <div style="font-size:10px;letter-spacing:.6px;color:var(--chalk3);font-weight:600;margin-bottom:7px">FROM OTHER BAGS — tap to remove</div>
-        <div id="bs-cross-pills" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
-      </div>
-      <div id="bs-count-row" style="display:none;display:flex;align-items:center;justify-content:space-between;margin-top:10px;margin-bottom:4px">
-        <span style="font-size:13px;color:var(--chalk3)">Total selected</span>
-        <span style="font-size:13px;font-weight:700;color:var(--gold)" id="bs-club-count"></span>
-      </div>
-      <div id="bs-actions" style="margin-top:20px;display:none">
-        <button class="btn btn-gold" id="bs-start-btn" onclick="startRoundFromBag()">Start Round →</button>
-        <button class="btn btn-outline" style="margin-top:8px" id="bs-import-btn" onclick="importFromBag()">📷 Import from Photo →</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- BAG SETTINGS -->
 <div class="view" id="view-bag-settings">
   <div class="safe-top"></div>
@@ -809,27 +748,6 @@ body{display:flex;flex-direction:column}
   </div>
 </div>
 
-<!-- MANUAL SCORING (wizard) -->
-<div class="view" id="view-scoring">
-  <div class="safe-top"></div>
-  <div class="scr-hdr-bar">
-    <button class="back-btn" onclick="abandonRound()" style="flex-shrink:0">Abandon</button>
-    <div style="flex:1;text-align:center">
-      <div style="font-size:13px;color:var(--chalk);font-weight:500" id="scr-progress-main"></div>
-      <div style="font-size:11px;color:var(--chalk3);margin-top:1px" id="scr-progress-sub"></div>
-    </div>
-    <button class="btn btn-gold btn-sm" style="flex-shrink:0" id="scr-finish-btn" onclick="finishManualRound()" disabled>Finish →</button>
-  </div>
-  <div id="wiz-hole-hdr" class="wiz-hole-hdr" style="display:none"></div>
-  <div class="scroll-body" id="scr-scroll">
-    <div class="pad" style="padding-top:16px;padding-bottom:20px" id="scr-content"></div>
-  </div>
-  <div class="wiz-nav" id="wiz-nav" style="display:none">
-    <button class="wiz-back" id="wiz-back-btn">← Back</button>
-    <button class="wiz-next" id="wiz-next-btn">Next →</button>
-  </div>
-  <div class="safe-bot"></div>
-</div>
 
 <!-- ROUND DETAIL -->
 <div class="view" id="view-detail">
@@ -912,43 +830,6 @@ body{display:flex;flex-direction:column}
     </div>
   </div>
   <div class="safe-bot"></div>
-</div>
-
-<!-- PHOTO IMPORT -->
-<div class="view" id="view-photo-import">
-  <div class="safe-top"></div>
-  <div class="hdr">
-    <div class="hdr-row"><button class="back-btn" onclick="showView('round-setup')">Back</button></div>
-    <div class="hdr-title">Import Photo</div>
-  </div>
-  <div class="scroll-body">
-    <div class="pad pad-b">
-      <input type="file" id="pi-file-input" accept="image/*" capture="environment" style="display:none" onchange="onPhotoFileSelected(this.files)">
-      <div class="pi-drop" id="pi-drop-zone" onclick="document.getElementById('pi-file-input').click()">
-        <div class="pi-drop-icon">📷</div>
-        <div class="pi-drop-msg">Tap to open camera or select photo<br><span style="font-size:12px;opacity:.6">Photo of your handwritten notes</span></div>
-      </div>
-      <div class="pi-thumb" id="pi-thumb" style="display:none">
-        <img id="pi-thumb-img" alt="Selected photo">
-        <div class="pi-thumb-meta" id="pi-thumb-meta"></div>
-      </div>
-      <div class="pi-status" id="pi-status"></div>
-      <button class="btn btn-gold" id="pi-parse-btn" onclick="parsePhotoWithByron()" disabled>Parse with Byron →</button>
-      <button class="btn btn-outline" style="margin-top:8px" id="pi-change-btn" onclick="document.getElementById('pi-file-input').click()" style="display:none">Change Photo</button>
-    </div>
-  </div>
-</div>
-
-<!-- PHOTO LOADING -->
-<div class="view" id="view-photo-loading">
-  <div class="safe-top"></div>
-  <div class="scroll-body">
-    <div class="pad" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:20px;padding-top:80px">
-      <div style="font-size:52px;animation:spin 2s linear infinite">⛳</div>
-      <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk)">Byron is reading…</div>
-      <div style="font-size:13px;color:var(--chalk3);text-align:center;line-height:1.6">Parsing your handwritten notes<br>This usually takes 10–20 seconds</div>
-    </div>
-  </div>
 </div>
 
 <!-- VIOLET MARSH — COURSE IMPORT -->
@@ -1138,33 +1019,12 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.1.1 · Spec v2.1</span>
+        <span>v8.1.2 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
   </div>
   <div class="safe-bot"></div>
-</div>
-
-<!-- REVIEW SCREEN -->
-<div class="view" id="view-review">
-  <div class="safe-top"></div>
-  <div class="hdr" style="flex-shrink:0">
-    <div class="hdr-row">
-      <button class="back-btn" onclick="discardReview()">Discard</button>
-      <div id="review-flag-badge"></div>
-    </div>
-    <div class="hdr-title" id="review-title">Review Round</div>
-    <div style="font-size:12px;color:var(--chalk3);margin-top:2px" id="review-subtitle"></div>
-  </div>
-  <div class="scroll-body">
-    <div class="pad" style="padding-top:10px;padding-bottom:20px" id="review-cards"></div>
-  </div>
-  <div class="confirm-bar">
-    <button class="btn btn-gold" id="review-confirm-btn" onclick="confirmRound()" disabled>Confirm Round →</button>
-    <div style="font-size:11px;text-align:center;margin-top:7px" id="review-confirm-status"></div>
-    <div class="safe-pad"></div>
-  </div>
 </div>
 
 <!-- COURSE HUB -->
@@ -1817,11 +1677,13 @@ function createRound({ courseId, courseName, teeSet, date, holesPlayed, starting
   };
 }
 
-function createHole({ number, par, score, pinZone, notation }) {
+function createHole({ number, par, score }) {
   // GLACIER CAPTURE (v8.1.0) — defaults the 13-field shape per locked v10 spec.
   // GLACIER POLISH (v8.1.1) — score default changes to 0 (v10.1 spec).
-  // 0 means "didn't play this hole yet" — makes missed/skipped holes obvious
-  // in Round Detail and avoids inflating totalScore for partial rounds.
+  // OBSIDIAN PURGE (v8.1.2) — legacy v1 fields (pinZone, gir, girPlusOne,
+  // notation, flagHistory, shots, puttsLegacy) dropped. Byron and PJ INDEX
+  // helpers that historically read those fields use `||[]` / `||{}` defaults,
+  // so absence is safe — they'll compute zeros/empties for v2 data.
   return {
     id: genId(),
     number, par,
@@ -1837,21 +1699,18 @@ function createHole({ number, par, score, pinZone, notation }) {
     firstPuttDist: null,
     firstPuttResult: null,
     doubleChip: false,
-    sand: false,
-    // legacy v1 fields — kept harmless during transition, removed in OBSIDIAN
-    pinZone: pinZone||null,
-    gir: false, girPlusOne: false, notation: notation||'',
-    flagHistory: [], shots: [], puttsLegacy: { count:0, distances:[] }
+    sand: false
   };
 }
 
 // snapshotActiveBag — freezes the active bag from pjc_bags into the round at
 // round start so the Tee shot club chips show historically-correct clubs even
-// if the user edits their bag mid-season. getBags() returns an array of bag
-// profiles; the active one is bags[0] (the first/default bag — per-course bag
-// mapping was retired in TUNDRA). Returns null only if pjc_bags is somehow
-// corrupted; getBags() falls back to DEFAULT_BAGS so the empty-clubs path is
-// not actually reachable in normal use.
+// if the user edits their bag mid-season.
+// GLACIER REFINE (v8.1.2) — CRITICAL BUG FIX: prior versions mapped to
+// {id, name, type} but clubs in DEFAULT_BAGS / pjc_bags use {id, abbr, desc}
+// (no `name` field). Result: every chip rendered with an empty label. Now we
+// spread the full club object so abbr+desc+anything else are preserved.
+// Renderer reads c.abbr (with c.name fallback for any custom-shaped data).
 function snapshotActiveBag() {
   try {
     const bags = getBags();
@@ -1861,7 +1720,7 @@ function snapshotActiveBag() {
     return {
       id: active.id || 'default',
       name: active.name || 'My Bag',
-      clubs: active.clubs.map(c => ({ id: c.id, name: c.name, type: c.type||null }))
+      clubs: active.clubs.map(c => ({ ...c }))
     };
   } catch { return null; }
 }
@@ -1896,20 +1755,13 @@ function buildExpectedHoles(startingHole, holesPlayed) {
 }
 
 function calcRoundTotal(round) {
-  // GLACIER POLISH (v8.1.1) — v2 rounds default score=0 to mark "didn't play."
-  // Sum only played holes (score > 0) for totalScore, and stamp playedPar +
-  // playedHoles so downstream rel-score calculations can use the correct
-  // denominator on partial rounds (e.g. 9 of 18, or 16 of 18 after pickups).
-  // v1 rounds keep the original "score||0 across all holes" behavior — they
-  // never had a 0-default convention. OBSIDIAN PURGE deletes the v1 branch.
-  if (round.schemaVersion === 2) {
-    const played = (round.holes||[]).filter(h => h.score > 0);
-    round.totalScore = played.reduce((a,h)=>a+h.score, 0);
-    round.playedHoles = played.length;
-    round.playedPar = played.reduce((a,h)=>a+(h.par||0), 0);
-    return round;
-  }
-  round.totalScore = round.holes.reduce((a,h)=>a+(h.score||0),0);
+  // OBSIDIAN PURGE (v8.1.2) — only v2 rounds exist post-purge. Drop v1 branch.
+  // Sums played holes (score > 0); stamps playedPar/playedHoles for partial-
+  // round rel-score calculations downstream.
+  const played = (round.holes||[]).filter(h => h.score > 0);
+  round.totalScore = played.reduce((a,h)=>a+h.score, 0);
+  round.playedHoles = played.length;
+  round.playedPar = played.reduce((a,h)=>a+(h.par||0), 0);
   return round;
 }
 
@@ -1948,17 +1800,6 @@ function getWIP() {
   catch { return null; }
 }
 function saveWIP(r) { r ? localStorage.setItem('pjc_wip',JSON.stringify(r)) : localStorage.removeItem('pjc_wip'); }
-
-// AMBER COMPASS — Re-entry WIP is a SEPARATE storage slot from active-round WIP.
-// This lets a user re-enter a hole on a committed round while an active round is in
-// progress. The two WIPs are orthogonal: pjc_wip holds the active round (resumable,
-// shown in Home banner), pjc_wip_reentry holds the transient single-hole edit session
-// (not resumable, not shown anywhere — disappears on save/abandon).
-function getReentryWIP() {
-  try { return JSON.parse(localStorage.getItem('pjc_wip_reentry')||'null'); }
-  catch { return null; }
-}
-function saveReentryWIP(r) { r ? localStorage.setItem('pjc_wip_reentry',JSON.stringify(r)) : localStorage.removeItem('pjc_wip_reentry'); }
 
 // ── COURSE NOTES STORAGE ─────────────────────────────────────
 // Storage format: pjc_course_notes = { [courseId]: [{tee,approach,green}, ...] }
@@ -2000,12 +1841,12 @@ function setMasterTeeId(courseId, teeId) {
 
 // ── COURSE DEFAULT BAG ────────────────────────────────────────
 // pjc_course_bags = { [courseId]: bagId }
-function getCourseBag(courseId) {
-  try {
-    const all = JSON.parse(localStorage.getItem('pjc_course_bags') || '{}');
-    return all[courseId] || null;
-  } catch { return null; }
-}
+// OBSIDIAN PURGE (v8.1.2) — getCourseBag deleted (no callers post-TUNDRA).
+// setCourseBag + onCourseDefaultBagChange retained because they're still wired
+// to the #ch-default-bag-select DOM element in Course Hub. The select is
+// hidden by default (display:none) and never shown post-TUNDRA, so this is
+// a dormant write path. Future cleanup: delete the DOM element, the handler,
+// and setCourseBag together as one batch (FUTURE: COURSE BAG UI PURGE).
 function setCourseBag(courseId, bagId) {
   try {
     const all = JSON.parse(localStorage.getItem('pjc_course_bags') || '{}');
@@ -2675,13 +2516,9 @@ function showView(id) {
   if (id==='round-setup') initRoundSetup();
   if (id==='course-setup') initCourseSetup();
   if (id==='settings') renderSettings();
-  if (id==='bag-select') initBagSelect();
   if (id==='bag-settings') initBagSettings();
-  if (id==='scoring') initScoring();
   if (id==='glacier-capture') initGlacierCapture();
   if (id==='detail') renderDetail();
-  if (id==='photo-import') initPhotoImport();
-  if (id==='review') renderReview();
   if (id==='course-hub') initCourseHub();
   if (id==='player-hub') initPlayerHub();
   if (id==='course-import') initCourseImport();   // VIOLET MARSH
@@ -2696,25 +2533,16 @@ function renderHome() {
   const wipEl = document.getElementById('home-wip-banner');
   if (wip && wipEl) {
     const d = wip.date ? new Date(wip.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
-    const isPhoto = wip.source === 'photo_import';
-    // GLACIER CAPTURE (v8.1.0) — v2 rounds pre-create all hole stubs, so
-    // wip.holes.length is always = holesPlayed even on a fresh start. Show the
-    // resume position instead of a misleading "X/N saved" count. v1 rounds
-    // (legacy wizard, dead post-TUNDRA) keep the original metadata.
-    let metaStr;
-    if (wip.schemaVersion === 2) {
-      const total = wip.holesPlayed || (wip.holes||[]).length;
-      const lastIdx = wip._gcLastIdx || 0;
-      const lastHoleNum = (wip.holes && wip.holes[lastIdx]) ? wip.holes[lastIdx].number : (lastIdx+1);
-      metaStr = `${wip.course||''} \xb7 ${d} \xb7 Hole ${lastHoleNum} of ${total}`;
-    } else {
-      const holesIn = wip.holes?.length || 0;
-      const total = wip.holesPlayed || 0;
-      metaStr = `${wip.course||''} \xb7 ${d} \xb7 ${holesIn}/${total} holes saved`;
-    }
+    // OBSIDIAN PURGE (v8.1.2) — v2 is the only valid WIP shape post-purge.
+    // Photo import is gone; v1 rounds were never reachable post-TUNDRA. Both
+    // branches collapse to the v2 metadata format.
+    const total = wip.holesPlayed || (wip.holes||[]).length;
+    const lastIdx = wip._gcLastIdx || 0;
+    const lastHoleNum = (wip.holes && wip.holes[lastIdx]) ? wip.holes[lastIdx].number : (lastIdx+1);
+    const metaStr = `${wip.course||''} \xb7 ${d} \xb7 Hole ${lastHoleNum} of ${total}`;
     wipEl.innerHTML = `<div style="background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.4);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;color:var(--gold)">${isPhoto?'📷':'🏌️'} Round in Progress</div>
+        <div style="font-size:13px;font-weight:600;color:var(--gold)">🏌️ Round in Progress</div>
         <div style="font-size:11px;color:var(--chalk3);margin-top:3px">${metaStr}</div>
       </div>
       <button class="btn btn-danger btn-sm" onclick="abandonWIPFromHome()">Abandon</button>
@@ -2746,36 +2574,29 @@ function abandonWIPFromHome() {
 function resumeWIP() {
   const wip = getWIP();
   if (!wip) return;
-  // AMBER COMPASS — resume is always active-round intent; clear any orphan re-entry
-  // WIP so initScoring picks up the right session. Re-entries are transient; if one
-  // was abandoned via navigation rather than Save/Abandon, it dies here.
-  saveReentryWIP(null);
-  // GLACIER CAPTURE (v8.1.0) — schemaVersion: 2 WIPs route to the new capture flow.
-  // Pre-existing legacy WIPs (schemaVersion: 1 or undefined) cannot exist post-TUNDRA
-  // migration but the legacy branch stays as a safety net until OBSIDIAN PURGE.
-  if (wip.schemaVersion === 2) {
-    // Find first hole where score wasn't user-touched OR resume to last viewed hole.
-    // For simplicity, resume to hole 0 — the user can navigate forward easily.
-    GC.holeIdx = wip._gcLastIdx || 0;
-    showView('glacier-capture');
+  // OBSIDIAN PURGE (v8.1.2) — only schemaVersion: 2 WIPs are valid post-purge.
+  // The legacy wizard fallback (scoring / photo-import) is gone, so a non-v2
+  // WIP is from a corrupt or pre-TUNDRA state — clear it rather than route to
+  // a deleted view.
+  if (wip.schemaVersion !== 2) {
+    saveWIP(null);
+    toast('Cleared invalid round in progress');
     return;
   }
-  if (wip.source === 'photo_import') showView('photo-import');
-  else showView('scoring');
+  GC.holeIdx = wip._gcLastIdx || 0;
+  showView('glacier-capture');
 }
 
 function roundRowHTML(r) {
-  // GLACIER POLISH (v8.1.1) — v2 rounds with score=0 defaults need to compute
-  // rel against playedPar (not full-round par) so a 9-of-18 round doesn't
-  // display as if 9 holes were missed at par each. v1 rounds keep round.par.
-  const relPar = (r.schemaVersion === 2 && r.playedPar != null) ? r.playedPar : r.par;
+  // OBSIDIAN PURGE (v8.1.2) — only v2 rounds exist; playedPar always present
+  // (calcRoundTotal stamps it on save). Drop v1 fallback branch.
+  const relPar = r.playedPar != null ? r.playedPar : r.par;
   const rel = r.totalScore!=null ? r.totalScore-relPar : null;
   const relStr = rel==null?'—':rel===0?'E':rel>0?'+'+rel:String(rel);
   const relClass = rel==null?'':rel<0?'c-under':rel>0?'c-over':'c-even';
   const dateStr = r.date ? new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
-  // Show "X of N" if v2 round was partial (played < holesPlayed expected).
   let holesMeta = (r.holesPlayed||0) + ' holes';
-  if (r.schemaVersion === 2 && r.playedHoles != null && r.playedHoles < (r.holesPlayed||0)) {
+  if (r.playedHoles != null && r.playedHoles < (r.holesPlayed||0)) {
     holesMeta = r.playedHoles + ' of ' + r.holesPlayed + ' holes';
   }
   return `<div class="round-row" onclick="showDetail('${r.id}')">
@@ -2801,7 +2622,7 @@ function renderHistory() {
   el.innerHTML = rounds.map(roundRowHTML).join('');
 }
 
-function showDetail(id) { DET.roundId = id; DET.openHoles.clear(); showView('detail'); }
+function showDetail(id) { DET.roundId = id; showView('detail'); }
 
 // ── COURSE SETUP ─────────────────────────────────────────────
 function initCourseSetup() {
@@ -2953,7 +2774,6 @@ function setRoundHoles(n) {
 function updateRoundButtons() {
   const ok = !!(S.selectedCourseId && S.selectedTeeIdx!==null);
   document.getElementById('rs-start-btn').disabled = !ok;
-  document.getElementById('rs-import-btn').disabled = !ok;
 }
 
 function startRoundSetup() {
@@ -2995,21 +2815,13 @@ function startRoundSetup() {
   showView('glacier-capture');
 }
 
-function startPhotoImport() {
-  // GLACIER CAPTURE (v8.1.0) — photo import is being deleted in OBSIDIAN PURGE.
-  // The notebook capture path is gone in the new design. Until OBSIDIAN ships,
-  // this still routes to glacier-placeholder so the user gets a clear message
-  // rather than a broken handler. The Home screen's import button stays for
-  // now and OBSIDIAN deletes both the function and the button.
-  if (!S.selectedCourseId || S.selectedTeeIdx===null) return;
-  showView('glacier-placeholder');
-}
-
 // ── GLACIER CAPTURE (v8.1.0) ─────────────────────────────────
 // Per-hole capture screen for schemaVersion: 2 rounds. State lives in pjc_wip
 // (the active round). GC tracks UI state only — currently displayed hole index
-// and a saving debounce flag. Every field change writes WIP and re-applies UI.
-const GC = { holeIdx: 0 };
+// and the score-expand state for the score-pills second row.
+// GLACIER REFINE (v8.1.2) — score is captured via pills, not a stepper.
+// scoreExpand controls whether row 2 (1, 8-12) is visible. Resets on hole nav.
+const GC = { holeIdx: 0, scoreExpand: false };
 
 function initGlacierCapture() {
   const wip = getWIP();
@@ -3042,16 +2854,14 @@ function glacierRenderHole() {
   const hole = wip.holes[GC.holeIdx];
   const total = wip.holes.length;
 
-  // Header: hole title + meta (course · yards · par)
-  // GLACIER POLISH (v8.1.1) — title shows "Hole N" only. Position-in-round
-  // is conveyed by ‹ › arrow disabled state, not redundant text.
+  // Header: single-line title with hole number, yardage, par.
+  // GLACIER REFINE (v8.1.2) — course name dropped (always know what course
+  // you're on); meta line merged into the title for visual compactness.
   const teeYd = (wip.holeYards||[])[hole.number-1];
   const titleEl = document.getElementById('gc-hole-title');
-  const metaEl  = document.getElementById('gc-hole-meta');
-  if (titleEl) titleEl.textContent = `Hole ${hole.number}`;
-  if (metaEl) {
-    const parts = [wip.course || '', teeYd ? teeYd+'y' : '', `Par ${hole.par}`].filter(Boolean);
-    metaEl.textContent = parts.join(' \xb7 ');
+  if (titleEl) {
+    const parts = [`Hole ${hole.number}`, teeYd ? `${teeYd}y` : null, `Par ${hole.par}`].filter(Boolean);
+    titleEl.textContent = parts.join(' \xb7 ');
   }
 
   // Prev/next arrow disabled state
@@ -3060,22 +2870,35 @@ function glacierRenderHole() {
   if (prevBtn) prevBtn.disabled = (GC.holeIdx === 0);
   if (nextBtn) nextBtn.disabled = (GC.holeIdx === total - 1);
 
-  // Score / Penalty steppers
-  // GLACIER POLISH (v8.1.1) — score=0 renders as "—" (untouched). Once user
-  // adjusts score above 0, the actual number shows.
-  const scoreEl = document.getElementById('gc-score-val');
-  const penEl   = document.getElementById('gc-penalty-val');
-  if (scoreEl) scoreEl.textContent = (hole.score && hole.score > 0) ? hole.score : '\u2014';
-  if (penEl)   penEl.textContent   = hole.penalty != null ? hole.penalty : 0;
+  // Score pills (row 1: 2-7 + ▾, row 2: 1, 8-12).
+  // GLACIER REFINE (v8.1.2) — replaces stepper. Re-tap clears (sets to 0).
+  // Row 2 auto-visible if hole.score is in {1, 8-12}, regardless of GC.scoreExpand.
+  const scoreVal = hole.score;
+  const inExtRange = scoreVal === 1 || (scoreVal >= 8 && scoreVal <= 12);
+  const showRow2 = inExtRange || GC.scoreExpand;
+  const row2El = document.getElementById('gc-score-row-2');
+  if (row2El) row2El.style.display = showRow2 ? '' : 'none';
+  const expandBtn = document.getElementById('gc-score-expand');
+  if (expandBtn) {
+    expandBtn.classList.toggle('on', showRow2);
+    expandBtn.textContent = showRow2 ? '▴' : '▾';
+  }
+  document.querySelectorAll('#view-glacier-capture [data-score]').forEach(p => {
+    p.classList.toggle('on', String(scoreVal) === p.dataset.score);
+  });
 
-  // Pin position chips
-  document.querySelectorAll('#view-glacier-capture .gc-pin-chip').forEach(c => {
+  // Pin (horizontal) chips
+  document.querySelectorAll('#view-glacier-capture .gc-pin-chip-h').forEach(c => {
     c.classList.toggle('on', c.dataset.pin === hole.pinPos);
   });
 
-  // Tee shot section: club chips (rendered from bagSnapshot) + tee result
-  // GLACIER POLISH (v8.1.1) — clubs render into a CSS grid (gc-club-grid) with
-  // auto-fill min-width so chips stay readable regardless of bag count.
+  // Penalty stepper value
+  const penEl = document.getElementById('gc-penalty-val');
+  if (penEl) penEl.textContent = hole.penalty != null ? hole.penalty : 0;
+
+  // Tee shot section: club chips (rendered from bagSnapshot) + tee result.
+  // GLACIER REFINE (v8.1.2) — CRITICAL FIX: clubs use c.abbr (with c.name fallback).
+  // Prior versions read c.name which DEFAULT_BAGS doesn't define → empty chips.
   const isPar3 = hole.par === 3;
   const teeResultBlock = document.getElementById('gc-tee-result-block');
   if (teeResultBlock) teeResultBlock.style.display = isPar3 ? 'none' : '';
@@ -3084,13 +2907,14 @@ function glacierRenderHole() {
     const clubs = (wip.bagSnapshot && wip.bagSnapshot.clubs) || [];
     teeClubsEl.innerHTML = clubs.map(c => {
       const isOn = c.id === hole.teeClub ? ' on' : '';
-      const safeName = (c.name||'').replace(/"/g,'&quot;');
-      const safeId = (c.id||'').replace(/"/g,'&quot;');
-      return `<button class="gc-chip${isOn}" data-club="${safeId}" onclick="glacierSetField('teeClub','${safeId}')">${safeName}</button>`;
+      const label = (c.abbr || c.name || '').toString();
+      const safeLabel = label.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      const safeId = (c.id||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+      return `<button class="gc-chip${isOn}" data-club="${safeId}" onclick="glacierSetField('teeClub','${safeId}')">${safeLabel}</button>`;
     }).join('');
   }
   if (!isPar3) {
-    document.querySelectorAll('#view-glacier-capture .gc-tee-grid .gc-chip').forEach(c => {
+    document.querySelectorAll('#view-glacier-capture .gc-tee-grid .gc-chip-arrow').forEach(c => {
       c.classList.toggle('on', c.dataset.tee === hole.teeResult);
     });
     const fwy = document.querySelector('#view-glacier-capture .gc-chip-fairway');
@@ -3142,8 +2966,6 @@ function glacierRenderHole() {
   if (sandBtn) sandBtn.classList.toggle('on', !!hole.sand);
 
   // Action button labels (top + bottom kept in sync).
-  // GLACIER POLISH (v8.1.1) — Mara permanent rule: action buttons above scroll.
-  // Top button mirrors bottom button label/handler.
   const actionLbl = (GC.holeIdx === total - 1) ? '\u2713 Finish & Save Round' : 'Next Hole \u2192';
   const actionBtn = document.getElementById('gc-action-btn');
   const actionBtnTop = document.getElementById('gc-action-btn-top');
@@ -3232,16 +3054,28 @@ function glacierSetPutts(n) {
   glacierPersistAndRender(wip);
 }
 
-function glacierAdjustScore(delta) {
+// glacierSetScore — score pill handler. Re-tap clears (sets to 0).
+// GLACIER REFINE (v8.1.2) — replaces glacierAdjustScore stepper.
+function glacierSetScore(n) {
   const wip = glacierGetWIP();
   if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
   const hole = wip.holes[GC.holeIdx];
-  const cur = hole.score != null ? hole.score : 0;
-  const next = cur + delta;
-  // GLACIER POLISH (v8.1.1) — range 0–12 per v10.1 spec. 0 = untouched/didn't play.
-  if (next < 0 || next > 12) return;
-  hole.score = next;
+  if (n < 1 || n > 12) return; // sanity
+  if (hole.score === n) {
+    hole.score = 0; // re-tap clears
+  } else {
+    hole.score = n;
+    // If selecting an extended-range score, ensure row 2 stays visible.
+    if (n === 1 || n >= 8) GC.scoreExpand = true;
+  }
   glacierPersistAndRender(wip);
+}
+
+// glacierToggleScoreExpand — expand/collapse row 2 (1, 8-12).
+// Note: if the current score is in the extended range, render still shows row 2.
+function glacierToggleScoreExpand() {
+  GC.scoreExpand = !GC.scoreExpand;
+  glacierRenderHole();
 }
 
 function glacierAdjustPenalty(delta) {
@@ -3261,6 +3095,7 @@ function glacierGotoHole(delta) {
   const next = GC.holeIdx + delta;
   if (next < 0 || next >= wip.holes.length) return;
   GC.holeIdx = next;
+  GC.scoreExpand = false; // GLACIER REFINE — collapse row 2 on hole change.
   // Persist last-viewed-hole index in WIP so resumeWIP returns to this hole.
   wip._gcLastIdx = GC.holeIdx;
   saveWIP(wip);
@@ -3355,11 +3190,24 @@ function renderDetailV2(round) {
   // Stats — derive from new shape, restricted to played holes only.
   // GLACIER POLISH (v8.1.1) — partial-round denominator fix. Untouched holes
   // (score=0) shouldn't drag down GIR / Up&Down / Putts averages.
+  // GLACIER REFINE (v8.1.2) — sand save formula updated per Matt's spec:
+  // greenside bunker + ≤2 more strokes to hole (counting putts + the chip
+  // out of the bunker if doubleChip is set, since doubleChip implies an
+  // extra short-game stroke before the first putt). Honest stat for an
+  // 18hcp — old "score ≤ par" definition was hiding bad bunker outings on
+  // par 5s where par was made via recovery, not via the sand save itself.
+  // Saves where putts are unlogged are excluded from the numerator (data
+  // incomplete) but still count toward the denominator.
   const allHoles = round.holes || [];
   const holes = allHoles.filter(h => h.score > 0);
   const girCount = holes.filter(h => h.onGreen === true).length;
-  const sandCount = holes.filter(h => h.sand).length;
-  const sandSaves = holes.filter(h => h.sand && h.score <= h.par).length;
+  const sandHoles = holes.filter(h => h.sand);
+  const sandCount = sandHoles.length;
+  const sandSaves = sandHoles.filter(h => {
+    if (h.putts == null) return false;
+    const strokesAfterBunker = h.putts + (h.doubleChip ? 1 : 0);
+    return strokesAfterBunker <= 2;
+  }).length;
   const totalPenalties = holes.reduce((a,h)=>a+(h.penalty||0),0);
   const puttsTotal = holes.reduce((a,h)=>a+(h.putts||0),0);
   const upDownEligible = holes.filter(h => !h.onGreen);
@@ -4003,221 +3851,6 @@ function getBags() {
 }
 function saveBags(bags) { localStorage.setItem('pjc_bags',JSON.stringify(bags)); }
 
-// ── BAG SELECT (pre-round) ────────────────────────────────────
-const BS = { viewingBagId: null, defaultBagId: null, selectedClubIds: new Set(), shaftOverrides: {} };
-
-function initBagSelect() {
-  BS.selectedClubIds = new Set();
-  BS.shaftOverrides = {};
-  const bags = getBags();
-  if (!bags.length) {
-    document.getElementById('bs-bag-chips').innerHTML = '';
-    document.getElementById('bs-clubs-section').style.display = 'none';
-    document.getElementById('bs-actions').style.display = '';
-    document.getElementById('bs-start-btn').disabled = true;
-    document.getElementById('bs-import-btn').disabled = true;
-    return;
-  }
-  // Resolve default bag from course setting
-  const wip = getWIP();
-  const courseSub = document.getElementById('bs-course-sub');
-  if (courseSub && wip) courseSub.textContent = [wip.course, wip.tees].filter(Boolean).join(' \xb7 ');
-  const defaultBagId = wip?.courseId ? getCourseBag(wip.courseId) : null;
-  const defaultBag = bags.find(b => b.id === defaultBagId) || bags[0];
-  BS.defaultBagId = defaultBag.id;
-  BS.viewingBagId = defaultBag.id;
-  // Default bag: all selected. All other bags: nothing selected.
-  defaultBag.clubs.forEach(c => BS.selectedClubIds.add(c.id));
-  // Render chips
-  document.getElementById('bs-bag-chips').innerHTML = bags.map(b =>
-    `<button class="tee-chip${b.id === BS.viewingBagId ? ' on' : ''}" id="bs-chip-${b.id}" onclick="bsPickBag('${b.id}')">${b.name}</button>`
-  ).join('');
-  document.getElementById('bs-clubs-section').style.display = '';
-  document.getElementById('bs-actions').style.display = '';
-  renderBsClubGrid();
-}
-
-function bsPickBag(id) {
-  BS.viewingBagId = id;
-  document.querySelectorAll('#bs-bag-chips .tee-chip').forEach(c => c.classList.remove('on'));
-  const chip = document.getElementById('bs-chip-'+id);
-  if (chip) chip.classList.add('on');
-  renderBsClubGrid();
-}
-
-function renderBsClubGrid() {
-  const bags = getBags();
-  const bag = bags.find(b => b.id === BS.viewingBagId);
-  if (!bag) return;
-  document.getElementById('bs-club-grid').innerHTML = bag.clubs.map(c => {
-    const sel = BS.selectedClubIds.has(c.id);
-    return `<div class="club-tile${sel ? ' sel' : ''}" onclick="bsToggleClub('${c.id}')">
-      <div class="club-tile-abbr">${c.abbr}</div>
-      <div class="club-tile-head">${escHtml(c.desc)}</div>
-      ${c.shaft ? `<div class="club-tile-shaft">${escHtml(c.shaft)}</div>` : ''}
-    </div>`;
-  }).join('');
-  renderBsCrossBar();
-  renderBsShaftSection();
-}
-
-function bsToggleClub(clubId) {
-  BS.selectedClubIds.has(clubId) ? BS.selectedClubIds.delete(clubId) : BS.selectedClubIds.add(clubId);
-  renderBsClubGrid();
-}
-
-function bsSelectAll() {
-  const bags = getBags();
-  const bag = bags.find(b => b.id === BS.viewingBagId);
-  if (!bag) return;
-  bag.clubs.forEach(c => BS.selectedClubIds.add(c.id));
-  renderBsClubGrid();
-}
-
-function renderBsCrossBar() {
-  const bags = getBags();
-  // Cross clubs = selected clubs NOT in the default bag
-  const homeBagId = BS.defaultBagId || BS.viewingBagId;
-  const crossClubs = [];
-  bags.forEach(bag => {
-    if (bag.id === homeBagId) return;
-    bag.clubs.forEach(c => {
-      if (BS.selectedClubIds.has(c.id)) crossClubs.push({...c, bagName: bag.name});
-    });
-  });
-  const bar = document.getElementById('bs-cross-bar');
-  const pills = document.getElementById('bs-cross-pills');
-  const countEl = document.getElementById('bs-club-count');
-  if (bar && pills) {
-    if (crossClubs.length) {
-      bar.style.display = '';
-      pills.innerHTML = crossClubs.map(c =>
-        `<span onclick="bsRemoveCross('${c.id}')" style="background:rgba(200,168,75,.12);border:1px solid rgba(200,168,75,.4);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--gold);font-family:'DM Mono',monospace;cursor:pointer">${c.abbr} <span style="opacity:.5;font-size:9px">${c.bagName}</span> \xd7</span>`
-      ).join('');
-    } else {
-      bar.style.display = 'none';
-    }
-  }
-  if (countEl) {
-    const n = BS.selectedClubIds.size;
-    countEl.textContent = n + ' club' + (n !== 1 ? 's' : '') + ' selected';
-  }
-}
-
-function bsRemoveCross(clubId) {
-  BS.selectedClubIds.delete(clubId);
-  renderBsClubGrid();
-}
-
-function buildClubSnapshot(selectedClubIds, allBags, shaftOverrides) {
-  // Freeze club profiles across all bags — keyed by abbr for Byron display
-  // Default bag clubs take precedence on abbr collision
-  const snapshot = {};
-  const defaultBag = allBags.find(b => b.id === BS.defaultBagId);
-  // Process default bag first so it wins on abbr collision
-  const orderedBags = defaultBag
-    ? [defaultBag, ...allBags.filter(b => b.id !== BS.defaultBagId)]
-    : allBags;
-  orderedBags.forEach(bag => {
-    bag.clubs.forEach(club => {
-      if (!selectedClubIds.has(club.id)) return;
-      if (snapshot[club.abbr]) return; // default bag already set this abbr
-      const shaftToUse = (shaftOverrides && shaftOverrides[club.abbr]) ? shaftOverrides[club.abbr] : (club.shaft || null);
-      snapshot[club.abbr] = {
-        desc: club.desc || '',
-        ...(shaftToUse ? { shaft: shaftToUse } : {}),
-        ...(club.carry ? { carry: club.carry } : {}),
-        clubId: club.id || null
-      };
-    });
-  });
-  return snapshot;
-}
-
-function startRoundFromBag() {
-  const wip = getWIP();
-  if (!wip) return;
-  const bags = getBags();
-  const defaultBag = bags.find(b => b.id === BS.defaultBagId);
-  wip.bagId = BS.defaultBagId;
-  wip.bagName = defaultBag?.name || '';
-  wip.bagClubs = [...BS.selectedClubIds].map(id => {
-    for (const bag of bags) {
-      const c = bag.clubs.find(c => c.id === id);
-      if (c) return c.abbr;
-    }
-    return null;
-  }).filter(Boolean);
-  wip.clubSnapshot = buildClubSnapshot(BS.selectedClubIds, bags, BS.shaftOverrides);
-  saveWIP(wip);
-  // AMBER COMPASS — starting a new round is active-round intent; clear any orphan
-  // re-entry WIP so initScoring reads the fresh round WIP, not the stale re-entry.
-  saveReentryWIP(null);
-  showView('scoring');
-}
-
-function importFromBag() {
-  const wip = getWIP();
-  if (!wip) return;
-  const bags = getBags();
-  const defaultBag = bags.find(b => b.id === BS.defaultBagId);
-  wip.bagId = BS.defaultBagId;
-  wip.bagName = defaultBag?.name || '';
-  wip.bagClubs = [...BS.selectedClubIds].map(id => {
-    for (const bag of bags) {
-      const c = bag.clubs.find(c => c.id === id);
-      if (c) return c.abbr;
-    }
-    return null;
-  }).filter(Boolean);
-  wip.clubSnapshot = buildClubSnapshot(BS.selectedClubIds, bags, BS.shaftOverrides);
-  saveWIP(wip);
-  showView('photo-import');
-}
-
-function renderBsShaftSection() {
-  const bags = getBags();
-  // Collect all selected clubs with shafts across all bags
-  const shaftClubs = [];
-  bags.forEach(bag => {
-    bag.clubs.forEach(c => {
-      if (BS.selectedClubIds.has(c.id) && c.shaft) shaftClubs.push(c);
-    });
-  });
-  const sec = document.getElementById('bs-shaft-section');
-  const list = document.getElementById('bs-shaft-list');
-  if (!sec || !list) return;
-  if (!shaftClubs.length) { sec.style.display='none'; return; }
-  sec.style.display='';
-  list.innerHTML = shaftClubs.map(c => {
-    const override = BS.shaftOverrides[c.abbr];
-    return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border2)">
-      <span style="font-size:13px;font-weight:600;color:var(--chalk);min-width:32px">${c.abbr}</span>
-      <span style="font-size:12px;color:var(--chalk3);flex:1">${escHtml(c.shaft)}</span>
-      <input type="text" placeholder="Override shaft…"
-        style="width:140px;background:var(--ink3);border:1px solid ${override?'var(--gold)':'var(--border)'};border-radius:6px;padding:5px 8px;font-size:12px;color:var(--chalk);outline:none"
-        value="${escHtml(override||'')}"
-        onchange="bsSetShaftOverride('${c.abbr}',this.value)"
-        oninput="this.style.borderColor=this.value?'var(--gold)':'var(--border)'">
-    </div>`;
-  }).join('');
-}
-
-function bsSetShaftOverride(abbr, val) {
-  const v = val.trim();
-  if (v) BS.shaftOverrides[abbr] = v;
-  else delete BS.shaftOverrides[abbr];
-}
-
-function bsToggleShaftSection() {
-  const list = document.getElementById('bs-shaft-list');
-  const chev = document.getElementById('bs-shaft-chevron');
-  if (!list || !chev) return;
-  const open = list.style.display === 'none';
-  list.style.display = open ? '' : 'none';
-  chev.style.transform = open ? 'rotate(180deg)' : '';
-}
-
 // ── BAG SETTINGS ─────────────────────────────────────────────
 const BGS = { expandedId: null, showAddClub: {}, showAddBag: false, editingClubIdx: {} };
 
@@ -4424,1132 +4057,6 @@ function bgsSaveNewBag() {
   toast('Bag added \u2713');
 }
 
-// ── WIZARD SCORING ────────────────────────────────────────────
-
-// Shot type definitions
-const SEQ_GROUPS = [
-  { label: 'Every Hole', grid: 'flex', bright: true, types: [
-    {type:'tee',      lbl:'Tee Shot', par45:true, par3:false},
-    {type:'approach', lbl:'Approach', par45:true, par3:false},
-    {type:'putt',     lbl:'Putt',     par45:true, par3:true},
-  ]},
-  { label: 'Common', grid: 'flex', types: [
-    {type:'layup',    lbl:'Layup',    par45:true, par3:false},
-    {type:'chip',     lbl:'Chip',     par45:true, par3:true},
-  ]},
-  { label: 'Trouble', grid: '2col', types: [
-    {type:'sand',     lbl:'Sand',     par45:true, par3:true},
-    {type:'recovery', lbl:'Recovery', par45:true, par3:true},
-    {type:'TW',       lbl:'TW',       par45:true, par3:true},
-    {type:'HW',       lbl:'HW',       par45:true, par3:true},
-  ]},
-  { label: 'Penalty / Other', grid: 'flex', types: [
-    {type:'retee',    lbl:'Rehit (+1)', par45:true, par3:true},
-    {type:'drop',     lbl:'Drop (+1)',  par45:true, par3:true},
-    {type:'X',        lbl:'Unknown',    par45:true, par3:true},
-  ]},
-];
-
-// Flat list for lookups
-const SEQ_TYPES = SEQ_GROUPS.flatMap(g => g.types);
-
-const SCR = { round: null, holes: [], activeIdx: null };
-
-// Each sequence item = 1 stroke. retee/drop are already in the array as their penalty stroke.
-function seqScore(hs) {
-  return (hs.sequence||[]).length;
-}
-function seqPutts(hs) { return (hs.sequence||[]).filter(s=>s.type==='putt').length; }
-function seqPuttItems(hs) { return (hs.sequence||[]).filter(s=>s.type==='putt'); }
-
-function getDetailTasks(hs) {
-  return (hs.sequence||[]).map((item,i) => {
-    if (item.type==='tee') return {seqIdx:i, steps:['club','pos']};
-    if (item.type==='retee') return null; // stroke counted by sequence penalty, no data captured
-    if (item.type==='approach') {
-      return {seqIdx:i, steps:['yds','club','result','zones']};
-    }
-    return null;
-  }).filter(Boolean);
-}
-
-function initScoring() {
-  // AMBER COMPASS — re-entry WIP takes priority. If startHoleReentry ran, it wrote to
-  // pjc_wip_reentry. resumeWIP clears that slot before routing here, so seeing a
-  // re-entry WIP means the caller was startHoleReentry. Otherwise use active-round WIP.
-  const round = getReentryWIP() || getWIP();
-  if (!round) { showView('home'); return; }
-  SCR.round = round;
-  const courses = getCourses();
-  const course = courses.find(c=>c.id===round.courseId);
-  const teeSet = course?.tees.find(t=>t.name===round.tees);
-  SCR.holes = round.expectedHoles.map(h => {
-    const i = h-1;
-    // Prefer snapshotted holePars from round (v7.10.18+); fall back to live teeSet for old rounds
-    const par = round.holePars?.[i] || teeSet?.holePars?.[i] || 4;
-    const yds = round.holeYards?.[i] || null;
-    // COBALT RIVER — single-hole re-entry: preload wizard state from saved hole
-    if (round.singleHoleMode && round.preloadedHoleData && round.preloadedHoleData.number === h) {
-      return preloadHoleIntoSCR(round.preloadedHoleData, yds);
-    }
-    const savedHole = (round.holes||[]).find(sh=>sh.number===h);
-    if (savedHole) {
-      // Hole already saved — restore as saved state
-      return {
-        holeNum:h, par, yds,
-        sequence:[], phase:'sequence',
-        detailTaskIdx:0, detailSubStepIdx:0,
-        puttDistances:[], puttCalcIdx:0, puttCalcBuf:'',
-        pinZone:savedHole.pinZone||null, editingSeqIdx:null,
-        saved:true, savedScore:savedHole.score
-      };
-    }
-    return {
-      holeNum:h, par, yds,
-      sequence:[], phase:'sequence',
-      detailTaskIdx:0, detailSubStepIdx:0,
-      puttDistances:[], puttCalcIdx:0, puttCalcBuf:'',
-      pinZone:null, editingSeqIdx:null, saved:false
-    };
-  });
-  // COBALT RIVER — land user directly in the wizard for the single hole, skipping overview
-  if (round.singleHoleMode) {
-    SCR.activeIdx = 0;
-    renderScoringScreen();
-    return;
-  }
-  SCR.activeIdx = null;
-  renderScoringScreen();
-}
-
-function renderScoringScreen() {
-  const done = SCR.holes.filter(h=>h.saved).length;
-  document.getElementById('scr-finish-btn').disabled = done < SCR.holes.length;
-  document.getElementById('scr-progress-main').textContent = SCR.round?.course || 'Round';
-  document.getElementById('scr-progress-sub').textContent = done + ' of ' + SCR.holes.length + ' saved';
-
-  if (SCR.activeIdx === null) {
-    document.getElementById('wiz-hole-hdr').style.display = 'none';
-    document.getElementById('wiz-nav').style.display = 'none';
-    renderOverview();
-  } else {
-    const hs = SCR.holes[SCR.activeIdx];
-    if (hs.phase==='sequence') renderSequenceBuilder(hs, SCR.activeIdx);
-    else if (hs.phase==='detail') renderDetailStep(hs, SCR.activeIdx);
-    else if (hs.phase==='putt-dist') renderPuttDist(hs, SCR.activeIdx);
-  }
-}
-
-function renderOverview() {
-  document.getElementById('scr-content').innerHTML = SCR.holes.map((hs,i) => `
-    <div class="wiz-overview-row ${hs.saved?'done':'pending'}" onclick="${hs.saved?`reopenHole(${i})`:`openWizHole(${i})`}">
-      <span style="font-family:'DM Serif Display',serif;font-size:18px;color:${hs.saved?'var(--green)':'var(--chalk3)'};min-width:32px">H${hs.holeNum}</span>
-      <div style="flex:1"><div style="font-size:12px;color:var(--chalk2)">Par ${hs.par}${hs.yds?' \xb7 '+hs.yds+'y':''}</div></div>
-      ${hs.saved
-        ? `<div style="text-align:right"><div style="font-family:'DM Serif Display',serif;font-size:18px" class="${scoreColorClass(hs.savedScore-hs.par)}">${hs.savedScore}</div><div style="font-size:10px;text-transform:uppercase" class="${scoreColorClass(hs.savedScore-hs.par)}">${scoreName(hs.savedScore-hs.par)}</div></div>`
-        : '<span style="font-size:12px;color:var(--chalk3)">Enter \u2192</span>'}
-    </div>`).join('');
-}
-
-function openWizHole(idx) {
-  SCR.activeIdx = idx;
-  const hs = SCR.holes[idx];
-  if (!hs.sequence) hs.sequence = [];
-  if (hs.sequence.length === 0) {
-    if (hs.par === 3) {
-      hs.sequence.push(makeSeqItem('approach', true));
-    } else {
-      hs.sequence.push(makeSeqItem('tee', false));
-    }
-  }
-  hs.phase = 'sequence';
-  renderScoringScreen();
-  document.getElementById('scr-scroll').scrollTo(0,0);
-}
-
-// CRIMSON LEDGER + AMBER LANTERN — Tapping a saved hole opens it for view/edit
-// without flipping saved=false and without a misleading confirmation. Save status
-// only changes when the user explicitly saves new changes or hits Start Over.
-function reopenHole(idx) {
-  SCR.holes[idx].phase = 'sequence';
-  openWizHole(idx);
-}
-
-// JADE COMPASS — Deliberate destructive reset for the current hole. Wipes the
-// sequence, flips saved=false (since we're discarding committed data), and
-// re-initializes the first shot based on par. Stays in the wizard.
-function startOverHole(idx) {
-  const hs = SCR.holes[idx];
-  if (!confirm('Start over for hole H' + hs.holeNum + '? This clears all entered shots.')) return;
-  hs.sequence = [];
-  hs.puttDistances = [];
-  hs.saved = false;
-  hs.savedScore = null;
-  hs.phase = 'sequence';
-  openWizHole(idx);
-  updateScrHeader();
-}
-
-function updateScrHeader() {
-  const done = SCR.holes.filter(h=>h.saved).length;
-  document.getElementById('scr-finish-btn').disabled = done < SCR.holes.length;
-}
-
-function makeSeqItem(type, isTeeShot) {
-  return {type, isTeeShot:!!isTeeShot, club:null, position:null,
-    yardage:null, approachLie:null, intendedZone:null, finishZone:null,
-    result:null, wizYds:''};
-}
-
-// ── COBALT RIVER — SINGLE-HOLE RE-ENTRY ──────────────────────────────────────
-// Reverses saveHole's sequence→shots conversion so a previously-saved hole can
-// be pre-populated into the wizard. Returns an SCR.holes entry ready for the
-// scoring flow, with saved=false so the user can edit and re-save.
-function preloadHoleIntoSCR(savedHole, holeYards) {
-  const sequence = [];
-  let par3TeeSeen = false;
-  (savedHole.shots || []).forEach(sh => {
-    const item = makeSeqItem(sh.type || 'approach', false);
-    if (sh.type === 'approach' && sh.isTeeShot && savedHole.par === 3) {
-      // Par 3 tee shot (first such shot) or retee (any subsequent)
-      item.type = par3TeeSeen ? 'retee' : 'approach';
-      item.isTeeShot = true;
-      par3TeeSeen = true;
-      item.club = sh.club || null;
-      item.yardage = sh.yardage || null;
-      item.wizYds = sh.yardage ? String(sh.yardage) : '';
-      item.intendedZone = sh.intendedZone || null;
-      item.finishZone = sh.finishZone || null;
-      item.result = sh.result || null;
-    } else if (sh.type === 'tee') {
-      item.type = 'tee';
-      item.isTeeShot = true;
-      item.club = sh.club || null;
-      item.position = sh.position || null;
-    } else if (sh.type === 'retee') {
-      item.type = 'retee';
-      item.club = sh.club || null;
-      item.position = sh.position || null;
-    } else if (sh.type === 'approach') {
-      item.type = 'approach';
-      item.isTeeShot = !!sh.isTeeShot;
-      item.club = sh.club || null;
-      item.yardage = sh.yardage || null;
-      item.wizYds = sh.yardage ? String(sh.yardage) : '';
-      item.intendedZone = sh.intendedZone || null;
-      item.finishZone = sh.finishZone || null;
-      item.result = sh.result || null;
-    } else if (sh.type === 'chip') {
-      // chip(lie=Sd) → sand; chip(club=TW) → TW; chip(club=HW) → HW; else chip
-      if (sh.lie === 'Sd') item.type = 'sand';
-      else if (sh.club === 'TW') item.type = 'TW';
-      else if (sh.club === 'HW') item.type = 'HW';
-      else item.type = 'chip';
-    } else if (sh.type === 'untracked') {
-      item.type = 'X';
-    } else {
-      // layup, recovery, drop — pass through as-is
-      item.type = sh.type;
-    }
-    sequence.push(item);
-  });
-  // Append N putt items matching saved putt count; restore distances array too.
-  const puttCount = savedHole.putts?.count || 0;
-  for (let i = 0; i < puttCount; i++) sequence.push(makeSeqItem('putt', false));
-  return {
-    holeNum: savedHole.number,
-    par: savedHole.par,
-    yds: holeYards,
-    sequence,
-    phase: 'sequence',
-    detailTaskIdx: 0,
-    detailSubStepIdx: 0,
-    puttDistances: [...(savedHole.putts?.distances || [])],
-    puttCalcIdx: 0,
-    puttCalcBuf: '',
-    pinZone: savedHole.pinZone || null,
-    editingSeqIdx: null,
-    saved: false
-  };
-}
-
-// Entry point for re-entering a single hole on a committed round.
-// Callable from console or (eventually) from the JASPER BEACON button.
-// AMBER COMPASS — no collision guard. Re-entry WIP lives in its own storage slot
-// (pjc_wip_reentry) so an active round in progress (pjc_wip) is never disturbed.
-function startHoleReentry(sourceRoundId, holeNumber) {
-  const srcRound = getRounds().find(r => r.id === sourceRoundId);
-  if (!srcRound) { alert('Round not found.'); return; }
-  const srcHole = (srcRound.holes || []).find(h => h.number === holeNumber);
-  if (!srcHole) { alert('Hole not found in this round.'); return; }
-  // Scratchpad WIP wrapping the source round's metadata for the wizard.
-  // singleHoleMode + sourceRoundId + sourceHoleNumber route the commit/abandon paths.
-  const wip = {
-    id: srcRound.id,
-    courseId: srcRound.courseId,
-    course: srcRound.course,
-    tees: srcRound.tees,
-    teeId: srcRound.teeId || null,
-    date: srcRound.date,
-    holesPlayed: srcRound.holesPlayed,
-    startingHole: srcRound.startingHole,
-    expectedHoles: [holeNumber],
-    holeYards: srcRound.holeYards || [],
-    holePars: srcRound.holePars || [],
-    par: srcRound.par,
-    clubSnapshot: srcRound.clubSnapshot,
-    totalScore: srcRound.totalScore,
-    source: srcRound.source || 'manual',
-    holes: [],
-    singleHoleMode: true,
-    sourceRoundId,
-    sourceHoleNumber: holeNumber,
-    preloadedHoleData: srcHole
-  };
-  saveReentryWIP(wip); // AMBER COMPASS — separate slot
-  showView('scoring');
-}
-
-// Commit the edited single hole back into the source round in pjc_rounds.
-// Called from saveHole when SCR.round.singleHoleMode is true.
-function commitSingleHoleBack() {
-  const wip = SCR.round;
-  if (!wip || !wip.singleHoleMode) return;
-  const updatedHole = (wip.holes || []).find(h => h.number === wip.sourceHoleNumber);
-  if (!updatedHole) return;
-  const allRounds = getRounds();
-  const ri = allRounds.findIndex(r => r.id === wip.sourceRoundId);
-  if (ri < 0) { saveReentryWIP(null); showView('home'); return; } // AMBER COMPASS
-  const srcRound = allRounds[ri];
-  const hi = (srcRound.holes || []).findIndex(h => h.number === wip.sourceHoleNumber);
-  if (hi >= 0) srcRound.holes[hi] = updatedHole; else srcRound.holes.push(updatedHole);
-  calcRoundTotal(srcRound);
-  allRounds[ri] = srcRound;
-  saveRounds(allRounds);
-  byronClearRoundCache(srcRound.id);
-  saveReentryWIP(null); // AMBER COMPASS — only clear re-entry; active round WIP untouched
-  SCR.round = null; SCR.holes = [];
-  DET.roundId = srcRound.id; DET.openHoles.clear();
-  toast('Hole saved \u2713');
-  showView('detail');
-}
-
-// ── PHASE 1: SEQUENCE BUILDER ──────────────────────────────────
-
-function renderSequenceBuilder(hs, idx) {
-  const score = seqScore(hs);
-  const putts = seqPutts(hs);
-  const rel = score > 0 ? score - hs.par : null;
-  const par3 = hs.par === 3;
-  const groupsHTML = SEQ_GROUPS.map(g => {
-    const btns = g.types.filter(t => par3 ? t.par3 !== false : t.par45 !== false);
-    if (!btns.length) return '';
-    const isBright = !!g.bright;
-    const is2col = g.grid === '2col';
-    const borderOpacity = isBright ? '.38' : '.18';
-    const textColor = isBright ? 'var(--chalk)' : 'var(--chalk2)';
-    const btnBase = `background:var(--ink2);border:1px solid rgba(200,168,75,${borderOpacity});border-radius:100px;padding:13px 6px;font-size:14px;color:${textColor};cursor:pointer;transition:all .12s;font-family:'DM Sans',sans-serif`;
-    const wrapStyle = is2col
-      ? `display:grid;grid-template-columns:1fr 1fr;gap:6px`
-      : `display:flex;gap:6px`;
-    const btnFlex = is2col ? '' : 'flex:1;';
-    return `<div style="margin-bottom:10px">
-      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.65;margin-bottom:6px">${g.label}</div>
-      <div style="${wrapStyle}">
-        ${btns.map(t=>`<button onclick="addToSequence(${idx},'${t.type}')"
-          style="${btnFlex}${btnBase}"
-          onmousedown="this.style.background='var(--ink3)'" onmouseup="this.style.background='var(--ink2)'">${t.lbl}</button>`).join('')}
-      </div></div>`;
-  }).join('');
-
-  const seqHTML = hs.sequence.length === 0
-    ? '<div style="text-align:center;padding:20px;color:var(--chalk3);font-size:13px">Tap shot types below to build your hole</div>'
-    : hs.sequence.map((item,i) => {
-        const detail = seqItemDetail(item);
-        const canEdit = item.type==='tee' || item.type==='approach';
-        const isEditing = hs.editingSeqIdx === i;
-        const editPanel = canEdit && isEditing ? seqEditPanel(idx, i, item, hs) : '';
-        // IRON GARDEN — inline ↑/↓ reorder arrows. Shown only on reorderable shot types;
-        // disabled when the adjacent neighbor blocks the swap (e.g. locked par-3 tee approach).
-        const showReorder = isReorderable(item, i, hs);
-        const upOK = canMoveSeqItem(hs, i, -1);
-        const dnOK = canMoveSeqItem(hs, i, 1);
-        const arrowBtn = (dir, ok, glyph) => `<button ${ok?'':'disabled'} onclick="moveSeqItem(${idx},${i},${dir})" style="background:none;border:none;color:${ok?'var(--gold)':'var(--chalk3)'};opacity:${ok?'.75':'.22'};cursor:${ok?'pointer':'not-allowed'};font-size:15px;padding:4px 3px;line-height:1">${glyph}</button>`;
-        const reorderHTML = showReorder ? arrowBtn(-1, upOK, '\u2191') + arrowBtn(1, dnOK, '\u2193') : '';
-        return `<div style="background:var(--ink2);border:1px solid ${isEditing?'var(--gold)':'var(--border)'};border-radius:var(--rs);margin-bottom:6px;overflow:hidden">
-          <div style="display:flex;align-items:center;gap:6px;padding:9px 12px">
-            <span style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);min-width:24px">${i+1}</span>
-            <div style="flex:1;min-width:0">
-              <div style="font-size:14px;font-weight:500;color:var(--chalk)">${seqItemLabel(item)}</div>
-              ${detail?`<div style="font-size:11px;color:var(--chalk3);margin-top:1px">${detail}</div>`:''}
-            </div>
-            ${reorderHTML}
-            ${canEdit?`<button style="background:none;border:none;color:${isEditing?'var(--gold)':'var(--chalk3)'};cursor:pointer;font-size:15px;padding:4px 6px;line-height:1" onclick="toggleSeqEdit(${idx},${i})">\u270f\ufe0f</button>`:''}
-            <button style="background:none;border:none;color:var(--chalk3);cursor:pointer;font-size:18px;padding:4px 8px;line-height:1" onclick="removeFromSequence(${idx},${i})">\u00d7</button>
-          </div>
-          ${editPanel}
-        </div>`;
-      }).join('');
-
-  const rehitCount = (hs.sequence||[]).filter(s=>s.type==='retee'||s.type==='drop').length;
-  const scoreHTML = score > 0
-    ? `<div style="display:flex;gap:16px;align-items:center;padding:10px 12px;background:var(--ink3);border-radius:var(--rs);margin-bottom:16px">
-        <div style="text-align:center">
-          <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--chalk)" class="${rel!=null?scoreColorClass(rel):''}">${score}</div>
-          <div style="font-size:10px;color:var(--chalk3);letter-spacing:1px;text-transform:uppercase">${rel!=null?scoreName(rel):'Score'}</div>
-        </div>
-        <div style="width:1px;background:var(--border);height:36px"></div>
-        <div style="text-align:center">
-          <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--chalk)">${putts}</div>
-          <div style="font-size:10px;color:var(--chalk3);letter-spacing:1px;text-transform:uppercase">Putts</div>
-        </div>
-        <div style="flex:1;text-align:right;font-size:11px;color:var(--chalk3)">Par ${hs.par}${rehitCount?`<br>+${rehitCount} penalty`:''}</div>
-      </div>` : '';
-
-  const canContinue = score > 0;
-
-  // Hole header with Continue button right-aligned
-  const hdr = document.getElementById('wiz-hole-hdr');
-  hdr.style.display = '';
-  hdr.innerHTML = `<span class="wiz-hole-num">H${hs.holeNum}</span>
-    <span class="wiz-hole-info" style="flex:1">Par ${hs.par}${hs.yds?' \xb7 '+hs.yds+'y':''}</span>
-    <span class="wiz-step-lbl" style="margin-right:10px">Sequence</span>
-    ${canContinue
-      ? `<button class="btn btn-gold btn-sm" onclick="continueToDetail(${idx})">Continue \u2192</button>`
-      : `<button class="btn btn-gold btn-sm" style="opacity:.35;cursor:not-allowed" disabled>Continue \u2192</button>`}`;
-
-  // Nav: Overview back + JADE COMPASS Start Over (when there's data to clear)
-  document.getElementById('wiz-nav').style.display = '';
-  const seqBackBtn = document.getElementById('wiz-back-btn');
-  seqBackBtn.textContent = '\u2190 Overview';
-  seqBackBtn.onclick = () => { SCR.activeIdx=null; renderScoringScreen(); };
-  const seqNextBtn = document.getElementById('wiz-next-btn');
-  if (canContinue) {
-    seqNextBtn.style.cssText = 'flex:1;background:none;border:1px solid var(--border);color:var(--chalk2);border-radius:var(--rs);padding:13px 20px;font-family:\'DM Sans\',sans-serif;font-size:15px;cursor:pointer';
-    seqNextBtn.style.display = '';
-    seqNextBtn.textContent = '\u21ba Start Over';
-    seqNextBtn.onclick = () => startOverHole(idx);
-  } else {
-    seqNextBtn.style.cssText = '';
-    seqNextBtn.style.display = 'none';
-    seqNextBtn.onclick = null;
-  }
-
-  document.getElementById('scr-content').innerHTML = `
-    ${groupsHTML}
-    <div style="border-top:1px solid var(--border2);padding-top:14px;margin-top:4px">
-      ${scoreHTML}
-      ${seqHTML}
-    </div>`;
-}
-
-function seqItemLabel(item) {
-  if (item.type==='approach' && item.isTeeShot) return 'Tee Shot (Approach)';
-  if (item.type==='approach' && item.result==='H') return 'Approach \u2014 On Green';
-  if (item.type==='approach' && item.result==='M') return 'Approach \u2014 Off Green';
-  const t = SEQ_TYPES.find(s=>s.type===item.type);
-  return t ? t.lbl : item.type;
-}
-
-function seqItemDetail(item) {
-  if ((item.type==='tee'||item.type==='retee') && item.club) return item.club + (item.position?' \u2192 '+item.position:'');
-  if (item.type==='approach') {
-    const parts=[];
-    if (item.club) parts.push(item.club);
-    if (item.yardage) parts.push(item.yardage+'yd');
-    if (item.intendedZone&&item.finishZone) parts.push(item.intendedZone+"'"+item.finishZone);
-    if (item.result) parts.push(item.result==='H'?'\u2705 On':'\u274c Missed');
-    return parts.join(' \xb7 ');
-  }
-  return '';
-}
-
-function addToSequence(idx, type) {
-  const hs = SCR.holes[idx];
-  const item = makeSeqItem(type, false);
-  hs.sequence.push(item);
-  renderScoringScreen();
-}
-
-// IRON GARDEN — sequence reorder helpers.
-// Reorderable = real shot types. Non-reorderable: putt (must stay at end),
-// retee/drop (penalty semantics tied to surrounding shots), and the par-3 mandatory
-// first approach (isTeeShot, must stay at position 0).
-function isReorderable(item, seqIdx, hs) {
-  if (!item) return false;
-  if (item.type === 'putt' || item.type === 'retee' || item.type === 'drop') return false;
-  if (hs.par === 3 && seqIdx === 0 && item.isTeeShot) return false;
-  return true;
-}
-function canMoveSeqItem(hs, seqIdx, direction) {
-  const newIdx = seqIdx + direction;
-  if (newIdx < 0 || newIdx >= hs.sequence.length) return false;
-  if (!isReorderable(hs.sequence[seqIdx], seqIdx, hs)) return false;
-  if (!isReorderable(hs.sequence[newIdx], newIdx, hs)) return false;
-  return true;
-}
-function moveSeqItem(idx, seqIdx, direction) {
-  const hs = SCR.holes[idx];
-  if (!canMoveSeqItem(hs, seqIdx, direction)) return;
-  const newIdx = seqIdx + direction;
-  [hs.sequence[seqIdx], hs.sequence[newIdx]] = [hs.sequence[newIdx], hs.sequence[seqIdx]];
-  // If the moved item was being edited, keep the edit panel following it
-  if (hs.editingSeqIdx === seqIdx) hs.editingSeqIdx = newIdx;
-  else if (hs.editingSeqIdx === newIdx) hs.editingSeqIdx = seqIdx;
-  renderScoringScreen();
-}
-
-function toggleSeqEdit(idx, seqIdx) {
-  const hs = SCR.holes[idx];
-  hs.editingSeqIdx = hs.editingSeqIdx === seqIdx ? null : seqIdx;
-  renderScoringScreen();
-}
-
-function seqEditPanel(idx, seqIdx, item, hs) {
-  // BRONZE LADDER — resolve the round's club list once, used by both tee and approach
-  // edit panels. Matches the detail wizard's resolution: dedupe by abbr from bagClubs.
-  const wip = SCR.round;
-  const todayClubs = wip?.bagClubs?.length
-    ? getBags().flatMap(b=>b.clubs).filter((c,_,a)=>wip.bagClubs.includes(c.abbr)&&a.findIndex(x=>x.abbr===c.abbr)===_)
-    : [];
-  const clubChipHTML = (currentAbbr) => {
-    if (!todayClubs.length) {
-      return `<div style="font-size:11px;color:var(--chalk3);padding:6px 0">No bag snapshot on this round \u2014 club edit unavailable.</div>`;
-    }
-    return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">${todayClubs.map(c => {
-      const sel = currentAbbr === c.abbr;
-      return `<button onclick="seqEditSetClub(${idx},${seqIdx},'${c.abbr}')" style="padding:7px 2px;font-size:12px;font-weight:500;background:${sel?'var(--gold)':'var(--ink3)'};color:${sel?'var(--ink)':'var(--chalk2)'};border:1px solid ${sel?'var(--gold)':'var(--border)'};border-radius:6px;cursor:pointer;font-family:'DM Mono',monospace">${c.abbr}</button>`;
-    }).join('')}</div>`;
-  };
-
-  if (item.type === 'tee') {
-    const positions = ['OBL','LL','L','C','R','RR','OBR'];
-    const posBtns = positions.map(p =>
-      `<button onclick="seqEditSetPos(${idx},${seqIdx},'${p}')" style="flex:1;padding:8px 2px;font-size:11px;font-weight:500;background:${item.position===p?'var(--gold)':'var(--ink3)'};color:${item.position===p?'var(--ink)':'var(--chalk2)'};border:1px solid ${item.position===p?'var(--gold)':'var(--border)'};border-radius:6px;cursor:pointer">${p}</button>`
-    ).join('');
-    return `<div style="padding:10px 12px 12px;border-top:1px solid var(--border2)">
-      <div style="font-size:12px;color:var(--chalk3);margin-bottom:6px">Club</div>
-      ${clubChipHTML(item.club)}
-      <div style="font-size:12px;color:var(--chalk3);margin:10px 0 6px">Position</div>
-      <div style="display:flex;gap:4px">${posBtns}</div>
-    </div>`;
-  }
-  if (item.type === 'approach') {
-    const missedGreen = item.result === 'M';
-    const zones = [7,8,9,4,5,6,1,2,3];
-    const zoneBtn = (field, z) => {
-      const sel = item[field] === z;
-      const dis = field==='finishZone' && missedGreen && z===5;
-      return `<button ${dis?'disabled':''} onclick="seqEditSetZone(${idx},${seqIdx},'${field}',${z})" style="flex:1;padding:8px 0;font-size:12px;font-weight:500;background:${sel?'var(--gold)':'var(--ink3)'};color:${sel?'var(--ink)':dis?'var(--chalk3)':'var(--chalk2)'};border:1px solid ${sel?'var(--gold)':'var(--border)'};border-radius:4px;cursor:${dis?'not-allowed':'pointer'};opacity:${dis?'.32':'1'}">${z}</button>`;
-    };
-    return `<div style="padding:10px 12px 12px;border-top:1px solid var(--border2)">
-      <div style="font-size:12px;color:var(--chalk3);margin-bottom:6px">Club</div>
-      ${clubChipHTML(item.club)}
-      <div style="display:flex;align-items:center;gap:8px;margin:10px 0">
-        <span style="font-size:12px;color:var(--chalk3);min-width:30px">Yds</span>
-        <input type="number" value="${item.yardage||''}" placeholder="145" min="1" max="300"
-          oninput="seqEditSetYards(${idx},${seqIdx},this.value)"
-          style="flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--chalk);font-size:14px;font-family:inherit">
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <button onclick="seqEditSetResult(${idx},${seqIdx},'H')" style="flex:1;padding:10px;font-size:13px;font-weight:500;background:${item.result==='H'?'rgba(94,200,94,.18)':'var(--ink3)'};color:${item.result==='H'?'var(--green)':'var(--chalk2)'};border:1px solid ${item.result==='H'?'var(--green)':'var(--border)'};border-radius:var(--rs);cursor:pointer">\u2705 On Green</button>
-        <button onclick="seqEditSetResult(${idx},${seqIdx},'M')" style="flex:1;padding:10px;font-size:13px;font-weight:500;background:${item.result==='M'?'rgba(201,64,64,.12)':'var(--ink3)'};color:${item.result==='M'?'var(--red)':'var(--chalk2)'};border:1px solid ${item.result==='M'?'var(--red)':'var(--border)'};border-radius:var(--rs);cursor:pointer">\u274c Off Green</button>
-      </div>
-      <div style="display:flex;gap:12px">
-        <div style="flex:1">
-          <div style="font-size:11px;color:var(--chalk3);margin-bottom:5px;text-align:center">Aimed</div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px">${zones.map(z=>zoneBtn('intendedZone',z)).join('')}</div>
-        </div>
-        <div style="flex:1">
-          <div style="font-size:11px;color:var(--chalk3);margin-bottom:5px;text-align:center">Finish</div>
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px">${zones.map(z=>zoneBtn('finishZone',z)).join('')}</div>
-        </div>
-      </div>
-    </div>`;
-  }
-  return '';
-}
-
-function seqEditSetClub(idx, seqIdx, val) {
-  // BRONZE LADDER — val is now always a valid abbr from the round's bag snapshot
-  // (chip picker constrains entry). Re-render to update chip selection highlight.
-  SCR.holes[idx].sequence[seqIdx].club = val || null;
-  renderScoringScreen();
-}
-
-function seqEditSetPos(idx, seqIdx, val) {
-  SCR.holes[idx].sequence[seqIdx].position = val;
-  renderScoringScreen();
-}
-
-function seqEditSetYards(idx, seqIdx, val) {
-  const n = parseInt(val);
-  SCR.holes[idx].sequence[seqIdx].yardage = (n > 0 && n <= 300) ? n : null;
-}
-
-function seqEditSetResult(idx, seqIdx, val) {
-  SCR.holes[idx].sequence[seqIdx].result = val;
-  renderScoringScreen();
-}
-
-function seqEditSetZone(idx, seqIdx, field, val) {
-  SCR.holes[idx].sequence[seqIdx][field] = val;
-  renderScoringScreen();
-}
-
-function removeFromSequence(idx, seqIdx) {
-  const hs = SCR.holes[idx];
-  // Prevent removing par 3 first approach tee shot
-  if (hs.par===3 && seqIdx===0 && hs.sequence[0]?.isTeeShot) return;
-  hs.sequence.splice(seqIdx, 1);
-  renderScoringScreen();
-}
-
-function continueToDetail(idx) {
-  const hs = SCR.holes[idx];
-  const tasks = getDetailTasks(hs);
-  if (tasks.length === 0) {
-    hs.phase = 'putt-dist';
-    hs.puttCalcIdx = 0; hs.puttCalcBuf = '';
-  } else {
-    hs.phase = 'detail';
-    hs.detailTaskIdx = 0;
-    hs.detailSubStepIdx = 0;
-  }
-  renderScoringScreen();
-  document.getElementById('scr-scroll').scrollTo(0,0);
-}
-
-// ── PHASE 2: DETAIL WIZARD ─────────────────────────────────────
-
-function renderDetailStep(hs, idx) {
-  const tasks = getDetailTasks(hs);
-  const task = tasks[hs.detailTaskIdx];
-  if (!task) { hs.phase='putt-dist'; renderScoringScreen(); return; }
-
-  const item = hs.sequence[task.seqIdx];
-  const subStep = task.steps[hs.detailSubStepIdx];
-  const taskNum = hs.detailTaskIdx + 1;
-  const taskTotal = tasks.length;
-  const shotNum = task.seqIdx + 1;
-  const isLastTask = hs.detailTaskIdx === tasks.length-1;
-  const isLastSub  = hs.detailSubStepIdx === task.steps.length-1;
-  const isYardage  = subStep === 'yds';
-
-  // Hole header — H# · Shot N large, shot type as subtitle
-  const hdr = document.getElementById('wiz-hole-hdr');
-  hdr.style.display = '';
-  hdr.innerHTML = `<span class="wiz-hole-num">H${hs.holeNum} <span style="font-size:32px;opacity:.7">\xb7 Shot ${shotNum}</span></span>
-    <span class="wiz-hole-info">${seqItemLabel(item)}</span>
-    <span class="wiz-step-lbl">Par ${hs.par}${hs.yds?' \xb7 '+hs.yds+'y':''} \xb7 ${taskNum} of ${taskTotal}</span>`;
-
-  // Nav — always reset inline styles first to prevent bleed between steps
-  // Hide wiz-nav — nav is inline in content
-  document.getElementById('wiz-nav').style.display = 'none';
-
-  // Determine inline right button
-  const inlineRight = isYardage
-    ? `<button class="wiz-next" onclick="detailNext()">Skip</button>`
-    : subStep === 'club' || subStep === 'result'
-      ? '' // buttons are in the content
-      : `<button class="wiz-next" onclick="detailSkip(${idx})"
-          style="flex:0 0 auto;padding:13px 28px;background:var(--ink3);color:var(--chalk3);border:1px solid var(--border)">?</button>`;
-
-  const inlineNav = `<div class="inline-nav">
-    <button class="wiz-back" onclick="detailBack()">← Back</button>
-    ${inlineRight}
-  </div>`;
-
-  // Content
-  const wip = SCR.round;
-  const todayClubs = wip?.bagClubs?.length
-    ? getBags().flatMap(b=>b.clubs).filter((c,_,a)=>wip.bagClubs.includes(c.abbr)&&a.findIndex(x=>x.abbr===c.abbr)===_)
-    : CLUBS.filter(c=>c!=='?'&&c!=='PT'&&c!=='TW'&&c!=='HW').map(c=>({abbr:c,desc:''}));
-
-  let html = `${seqStripHTML(hs, task.seqIdx)}<div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk);margin-bottom:16px">${seqItemLabel(item)}</div>`;
-
-  if (subStep === 'club') {
-    html += `<div class="club-grid">${todayClubs.map(c=>`
-        <div class="club-tile ${clubCategory(c.abbr)}${item.club===c.abbr?' sel':''}"
-          onclick="detailSetClub(${idx},${task.seqIdx},'${c.abbr}')">
-          <div class="club-tile-abbr">${c.abbr}</div>
-          <div class="club-tile-desc">${escHtml(c.desc)}</div>
-        </div>`).join('')}
-      <div class="club-tile" style="opacity:.55" onclick="detailSkip(${idx})">
-        <div class="club-tile-abbr">?</div>
-        <div class="club-tile-desc">Skip</div>
-      </div>
-    </div>`;
-  } else if (subStep === 'pos') {
-    const positions = [
-      {v:'OBL',lbl:'OB Left',icon:'\ud83d\udc80'},{v:'LL',lbl:'Left (trouble)',icon:'\u2190\u2190'},
-      {v:'L',lbl:'Left rough',icon:'\u2190'},{v:'C',lbl:'Fairway',icon:'\u2713'},
-      {v:'R',lbl:'Right rough',icon:'\u2192'},{v:'RR',lbl:'Right (trouble)',icon:'\u2192\u2192'},
-      {v:'OBR',lbl:'OB Right',icon:'\ud83d\udc80'}
-    ];
-    html += `<div class="big-choice-row">${positions.map(p=>`
-      <button class="big-choice-btn${item.position===p.v?' sel':''}"
-        onclick="detailSetPos(${idx},${task.seqIdx},'${p.v}')">
-        <span class="big-choice-icon" style="font-size:14px;min-width:24px">${p.icon}</span>
-        <div><div style="font-weight:500">${p.v}</div><div style="font-size:12px;color:var(--chalk3)">${p.lbl}</div></div>
-      </button>`).join('')}
-    </div>`;
-  } else if (subStep === 'yds') {
-    html += `<div class="calc-display ${item.wizYds?'':'empty'}">${item.wizYds||'Yardage'}</div>
-      <div class="calc-grid">
-        ${[7,8,9,4,5,6,1,2,3].map(n=>`<button class="calc-btn" onclick="detailCalcDigit(${idx},${task.seqIdx},${n})">${n}</button>`).join('')}
-        <button class="calc-btn back" onclick="detailCalcBack(${idx},${task.seqIdx})">\u232b</button>
-        <button class="calc-btn" onclick="detailCalcDigit(${idx},${task.seqIdx},0)">0</button>
-        <button class="calc-btn enter" onclick="detailNext()">Enter</button>
-      </div>`;
-  } else if (subStep === 'result') {
-    html += `<div style="margin-top:8px">
-      <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--chalk2);text-align:center;margin-bottom:24px">Did it land on the green?</div>
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <button class="result-btn${item.result==='H'?' h':''}" style="padding:22px;font-size:16px" onclick="detailSetResult(${idx},${task.seqIdx},'H',true)">\u2705 On Green</button>
-        <button class="result-btn${item.result==='M'?' m':''}" style="padding:22px;font-size:16px" onclick="detailSetResult(${idx},${task.seqIdx},'M',true)">\u274c Off Green</button>
-      </div>
-    </div>`;
-  } else if (subStep === 'zones') {
-    const missedGreen = item.result === 'M';
-    html += `<div style="margin-bottom:10px">
-      <div style="font-size:12px;font-weight:600;color:var(--chalk3);letter-spacing:.5px;margin-bottom:6px">\ud83d\udccd Pin Location <span style="font-weight:400;opacity:.7">(optional)</span></div>
-      ${wizPinGrid(idx, hs.pinZone)}
-    </div>
-    <div style="display:flex;gap:14px">
-      <div style="flex:1">
-        <div style="font-size:16px;font-weight:600;color:var(--chalk2);margin-bottom:10px;text-align:center">Aimed</div>
-        ${wizZoneGrid(idx, task.seqIdx, 'intendedZone', item.intendedZone)}
-      </div>
-      <div style="flex:1">
-        <div style="font-size:16px;font-weight:600;color:var(--chalk2);margin-bottom:10px;text-align:center">Finish</div>
-        ${wizZoneGrid(idx, task.seqIdx, 'finishZone', item.finishZone, missedGreen ? [5] : [])}
-      </div>
-    </div>`;
-  }
-
-  document.getElementById('scr-content').innerHTML = html + inlineNav;
-}
-
-function detailNext() {
-  const hs = SCR.holes[SCR.activeIdx];
-  const tasks = getDetailTasks(hs);
-  const task = tasks[hs.detailTaskIdx];
-  if (!task) { hs.phase='putt-dist'; renderScoringScreen(); return; }
-  const item = hs.sequence[task.seqIdx];
-
-  // Flush yardage buffer
-  if (task.steps[hs.detailSubStepIdx]==='yds') {
-    item.yardage = item.wizYds ? parseInt(item.wizYds)||null : null;
-  }
-
-  if (hs.detailSubStepIdx < task.steps.length-1) {
-    hs.detailSubStepIdx++;
-  } else if (hs.detailTaskIdx < tasks.length-1) {
-    hs.detailTaskIdx++;
-    hs.detailSubStepIdx = 0;
-  } else {
-    hs.phase = 'putt-dist';
-    hs.puttCalcIdx = 0; hs.puttCalcBuf = '';
-  }
-  renderScoringScreen();
-  document.getElementById('scr-scroll').scrollTo(0,0);
-}
-
-function detailSkip(idx) {
-  // Advance without setting any value — ? = skip this field
-  detailNext();
-}
-
-function detailBack() {
-  const hs = SCR.holes[SCR.activeIdx];
-  if (hs.detailSubStepIdx > 0) {
-    hs.detailSubStepIdx--;
-  } else if (hs.detailTaskIdx > 0) {
-    hs.detailTaskIdx--;
-    const tasks = getDetailTasks(hs);
-    hs.detailSubStepIdx = tasks[hs.detailTaskIdx].steps.length-1;
-  } else {
-    hs.phase = 'sequence';
-  }
-  renderScoringScreen();
-  document.getElementById('scr-scroll').scrollTo(0,0);
-}
-
-// Detail setters
-function clubCategory(abbr) {
-  if (['Dr','3w','5w'].includes(abbr)) return 'wood';
-  if (['2h','3h','4h','5h'].includes(abbr)) return 'hybrid';
-  if (['2i','3i','4i','5i','6i','7i','8i','9i'].includes(abbr)) return 'iron';
-  if (['PW','GW','SW','LW'].includes(abbr)) return 'wedge';
-  if (['PT','TW','HW'].includes(abbr)) return 'putter';
-  return 'iron';
-}
-
-function detailSetClub(idx, seqIdx, val) {
-  SCR.holes[idx].sequence[seqIdx].club = val;
-  renderDetailStep(SCR.holes[idx], idx);
-  setTimeout(detailNext, 200);
-}
-
-function detailSetPos(idx, seqIdx, val) {
-  SCR.holes[idx].sequence[seqIdx].position = val;
-  renderDetailStep(SCR.holes[idx], idx);
-  setTimeout(detailNext, 200);
-}
-
-function detailSetResult(idx, seqIdx, val, autoNext) {
-  SCR.holes[idx].sequence[seqIdx].result = val;
-  if (autoNext) { renderDetailStep(SCR.holes[idx], idx); setTimeout(detailNext, 200); }
-  else renderDetailStep(SCR.holes[idx], idx);
-}
-
-function detailCalcDigit(idx, seqIdx, d) {
-  const item = SCR.holes[idx].sequence[seqIdx];
-  if ((item.wizYds||'').length < 3) item.wizYds = (item.wizYds||'') + String(d);
-  renderDetailStep(SCR.holes[idx], idx);
-}
-
-function detailCalcBack(idx, seqIdx) {
-  const item = SCR.holes[idx].sequence[seqIdx];
-  item.wizYds = (item.wizYds||'').slice(0,-1);
-  renderDetailStep(SCR.holes[idx], idx);
-}
-
-function detailSetZone(idx, seqIdx, field, val) {
-  const item = SCR.holes[idx].sequence[seqIdx];
-  item[field] = val;
-  // result is pre-committed on its own screen — no zone-based override
-  renderDetailStep(SCR.holes[idx], idx);
-  if (field === 'finishZone') setTimeout(detailNext, 200); // auto-advance after finish zone
-}
-
-function wizZoneGrid(idx, seqIdx, field, selected, disabledZones=[]) {
-  const rows=[[7,8,9],[4,5,6],[1,2,3]], rl=['Long','Mid','Short'];
-  const hdr=`<div></div><div class="zone-clbl">L</div><div class="zone-clbl">C</div><div class="zone-clbl">R</div>`;
-  const cells=rows.map((row,ri)=>`<div class="zone-rlbl">${rl[ri]}</div>`+
-    row.map(z=>{
-      const dis = disabledZones.includes(z);
-      return `<button class="zone-btn${selected===z?' sel':''}${dis?' disabled':''}" ${dis?'disabled style="opacity:.32;cursor:not-allowed"':`onclick="detailSetZone(${idx},${seqIdx},'${field}',${z})"`}>${z}</button>`;
-    }).join('')
-  ).join('');
-  return `<div class="zone-grid">${hdr}${cells}</div>`;
-}
-
-function wizPinGrid(holeIdx, selected) {
-  const rows=[[7,8,9],[4,5,6],[1,2,3]], rl=['Lg','Md','Sh'];
-  const btnStyle = `background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:8px 4px;font-family:'DM Serif Display',serif;font-size:13px;color:var(--chalk);cursor:pointer;text-align:center;transition:all .12s`;
-  const selStyle = `background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:700`;
-  const hdr=`<div></div><div class="zone-clbl">L</div><div class="zone-clbl">C</div><div class="zone-clbl">R</div>`;
-  const cells=rows.map((row,ri)=>`<div class="zone-rlbl" style="font-size:9px">${rl[ri]}</div>`+
-    row.map(z=>`<button style="${btnStyle}${selected===z?';'+selStyle:''}" onclick="setWizPinZone(${holeIdx},${z})">${z}</button>`).join('')
-  ).join('');
-  return `<div style="display:grid;grid-template-columns:28px repeat(3,1fr);gap:4px">${hdr}${cells}</div>`;
-}
-
-function setWizPinZone(holeIdx, zone) {
-  const hs = SCR.holes[holeIdx];
-  hs.pinZone = hs.pinZone === zone ? null : zone; // tap again to deselect
-  renderDetailStep(hs, holeIdx);
-}
-
-// ── PHASE 3: PUTT DISTANCES ────────────────────────────────────
-
-function seqStripLabel(item) {
-  if (item.type==='tee') return item.club || 'Tee';
-  if (item.type==='retee') return 'Rehit';
-  if (item.type==='approach') return item.isTeeShot ? 'App' : 'App';
-  if (item.type==='layup') return 'Lay';
-  if (item.type==='chip') return 'Ch';
-  if (item.type==='sand') return 'Sd';
-  if (item.type==='recovery') return 'Rec';
-  if (item.type==='penalty') return 'Pen';
-  if (item.type==='drop') return 'D';
-  return item.type;
-}
-
-function seqStripHTML(hs, activeSeqIdx) {
-  return `<div style="display:flex;gap:5px;overflow-x:auto;padding:2px 0 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none">
-    ${(hs.sequence||[]).map((item,i) => {
-      const on = i === activeSeqIdx;
-      return `<div style="background:${on?'var(--gold)':'var(--ink3)'};color:${on?'var(--ink)':'var(--chalk3)'};
-        border:1px solid ${on?'var(--gold)':'var(--border)'};border-radius:100px;
-        padding:5px 11px;font-size:12px;font-weight:${on?'700':'400'};
-        white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:4px">
-        <span style="font-size:10px;opacity:.7">${i+1}</span>${seqStripLabel(item)}
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-
-function puttDistBack(idx) {
-  const hs = SCR.holes[idx];
-  hs.puttCalcIdx = 0; hs.puttCalcBuf = '';
-  const tasks = getDetailTasks(hs);
-  hs.phase = tasks.length > 0 ? 'detail' : 'sequence';
-  if (tasks.length > 0) {
-    hs.detailTaskIdx = tasks.length-1;
-    hs.detailSubStepIdx = tasks[tasks.length-1].steps.length-1;
-  }
-  renderScoringScreen();
-  document.getElementById('scr-scroll').scrollTo(0,0);
-}
-
-function renderPuttDist(hs, idx) {
-  const putts = seqPuttItems(hs);
-  const puttCount = putts.length;
-
-  const hdr = document.getElementById('wiz-hole-hdr');
-  hdr.style.display = '';
-  hdr.innerHTML = `<span class="wiz-hole-num">H${hs.holeNum}</span>
-    <span class="wiz-hole-info">Par ${hs.par}${hs.yds?' \xb7 '+hs.yds+'y':''}</span>
-    <span class="wiz-step-lbl">Putts</span>`;
-
-  document.getElementById('wiz-nav').style.display = 'none';
-
-  const score = seqScore(hs);
-  const rel = score - hs.par;
-  const calIdx = hs.puttCalcIdx || 0;
-  const calBuf = hs.puttCalcBuf || '';
-  const isDone = calIdx >= puttCount;
-
-  const scoreSummary = `<div style="display:flex;gap:16px;align-items:center;padding:10px 14px;background:var(--ink3);border-radius:var(--rs);margin-bottom:14px">
-    <div style="text-align:center">
-      <div style="font-family:'DM Serif Display',serif;font-size:26px" class="${scoreColorClass(rel)}">${score}</div>
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px" class="${scoreColorClass(rel)}">${scoreName(rel)}</div>
-    </div>
-    <div style="width:1px;background:var(--border);height:30px"></div>
-    <div style="text-align:center">
-      <div style="font-family:'DM Serif Display',serif;font-size:26px;color:var(--chalk)">${puttCount}</div>
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--chalk3)">Putts</div>
-    </div>
-    <div style="flex:1;text-align:right;font-size:11px;color:var(--chalk3)">Par ${hs.par}</div>
-  </div>`;
-
-  const calcHTML = puttCount > 0 && !isDone ? `
-    <div style="border-top:1px solid var(--border);margin:14px 0 14px"></div>
-    <div style="text-align:center;margin-bottom:12px">
-      <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--gold)">Putt ${calIdx+1} <span style="font-size:15px;color:var(--chalk3)">of ${puttCount}</span></div>
-      ${hs.puttDistances.slice(0,calIdx).filter(d=>d>0).length ? `<div style="font-size:12px;color:var(--chalk3);margin-top:3px">prev: ${hs.puttDistances.slice(0,calIdx).filter(d=>d>0).join('ft · ')}ft</div>` : ''}
-    </div>
-    <div class="calc-display ${calBuf?'':'empty'}">${calBuf||'Distance (ft)'}</div>
-    <div class="calc-grid">
-      ${[7,8,9,4,5,6,1,2,3].map(n=>`<button class="calc-btn" onclick="puttCalcDigit(${idx},${n})">${n}</button>`).join('')}
-      <button class="calc-btn back" onclick="puttCalcBack(${idx})">\u232b</button>
-      <button class="calc-btn" onclick="puttCalcDigit(${idx},0)">0</button>
-      <button class="calc-btn enter" onclick="puttCalcEnter(${idx})">Enter</button>
-    </div>
-    <button onclick="puttTapIn(${idx})" style="width:100%;margin-top:8px;padding:13px;background:var(--ink3);border:1px solid var(--border);border-radius:var(--r);color:var(--chalk2);font-size:14px;font-weight:500;cursor:pointer;letter-spacing:.3px">Tap-in \u2192</button>` : (puttCount === 0 ? `<div style="text-align:center;padding:12px;color:var(--chalk3);font-size:13px">No putts in sequence</div>` : '');
-
-  const skipOrSave = puttCount > 0 && !isDone
-    ? `<button class="wiz-skip" onclick="puttCalcSkip(${idx})">Skip</button>`
-    : `<button class="wiz-next" onclick="saveHole(${idx})">Save Hole \u2192</button>`;
-
-  document.getElementById('scr-content').innerHTML = `
-    ${seqStripHTML(hs, -1)}
-    ${scoreSummary}
-    ${calcHTML}
-    <div class="inline-nav">
-      <button class="wiz-back" onclick="puttDistBack(${idx})">← Back</button>
-      ${skipOrSave}
-    </div>`;
-}
-
-function puttCalcDigit(idx, d) {
-  const hs = SCR.holes[idx];
-  if ((hs.puttCalcBuf||'').length < 3) hs.puttCalcBuf = (hs.puttCalcBuf||'') + String(d);
-  renderPuttDist(hs, idx);
-}
-
-function puttCalcBack(idx) {
-  const hs = SCR.holes[idx];
-  hs.puttCalcBuf = (hs.puttCalcBuf||'').slice(0,-1);
-  renderPuttDist(hs, idx);
-}
-
-function puttCalcEnter(idx) {
-  const hs = SCR.holes[idx];
-  const val = hs.puttCalcBuf ? parseInt(hs.puttCalcBuf)||0 : 0;
-  hs.puttDistances[hs.puttCalcIdx] = val;
-  hs.puttCalcIdx++;
-  hs.puttCalcBuf = '';
-  const puttCount = seqPutts(hs);
-  if (hs.puttCalcIdx >= puttCount) saveHole(idx);
-  else renderPuttDist(hs, idx);
-}
-
-function puttCalcSkip(idx) {
-  const hs = SCR.holes[idx];
-  hs.puttDistances[hs.puttCalcIdx] = 0;
-  hs.puttCalcIdx++;
-  hs.puttCalcBuf = '';
-  const puttCount = seqPutts(hs);
-  if (hs.puttCalcIdx >= puttCount) saveHole(idx);
-  else renderPuttDist(hs, idx);
-}
-
-function puttTapIn(idx) {
-  const hs = SCR.holes[idx];
-  hs.puttDistances[hs.puttCalcIdx] = 1;
-  hs.puttCalcIdx++;
-  hs.puttCalcBuf = '';
-  const puttCount = seqPutts(hs);
-  if (hs.puttCalcIdx >= puttCount) saveHole(idx);
-  else renderPuttDist(hs, idx);
-}
-
-// ── SAVE ───────────────────────────────────────────────────────
-
-function deriveLie(hs, seqIdx) {
-  // Scan backwards from this shot in the sequence for lie context
-  for (let i = seqIdx - 1; i >= 0; i--) {
-    const prev = hs.sequence[i];
-    if (prev.type === 'sand') return 'Sd';
-    if (prev.type === 'tee' || prev.type === 'retee') {
-      const pos = prev.position;
-      if (['L','R','LL','RR'].includes(pos)) return 'Rh';
-      return null; // C, OBL, OBR, or unknown → fairway/tee box
-    }
-    if (prev.type === 'layup' || prev.type === 'approach') return null;
-    // chip/recovery/penalty/drop — keep scanning back for tee context
-  }
-  return null; // default: fairway
-}
-
-function saveHole(idx) {
-  const hs = SCR.holes[idx];
-  const score = seqScore(hs);
-  if (score === 0) { toast('Add shots to the sequence first'); return; }
-
-  const shots = [];
-  (hs.sequence||[]).forEach((item, seqIdx) => {
-    switch(item.type) {
-      case 'tee':
-        shots.push({id:genId(), type:'tee', club:item.club||null, position:item.position||null, isTeeShot:true});
-        break;
-      case 'retee':
-        if (hs.par === 3) {
-          // Par 3 rehit = replay the tee shot = approach with isTeeShot:true
-          const miss3 = deriveMissDirection(item.intendedZone, item.finishZone, item.result||'M');
-          shots.push({id:genId(), type:'approach', club:item.club||null, yardage:item.yardage||null,
-            intendedZone:item.intendedZone||null, finishZone:item.finishZone||null,
-            result:item.result||'M', lie:null, isTeeShot:true, missDirection:miss3, chokeUp:false});
-        } else {
-          shots.push({id:genId(), type:'retee', club:item.club||null, position:item.position||null});
-        }
-        break;
-      case 'approach': {
-        const miss = deriveMissDirection(item.intendedZone, item.finishZone, item.result||'M');
-        shots.push({id:genId(), type:'approach', club:item.club||null, yardage:item.yardage||null,
-          intendedZone:item.intendedZone||null, finishZone:item.finishZone||null,
-          result:item.result||'M', lie:deriveLie(hs, seqIdx),
-          isTeeShot:item.isTeeShot||false, missDirection:miss,
-          chokeUp:item.chokeUp||false});
-        break;
-      }
-      case 'layup':    shots.push({id:genId(), type:'layup'}); break;
-      case 'chip':     shots.push({id:genId(), type:'chip'}); break;
-      case 'sand':     shots.push({id:genId(), type:'chip', lie:'Sd'}); break;
-      case 'recovery': shots.push({id:genId(), type:'recovery'}); break;
-      case 'drop':     shots.push({id:genId(), type:'drop'}); break;
-      case 'TW':       shots.push({id:genId(), type:'chip', club:'TW'}); break;
-      case 'HW':       shots.push({id:genId(), type:'chip', club:'HW'}); break;
-      case 'X':        shots.push({id:genId(), type:'untracked'}); break;
-      case 'putt':     break; // putts in hole.putts, not shots
-    }
-  });
-
-  // Enrich shots with clubId resolved from round's frozen snapshot
-  const snap = SCR.round?.clubSnapshot || {};
-  shots.forEach(s => {
-    if (s.club && !s.clubId && snap[s.club]?.clubId) s.clubId = snap[s.club].clubId;
-  });
-
-  const puttCount = seqPutts(hs);
-  const puttDist  = (hs.puttDistances||[]).slice(0, puttCount).filter(d=>d>0);
-  const {gir, girPlusOne} = deriveGIR(shots, hs.par);
-  const notation = buildManualNotation(hs);
-  const hole = createHole({number:hs.holeNum, par:hs.par, score, pinZone:hs.pinZone||null, notation});
-  hole.shots = shots;
-  hole.putts  = {count:puttCount, distances:puttDist};
-  hole.gir    = gir; hole.girPlusOne = girPlusOne;
-
-  const round = SCR.round;
-  const ei = round.holes.findIndex(h=>h.number===hs.holeNum);
-  if (ei>=0) round.holes[ei]=hole; else round.holes.push(hole);
-  // AMBER COMPASS — persist to the correct slot based on mode. In single-hole mode
-  // this keeps the active-round WIP untouched; in regular mode behavior is unchanged.
-  if (round.singleHoleMode) saveReentryWIP(round); else saveWIP(round);
-
-  hs.saved = true;
-  hs.savedScore = score;
-
-  // COBALT RIVER — single-hole re-entry: commit back to source round, skip auto-advance
-  if (SCR.round?.singleHoleMode) {
-    commitSingleHoleBack();
-    return;
-  }
-
-  const nextIdx = SCR.holes.findIndex((h,i)=>i>idx&&!h.saved);
-  if (nextIdx>=0) openWizHole(nextIdx);
-  else { SCR.activeIdx=null; renderScoringScreen(); }
-}
-
-function buildManualNotation(hs) {
-  const parts = (hs.sequence||[]).map((item, seqIdx) => {
-    if (item.type==='tee'||item.type==='retee') {
-      return (item.type==='retee'?'Rehit ':'')+((item.club||'?')+' '+(item.position||'')).trim();
-    }
-    if (item.type==='approach') {
-      let s='';
-      if (item.club) s+=item.club+(item.chokeUp?'*':'')+' ';
-      if (item.yardage) s+=item.yardage+' ';
-      if (item.intendedZone&&item.finishZone) s+=item.intendedZone+"'"+item.finishZone+' ';
-      s+=(item.result||'M');
-      const lie = deriveLie(hs, seqIdx);
-      if (lie) s+=' '+lie;
-      return s.trim();
-    }
-    const map={layup:'LY',chip:'Ch',sand:'Sd',recovery:'REC',penalty:'PEN',drop:'D',TW:'TW',HW:'HW',putt:'p',X:'X'};
-    return map[item.type]||item.type;
-  });
-  const puttCount = seqPutts(hs);
-  const puttDist = (hs.puttDistances||[]).slice(0,puttCount).filter(d=>d>0).join(' ');
-  parts.push('\\ '+puttCount+(puttDist?' '+puttDist:''));
-  return parts.filter(Boolean).join(' \xb7 ');
-}
-
-function finishManualRound() {
-  const round = SCR.round;
-  if (!round) return;
-  calcRoundTotal(round);
-  round.source = 'manual';
-  const rounds = getRounds();
-  rounds.push(round);
-  saveRounds(rounds);
-  saveWIP(null);
-  DET.roundId = round.id; DET.openHoles.clear();
-  SCR.round = null; SCR.holes = [];
-  toast('Round saved \u2713');
-  showView('detail');
-}
-
-function abandonRound() {
-  // COBALT RIVER — single-hole re-entry: abandon = discard changes, return to round detail
-  if (SCR.round?.singleHoleMode) {
-    if (!confirm('Cancel re-entry? Your original hole data will be preserved.')) return;
-    const srcId = SCR.round.sourceRoundId;
-    saveReentryWIP(null); // AMBER COMPASS — only clear re-entry; active round WIP untouched
-    SCR.round = null; SCR.holes = [];
-    DET.roundId = srcId; DET.openHoles.clear();
-    showView('detail');
-    return;
-  }
-  if (!confirm('Abandon entry? Your progress is saved in WIP and you can resume later.')) return;
-  showView('home');
-}
-
-
 // ── BYRON 3.0 ENGINE ─────────────────────────────────────────
 function byronTimeAgo(ts) {
   const mins = Math.round((Date.now()-ts)/60000);
@@ -5744,382 +4251,22 @@ async function runByron(pass) {
 }
 
 // ── ROUND DETAIL ─────────────────────────────────────────────
-const DET = { roundId: null, openHoles: new Set(), editHoles: new Set() };
+// OBSIDIAN PURGE (v8.1.2) — DET.openHoles and DET.editHoles dropped (only the
+// deleted v1 detailHoleHTML/edit-hole flow used them). v2 Round Detail is a
+// flat read-only render, no per-hole state.
+const DET = { roundId: null };
 
 function renderDetail() {
   const round = getRounds().find(r => r.id === DET.roundId);
   if (!round) { showView('history'); return; }
 
-  // GLACIER CAPTURE (v8.1.0) — schemaVersion: 2 rounds use the new shape
-  // (13-field per-hole capture, no shots array). Branch to renderDetailV2 for
-  // those. The legacy v1 path below is kept for any historical round and for
-  // safety; post-TUNDRA migration no v1 rounds exist on this device, but they
-  // could be pulled from a non-upgraded sync source (the shape validator drops
-  // those, so this is genuinely defensive).
+  // OBSIDIAN PURGE (v8.1.2) — only schemaVersion: 2 rounds exist post-purge.
+  // Schema validator (validateRoundsShape) drops anything else on boot/sync,
+  // so this is purely a defense-in-depth check. Non-v2 rounds bounce to history.
   if (round.schemaVersion === 2) { renderDetailV2(round); return; }
-
-  // Header
-  document.getElementById('det-course').textContent = round.course || '\u2014';
-  const d = round.date ? new Date(round.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
-  document.getElementById('det-meta').textContent = [d, round.tees, (round.holesPlayed||0)+' holes'].filter(Boolean).join(' \xb7 ');
-
-  // Score header
-  const rel = round.totalScore != null ? round.totalScore - round.par : null;
-  const relStr = rel == null ? '\u2014' : rel === 0 ? 'E' : rel > 0 ? '+'+rel : String(rel);
-  document.getElementById('det-score-hdr').innerHTML = `
-    <div class="detail-score-hdr">
-      <div class="detail-score-big ${scoreColorClass(rel)}">${round.totalScore ?? '\u2014'}</div>
-      <div class="detail-score-rel ${scoreColorClass(rel)}">${relStr}</div>
-    </div>`;
-
-  // Stats — row 1: GIR / Putts / Avg 1st Putt / Putts Made
-  const holes = round.holes || [];
-  const girCount = holes.filter(h => h.gir).length;
-  const totalPutts = holes.reduce((a,h) => a + (h.putts?.count||0), 0);
-  const source = round.source === 'photo_import' ? 'Import' : 'Manual';
-  const allApproaches = holes.flatMap(h => (h.shots||[]).filter(s => s.type==='approach'));
-  const zonesTotal = allApproaches.length;
-  const zonesFilled = allApproaches.filter(s => s.intendedZone && s.finishZone).length;
-  const zonesVal = zonesTotal > 0 ? zonesFilled + '/' + zonesTotal : '\u2014';
-  // First putt distances (from holes that have putt distance data)
-  const firstPutts = holes.map(h => h.putts?.distances?.[0]).filter(d => d > 0);
-  const avgFirstPutt = firstPutts.length ? Math.round(firstPutts.reduce((a,b)=>a+b,0)/firstPutts.length) : null;
-  // Total distance of putts made = all putt distances except the first (first putt is the lag, rest are made)
-  const totalPuttsMade = holes.reduce((sum,h) => {
-    const dists = h.putts?.distances || [];
-    return sum + dists.slice(1).reduce((a,b)=>a+b,0);
-  }, 0);
-  document.getElementById('det-stats').innerHTML = [
-    {val: girCount + '/' + holes.length, lbl: 'GIR'},
-    {val: totalPutts || '\u2014', lbl: 'Putts'},
-    {val: avgFirstPutt ? avgFirstPutt+'ft' : '\u2014', lbl: 'Avg 1st Putt'},
-    {val: totalPuttsMade ? totalPuttsMade+'ft' : '\u2014', lbl: 'Putts Made'},
-  ].map(s => `<div class="stat-tile"><div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join('');
-  // Row 2: Zones Captured / Source
-  document.getElementById('det-stats2').innerHTML = [
-    {val: zonesVal, lbl: 'Zones Captured'},
-    {val: source, lbl: 'Source'},
-  ].map(s => `<div class="stat-tile"><div class="stat-val" style="font-size:${s.lbl==='Source'?'18px':'26px'}">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join('');
-
-  // PJ Index — with tappable tooltips (INDEX BENCHMARKS)
-  const player = getPlayerProfile();
-  const cmr = calcCMR(round, player);
-  const dci = calcDCI(round);
-  const pjiEl = document.getElementById('det-pji');
-  if (cmr != null || dci != null) {
-    pjiEl.innerHTML = `<div class="card" style="padding:12px 14px">
-      <div style="font-size:11px;font-weight:600;letter-spacing:.8px;color:var(--chalk3);text-transform:uppercase;margin-bottom:10px">\u26a1 PJ Index</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;cursor:pointer" onclick="toggleDetTip('cmr')">
-        <div style="width:36px;font-size:12px;color:var(--chalk);font-weight:600">CMR</div>
-        ${pjiBar(cmr)}
-        <div style="font-size:13px;color:var(--chalk);font-weight:600;min-width:32px">${cmr != null ? cmr+'%' : '\u2014'}</div>
-        <button id="det-tip-btn-cmr" style="width:17px;height:17px;border-radius:50%;border:1.5px solid var(--chalk2);background:transparent;color:var(--chalk2);font-size:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1">i</button>
-      </div>
-      <div id="det-tip-cmr" style="display:none;background:var(--ink3);border-left:2px solid var(--gold);border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;font-size:12px;color:var(--chalk2);line-height:1.5">
-        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:3px">Course Manager Rating</div>
-        Decision + execution quality this round. Measures tee strategy, aim point selection, and approach execution. Target for 10 HCP: 70%+.
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;cursor:pointer" onclick="toggleDetTip('dci')">
-        <div style="width:36px;font-size:12px;color:var(--chalk);font-weight:600">DCI</div>
-        ${pjiBar(dci)}
-        <div style="font-size:13px;color:var(--chalk);font-weight:600;min-width:32px">${dci != null ? dci+'%' : '\u2014'}</div>
-        <button id="det-tip-btn-dci" style="width:17px;height:17px;border-radius:50%;border:1.5px solid var(--chalk2);background:transparent;color:var(--chalk2);font-size:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1">i</button>
-      </div>
-      <div id="det-tip-dci" style="display:none;background:var(--ink3);border-left:2px solid var(--gold);border-radius:0 6px 6px 0;padding:8px 10px;font-size:12px;color:var(--chalk2);line-height:1.5">
-        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:3px">Damage Control Index</div>
-        How well you limited the bleeding after bad shots this round. Measures whether bogeys become doubles and doubles become triples. Target for 10 HCP: 65%+.
-      </div>
-    </div>`;
-  } else {
-    pjiEl.innerHTML = '';
-  }
-
-  // Approach miss spatial grid (MISS GRID)
-  const misses = {left:0, right:0, short:0, long:0};
-  holes.forEach(h => (h.shots||[]).forEach(sh => {
-    if (sh.type==='approach' && sh.result==='M' && sh.missDirection && misses[sh.missDirection]!=null)
-      misses[sh.missDirection]++;
-  }));
-  const missTotal = Object.values(misses).reduce((a,b)=>a+b,0);
-  const missEl = document.getElementById('det-miss');
-  if (missTotal > 0) {
-    const maxMiss = Math.max(...Object.values(misses));
-    const missBox = (dir, count) => {
-      const isDom = count === maxMiss && count > 0;
-      const isActive = count > 0 && !isDom;
-      const cls = isDom ? 'miss-dominant' : isActive ? 'miss-active' : 'miss-zero';
-      return `<div class="miss-box ${cls}">
-        <div class="miss-num">${count}</div>
-        <div class="miss-dir${count>0?' active':''}">${dir}</div>
-      </div>`;
-    };
-    const pinSVG = `<svg width="32" height="48" viewBox="0 0 32 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <line x1="16" y1="4" x2="16" y2="44" stroke="var(--chalk2)" stroke-width="1.5" stroke-linecap="round"/>
-      <polygon points="16,4 28,10 16,16" fill="var(--gold)"/>
-      <ellipse cx="16" cy="44" rx="5" ry="2" fill="var(--border)"/>
-    </svg>`;
-    missEl.innerHTML = `<div class="miss-strip">
-      <div class="section-lbl" style="margin-bottom:10px">Approach Misses (${missTotal})</div>
-      <div class="miss-cross">
-        <div class="miss-spacer"></div>
-        ${missBox('Long', misses.long)}
-        <div class="miss-spacer"></div>
-        ${missBox('Left', misses.left)}
-        <div class="miss-pin-cell">${pinSVG}</div>
-        ${missBox('Right', misses.right)}
-        <div class="miss-spacer"></div>
-        ${missBox('Short', misses.short)}
-        <div class="miss-spacer"></div>
-      </div>
-    </div>`;
-  } else {
-    missEl.innerHTML = '';
-  }
-
-  // Tee breakdown (TEE BREAKDOWN) — par 4 and par 5 tee shots only
-  const teeShots = holes.flatMap(h => (h.shots||[]).filter(s => s.isTeeShot && h.par > 3));
-  const teeEl = document.getElementById('det-tee');
-  if (teeShots.length > 0) {
-    const fw = teeShots.filter(s => s.position==='C').length;
-    const rgh = teeShots.filter(s => s.position==='L'||s.position==='R').length;
-    const oop = teeShots.filter(s => s.position==='LL'||s.position==='RR').length;
-    const ob = teeShots.filter(s => s.position==='OBL'||s.position==='OBR').length;
-    teeEl.innerHTML = `<div class="tee-strip">
-      <div class="section-lbl" style="margin-bottom:10px">Tee Shots (${teeShots.length})</div>
-      <div class="tee-strip-row">
-        <div class="tee-strip-cell"><div class="tee-strip-num">${fw}</div><div class="tee-strip-lbl">Fairway</div></div>
-        <div class="tee-strip-div"></div>
-        <div class="tee-strip-cell"><div class="tee-strip-num">${rgh}</div><div class="tee-strip-lbl">Rough</div></div>
-        <div class="tee-strip-div"></div>
-        <div class="tee-strip-cell"><div class="tee-strip-num" style="${oop>0?'color:var(--gold)':''}">${oop}</div><div class="tee-strip-lbl">OOP</div></div>
-        <div class="tee-strip-div"></div>
-        <div class="tee-strip-cell"><div class="tee-strip-num" style="${ob>0?'color:var(--red)':''}">${ob}</div><div class="tee-strip-lbl">OB</div></div>
-      </div>
-    </div>`;
-  } else {
-    teeEl.innerHTML = '';
-  }
-
-  // Hole cards
-  document.getElementById('det-holes').innerHTML = holes
-    .sort((a,b) => a.number - b.number)
-    .map((h,i) => detailHoleHTML(h, i, round))
-    .join('');
-
-  // Byron 3.0
-  byronUpdateUI(round.id);
+  showView('history');
 }
 
-function detailHoleHTML(h, idx, round) {
-  const rel = h.score != null && h.par ? h.score - h.par : null;
-  const yds = round.holeYards?.[h.number-1];
-  const isOpen = DET.openHoles.has(idx);
-  const isEditing = DET.editHoles.has(idx);
-
-  const headHTML = `
-    <div class="dhc-head" onclick="toggleDetailHole(${idx})">
-      <span class="dhc-hnum">H${h.number}</span>
-      <div class="dhc-hinfo">
-        <div class="dhc-hpar">Par ${h.par}${yds?' \xb7 '+yds+'y':''}</div>
-      </div>
-      <div class="dhc-score">
-        <div class="dhc-snum ${scoreColorClass(rel)}">${h.score ?? '\u2014'}</div>
-        <div class="dhc-slbl ${scoreColorClass(rel)}">${rel != null ? scoreName(rel) : ''}</div>
-      </div>
-      <div class="gir-dot ${h.gir?'hit':'miss'}" title="${h.gir?'GIR':'No GIR'}"></div>
-      <span class="dhc-chev${isOpen?' open':''}">▾</span>
-    </div>`;
-
-  let bodyHTML = '';
-  if (isOpen) {
-    if (isEditing) {
-      // SHOT DIAL \u2014 full shot list; editable per type (tee position, club, zones)
-      const SHOT_TYPE_LBL = {tee:h.par===3?'Tee/Approach':'Tee', approach:'Approach', chip:'Chip', recovery:'Recovery', layup:'Layup', drop:'Drop', retee:'Re-tee', untracked:'Shot'};
-      const selStyle = 'background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--chalk);font-size:13px;outline:none';
-      const inpStyle = 'width:44px;background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:7px 6px;color:var(--chalk);font-size:13px;text-align:center;outline:none';
-      const shotRows = (h.shots||[]).map((sh, si) => {
-        const typeLabel = SHOT_TYPE_LBL[sh.type] || sh.type || 'Shot';
-        const ydsStr = typeof sh.yardage === 'number' ? ` \u00b7 ${sh.yardage}y` : '';
-        const isTeePar45 = sh.type === 'tee' && h.par > 3;
-        const isZoneShot = sh.type === 'approach' || (sh.type === 'tee' && h.par === 3);
-        const clubOpts = CLUBS.map(c => `<option value="${c}" ${(sh.club||'').toLowerCase()===c.toLowerCase()?'selected':''}>${c}</option>`).join('');
-        const clubSel = `<select id="det-edit-club-${idx}-${si}" style="${selStyle}">${clubOpts}</select>`;
-        let fieldsHTML;
-        if (isTeePar45) {
-          const posOpts = TEE_POSITIONS.map(p => `<option value="${p}" ${(sh.position||'').toUpperCase()===p?'selected':''}>${p}</option>`).join('');
-          fieldsHTML = `${clubSel}<select id="det-edit-pos-${idx}-${si}" style="${selStyle}">${posOpts}</select>`;
-        } else if (isZoneShot) {
-          fieldsHTML = `${clubSel}<select id="det-edit-res-${idx}-${si}" style="${selStyle}"><option value="H" ${sh.result==='H'?'selected':''}>H \u2014 Hit</option><option value="M" ${sh.result!=='H'?'selected':''}>M \u2014 Miss</option></select><span style="font-size:11px;color:var(--chalk3)">Intended</span><input id="det-edit-iz-${idx}-${si}" type="number" min="1" max="9" style="${inpStyle}" value="${sh.intendedZone||''}" placeholder="z"><span style="font-size:11px;color:var(--chalk3)">\u2192 Finish</span><input id="det-edit-fz-${idx}-${si}" type="number" min="1" max="9" style="${inpStyle}" value="${sh.finishZone||''}" placeholder="z">`;
-        } else {
-          const parts = [];
-          if (sh.club) parts.push(sh.club);
-          if (sh.result) parts.push(sh.result);
-          if (sh.finishZone) parts.push('z'+sh.finishZone);
-          fieldsHTML = `<span style="font-size:12px;color:var(--chalk3)">${parts.join(' \u00b7 ')||'\u2014'}</span>`;
-        }
-        return `<div class="dhc-edit-row" style="flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:12px"><span class="dhc-edit-lbl">${si+1}. ${typeLabel}${ydsStr}</span><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${fieldsHTML}</div></div>`;
-      }).join('');
-      const approachHTML = shotRows ? `<div style="font-size:12px;color:var(--chalk2);margin:10px 0 6px;font-weight:600;letter-spacing:.5px">SHOTS</div>${shotRows}<div style="font-size:11px;color:var(--chalk3);margin-top:-4px;margin-bottom:8px;font-style:italic">Edits change shot details only. Adding/removing shots or changing shot type isn't supported yet \u2014 on the roadmap.</div>` : '';
-
-      bodyHTML = `<div class="dhc-body">
-        <div class="dhc-edit-panel">
-          <div class="dhc-edit-row">
-            <span class="dhc-edit-lbl">Score</span>
-            <div class="dhc-stepper">
-              <button class="step-btn" onclick="detStepScore(${idx},-1)">&#8722;</button>
-              <input id="det-edit-score-${idx}" type="number" class="step-val" value="${h.score||1}" min="1" max="15" readonly>
-              <button class="step-btn" onclick="detStepScore(${idx},1)">+</button>
-            </div>
-          </div>
-          <div class="dhc-edit-row">
-            <span class="dhc-edit-lbl">Putts</span>
-            <div class="dhc-stepper">
-              <button class="step-btn" onclick="detStepPutts(${idx},-1)">&#8722;</button>
-              <input id="det-edit-putts-${idx}" type="number" class="step-val" value="${h.putts?.count??0}" min="0" max="10" readonly>
-              <button class="step-btn" onclick="detStepPutts(${idx},1)">+</button>
-            </div>
-          </div>
-          ${approachHTML}
-          <div style="display:flex;gap:8px;margin-top:4px">
-            <button onclick="cancelHoleEdit(${idx})" class="btn btn-outline btn-sm" style="flex:1">Cancel</button>
-            <button onclick="saveHoleEdit(${idx})" class="btn btn-gold btn-sm" style="flex:1">Save</button>
-          </div>
-          <div style="margin-top:14px;padding-top:10px;border-top:1px solid var(--border2)">
-            <button onclick="confirmReenterHole(${idx})" class="btn btn-danger btn-sm" style="width:100%">\u21bb Re-enter hole</button>
-            <div style="font-size:10px;color:var(--chalk3);margin-top:4px;text-align:center">Walk through the hole again \u2014 current data pre-fills the wizard</div>
-          </div>
-        </div>
-      </div>`;
-    } else {
-      bodyHTML = `<div class="dhc-body">
-        ${shotSummary(h.shots, h.putts, h.pinZone)}
-        ${h.flagHistory?.some(f=>f.resolvedValue) ? '<div style="font-size:10px;color:var(--gold);margin-top:6px;opacity:.7">\u26a0\ufe0f Flag resolved on import</div>' : ''}
-        <div style="margin-top:10px">
-          <button class="btn btn-outline btn-sm" onclick="startHoleEdit(${idx})">&#9998; Edit hole</button>
-        </div>
-      </div>`;
-    }
-  }
-
-  return `<div class="dhc" id="dhc-${idx}">${headHTML}${bodyHTML}</div>`;
-}
-
-function toggleDetailHole(idx) {
-  if (DET.openHoles.has(idx)) DET.openHoles.delete(idx);
-  else DET.openHoles.add(idx);
-  const round = getRounds().find(r => r.id === DET.roundId);
-  if (!round) return;
-  const holes = (round.holes||[]).sort((a,b)=>a.number-b.number);
-  const el = document.getElementById('dhc-'+idx);
-  if (el) el.outerHTML = detailHoleHTML(holes[idx], idx, round);
-}
-
-function startHoleEdit(idx) {
-  DET.editHoles.add(idx);
-  DET.openHoles.add(idx);
-  const round = getRounds().find(r => r.id === DET.roundId);
-  if (!round) return;
-  const holes = (round.holes||[]).sort((a,b)=>a.number-b.number);
-  const el = document.getElementById('dhc-'+idx);
-  if (el) el.outerHTML = detailHoleHTML(holes[idx], idx, round);
-}
-
-function cancelHoleEdit(idx) {
-  DET.editHoles.delete(idx);
-  const round = getRounds().find(r => r.id === DET.roundId);
-  if (!round) return;
-  const holes = (round.holes||[]).sort((a,b)=>a.number-b.number);
-  const el = document.getElementById('dhc-'+idx);
-  if (el) el.outerHTML = detailHoleHTML(holes[idx], idx, round);
-}
-
-function saveHoleEdit(idx) {
-  const round = getRounds().find(r => r.id === DET.roundId);
-  if (!round) return;
-  const holes = (round.holes||[]).sort((a,b)=>a.number-b.number);
-  const hole = holes[idx];
-
-  // Score
-  const scoreEl = document.getElementById('det-edit-score-'+idx);
-  if (scoreEl) {
-    const s = parseInt(scoreEl.value);
-    if (!isNaN(s) && s >= 1 && s <= 15) hole.score = s;
-  }
-
-  // Putts
-  const puttsEl = document.getElementById('det-edit-putts-'+idx);
-  if (puttsEl) {
-    const p = parseInt(puttsEl.value);
-    if (!isNaN(p) && p >= 0 && p <= 10) {
-      hole.putts = hole.putts || { count: 0, distances: [] };
-      hole.putts.count = p;
-    }
-  }
-
-  // SHOT DIAL \u2014 update all editable shots (club universal; position for tee par 4/5; zones + result for approach/par-3 tee)
-  (hole.shots||[]).forEach((sh, si) => {
-    const clubEl = document.getElementById('det-edit-club-'+idx+'-'+si);
-    if (clubEl && clubEl.value) sh.club = clubEl.value;
-    if (sh.type === 'tee' && hole.par > 3) {
-      const posEl = document.getElementById('det-edit-pos-'+idx+'-'+si);
-      if (posEl && posEl.value) sh.position = posEl.value;
-    }
-    if (sh.type === 'approach' || (sh.type === 'tee' && hole.par === 3)) {
-      const resEl = document.getElementById('det-edit-res-'+idx+'-'+si);
-      const izEl  = document.getElementById('det-edit-iz-'+idx+'-'+si);
-      const fzEl  = document.getElementById('det-edit-fz-'+idx+'-'+si);
-      if (resEl) sh.result = resEl.value;
-      if (izEl && izEl.value !== '') { const v = parseInt(izEl.value); if (v>=1&&v<=9) sh.intendedZone = v; }
-      if (fzEl && fzEl.value !== '') { const v = parseInt(fzEl.value); if (v>=1&&v<=9) sh.finishZone = v; }
-      sh.missDirection = deriveMissDirection(sh.intendedZone, sh.finishZone, sh.result);
-    }
-  });
-
-  // Re-derive GIR
-  const { gir, girPlusOne } = deriveGIR(hole.shots, hole.par);
-  hole.gir = gir;
-  hole.girPlusOne = girPlusOne;
-
-  // Recalculate round total and save
-  calcRoundTotal(round);
-  const allRounds = getRounds();
-  const ri = allRounds.findIndex(r => r.id === round.id);
-  if (ri >= 0) allRounds[ri] = round;
-  saveRounds(allRounds);
-
-  // Clear Byron cache — edited data invalidates prior analysis
-  byronClearRoundCache(round.id);
-
-  DET.editHoles.delete(idx);
-  renderDetail();
-  toast('Hole updated \u2713');
-}
-
-// JASPER BEACON — confirm + dispatch to COBALT RIVER re-entry flow
-function confirmReenterHole(idx) {
-  const round = getRounds().find(r => r.id === DET.roundId);
-  if (!round) return;
-  const holes = (round.holes||[]).sort((a,b)=>a.number-b.number);
-  const hole = holes[idx];
-  if (!hole) return;
-  const msg = 'Re-enter H' + hole.number + '?\n\n'
-    + 'You\'ll walk through the full hole again. Current shots, putts, and score will be pre-filled \u2014 change any, or keep them.\n\n'
-    + 'Saving overwrites the hole and resets Byron\'s analysis for this round.';
-  if (!confirm(msg)) return;
-  startHoleReentry(round.id, hole.number);
-}
-
-function detStepScore(idx, delta) {
-  const el = document.getElementById('det-edit-score-'+idx);
-  if (!el) return;
-  el.value = Math.max(1, Math.min(15, parseInt(el.value||1) + delta));
-}
-
-function detStepPutts(idx, delta) {
-  const el = document.getElementById('det-edit-putts-'+idx);
-  if (!el) return;
-  el.value = Math.max(0, Math.min(10, parseInt(el.value||0) + delta));
-}
 
 function deleteRound() {
   if (!confirm('Delete this round? This cannot be undone.')) return;
@@ -6130,412 +4277,6 @@ function deleteRound() {
   DET.roundId = null;
   showView('history');
   toast('Round deleted');
-}
-
-// ── PHOTO IMPORT ─────────────────────────────────────────────
-const PI = { base64: null, mediaType: null };
-
-function initPhotoImport() {
-  PI.base64 = null; PI.mediaType = null;
-  const inp = document.getElementById('pi-file-input');
-  if (inp) inp.value = '';
-  document.getElementById('pi-drop-zone').style.display = '';
-  document.getElementById('pi-thumb').style.display = 'none';
-  document.getElementById('pi-status').textContent = '';
-  document.getElementById('pi-status').className = 'pi-status';
-  document.getElementById('pi-parse-btn').disabled = true;
-}
-
-function onPhotoFileSelected(files) {
-  if (!files || !files.length) return;
-  const file = files[0];
-  PI.mediaType = file.type || 'image/jpeg';
-  const reader = new FileReader();
-  reader.onload = e => {
-    PI.base64 = e.target.result.split(',')[1];
-    document.getElementById('pi-thumb-img').src = e.target.result;
-    document.getElementById('pi-thumb-meta').textContent = (file.name||'Photo') + ' \xb7 ' + (file.size/1024).toFixed(0) + ' KB';
-    document.getElementById('pi-thumb').style.display = '';
-    document.getElementById('pi-drop-zone').style.display = 'none';
-    document.getElementById('pi-parse-btn').disabled = false;
-    document.getElementById('pi-status').textContent = '';
-  };
-  reader.readAsDataURL(file);
-}
-
-async function parsePhotoWithByron() {
-  const antKey = localStorage.getItem('caddie_ant_key');
-  if (!antKey) { toast('Add API key in Settings first'); return; }
-  if (!PI.base64) { toast('Select a photo first'); return; }
-  const wip = getWIP();
-  if (!wip) { toast('Round setup lost \u2014 start again'); return; }
-
-  // Build round context
-  const courses = getCourses();
-  const course = courses.find(c=>c.id===wip.courseId);
-  const teeSet = course?.tees.find(t=>t.name===wip.tees);
-  const holeParsObj = {};
-  wip.expectedHoles.forEach(h => { holeParsObj[h] = teeSet ? teeSet.holePars[h-1] : 4; });
-
-  const prompt = BYRON_PARSER_PROMPT
-    .replace('{{course}}', wip.course)
-    .replace('{{date}}', wip.date)
-    .replace('{{expectedHoles}}', JSON.stringify(wip.expectedHoles))
-    .replace('{{holePars}}', JSON.stringify(holeParsObj));
-
-  showView('photo-loading');
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': antKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 8000,
-        messages: [{ role:'user', content: [
-          { type:'image', source:{ type:'base64', media_type: PI.mediaType, data: PI.base64 } },
-          { type:'text', text: prompt }
-        ]}]
-      })
-    });
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error.message || 'API error');
-    const raw = (data.content?.[0]?.text || '').trim();
-    const result = parseByronJSON(raw); // MARBLE BEACON
-    initReview(result);
-  } catch(err) {
-    showView('photo-import');
-    document.getElementById('pi-parse-btn').disabled = false;
-    document.getElementById('pi-status').textContent = 'Error: ' + err.message;
-    document.getElementById('pi-status').className = 'pi-status error';
-  }
-}
-
-// ── REVIEW SCREEN ─────────────────────────────────────────────
-const REV = { round: null, holes: [] };
-
-function initReview(byronResult) {
-  const round = getWIP();
-  REV.round = round;
-
-  if (!byronResult.parseable) {
-    showView('photo-import');
-    document.getElementById('pi-parse-btn').disabled = false;
-    document.getElementById('pi-status').textContent = '\u26a0\ufe0f Could not parse: ' + (byronResult.parseError || 'Unknown error');
-    document.getElementById('pi-status').className = 'pi-status error';
-    return;
-  }
-
-  REV.holes = byronResult.holes.map(bh => {
-    // Normalize and validate shot types from parser
-    if (bh.shots) bh.shots.forEach(sh => {
-      if (sh.type) sh.type = sh.type.toLowerCase();
-      if (sh.position) sh.position = sh.position.toUpperCase();
-      validateShot(sh);
-    });
-    return {
-      bh,
-      score: null,
-      notation: null,
-      resolutions: {},
-      editOpen: false
-    };
-  });
-
-  showView('review');
-}
-
-function renderReview() {
-  const wip = REV.round;
-  if (!wip) return;
-  document.getElementById('review-title').textContent = wip.course || 'Review Round';
-  const d = wip.date ? new Date(wip.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
-  document.getElementById('review-subtitle').textContent = d + ' \xb7 ' + (wip.holesPlayed||0) + ' holes \xb7 ' + (wip.tees||'');
-  renderReviewCards();
-  updateConfirmBar();
-}
-
-function renderReviewCards() {
-  document.getElementById('review-cards').innerHTML = REV.holes.map((h,i) => holeCardHTML(h,i)).join('');
-  // Scroll to first unresolved flag
-  const first = document.querySelector('.rc.flagged');
-  if (first) setTimeout(()=>first.scrollIntoView({behavior:'smooth',block:'nearest'}),120);
-}
-
-function holeCardHTML(h, idx) {
-  const {bh} = h;
-  const score = h.score !== null ? h.score : bh.score;
-  const par = bh.par;
-  const rel = score != null ? score - par : null;
-  const unresFl = (bh.flags||[]).filter(f => !h.resolutions[fKey(f)]);
-  const hasFix = Object.keys(h.resolutions).length > 0;
-  const cls = unresFl.length ? 'flagged' : hasFix ? 'resolved' : 'clean';
-  const yds = REV.round?.holeYards?.[bh.number-1];
-
-  const scoreBlock = score != null
-    ? `<div class="rc-score-block"><div class="rc-score-num ${scoreColorClass(rel)}">${score}</div><div class="rc-score-lbl ${scoreColorClass(rel)}">${scoreName(rel)}</div></div>`
-    : `<div class="rc-score-block"><div class="rc-score-num" style="color:var(--chalk3)">?</div></div>`;
-
-  const flagsHTML = unresFl.map(f => `
-    <div class="rc-flag-row">\u26a0\ufe0f ${flagDesc(f)}</div>
-    ${fixPanelHTML(f, idx, h)}`).join('');
-
-  const editPanel = h.editOpen ? `<div class="rc-edit">
-    <div class="inp-grp" style="margin-bottom:10px">
-      <label class="inp-label">Score</label>
-      <input class="inp" type="number" min="1" max="15" inputmode="numeric" id="re-score-${idx}"
-        value="${score||''}" style="max-width:100px">
-    </div>
-    <div class="inp-grp" style="margin-bottom:10px">
-      <label class="inp-label">Notation (raw)</label>
-      <textarea class="inp" id="re-notation-${idx}" rows="3" style="font-family:'DM Mono',monospace;font-size:13px">${escHtml(h.notation !== null ? h.notation : (bh.notation_raw||''))}</textarea>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn btn-gold btn-sm" onclick="saveEdit(${idx})">Save</button>
-      <button class="btn btn-outline btn-sm" onclick="closeEdit(${idx})">Cancel</button>
-    </div>
-  </div>` : '';
-
-  return `<div class="rc ${cls}" id="rc-${idx}">
-    <div class="rc-head">
-      <span class="rc-hnum">H${bh.number}</span>
-      <div class="rc-hinfo">
-        <div class="rc-hpar">Par ${par}${yds?' \xb7 '+yds+'y':''}</div>
-        ${bh.confidence==='low'?'<div style="font-size:10px;color:var(--orange)">Low confidence</div>':''}
-      </div>
-      ${scoreBlock}
-      <button class="rc-edit-btn" onclick="toggleEdit(${idx})">${h.editOpen?'Close':'Edit'}</button>
-    </div>
-    ${flagsHTML}
-    <div class="rc-summary">${shotSummary(bh.shots, bh.putts, bh.pinZone)}</div>
-    ${editPanel}
-  </div>`;
-}
-
-function fKey(f) { return f.type + (f.field||''); }
-
-function scoreColorClass(rel) {
-  if (rel == null) return '';
-  return rel < 0 ? 'c-under' : rel > 0 ? 'c-over' : 'c-even';
-}
-
-function toggleDetTip(id) {
-  ['cmr','dci'].forEach(t => {
-    const tip = document.getElementById('det-tip-'+t);
-    const btn = document.getElementById('det-tip-btn-'+t);
-    if (!tip || !btn) return;
-    const nowOpen = t === id ? tip.style.display === 'none' || !tip.style.display : false;
-    tip.style.display = nowOpen ? '' : 'none';
-    btn.style.borderColor = nowOpen ? 'var(--gold)' : 'var(--chalk2)';
-    btn.style.color = nowOpen ? 'var(--gold)' : 'var(--chalk2)';
-  });
-}
-
-function scoreName(rel) {
-  if (rel == null) return '';
-  const names = {'-2':'EAGLE','-1':'BIRDIE','0':'PAR','1':'BOGEY','2':'DOUBLE','3':'TRIPLE'};
-  return names[String(rel)] || (rel <= -2 ? 'EAGLE' : 'QUAD+');
-}
-
-function flagDesc(f) {
-  if (f.detail) return f.detail;
-  const m = {score_mismatch:'Score mismatch',field_unclear:'Unclear: '+f.field,field_missing:'Missing: '+f.field,ob_unresolved:'OB not followed by re-tee or drop',score_unclear:'Score unclear'};
-  return m[f.type] || f.type;
-}
-
-function fixPanelHTML(f, idx, h) {
-  const bh = h.bh;
-  const par = bh.par;
-  if (f.type==='score_mismatch' || f.type==='score_unclear') {
-    const byronN = parseInt((f.detail||'').match(/Byron counts (\d+)/)?.[1]) || bh.score || par+1;
-    const writtenN = parseInt((f.detail||'').match(/written score is (\d+)/)?.[1]) || bh.score || par+1;
-    const opts = [...new Set([byronN, writtenN, par, par+1, par+2].filter(n=>n>0&&n<16))].sort((a,b)=>a-b);
-    return `<div class="rc-fix"><div class="fix-lbl">Select correct score:</div><div class="fix-btn-row">
-      ${opts.map(n=>`<button class="fix-btn${h.score===n?' picked':''}" onclick="applyScoreFix(${idx},${n})">${n}</button>`).join('')}
-    </div></div>`;
-  }
-  if (f.type==='ob_unresolved') {
-    return `<div class="rc-fix"><div class="fix-lbl">After OB \u2014 what happened?</div><div class="fix-btn-row">
-      <button class="fix-btn${h.resolutions[fKey(f)]==='retee'?' picked':''}" onclick="resolveFlag(${idx},'${fKey(f)}','retee')">Re-tee</button>
-      <button class="fix-btn${h.resolutions[fKey(f)]==='drop'?' picked':''}" onclick="resolveFlag(${idx},'${fKey(f)}','drop')">Drop</button>
-    </div></div>`;
-  }
-  return `<div class="rc-fix"><div class="fix-lbl" style="color:var(--chalk3)">Tap Edit to correct this field.</div></div>`;
-}
-
-function applyScoreFix(idx, score) {
-  const h = REV.holes[idx];
-  h.score = score;
-  (h.bh.flags||[]).forEach(f => {
-    if (f.type==='score_mismatch'||f.type==='score_unclear') h.resolutions[fKey(f)] = score;
-  });
-  rerenderCard(idx);
-  updateConfirmBar();
-}
-
-function resolveFlag(idx, key, val) {
-  REV.holes[idx].resolutions[key] = val;
-  rerenderCard(idx);
-  updateConfirmBar();
-}
-
-function toggleEdit(idx) {
-  REV.holes[idx].editOpen = !REV.holes[idx].editOpen;
-  rerenderCard(idx);
-}
-
-function closeEdit(idx) {
-  REV.holes[idx].editOpen = false;
-  rerenderCard(idx);
-}
-
-function saveEdit(idx) {
-  const h = REV.holes[idx];
-  const sc = document.getElementById('re-score-'+idx);
-  const no = document.getElementById('re-notation-'+idx);
-  if (sc?.value) {
-    const s = parseInt(sc.value);
-    if (!isNaN(s) && s > 0) {
-      h.score = s;
-      (h.bh.flags||[]).forEach(f => {
-        if (f.type==='score_mismatch'||f.type==='score_unclear') h.resolutions[fKey(f)] = s;
-      });
-    }
-  }
-  if (no) {
-    const newNotation = no.value;
-    h.notation = newNotation;
-    if (newNotation !== (h.bh.notation_raw||'')) {
-      (h.bh.flags||[]).forEach(f => {
-        if (f.type==='field_unclear'||f.type==='field_missing') h.resolutions[fKey(f)] = 'manual_edit';
-      });
-    }
-  }
-  h.editOpen = false;
-  rerenderCard(idx);
-  updateConfirmBar();
-}
-
-function rerenderCard(idx) {
-  const el = document.getElementById('rc-'+idx);
-  if (el) el.outerHTML = holeCardHTML(REV.holes[idx], idx);
-}
-
-function updateConfirmBar() {
-  const total = REV.holes.reduce((a,h) => a + (h.bh.flags||[]).filter(f=>!h.resolutions[fKey(f)]).length, 0);
-  const btn = document.getElementById('review-confirm-btn');
-  const status = document.getElementById('review-confirm-status');
-  const badge = document.getElementById('review-flag-badge');
-  if (!btn) return;
-  if (total > 0) {
-    btn.disabled = true;
-    status.textContent = `Resolve ${total} flag${total!==1?'s':''} to continue`;
-    status.style.color = 'var(--chalk3)';
-    badge.innerHTML = `<span style="background:var(--red);color:#fff;font-size:11px;padding:3px 10px;border-radius:100px">${total} flag${total!==1?'s':''}</span>`;
-  } else {
-    btn.disabled = false;
-    status.textContent = 'All clear \u2014 ready to confirm';
-    status.style.color = 'var(--green)';
-    badge.innerHTML = `<span style="background:var(--green);color:#fff;font-size:11px;padding:3px 10px;border-radius:100px">\u2713 All clear</span>`;
-  }
-}
-
-function shotSummary(shots, putts, pinZone) {
-  if (!shots?.length) return '<span style="color:var(--chalk3)">No shots recorded</span>';
-  const parts = shots.map(sh => {
-    switch(sh.type) {
-      case 'tee':      return `${sh.club||'Tee'} \u2192 ${posLabel(sh.position)}`;
-      case 'retee':    return `Rehit \u00b7 ${sh.club||''} \u2192 ${posLabel(sh.position)}`;
-      case 'approach': {
-        const yStr = sh.yardage ? sh.yardage+'yd ' : '';
-        const cStr = sh.club ? sh.club+' ' : '';
-        return sh.result==='H'
-          ? `${cStr}${yStr}\u2192 on green (z${sh.finishZone})`
-          : `${cStr}${yStr}\u2192 missed ${missLabel(sh.intendedZone, sh.finishZone)}`;
-      }
-      case 'layup':    return 'Layup';
-      case 'chip':     return 'Chip';
-      case 'recovery': return 'Recovery';
-      case 'drop':     return 'Drop';
-      case 'untracked':return '\u2014';
-      default:         return sh.type;
-    }
-  });
-  if (putts?.count) {
-    const dist = putts.distances?.length ? ' ('+putts.distances.join('ft, ')+'ft)' : '';
-    parts.push(putts.count + (putts.count===1?' putt':' putts') + dist);
-  }
-  if (pinZone) parts.push('pin z'+pinZone);
-  return parts.filter(Boolean).join(' \u00b7 ');
-}
-
-function posLabel(pos) {
-  return {OBL:'OB left',OBR:'OB right',LL:'left (trouble)',RR:'right (trouble)',L:'left rough',R:'right rough',C:'fairway'}[pos] || pos || '\u2014';
-}
-
-function missLabel(iz, fz) {
-  if (!iz||!fz) return 'green';
-  const ic=ZONE_COLS(iz),fc=ZONE_COLS(fz),ir=ZONE_ROWS(iz),fr=ZONE_ROWS(fz);
-  if (fc>ic) return 'right'; if (fc<ic) return 'left';
-  if (fr>ir) return 'long';  if (fr<ir) return 'short';
-  return 'green (proximity)';
-}
-
-function escHtml(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function discardReview() {
-  if (!confirm('Discard this import? Parsed data will be lost.')) return;
-  REV.round = null; REV.holes = [];
-  showView('round-setup');
-}
-
-function confirmRound() {
-  const round = REV.round;
-  if (!round) return;
-  const snap = round.clubSnapshot || {};
-  round.holes = REV.holes.map(h => {
-    const bh = h.bh;
-    const score = h.score !== null ? h.score : bh.score;
-    const notation = h.notation !== null ? h.notation : (bh.notation_raw||'');
-    const shots = (bh.shots||[]).map(sh => {
-      validateShot(sh);
-      const withId = sh.id ? sh : {...sh, id: genId()};
-      // Resolve clubId from snapshot by abbr — skip if already present
-      const withClubId = (withId.club && !withId.clubId && snap[withId.club]?.clubId)
-        ? {...withId, clubId: snap[withId.club].clubId}
-        : withId;
-      return withClubId.type==='approach' ? {...withClubId, missDirection: deriveMissDirection(withClubId.intendedZone, withClubId.finishZone, withClubId.result)} : withClubId;
-    });
-    const {gir, girPlusOne} = deriveGIR(shots, bh.par);
-    const flagHistory = (bh.flags||[]).map(f => ({
-      type: f.type, field: f.field||null, detail: f.detail||null,
-      resolvedValue: h.resolutions[fKey(f)]||null,
-      resolvedAt: h.resolutions[fKey(f)] ? new Date().toISOString() : null
-    }));
-    const hole = createHole({number:bh.number, par:bh.par, score, pinZone:bh.pinZone, notation});
-    hole.shots = shots;
-    hole.putts = bh.putts || {count:0, distances:[]};
-    hole.gir = gir; hole.girPlusOne = girPlusOne;
-    hole.flagHistory = flagHistory;
-    return hole;
-  });
-  calcRoundTotal(round);
-  round.importSessionId = genId();
-  const rounds = getRounds();
-  rounds.push(round);
-  byronClearRoundCache(round.id); // Guard: ensure no stale cache survives re-confirmation
-  saveRounds(rounds);
-  saveWIP(null);
-  REV.round = null; REV.holes = [];
-  toast('Round saved \u2713');
-  showView('history');
 }
 
 // ── PJ INDEX ─────────────────────────────────────────────────
