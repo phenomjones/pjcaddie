@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.1.0 · Apr 30, 2026 -->
+<!-- PJ Caddie v8.1.1 · Apr 30, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -378,20 +378,23 @@ body{display:flex;flex-direction:column}
 .byron-warn{font-size:11px;color:var(--gold);background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.2);border-radius:var(--rs);padding:8px 10px;margin-bottom:10px;line-height:1.5}
 
 /* GLACIER CAPTURE (v8.1.0) — per-hole capture screen.
+   GLACIER POLISH (v8.1.1) — club grid (auto-fill min 70px), yardage flex-wrap
+   centered so 7-chip overflow row centers, top section steppers tightened
+   (label inline, value+buttons grouped), pin column tightened.
    Three color-zoned sections per locked v10 spec: tee=blue, approach=gold, putts=green.
    All chips use 44px+ tap targets. Selected state inverts to gold-on-ink. */
 .gc-nav-arrow{background:var(--ink2);border:1px solid var(--border);color:var(--gold);width:42px;height:42px;border-radius:50%;font-size:24px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1}
 .gc-nav-arrow:disabled{opacity:.3;cursor:default}
 .gc-nav-arrow:active:not(:disabled){background:var(--ink3)}
-.gc-top-row{display:flex;gap:10px;margin-bottom:14px}
+.gc-top-row{display:flex;gap:8px;margin-bottom:14px;align-items:stretch}
 .gc-top-left{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
-.gc-top-right{flex:0 0 110px;display:flex;flex-direction:column}
-.gc-stepper-card{background:var(--ink2);border:1px solid var(--border2);border-radius:var(--rs);padding:8px 10px;display:flex;align-items:center;gap:8px}
-.gc-stepper-lbl{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--chalk3);flex-shrink:0;width:46px}
+.gc-top-right{flex:0 0 96px;display:flex;flex-direction:column}
+.gc-stepper-card{background:var(--ink2);border:1px solid var(--border2);border-radius:var(--rs);padding:6px 10px;display:flex;align-items:center;gap:6px;min-height:46px}
+.gc-stepper-lbl{font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--chalk3);flex-shrink:0;font-weight:600}
 .gc-stepper{display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end}
-.gc-stepper-btn{background:var(--ink3);border:1px solid var(--border);color:var(--chalk);width:32px;height:32px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;padding:0;line-height:1;display:flex;align-items:center;justify-content:center}
+.gc-stepper-btn{background:var(--ink3);border:1px solid var(--border);color:var(--chalk);width:30px;height:30px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;padding:0;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .gc-stepper-btn:active{background:var(--gold);color:var(--ink)}
-.gc-stepper-val{font-family:'DM Serif Display',serif;font-size:22px;color:var(--gold);min-width:28px;text-align:center;font-weight:700}
+.gc-stepper-val{font-family:'DM Serif Display',serif;font-size:22px;color:var(--gold);min-width:22px;text-align:center;font-weight:700;line-height:1}
 .gc-pin-stack{display:flex;flex-direction:column;gap:4px}
 .gc-pin-chip{background:var(--ink2);border:1px solid var(--border2);color:var(--chalk2);font-size:13px;font-weight:600;padding:9px 8px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif}
 .gc-pin-chip.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
@@ -411,9 +414,16 @@ body{display:flex;flex-direction:column}
 .gc-chip.dim{opacity:.4}
 .gc-chip-fairway{background:transparent;border:1.5px dashed var(--green);color:var(--green);min-height:42px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;border-radius:8px;cursor:pointer}
 .gc-chip-fairway.on{background:var(--green);color:var(--ink);border-style:solid}
+/* Tee result chips: 6-column grid; arrow text adds slight visual weight to direction */
 .gc-tee-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
-.gc-yards-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.gc-yards-grid .gc-chip{font-size:12px}
+.gc-tee-grid .gc-chip{font-size:12px;padding:0 4px}
+/* Yardage: flex-wrap centered so overflow rows (e.g. 7 chips → 4+3) are center-balanced */
+.gc-yards-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
+.gc-yards-row .gc-chip{flex:0 1 auto;min-width:70px;font-size:12px;padding:0 10px}
+/* Tee club chips: auto-fill grid so each chip has readable min-width regardless
+   of bag count. 70px min works for "PW", "GW", "5I" through "Driver" labels. */
+.gc-club-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:5px}
+.gc-club-grid .gc-chip{font-size:12px;padding:0 6px;min-height:42px}
 .gc-zone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .gc-zone-cell{min-height:50px;background:var(--ink3);border:1px solid var(--border2);color:var(--chalk2);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;padding:0 4px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1.1;white-space:nowrap}
 .gc-zone-cell.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
@@ -426,11 +436,6 @@ body{display:flex;flex-direction:column}
 .gc-toggle-bottom{flex:1;padding:14px 8px;background:var(--ink2);border:1px solid var(--border2);color:var(--chalk2);border-radius:var(--rs);cursor:pointer}
 .gc-toggle-bottom.on{background:var(--orange);color:var(--ink);border-color:var(--orange)}
 .gc-toggle-bottom .gc-toggle-lbl{font-size:12px;font-weight:700;letter-spacing:.6px}
-.gc-notes-footer{background:var(--ink2);border:1px solid var(--border2);border-left:2px solid var(--chalk3);border-radius:var(--rs);padding:10px 12px;font-size:12px;color:var(--chalk2);line-height:1.5}
-.gc-notes-footer .gc-notes-hdr{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--chalk3);font-weight:600;margin-bottom:6px}
-.gc-notes-footer .gc-notes-line{margin-bottom:4px}
-.gc-notes-footer .gc-notes-line:last-child{margin-bottom:0}
-.gc-notes-footer .gc-notes-tag{display:inline-block;font-size:9px;letter-spacing:1px;color:var(--gold);opacity:.8;margin-right:6px;text-transform:uppercase;font-weight:700}
 </style>
 </head>
 <body>
@@ -445,7 +450,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.1.0 · Apr 30, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.1.1 · Apr 30, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -586,8 +591,9 @@ body{display:flex;flex-direction:column}
 </div>
 
 <!-- GLACIER CAPTURE (v8.1.0) — single-screen-per-hole capture flow.
-     Locked v10 spec: 13 fields, 3 color-zoned sections (tee=blue, approach=gold,
-     putts=green), Pin/On-green state machine, par-3 conditional rendering.
+     GLACIER POLISH (v8.1.1) — directional tee chips, renamed sub-labels,
+     top action button (above scroll), hole title shows just "Hole N",
+     course notes footer removed (Matt validation: never read during capture).
      State lives in the round WIP (pjc_wip, schemaVersion: 2). GC.holeIdx tracks
      the currently-displayed hole. -->
 <div class="view" id="view-glacier-capture">
@@ -608,6 +614,12 @@ body{display:flex;flex-direction:column}
   </div>
   <div class="scroll-body">
     <div class="pad" style="padding-top:14px;padding-bottom:60px">
+
+      <!-- TOP action button — visible without scrolling.
+           GLACIER POLISH (v8.1.1) — Mara permanent UX rule: action buttons
+           above the scroll. Mirrored at bottom of form. Both fire the same
+           handler and are kept label-synced by glacierRenderHole. -->
+      <button class="btn btn-gold" id="gc-action-btn-top" onclick="glacierActionTap()" style="margin-bottom:14px;width:100%">Next Hole →</button>
 
       <!-- Top row: Score/Penalty (left col) | Pin position (right col) -->
       <div class="gc-top-row">
@@ -642,17 +654,17 @@ body{display:flex;flex-direction:column}
       <!-- Tee shot section (blue accent) -->
       <div class="gc-section gc-section-tee">
         <div class="gc-section-lbl">Tee Shot</div>
-        <div class="gc-mini-lbl" style="margin-bottom:8px">Club</div>
-        <div id="gc-tee-club-chips" class="gc-chip-row gc-chip-row-wrap"></div>
+        <div class="gc-mini-lbl" style="margin-bottom:8px">Tee Club</div>
+        <div id="gc-tee-club-chips" class="gc-club-grid"></div>
         <div id="gc-tee-result-block">
-          <div class="gc-mini-lbl" style="margin:14px 0 8px">Result</div>
+          <div class="gc-mini-lbl" style="margin:14px 0 8px">Tee Result</div>
           <div class="gc-tee-grid">
-            <button class="gc-chip" data-tee="OBL" onclick="glacierSetField('teeResult','OBL')">OBL</button>
-            <button class="gc-chip" data-tee="LL" onclick="glacierSetField('teeResult','LL')">LL</button>
-            <button class="gc-chip" data-tee="L" onclick="glacierSetField('teeResult','L')">L</button>
-            <button class="gc-chip" data-tee="R" onclick="glacierSetField('teeResult','R')">R</button>
-            <button class="gc-chip" data-tee="RR" onclick="glacierSetField('teeResult','RR')">RR</button>
-            <button class="gc-chip" data-tee="OBR" onclick="glacierSetField('teeResult','OBR')">OBR</button>
+            <button class="gc-chip" data-tee="OBL" onclick="glacierSetField('teeResult','OBL')">«&nbsp;OBL</button>
+            <button class="gc-chip" data-tee="LL" onclick="glacierSetField('teeResult','LL')">‹&nbsp;LL</button>
+            <button class="gc-chip" data-tee="L" onclick="glacierSetField('teeResult','L')">‹&nbsp;L</button>
+            <button class="gc-chip" data-tee="R" onclick="glacierSetField('teeResult','R')">R&nbsp;›</button>
+            <button class="gc-chip" data-tee="RR" onclick="glacierSetField('teeResult','RR')">RR&nbsp;›</button>
+            <button class="gc-chip" data-tee="OBR" onclick="glacierSetField('teeResult','OBR')">OBR&nbsp;»</button>
           </div>
           <button class="gc-chip gc-chip-fairway" data-tee="fairway" onclick="glacierSetField('teeResult','fairway')" style="margin-top:6px;width:100%">Fairway</button>
         </div>
@@ -662,8 +674,8 @@ body{display:flex;flex-direction:column}
       <div class="gc-section gc-section-approach">
         <div class="gc-section-lbl">Approach</div>
         <div id="gc-approach-yards-block">
-          <div class="gc-mini-lbl" style="margin-bottom:8px">Yardage</div>
-          <div class="gc-yards-grid">
+          <div class="gc-mini-lbl" style="margin-bottom:8px">Approach Yardage</div>
+          <div class="gc-yards-row">
             <button class="gc-chip" data-yd="50-74" onclick="glacierSetField('approachYards','50-74')">50–74</button>
             <button class="gc-chip" data-yd="75-99" onclick="glacierSetField('approachYards','75-99')">75–99</button>
             <button class="gc-chip" data-yd="100-124" onclick="glacierSetField('approachYards','100-124')">100–124</button>
@@ -673,7 +685,7 @@ body{display:flex;flex-direction:column}
             <button class="gc-chip" data-yd="200+" onclick="glacierSetField('approachYards','200+')">200+</button>
           </div>
         </div>
-        <div class="gc-mini-lbl" style="margin:14px 0 8px">Result</div>
+        <div class="gc-mini-lbl" style="margin:14px 0 8px">Approach Result</div>
         <div class="gc-zone-grid">
           <button class="gc-zone-cell" data-zone="long-l" onclick="glacierZoneTap('long-l')">Long-L</button>
           <button class="gc-zone-cell" data-zone="long" onclick="glacierZoneTap('long')">Long</button>
@@ -726,11 +738,8 @@ body{display:flex;flex-direction:column}
         </button>
       </div>
 
-      <!-- Course notes footer (read-only, conditional) -->
-      <div id="gc-notes-footer" style="margin-top:18px"></div>
-
-      <!-- End-of-form action (Next Hole / Finish & Save) -->
-      <button class="btn btn-gold" id="gc-action-btn" onclick="glacierActionTap()" style="margin-top:24px">Next Hole →</button>
+      <!-- Bottom action button — kept in sync with top by glacierRenderHole. -->
+      <button class="btn btn-gold" id="gc-action-btn" onclick="glacierActionTap()" style="margin-top:24px;width:100%">Next Hole →</button>
 
     </div>
   </div>
@@ -1129,7 +1138,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.1.0 · Spec v2.1</span>
+        <span>v8.1.1 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1810,13 +1819,13 @@ function createRound({ courseId, courseName, teeSet, date, holesPlayed, starting
 
 function createHole({ number, par, score, pinZone, notation }) {
   // GLACIER CAPTURE (v8.1.0) — defaults the 13-field shape per locked v10 spec.
-  // score defaults to par on first render (stepper); penalty defaults to 0; all
-  // direction/result fields are null until user touches them. Old fields kept for
-  // any v1 caller paths still reachable; OBSIDIAN PURGE strips them.
+  // GLACIER POLISH (v8.1.1) — score default changes to 0 (v10.1 spec).
+  // 0 means "didn't play this hole yet" — makes missed/skipped holes obvious
+  // in Round Detail and avoids inflating totalScore for partial rounds.
   return {
     id: genId(),
     number, par,
-    score: (score!=null)?score:par,
+    score: (score!=null)?score:0,
     penalty: 0,
     pinPos: null,
     teeClub: null,
@@ -1840,8 +1849,9 @@ function createHole({ number, par, score, pinZone, notation }) {
 // round start so the Tee shot club chips show historically-correct clubs even
 // if the user edits their bag mid-season. getBags() returns an array of bag
 // profiles; the active one is bags[0] (the first/default bag — per-course bag
-// mapping was retired in TUNDRA). Returns null if no usable bag (caller should
-// have shown the precondition toast and routed to bag-settings).
+// mapping was retired in TUNDRA). Returns null only if pjc_bags is somehow
+// corrupted; getBags() falls back to DEFAULT_BAGS so the empty-clubs path is
+// not actually reachable in normal use.
 function snapshotActiveBag() {
   try {
     const bags = getBags();
@@ -1854,16 +1864,6 @@ function snapshotActiveBag() {
       clubs: active.clubs.map(c => ({ id: c.id, name: c.name, type: c.type||null }))
     };
   } catch { return null; }
-}
-
-// hasUsableBag — precondition check used by startRoundSetup. Returns true if
-// the user has at least one club in their active bag.
-function hasUsableBag() {
-  try {
-    const bags = getBags();
-    if (!Array.isArray(bags) || !bags.length) return false;
-    return Array.isArray(bags[0]?.clubs) && bags[0].clubs.length > 0;
-  } catch { return false; }
 }
 
 function deriveMissDirection(intendedZone, finishZone, result) {
@@ -1896,6 +1896,19 @@ function buildExpectedHoles(startingHole, holesPlayed) {
 }
 
 function calcRoundTotal(round) {
+  // GLACIER POLISH (v8.1.1) — v2 rounds default score=0 to mark "didn't play."
+  // Sum only played holes (score > 0) for totalScore, and stamp playedPar +
+  // playedHoles so downstream rel-score calculations can use the correct
+  // denominator on partial rounds (e.g. 9 of 18, or 16 of 18 after pickups).
+  // v1 rounds keep the original "score||0 across all holes" behavior — they
+  // never had a 0-default convention. OBSIDIAN PURGE deletes the v1 branch.
+  if (round.schemaVersion === 2) {
+    const played = (round.holes||[]).filter(h => h.score > 0);
+    round.totalScore = played.reduce((a,h)=>a+h.score, 0);
+    round.playedHoles = played.length;
+    round.playedPar = played.reduce((a,h)=>a+(h.par||0), 0);
+    return round;
+  }
   round.totalScore = round.holes.reduce((a,h)=>a+(h.score||0),0);
   return round;
 }
@@ -2752,14 +2765,23 @@ function resumeWIP() {
 }
 
 function roundRowHTML(r) {
-  const rel = r.totalScore!=null ? r.totalScore-r.par : null;
+  // GLACIER POLISH (v8.1.1) — v2 rounds with score=0 defaults need to compute
+  // rel against playedPar (not full-round par) so a 9-of-18 round doesn't
+  // display as if 9 holes were missed at par each. v1 rounds keep round.par.
+  const relPar = (r.schemaVersion === 2 && r.playedPar != null) ? r.playedPar : r.par;
+  const rel = r.totalScore!=null ? r.totalScore-relPar : null;
   const relStr = rel==null?'—':rel===0?'E':rel>0?'+'+rel:String(rel);
   const relClass = rel==null?'':rel<0?'c-under':rel>0?'c-over':'c-even';
   const dateStr = r.date ? new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+  // Show "X of N" if v2 round was partial (played < holesPlayed expected).
+  let holesMeta = (r.holesPlayed||0) + ' holes';
+  if (r.schemaVersion === 2 && r.playedHoles != null && r.playedHoles < (r.holesPlayed||0)) {
+    holesMeta = r.playedHoles + ' of ' + r.holesPlayed + ' holes';
+  }
   return `<div class="round-row" onclick="showDetail('${r.id}')">
     <div class="rr-info">
       <div class="rr-course">${r.course||'\u2014'}</div>
-      <div class="rr-meta">${dateStr} \xb7 ${r.holesPlayed||0} holes \xb7 ${r.tees||''}</div>
+      <div class="rr-meta">${dateStr} \xb7 ${holesMeta} \xb7 ${r.tees||''}</div>
     </div>
     <div class="rr-score-block">
       <div class="rr-num">${r.totalScore!=null?r.totalScore:'\u2014'}</div>
@@ -2935,17 +2957,13 @@ function updateRoundButtons() {
 }
 
 function startRoundSetup() {
-  // GLACIER CAPTURE (v8.1.0) — Round Setup now feeds the new per-hole capture
-  // flow directly. No bag-select intermediate step (bag is snapshotted from
-  // pjc_bags). Precondition: user must have at least one club in their active
-  // bag, else the Tee shot section can't render — toast + route to bag-settings.
+  // GLACIER CAPTURE (v8.1.0) — Round Setup feeds the new per-hole capture flow
+  // directly. No bag-select intermediate step (bag is snapshotted from pjc_bags).
+  // GLACIER POLISH (v8.1.1) — dropped the explicit hasUsableBag() precondition
+  // (dead code: getBags() falls back to DEFAULT_BAGS, and bag-settings refuses
+  // to delete the last bag). Keep one defensive snapshot null check.
   const course = getCourses().find(c=>c.id===S.selectedCourseId);
   if (!course || S.selectedTeeIdx===null) return;
-  if (!hasUsableBag()) {
-    toast('Set up your bag first');
-    showView('bag-settings');
-    return;
-  }
   const teeSet = course.tees[S.selectedTeeIdx];
   const round = createRound({
     courseId: course.id,
@@ -2957,15 +2975,17 @@ function startRoundSetup() {
     source: 'manual'
   });
   if (!round.bagSnapshot) {
-    // Defensive: hasUsableBag passed but snapshot returned null. Should not
-    // happen. Bail rather than ship a round with a null bag.
-    toast('Bag snapshot failed — try again');
+    // Defensive: should not happen given getBags() fallback, but if pjc_bags
+    // is somehow corrupted into an empty-clubs state, bail loudly.
+    toast('Bag snapshot failed — check Bag Settings');
+    showView('bag-settings');
     return;
   }
-  // Pre-create all hole stubs with par + score:par defaults so the capture
+  // Pre-create all hole stubs with par + score:0 defaults so the capture
   // screen has a uniform array to iterate. Each stub gets the correct hole
   // number from expectedHoles, the par from holePars, and a default score
-  // equal to par (per locked v10 spec).
+  // of 0 (per locked v10.1 spec — 0 marks "didn't play this hole yet" and
+  // makes missed/skipped holes immediately visible in Round Detail).
   round.holes = round.expectedHoles.map(n => createHole({
     number: n,
     par: round.holePars[n-1] || 4
@@ -3023,13 +3043,15 @@ function glacierRenderHole() {
   const total = wip.holes.length;
 
   // Header: hole title + meta (course · yards · par)
+  // GLACIER POLISH (v8.1.1) — title shows "Hole N" only. Position-in-round
+  // is conveyed by ‹ › arrow disabled state, not redundant text.
   const teeYd = (wip.holeYards||[])[hole.number-1];
   const titleEl = document.getElementById('gc-hole-title');
   const metaEl  = document.getElementById('gc-hole-meta');
-  if (titleEl) titleEl.textContent = `Hole ${hole.number} · ${GC.holeIdx+1}/${total}`;
+  if (titleEl) titleEl.textContent = `Hole ${hole.number}`;
   if (metaEl) {
     const parts = [wip.course || '', teeYd ? teeYd+'y' : '', `Par ${hole.par}`].filter(Boolean);
-    metaEl.textContent = parts.join(' · ');
+    metaEl.textContent = parts.join(' \xb7 ');
   }
 
   // Prev/next arrow disabled state
@@ -3039,9 +3061,11 @@ function glacierRenderHole() {
   if (nextBtn) nextBtn.disabled = (GC.holeIdx === total - 1);
 
   // Score / Penalty steppers
+  // GLACIER POLISH (v8.1.1) — score=0 renders as "—" (untouched). Once user
+  // adjusts score above 0, the actual number shows.
   const scoreEl = document.getElementById('gc-score-val');
   const penEl   = document.getElementById('gc-penalty-val');
-  if (scoreEl) scoreEl.textContent = hole.score != null ? hole.score : hole.par;
+  if (scoreEl) scoreEl.textContent = (hole.score && hole.score > 0) ? hole.score : '\u2014';
   if (penEl)   penEl.textContent   = hole.penalty != null ? hole.penalty : 0;
 
   // Pin position chips
@@ -3050,6 +3074,8 @@ function glacierRenderHole() {
   });
 
   // Tee shot section: club chips (rendered from bagSnapshot) + tee result
+  // GLACIER POLISH (v8.1.1) — clubs render into a CSS grid (gc-club-grid) with
+  // auto-fill min-width so chips stay readable regardless of bag count.
   const isPar3 = hole.par === 3;
   const teeResultBlock = document.getElementById('gc-tee-result-block');
   if (teeResultBlock) teeResultBlock.style.display = isPar3 ? 'none' : '';
@@ -3062,8 +3088,6 @@ function glacierRenderHole() {
       const safeId = (c.id||'').replace(/"/g,'&quot;');
       return `<button class="gc-chip${isOn}" data-club="${safeId}" onclick="glacierSetField('teeClub','${safeId}')">${safeName}</button>`;
     }).join('');
-    // Force chips to wrap and have a sensible min width
-    teeClubsEl.style.flexWrap = 'wrap';
   }
   if (!isPar3) {
     document.querySelectorAll('#view-glacier-capture .gc-tee-grid .gc-chip').forEach(c => {
@@ -3077,7 +3101,7 @@ function glacierRenderHole() {
   const yardsBlock = document.getElementById('gc-approach-yards-block');
   if (yardsBlock) yardsBlock.style.display = isPar3 ? 'none' : '';
   if (!isPar3) {
-    document.querySelectorAll('#view-glacier-capture .gc-yards-grid .gc-chip').forEach(c => {
+    document.querySelectorAll('#view-glacier-capture .gc-yards-row .gc-chip').forEach(c => {
       c.classList.toggle('on', c.dataset.yd === hole.approachYards);
     });
   }
@@ -3089,7 +3113,7 @@ function glacierRenderHole() {
   const ogBtn = document.getElementById('gc-on-green-toggle');
   if (ogBtn) {
     ogBtn.classList.toggle('on', !!hole.onGreen);
-    ogBtn.textContent = hole.onGreen ? '✓ On the green' : 'On the green';
+    ogBtn.textContent = hole.onGreen ? '\u2713 On the green' : 'On the green';
   }
   const pinCell = document.querySelector('#view-glacier-capture .gc-zone-pin');
   if (pinCell) pinCell.classList.toggle('gc-pin-disabled', !hole.onGreen);
@@ -3117,37 +3141,14 @@ function glacierRenderHole() {
   if (dcBtn) dcBtn.classList.toggle('on', !!hole.doubleChip);
   if (sandBtn) sandBtn.classList.toggle('on', !!hole.sand);
 
-  // Course notes footer (read-only, conditional). pjc_course_notes = { courseId: [{tee,approach,green}, ...] }
-  const notesEl = document.getElementById('gc-notes-footer');
-  if (notesEl) {
-    const allNotes = (function(){ try { return JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'); } catch { return {}; } })();
-    const noteArr = allNotes[wip.courseId];
-    const note = Array.isArray(noteArr) ? noteArr[hole.number-1] : null;
-    if (note && (note.tee || note.approach || note.green)) {
-      const parts = [];
-      if (note.tee) parts.push(`<div class="gc-notes-line"><span class="gc-notes-tag">Tee</span>${escapeHTML(note.tee)}</div>`);
-      if (note.approach) parts.push(`<div class="gc-notes-line"><span class="gc-notes-tag">Approach</span>${escapeHTML(note.approach)}</div>`);
-      if (note.green) parts.push(`<div class="gc-notes-line"><span class="gc-notes-tag">Green</span>${escapeHTML(note.green)}</div>`);
-      notesEl.innerHTML = `<div class="gc-notes-footer"><div class="gc-notes-hdr">Course Notes · Hole ${hole.number}</div>${parts.join('')}</div>`;
-    } else {
-      notesEl.innerHTML = '';
-    }
-  }
-
-  // End-of-form action button label
+  // Action button labels (top + bottom kept in sync).
+  // GLACIER POLISH (v8.1.1) — Mara permanent rule: action buttons above scroll.
+  // Top button mirrors bottom button label/handler.
+  const actionLbl = (GC.holeIdx === total - 1) ? '\u2713 Finish & Save Round' : 'Next Hole \u2192';
   const actionBtn = document.getElementById('gc-action-btn');
-  if (actionBtn) {
-    if (GC.holeIdx === total - 1) {
-      actionBtn.textContent = '✓ Finish & Save Round';
-    } else {
-      actionBtn.textContent = 'Next Hole →';
-    }
-  }
-}
-
-// Tiny HTML escaper used only for course-note text rendering.
-function escapeHTML(s) {
-  return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  const actionBtnTop = document.getElementById('gc-action-btn-top');
+  if (actionBtn) actionBtn.textContent = actionLbl;
+  if (actionBtnTop) actionBtnTop.textContent = actionLbl;
 }
 
 // glacierSetField — write a single field on the current hole, persist WIP, re-render.
@@ -3235,9 +3236,10 @@ function glacierAdjustScore(delta) {
   const wip = glacierGetWIP();
   if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
   const hole = wip.holes[GC.holeIdx];
-  const cur = hole.score != null ? hole.score : hole.par;
+  const cur = hole.score != null ? hole.score : 0;
   const next = cur + delta;
-  if (next < 1 || next > 12) return; // range 1-12 per locked v10 spec
+  // GLACIER POLISH (v8.1.1) — range 0–12 per v10.1 spec. 0 = untouched/didn't play.
+  if (next < 0 || next > 12) return;
   hole.score = next;
   glacierPersistAndRender(wip);
 }
@@ -3298,8 +3300,9 @@ function glacierConfirmAbandon() {
 function glacierFinishRound() {
   const wip = glacierGetWIP();
   if (!wip) return;
-  // Compute totalScore from holes[].score (defaults are par, so even untouched
-  // holes contribute correctly).
+  // Compute totalScore from holes[].score (defaults are 0, so untouched holes
+  // are correctly excluded by calcRoundTotal's v2 branch). This also stamps
+  // playedPar and playedHoles on the round.
   calcRoundTotal(wip);
   // Strip transient UI state.
   delete wip._gcLastIdx;
@@ -3313,7 +3316,12 @@ function glacierFinishRound() {
   saveSyncMeta(meta);
   // Clear WIP.
   saveWIP(null);
-  toast(`Round saved · ${wip.totalScore} (${wip.totalScore - wip.par >= 0 ? '+' : ''}${wip.totalScore - wip.par})`);
+  // GLACIER POLISH (v8.1.1) — toast uses playedPar for rel calculation so
+  // partial rounds show a sensible E/+/− indicator.
+  const relPar = wip.playedPar != null ? wip.playedPar : wip.par;
+  const rel = wip.totalScore - relPar;
+  const relStr = rel === 0 ? 'E' : (rel > 0 ? '+'+rel : String(rel));
+  toast(`Round saved \xb7 ${wip.totalScore} (${relStr})`);
   showView('home');
 }
 
@@ -3325,10 +3333,18 @@ function renderDetailV2(round) {
   // Header
   document.getElementById('det-course').textContent = round.course || '\u2014';
   const d = round.date ? new Date(round.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
-  document.getElementById('det-meta').textContent = [d, round.tees, (round.holesPlayed||0)+' holes'].filter(Boolean).join(' \xb7 ');
+  // GLACIER POLISH (v8.1.1) — show "X of N holes" if partial; "N holes" if complete.
+  let holesMeta = (round.holesPlayed||0) + ' holes';
+  if (round.playedHoles != null && round.playedHoles < (round.holesPlayed||0)) {
+    holesMeta = round.playedHoles + ' of ' + round.holesPlayed + ' holes';
+  }
+  document.getElementById('det-meta').textContent = [d, round.tees, holesMeta].filter(Boolean).join(' \xb7 ');
 
   // Score header
-  const rel = round.totalScore != null ? round.totalScore - round.par : null;
+  // GLACIER POLISH (v8.1.1) — rel against playedPar (not full-round par) so a
+  // partial round doesn't display a misleading inflated negative number.
+  const relPar = round.playedPar != null ? round.playedPar : round.par;
+  const rel = round.totalScore != null ? round.totalScore - relPar : null;
   const relStr = rel == null ? '\u2014' : rel === 0 ? 'E' : rel > 0 ? '+'+rel : String(rel);
   document.getElementById('det-score-hdr').innerHTML = `
     <div class="detail-score-hdr">
@@ -3336,8 +3352,11 @@ function renderDetailV2(round) {
       <div class="detail-score-rel ${scoreColorClass(rel)}">${relStr}</div>
     </div>`;
 
-  // Stats — derive from new shape
-  const holes = round.holes || [];
+  // Stats — derive from new shape, restricted to played holes only.
+  // GLACIER POLISH (v8.1.1) — partial-round denominator fix. Untouched holes
+  // (score=0) shouldn't drag down GIR / Up&Down / Putts averages.
+  const allHoles = round.holes || [];
+  const holes = allHoles.filter(h => h.score > 0);
   const girCount = holes.filter(h => h.onGreen === true).length;
   const sandCount = holes.filter(h => h.sand).length;
   const sandSaves = holes.filter(h => h.sand && h.score <= h.par).length;
@@ -3350,7 +3369,7 @@ function renderDetailV2(round) {
   const longPutts = threePutts + fourPlusPutts;
 
   document.getElementById('det-stats').innerHTML = [
-    {val: girCount + '/' + holes.length, lbl: 'GIR'},
+    {val: holes.length ? girCount + '/' + holes.length : '\u2014', lbl: 'GIR'},
     {val: puttsTotal || '\u2014', lbl: 'Putts'},
     {val: upDownEligible.length ? upDowns + '/' + upDownEligible.length : '\u2014', lbl: 'Up & Down'},
     {val: longPutts || '0', lbl: '3+ Putts'},
@@ -3367,11 +3386,13 @@ function renderDetailV2(round) {
     if (el) el.innerHTML = '';
   });
 
-  // Per-hole list — minimum legibility. Show captured fields per hole.
+  // Per-hole list — render ALL holes, but mark untouched ones (score=0) clearly
+  // so the user can spot which holes they didn't capture / didn't play.
   const holesEl = document.getElementById('det-holes');
   if (holesEl) {
-    holesEl.innerHTML = holes.map(h => {
-      const relH = h.score != null ? h.score - h.par : null;
+    holesEl.innerHTML = allHoles.map(h => {
+      const isPlayed = h.score > 0;
+      const relH = isPlayed ? h.score - h.par : null;
       const relCls = relH == null ? '' : relH < 0 ? 'c-under' : relH > 0 ? 'c-over' : 'c-even';
       const relSym = relH == null ? '' : relH === 0 ? 'E' : relH > 0 ? '+'+relH : String(relH);
       const tags = [];
@@ -3384,15 +3405,21 @@ function renderDetailV2(round) {
       if (h.sand) tags.push('Sand');
       if (h.doubleChip) tags.push('Double chip');
       if (h.penalty) tags.push(h.penalty > 1 ? (h.penalty + ' Penalties') : 'Penalty');
-      const tagsHtml = tags.length ? `<div style="font-size:11px;color:var(--chalk3);margin-top:4px">${tags.join(' · ')}</div>` : '';
-      return `<div class="round-row" style="cursor:default">
+      const tagsHtml = tags.length
+        ? `<div style="font-size:11px;color:var(--chalk3);margin-top:4px">${tags.join(' \xb7 ')}</div>`
+        : (isPlayed ? '' : '<div style="font-size:11px;color:var(--chalk3);opacity:.5;margin-top:4px;font-style:italic">Not played</div>');
+      const rowOpacity = isPlayed ? '' : 'opacity:.5;';
+      const scoreCell = isPlayed
+        ? `<div class="rr-score ${relCls}" style="font-size:22px">${h.score}</div>
+           <div class="rr-rel ${relCls}">${relSym}</div>`
+        : `<div class="rr-score" style="font-size:22px;color:var(--chalk3)">\u2014</div>`;
+      return `<div class="round-row" style="cursor:default;${rowOpacity}">
         <div class="rr-info">
-          <div class="rr-course" style="font-size:14px">Hole ${h.number} · Par ${h.par}</div>
+          <div class="rr-course" style="font-size:14px">Hole ${h.number} \xb7 Par ${h.par}</div>
           ${tagsHtml}
         </div>
         <div class="rr-score-block">
-          <div class="rr-score ${relCls}" style="font-size:22px">${h.score!=null?h.score:'\u2014'}</div>
-          <div class="rr-rel ${relCls}">${relSym}</div>
+          ${scoreCell}
         </div>
       </div>`;
     }).join('');
