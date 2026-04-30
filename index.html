@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.0.1 · Apr 29, 2026 -->
+<!-- PJ Caddie v8.1.0 · Apr 30, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -13,8 +13,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#0e1a0e;--ink2:#1c301c;--ink3:#2a4a2a;--fairway:#3a6b3a;--gold:#c8a84b;--chalk:#f2edd8;--chalk2:#c9c3a8;--chalk3:#908a72;--red:#c94040;--green:#5ec85e;--orange:#e8994a;--border:rgba(200,168,75,0.18);--border2:rgba(242,237,216,0.1);--r:14px;--rs:10px}
-html.sun-mode{--ink:#f5f5f0;--ink2:#e8e8e0;--ink3:#d8d8cc;--fairway:#2a5a2a;--gold:#8a6a00;--chalk:#111111;--chalk2:#333333;--chalk3:#555555;--border:rgba(0,0,0,0.15);--border2:rgba(0,0,0,0.08);--red:#b02020;--green:#1a7a1a;--orange:#b05a00}
+:root{--ink:#0e1a0e;--ink2:#1c301c;--ink3:#2a4a2a;--fairway:#3a6b3a;--gold:#c8a84b;--blue:#5a8cc8;--chalk:#f2edd8;--chalk2:#c9c3a8;--chalk3:#908a72;--red:#c94040;--green:#5ec85e;--orange:#e8994a;--border:rgba(200,168,75,0.18);--border2:rgba(242,237,216,0.1);--r:14px;--rs:10px}
+html.sun-mode{--ink:#f5f5f0;--ink2:#e8e8e0;--ink3:#d8d8cc;--fairway:#2a5a2a;--gold:#8a6a00;--blue:#2a4a78;--chalk:#111111;--chalk2:#333333;--chalk3:#555555;--border:rgba(0,0,0,0.15);--border2:rgba(0,0,0,0.08);--red:#b02020;--green:#1a7a1a;--orange:#b05a00}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--chalk);font-family:'DM Sans',sans-serif;font-size:16px}
 body{display:flex;flex-direction:column}
@@ -376,6 +376,61 @@ body{display:flex;flex-direction:column}
 .byron-spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
 .byron-error{font-size:12px;color:var(--red);padding:8px 0}
 .byron-warn{font-size:11px;color:var(--gold);background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.2);border-radius:var(--rs);padding:8px 10px;margin-bottom:10px;line-height:1.5}
+
+/* GLACIER CAPTURE (v8.1.0) — per-hole capture screen.
+   Three color-zoned sections per locked v10 spec: tee=blue, approach=gold, putts=green.
+   All chips use 44px+ tap targets. Selected state inverts to gold-on-ink. */
+.gc-nav-arrow{background:var(--ink2);border:1px solid var(--border);color:var(--gold);width:42px;height:42px;border-radius:50%;font-size:24px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1}
+.gc-nav-arrow:disabled{opacity:.3;cursor:default}
+.gc-nav-arrow:active:not(:disabled){background:var(--ink3)}
+.gc-top-row{display:flex;gap:10px;margin-bottom:14px}
+.gc-top-left{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.gc-top-right{flex:0 0 110px;display:flex;flex-direction:column}
+.gc-stepper-card{background:var(--ink2);border:1px solid var(--border2);border-radius:var(--rs);padding:8px 10px;display:flex;align-items:center;gap:8px}
+.gc-stepper-lbl{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--chalk3);flex-shrink:0;width:46px}
+.gc-stepper{display:flex;align-items:center;gap:6px;flex:1;justify-content:flex-end}
+.gc-stepper-btn{background:var(--ink3);border:1px solid var(--border);color:var(--chalk);width:32px;height:32px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;padding:0;line-height:1;display:flex;align-items:center;justify-content:center}
+.gc-stepper-btn:active{background:var(--gold);color:var(--ink)}
+.gc-stepper-val{font-family:'DM Serif Display',serif;font-size:22px;color:var(--gold);min-width:28px;text-align:center;font-weight:700}
+.gc-pin-stack{display:flex;flex-direction:column;gap:4px}
+.gc-pin-chip{background:var(--ink2);border:1px solid var(--border2);color:var(--chalk2);font-size:13px;font-weight:600;padding:9px 8px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.gc-pin-chip.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.gc-mini-lbl{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--chalk3);font-weight:600}
+.gc-section{background:var(--ink2);border:1px solid var(--border2);border-radius:var(--r);padding:14px;margin-bottom:14px;border-left-width:3px}
+.gc-section-tee{border-left-color:var(--blue);background:linear-gradient(90deg,rgba(90,140,200,.06) 0%,var(--ink2) 100%)}
+.gc-section-approach{border-left-color:var(--gold);background:linear-gradient(90deg,rgba(200,168,75,.06) 0%,var(--ink2) 100%)}
+.gc-section-putts{border-left-color:var(--green);background:linear-gradient(90deg,rgba(94,200,94,.06) 0%,var(--ink2) 100%)}
+.gc-section-lbl{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);opacity:.85;font-weight:700;margin-bottom:10px;display:block}
+.gc-section-tee .gc-section-lbl{color:var(--blue)}
+.gc-section-approach .gc-section-lbl{color:var(--gold)}
+.gc-section-putts .gc-section-lbl{color:var(--green)}
+.gc-chip-row{display:flex;gap:6px;flex-wrap:nowrap}
+.gc-chip-row-wrap{flex-wrap:wrap}
+.gc-chip{flex:1;min-height:42px;background:var(--ink3);border:1px solid var(--border2);color:var(--chalk2);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;padding:0 8px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.1;white-space:nowrap}
+.gc-chip.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.gc-chip.dim{opacity:.4}
+.gc-chip-fairway{background:transparent;border:1.5px dashed var(--green);color:var(--green);min-height:42px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;border-radius:8px;cursor:pointer}
+.gc-chip-fairway.on{background:var(--green);color:var(--ink);border-style:solid}
+.gc-tee-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.gc-yards-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.gc-yards-grid .gc-chip{font-size:12px}
+.gc-zone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.gc-zone-cell{min-height:50px;background:var(--ink3);border:1px solid var(--border2);color:var(--chalk2);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;padding:0 4px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1.1;white-space:nowrap}
+.gc-zone-cell.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.gc-zone-pin{border:1.5px dashed var(--green);color:var(--green);background:transparent}
+.gc-zone-pin.on{background:var(--green);color:var(--ink);border-style:solid;border-color:var(--green)}
+.gc-zone-pin.gc-pin-disabled{opacity:.35;border-style:dashed}
+.gc-toggle{background:var(--ink3);border:1px solid var(--border2);color:var(--chalk2);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;padding:11px 12px;border-radius:8px;cursor:pointer;text-align:center}
+.gc-toggle.on{background:var(--green);color:var(--ink);border-color:var(--green)}
+.gc-bottom-row{display:flex;gap:8px;margin-top:14px}
+.gc-toggle-bottom{flex:1;padding:14px 8px;background:var(--ink2);border:1px solid var(--border2);color:var(--chalk2);border-radius:var(--rs);cursor:pointer}
+.gc-toggle-bottom.on{background:var(--orange);color:var(--ink);border-color:var(--orange)}
+.gc-toggle-bottom .gc-toggle-lbl{font-size:12px;font-weight:700;letter-spacing:.6px}
+.gc-notes-footer{background:var(--ink2);border:1px solid var(--border2);border-left:2px solid var(--chalk3);border-radius:var(--rs);padding:10px 12px;font-size:12px;color:var(--chalk2);line-height:1.5}
+.gc-notes-footer .gc-notes-hdr{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--chalk3);font-weight:600;margin-bottom:6px}
+.gc-notes-footer .gc-notes-line{margin-bottom:4px}
+.gc-notes-footer .gc-notes-line:last-child{margin-bottom:0}
+.gc-notes-footer .gc-notes-tag{display:inline-block;font-size:9px;letter-spacing:1px;color:var(--gold);opacity:.8;margin-right:6px;text-transform:uppercase;font-weight:700}
 </style>
 </head>
 <body>
@@ -390,7 +445,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.0.1 · Apr 29, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.1.0 · Apr 30, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -528,6 +583,158 @@ body{display:flex;flex-direction:column}
       <button class="btn btn-outline" onclick="showView('home')" style="min-width:200px">Back to Home</button>
     </div>
   </div>
+</div>
+
+<!-- GLACIER CAPTURE (v8.1.0) — single-screen-per-hole capture flow.
+     Locked v10 spec: 13 fields, 3 color-zoned sections (tee=blue, approach=gold,
+     putts=green), Pin/On-green state machine, par-3 conditional rendering.
+     State lives in the round WIP (pjc_wip, schemaVersion: 2). GC.holeIdx tracks
+     the currently-displayed hole. -->
+<div class="view" id="view-glacier-capture">
+  <div class="safe-top"></div>
+  <div class="hdr" style="flex-shrink:0">
+    <div class="hdr-row">
+      <button class="back-btn" onclick="glacierBackToHome()">⌂ Save &amp; Exit</button>
+      <button class="hdr-action" onclick="glacierConfirmAbandon()" style="color:var(--red);opacity:.7">Abandon</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:10px">
+      <button class="gc-nav-arrow" id="gc-prev-btn" onclick="glacierGotoHole(-1)" aria-label="Previous hole">‹</button>
+      <div style="text-align:center;flex:1;min-width:0">
+        <div class="hdr-title" id="gc-hole-title" style="font-size:18px"></div>
+        <div id="gc-hole-meta" style="font-size:12px;color:var(--chalk3);margin-top:2px"></div>
+      </div>
+      <button class="gc-nav-arrow" id="gc-next-btn" onclick="glacierGotoHole(1)" aria-label="Next hole">›</button>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div class="pad" style="padding-top:14px;padding-bottom:60px">
+
+      <!-- Top row: Score/Penalty (left col) | Pin position (right col) -->
+      <div class="gc-top-row">
+        <div class="gc-top-left">
+          <div class="gc-stepper-card">
+            <div class="gc-stepper-lbl">Score</div>
+            <div class="gc-stepper">
+              <button class="gc-stepper-btn" onclick="glacierAdjustScore(-1)" aria-label="Decrease score">−</button>
+              <div class="gc-stepper-val" id="gc-score-val">—</div>
+              <button class="gc-stepper-btn" onclick="glacierAdjustScore(1)" aria-label="Increase score">+</button>
+            </div>
+          </div>
+          <div class="gc-stepper-card">
+            <div class="gc-stepper-lbl">Penalty</div>
+            <div class="gc-stepper">
+              <button class="gc-stepper-btn" onclick="glacierAdjustPenalty(-1)" aria-label="Decrease penalty">−</button>
+              <div class="gc-stepper-val" id="gc-penalty-val">0</div>
+              <button class="gc-stepper-btn" onclick="glacierAdjustPenalty(1)" aria-label="Increase penalty">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="gc-top-right">
+          <div class="gc-mini-lbl" style="margin-bottom:6px">Pin</div>
+          <div class="gc-pin-stack">
+            <button class="gc-pin-chip" data-pin="front" onclick="glacierSetField('pinPos','front')">Front</button>
+            <button class="gc-pin-chip" data-pin="middle" onclick="glacierSetField('pinPos','middle')">Middle</button>
+            <button class="gc-pin-chip" data-pin="back" onclick="glacierSetField('pinPos','back')">Back</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tee shot section (blue accent) -->
+      <div class="gc-section gc-section-tee">
+        <div class="gc-section-lbl">Tee Shot</div>
+        <div class="gc-mini-lbl" style="margin-bottom:8px">Club</div>
+        <div id="gc-tee-club-chips" class="gc-chip-row gc-chip-row-wrap"></div>
+        <div id="gc-tee-result-block">
+          <div class="gc-mini-lbl" style="margin:14px 0 8px">Result</div>
+          <div class="gc-tee-grid">
+            <button class="gc-chip" data-tee="OBL" onclick="glacierSetField('teeResult','OBL')">OBL</button>
+            <button class="gc-chip" data-tee="LL" onclick="glacierSetField('teeResult','LL')">LL</button>
+            <button class="gc-chip" data-tee="L" onclick="glacierSetField('teeResult','L')">L</button>
+            <button class="gc-chip" data-tee="R" onclick="glacierSetField('teeResult','R')">R</button>
+            <button class="gc-chip" data-tee="RR" onclick="glacierSetField('teeResult','RR')">RR</button>
+            <button class="gc-chip" data-tee="OBR" onclick="glacierSetField('teeResult','OBR')">OBR</button>
+          </div>
+          <button class="gc-chip gc-chip-fairway" data-tee="fairway" onclick="glacierSetField('teeResult','fairway')" style="margin-top:6px;width:100%">Fairway</button>
+        </div>
+      </div>
+
+      <!-- Approach section (gold accent) -->
+      <div class="gc-section gc-section-approach">
+        <div class="gc-section-lbl">Approach</div>
+        <div id="gc-approach-yards-block">
+          <div class="gc-mini-lbl" style="margin-bottom:8px">Yardage</div>
+          <div class="gc-yards-grid">
+            <button class="gc-chip" data-yd="50-74" onclick="glacierSetField('approachYards','50-74')">50–74</button>
+            <button class="gc-chip" data-yd="75-99" onclick="glacierSetField('approachYards','75-99')">75–99</button>
+            <button class="gc-chip" data-yd="100-124" onclick="glacierSetField('approachYards','100-124')">100–124</button>
+            <button class="gc-chip" data-yd="125-149" onclick="glacierSetField('approachYards','125-149')">125–149</button>
+            <button class="gc-chip" data-yd="150-174" onclick="glacierSetField('approachYards','150-174')">150–174</button>
+            <button class="gc-chip" data-yd="175-199" onclick="glacierSetField('approachYards','175-199')">175–199</button>
+            <button class="gc-chip" data-yd="200+" onclick="glacierSetField('approachYards','200+')">200+</button>
+          </div>
+        </div>
+        <div class="gc-mini-lbl" style="margin:14px 0 8px">Result</div>
+        <div class="gc-zone-grid">
+          <button class="gc-zone-cell" data-zone="long-l" onclick="glacierZoneTap('long-l')">Long-L</button>
+          <button class="gc-zone-cell" data-zone="long" onclick="glacierZoneTap('long')">Long</button>
+          <button class="gc-zone-cell" data-zone="long-r" onclick="glacierZoneTap('long-r')">Long-R</button>
+          <button class="gc-zone-cell" data-zone="pin-l" onclick="glacierZoneTap('pin-l')">Pin-L</button>
+          <button class="gc-zone-cell gc-zone-pin" data-zone="pin" onclick="glacierZoneTap('pin')">Pin</button>
+          <button class="gc-zone-cell" data-zone="pin-r" onclick="glacierZoneTap('pin-r')">Pin-R</button>
+          <button class="gc-zone-cell" data-zone="short-l" onclick="glacierZoneTap('short-l')">Short-L</button>
+          <button class="gc-zone-cell" data-zone="short" onclick="glacierZoneTap('short')">Short</button>
+          <button class="gc-zone-cell" data-zone="short-r" onclick="glacierZoneTap('short-r')">Short-R</button>
+        </div>
+        <button class="gc-toggle" id="gc-on-green-toggle" onclick="glacierToggleOnGreen()" style="margin-top:12px;width:100%">On the green</button>
+      </div>
+
+      <!-- Putts section (green accent) -->
+      <div class="gc-section gc-section-putts">
+        <div class="gc-section-lbl">Putts</div>
+        <div class="gc-mini-lbl" style="margin-bottom:8px">Total</div>
+        <div class="gc-chip-row">
+          <button class="gc-chip" data-putts="1" onclick="glacierSetPutts(1)">1</button>
+          <button class="gc-chip" data-putts="2" onclick="glacierSetPutts(2)">2</button>
+          <button class="gc-chip" data-putts="3" onclick="glacierSetPutts(3)">3</button>
+          <button class="gc-chip" data-putts="4" onclick="glacierSetPutts(4)">4+</button>
+        </div>
+        <div class="gc-mini-lbl" style="margin:14px 0 8px">First putt distance</div>
+        <div class="gc-chip-row gc-chip-row-wrap">
+          <button class="gc-chip" data-fpd="le6" onclick="glacierSetField('firstPuttDist','le6')">≤6 ft</button>
+          <button class="gc-chip" data-fpd="7-15" onclick="glacierSetField('firstPuttDist','7-15')">7–15 ft</button>
+          <button class="gc-chip" data-fpd="16-25" onclick="glacierSetField('firstPuttDist','16-25')">16–25 ft</button>
+          <button class="gc-chip" data-fpd="26-40" onclick="glacierSetField('firstPuttDist','26-40')">26–40 ft</button>
+          <button class="gc-chip" data-fpd="40+" onclick="glacierSetField('firstPuttDist','40+')">40+ ft</button>
+        </div>
+        <div class="gc-mini-lbl" style="margin:14px 0 8px">First putt result</div>
+        <div id="gc-fp-result-row" class="gc-chip-row gc-chip-row-wrap">
+          <button class="gc-chip" data-fpr="holed" onclick="glacierSetField('firstPuttResult','holed')">Holed</button>
+          <button class="gc-chip" data-fpr="tap-in" onclick="glacierSetField('firstPuttResult','tap-in')">Tap-in</button>
+          <button class="gc-chip" data-fpr="close" onclick="glacierSetField('firstPuttResult','close')">Close</button>
+          <button class="gc-chip" data-fpr="medium" onclick="glacierSetField('firstPuttResult','medium')">Medium</button>
+          <button class="gc-chip" data-fpr="long" onclick="glacierSetField('firstPuttResult','long')">Long</button>
+        </div>
+      </div>
+
+      <!-- Bottom row: Double chip | Greenside bunker -->
+      <div class="gc-bottom-row">
+        <button class="gc-toggle gc-toggle-bottom" id="gc-double-chip-toggle" onclick="glacierToggleField('doubleChip')">
+          <div class="gc-toggle-lbl">Double chip</div>
+        </button>
+        <button class="gc-toggle gc-toggle-bottom" id="gc-sand-toggle" onclick="glacierToggleField('sand')">
+          <div class="gc-toggle-lbl">Greenside bunker</div>
+        </button>
+      </div>
+
+      <!-- Course notes footer (read-only, conditional) -->
+      <div id="gc-notes-footer" style="margin-top:18px"></div>
+
+      <!-- End-of-form action (Next Hole / Finish & Save) -->
+      <button class="btn btn-gold" id="gc-action-btn" onclick="glacierActionTap()" style="margin-top:24px">Next Hole →</button>
+
+    </div>
+  </div>
+  <div class="safe-bot"></div>
 </div>
 
 <!-- BAG SELECT (pre-round) -->
@@ -922,7 +1129,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.0.1 · Spec v2.1</span>
+        <span>v8.1.0 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1582,23 +1789,81 @@ function teeYards(t) { return (t.holeYards||[]).reduce((a,b)=>a+b,0); }
 function createRound({ courseId, courseName, teeSet, date, holesPlayed, startingHole, source }) {
   const expectedHoles = buildExpectedHoles(startingHole, holesPlayed);
   const par = expectedHoles.reduce((a,h)=>a+(teeSet.holePars[h-1]||0),0);
+  // GLACIER CAPTURE (v8.1.0) — schemaVersion: 2 marks this as a new-shape round
+  // (13-field per-hole capture). bagSnapshot freezes the global bag at round start
+  // so historical clubs survive bag edits. Old fields (totalScore, source, etc.)
+  // retained for downstream callers; OBSIDIAN PURGE removes anything dead.
+  const bagSnapshot = snapshotActiveBag();
   return {
-    id: genId(), courseId, course: courseName, date, par,
+    id: genId(),
+    schemaVersion: 2,
+    courseId, course: courseName, date, par,
     tees: teeSet.name, teeId: teeSet.id || null, holesPlayed, startingHole, expectedHoles,
     holeYards: teeSet.holeYards || [],
     holePars: teeSet.holePars ? [...teeSet.holePars] : [],
     totalScore: null, source: source||'manual',
-    importSessionId: null, photoRef: null, holes: []
+    importSessionId: null, photoRef: null,
+    bagSnapshot,
+    holes: []
   };
 }
 
 function createHole({ number, par, score, pinZone, notation }) {
+  // GLACIER CAPTURE (v8.1.0) — defaults the 13-field shape per locked v10 spec.
+  // score defaults to par on first render (stepper); penalty defaults to 0; all
+  // direction/result fields are null until user touches them. Old fields kept for
+  // any v1 caller paths still reachable; OBSIDIAN PURGE strips them.
   return {
     id: genId(),
-    number, par, score: score||null, pinZone: pinZone||null,
+    number, par,
+    score: (score!=null)?score:par,
+    penalty: 0,
+    pinPos: null,
+    teeClub: null,
+    teeResult: null,
+    approachYards: null,
+    approachResult: null,
+    onGreen: false,
+    putts: null,
+    firstPuttDist: null,
+    firstPuttResult: null,
+    doubleChip: false,
+    sand: false,
+    // legacy v1 fields — kept harmless during transition, removed in OBSIDIAN
+    pinZone: pinZone||null,
     gir: false, girPlusOne: false, notation: notation||'',
-    flagHistory: [], shots: [], putts: { count:0, distances:[] }
+    flagHistory: [], shots: [], puttsLegacy: { count:0, distances:[] }
   };
+}
+
+// snapshotActiveBag — freezes the active bag from pjc_bags into the round at
+// round start so the Tee shot club chips show historically-correct clubs even
+// if the user edits their bag mid-season. getBags() returns an array of bag
+// profiles; the active one is bags[0] (the first/default bag — per-course bag
+// mapping was retired in TUNDRA). Returns null if no usable bag (caller should
+// have shown the precondition toast and routed to bag-settings).
+function snapshotActiveBag() {
+  try {
+    const bags = getBags();
+    if (!Array.isArray(bags) || !bags.length) return null;
+    const active = bags[0];
+    if (!active || !Array.isArray(active.clubs) || !active.clubs.length) return null;
+    return {
+      id: active.id || 'default',
+      name: active.name || 'My Bag',
+      clubs: active.clubs.map(c => ({ id: c.id, name: c.name, type: c.type||null }))
+    };
+  } catch { return null; }
+}
+
+// hasUsableBag — precondition check used by startRoundSetup. Returns true if
+// the user has at least one club in their active bag.
+function hasUsableBag() {
+  try {
+    const bags = getBags();
+    if (!Array.isArray(bags) || !bags.length) return false;
+    return Array.isArray(bags[0]?.clubs) && bags[0].clubs.length > 0;
+  } catch { return false; }
 }
 
 function deriveMissDirection(intendedZone, finishZone, result) {
@@ -2400,6 +2665,7 @@ function showView(id) {
   if (id==='bag-select') initBagSelect();
   if (id==='bag-settings') initBagSettings();
   if (id==='scoring') initScoring();
+  if (id==='glacier-capture') initGlacierCapture();
   if (id==='detail') renderDetail();
   if (id==='photo-import') initPhotoImport();
   if (id==='review') renderReview();
@@ -2417,13 +2683,26 @@ function renderHome() {
   const wipEl = document.getElementById('home-wip-banner');
   if (wip && wipEl) {
     const d = wip.date ? new Date(wip.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
-    const holesIn = wip.holes?.length || 0;
-    const total = wip.holesPlayed || 0;
     const isPhoto = wip.source === 'photo_import';
+    // GLACIER CAPTURE (v8.1.0) — v2 rounds pre-create all hole stubs, so
+    // wip.holes.length is always = holesPlayed even on a fresh start. Show the
+    // resume position instead of a misleading "X/N saved" count. v1 rounds
+    // (legacy wizard, dead post-TUNDRA) keep the original metadata.
+    let metaStr;
+    if (wip.schemaVersion === 2) {
+      const total = wip.holesPlayed || (wip.holes||[]).length;
+      const lastIdx = wip._gcLastIdx || 0;
+      const lastHoleNum = (wip.holes && wip.holes[lastIdx]) ? wip.holes[lastIdx].number : (lastIdx+1);
+      metaStr = `${wip.course||''} \xb7 ${d} \xb7 Hole ${lastHoleNum} of ${total}`;
+    } else {
+      const holesIn = wip.holes?.length || 0;
+      const total = wip.holesPlayed || 0;
+      metaStr = `${wip.course||''} \xb7 ${d} \xb7 ${holesIn}/${total} holes saved`;
+    }
     wipEl.innerHTML = `<div style="background:rgba(200,168,75,.1);border:1px solid rgba(200,168,75,.4);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:600;color:var(--gold)">${isPhoto?'📷':'🏌️'} Round in Progress</div>
-        <div style="font-size:11px;color:var(--chalk3);margin-top:3px">${wip.course||''} \xb7 ${d} \xb7 ${holesIn}/${total} holes saved</div>
+        <div style="font-size:11px;color:var(--chalk3);margin-top:3px">${metaStr}</div>
       </div>
       <button class="btn btn-danger btn-sm" onclick="abandonWIPFromHome()">Abandon</button>
       <button class="btn btn-gold btn-sm" onclick="resumeWIP()">Resume \u2192</button>
@@ -2458,6 +2737,16 @@ function resumeWIP() {
   // WIP so initScoring picks up the right session. Re-entries are transient; if one
   // was abandoned via navigation rather than Save/Abandon, it dies here.
   saveReentryWIP(null);
+  // GLACIER CAPTURE (v8.1.0) — schemaVersion: 2 WIPs route to the new capture flow.
+  // Pre-existing legacy WIPs (schemaVersion: 1 or undefined) cannot exist post-TUNDRA
+  // migration but the legacy branch stays as a safety net until OBSIDIAN PURGE.
+  if (wip.schemaVersion === 2) {
+    // Find first hole where score wasn't user-touched OR resume to last viewed hole.
+    // For simplicity, resume to hole 0 — the user can navigate forward easily.
+    GC.holeIdx = wip._gcLastIdx || 0;
+    showView('glacier-capture');
+    return;
+  }
   if (wip.source === 'photo_import') showView('photo-import');
   else showView('scoring');
 }
@@ -2646,22 +2935,474 @@ function updateRoundButtons() {
 }
 
 function startRoundSetup() {
-  // GLACIER REDESIGN \u2014 v8.0.0 disconnects Round Setup from the legacy wizard
-  // (bag-select \u2192 scoring). The new per-hole capture flow ships in GLACIER CAPTURE
-  // (v8.1.0). Until then, the start-round CTA navigates to a placeholder view that
-  // explains the in-flight redesign. The wizard views (bag-select, scoring,
-  // photo-import) remain in place but unreachable; OBSIDIAN PURGE deletes them.
+  // GLACIER CAPTURE (v8.1.0) — Round Setup now feeds the new per-hole capture
+  // flow directly. No bag-select intermediate step (bag is snapshotted from
+  // pjc_bags). Precondition: user must have at least one club in their active
+  // bag, else the Tee shot section can't render — toast + route to bag-settings.
   const course = getCourses().find(c=>c.id===S.selectedCourseId);
   if (!course || S.selectedTeeIdx===null) return;
-  showView('glacier-placeholder');
+  if (!hasUsableBag()) {
+    toast('Set up your bag first');
+    showView('bag-settings');
+    return;
+  }
+  const teeSet = course.tees[S.selectedTeeIdx];
+  const round = createRound({
+    courseId: course.id,
+    courseName: course.name,
+    teeSet,
+    date: S.selectedDate || new Date().toISOString().split('T')[0],
+    holesPlayed: S.roundHoles || 18,
+    startingHole: S.startingHole || 1,
+    source: 'manual'
+  });
+  if (!round.bagSnapshot) {
+    // Defensive: hasUsableBag passed but snapshot returned null. Should not
+    // happen. Bail rather than ship a round with a null bag.
+    toast('Bag snapshot failed — try again');
+    return;
+  }
+  // Pre-create all hole stubs with par + score:par defaults so the capture
+  // screen has a uniform array to iterate. Each stub gets the correct hole
+  // number from expectedHoles, the par from holePars, and a default score
+  // equal to par (per locked v10 spec).
+  round.holes = round.expectedHoles.map(n => createHole({
+    number: n,
+    par: round.holePars[n-1] || 4
+  }));
+  saveWIP(round);
+  GC.holeIdx = 0;
+  showView('glacier-capture');
 }
 
 function startPhotoImport() {
-  // GLACIER REDESIGN \u2014 photo import is being deleted entirely (the notebook
-  // capture path is gone in the new design). Placeholder for now; OBSIDIAN PURGE
-  // removes both the function and the button.
+  // GLACIER CAPTURE (v8.1.0) — photo import is being deleted in OBSIDIAN PURGE.
+  // The notebook capture path is gone in the new design. Until OBSIDIAN ships,
+  // this still routes to glacier-placeholder so the user gets a clear message
+  // rather than a broken handler. The Home screen's import button stays for
+  // now and OBSIDIAN deletes both the function and the button.
   if (!S.selectedCourseId || S.selectedTeeIdx===null) return;
   showView('glacier-placeholder');
+}
+
+// ── GLACIER CAPTURE (v8.1.0) ─────────────────────────────────
+// Per-hole capture screen for schemaVersion: 2 rounds. State lives in pjc_wip
+// (the active round). GC tracks UI state only — currently displayed hole index
+// and a saving debounce flag. Every field change writes WIP and re-applies UI.
+const GC = { holeIdx: 0 };
+
+function initGlacierCapture() {
+  const wip = getWIP();
+  if (!wip || wip.schemaVersion !== 2) {
+    // No valid WIP — bail to home. Should not normally happen because callers
+    // (startRoundSetup, resumeWIP) guarantee a WIP exists; this is a safety net.
+    showView('home');
+    return;
+  }
+  // Clamp holeIdx to valid range.
+  const max = (wip.holes || []).length - 1;
+  if (GC.holeIdx < 0) GC.holeIdx = 0;
+  if (GC.holeIdx > max) GC.holeIdx = max;
+  glacierRenderHole();
+}
+
+function glacierGetWIP() { return getWIP(); }
+
+// glacierPersistAndRender — single chokepoint for "field changed" actions.
+// Writes WIP to localStorage and re-renders the current hole. Re-render is
+// cheap (selective DOM updates), so we don't bother with debouncing.
+function glacierPersistAndRender(wip) {
+  saveWIP(wip);
+  glacierRenderHole();
+}
+
+function glacierRenderHole() {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
+  const hole = wip.holes[GC.holeIdx];
+  const total = wip.holes.length;
+
+  // Header: hole title + meta (course · yards · par)
+  const teeYd = (wip.holeYards||[])[hole.number-1];
+  const titleEl = document.getElementById('gc-hole-title');
+  const metaEl  = document.getElementById('gc-hole-meta');
+  if (titleEl) titleEl.textContent = `Hole ${hole.number} · ${GC.holeIdx+1}/${total}`;
+  if (metaEl) {
+    const parts = [wip.course || '', teeYd ? teeYd+'y' : '', `Par ${hole.par}`].filter(Boolean);
+    metaEl.textContent = parts.join(' · ');
+  }
+
+  // Prev/next arrow disabled state
+  const prevBtn = document.getElementById('gc-prev-btn');
+  const nextBtn = document.getElementById('gc-next-btn');
+  if (prevBtn) prevBtn.disabled = (GC.holeIdx === 0);
+  if (nextBtn) nextBtn.disabled = (GC.holeIdx === total - 1);
+
+  // Score / Penalty steppers
+  const scoreEl = document.getElementById('gc-score-val');
+  const penEl   = document.getElementById('gc-penalty-val');
+  if (scoreEl) scoreEl.textContent = hole.score != null ? hole.score : hole.par;
+  if (penEl)   penEl.textContent   = hole.penalty != null ? hole.penalty : 0;
+
+  // Pin position chips
+  document.querySelectorAll('#view-glacier-capture .gc-pin-chip').forEach(c => {
+    c.classList.toggle('on', c.dataset.pin === hole.pinPos);
+  });
+
+  // Tee shot section: club chips (rendered from bagSnapshot) + tee result
+  const isPar3 = hole.par === 3;
+  const teeResultBlock = document.getElementById('gc-tee-result-block');
+  if (teeResultBlock) teeResultBlock.style.display = isPar3 ? 'none' : '';
+  const teeClubsEl = document.getElementById('gc-tee-club-chips');
+  if (teeClubsEl) {
+    const clubs = (wip.bagSnapshot && wip.bagSnapshot.clubs) || [];
+    teeClubsEl.innerHTML = clubs.map(c => {
+      const isOn = c.id === hole.teeClub ? ' on' : '';
+      const safeName = (c.name||'').replace(/"/g,'&quot;');
+      const safeId = (c.id||'').replace(/"/g,'&quot;');
+      return `<button class="gc-chip${isOn}" data-club="${safeId}" onclick="glacierSetField('teeClub','${safeId}')">${safeName}</button>`;
+    }).join('');
+    // Force chips to wrap and have a sensible min width
+    teeClubsEl.style.flexWrap = 'wrap';
+  }
+  if (!isPar3) {
+    document.querySelectorAll('#view-glacier-capture .gc-tee-grid .gc-chip').forEach(c => {
+      c.classList.toggle('on', c.dataset.tee === hole.teeResult);
+    });
+    const fwy = document.querySelector('#view-glacier-capture .gc-chip-fairway');
+    if (fwy) fwy.classList.toggle('on', hole.teeResult === 'fairway');
+  }
+
+  // Approach section
+  const yardsBlock = document.getElementById('gc-approach-yards-block');
+  if (yardsBlock) yardsBlock.style.display = isPar3 ? 'none' : '';
+  if (!isPar3) {
+    document.querySelectorAll('#view-glacier-capture .gc-yards-grid .gc-chip').forEach(c => {
+      c.classList.toggle('on', c.dataset.yd === hole.approachYards);
+    });
+  }
+  // 9-zone grid
+  document.querySelectorAll('#view-glacier-capture .gc-zone-cell').forEach(c => {
+    c.classList.toggle('on', c.dataset.zone === hole.approachResult);
+  });
+  // On-green toggle + Pin cell disabled state
+  const ogBtn = document.getElementById('gc-on-green-toggle');
+  if (ogBtn) {
+    ogBtn.classList.toggle('on', !!hole.onGreen);
+    ogBtn.textContent = hole.onGreen ? '✓ On the green' : 'On the green';
+  }
+  const pinCell = document.querySelector('#view-glacier-capture .gc-zone-pin');
+  if (pinCell) pinCell.classList.toggle('gc-pin-disabled', !hole.onGreen);
+
+  // Putts section
+  document.querySelectorAll('#view-glacier-capture [data-putts]').forEach(c => {
+    c.classList.toggle('on', String(hole.putts) === c.dataset.putts);
+  });
+  document.querySelectorAll('#view-glacier-capture [data-fpd]').forEach(c => {
+    c.classList.toggle('on', c.dataset.fpd === hole.firstPuttDist);
+  });
+  // First putt result: hide "Holed" unless putts === 1
+  const fprRow = document.getElementById('gc-fp-result-row');
+  if (fprRow) {
+    const holedChip = fprRow.querySelector('[data-fpr="holed"]');
+    if (holedChip) holedChip.style.display = (hole.putts === 1) ? '' : 'none';
+  }
+  document.querySelectorAll('#view-glacier-capture [data-fpr]').forEach(c => {
+    c.classList.toggle('on', c.dataset.fpr === hole.firstPuttResult);
+  });
+
+  // Bottom row toggles
+  const dcBtn = document.getElementById('gc-double-chip-toggle');
+  const sandBtn = document.getElementById('gc-sand-toggle');
+  if (dcBtn) dcBtn.classList.toggle('on', !!hole.doubleChip);
+  if (sandBtn) sandBtn.classList.toggle('on', !!hole.sand);
+
+  // Course notes footer (read-only, conditional). pjc_course_notes = { courseId: [{tee,approach,green}, ...] }
+  const notesEl = document.getElementById('gc-notes-footer');
+  if (notesEl) {
+    const allNotes = (function(){ try { return JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'); } catch { return {}; } })();
+    const noteArr = allNotes[wip.courseId];
+    const note = Array.isArray(noteArr) ? noteArr[hole.number-1] : null;
+    if (note && (note.tee || note.approach || note.green)) {
+      const parts = [];
+      if (note.tee) parts.push(`<div class="gc-notes-line"><span class="gc-notes-tag">Tee</span>${escapeHTML(note.tee)}</div>`);
+      if (note.approach) parts.push(`<div class="gc-notes-line"><span class="gc-notes-tag">Approach</span>${escapeHTML(note.approach)}</div>`);
+      if (note.green) parts.push(`<div class="gc-notes-line"><span class="gc-notes-tag">Green</span>${escapeHTML(note.green)}</div>`);
+      notesEl.innerHTML = `<div class="gc-notes-footer"><div class="gc-notes-hdr">Course Notes · Hole ${hole.number}</div>${parts.join('')}</div>`;
+    } else {
+      notesEl.innerHTML = '';
+    }
+  }
+
+  // End-of-form action button label
+  const actionBtn = document.getElementById('gc-action-btn');
+  if (actionBtn) {
+    if (GC.holeIdx === total - 1) {
+      actionBtn.textContent = '✓ Finish & Save Round';
+    } else {
+      actionBtn.textContent = 'Next Hole →';
+    }
+  }
+}
+
+// Tiny HTML escaper used only for course-note text rendering.
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+// glacierSetField — write a single field on the current hole, persist WIP, re-render.
+// Tap-to-toggle: tapping the currently-selected chip clears it (sets to null).
+// Exception: on/off-green toggle and bottom-row toggles use their own boolean handlers.
+function glacierSetField(field, value) {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
+  const hole = wip.holes[GC.holeIdx];
+  // Tap-to-toggle: same value clears it.
+  if (hole[field] === value) {
+    hole[field] = null;
+  } else {
+    hole[field] = value;
+  }
+  glacierPersistAndRender(wip);
+}
+
+// glacierZoneTap — applies the Pin/On-green state machine per locked v10 spec:
+//   Rule 1: Selecting "Pin" auto-sets onGreen = true.
+//   Rule 2: Toggling onGreen off when Pin is selected clears the grid (handled in glacierToggleOnGreen).
+//   Rule 3: Pin cell disabled when onGreen is false (visually) — but tapping it
+//           still triggers Rule 1 (auto-enables onGreen + selects Pin in one tap).
+function glacierZoneTap(zone) {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
+  const hole = wip.holes[GC.holeIdx];
+  // Tap-to-toggle for re-tap.
+  if (hole.approachResult === zone) {
+    hole.approachResult = null;
+    // If we just deselected Pin, do not auto-clear onGreen (user may want to
+    // pick another on-green zone). onGreen is the user's separate decision.
+  } else {
+    hole.approachResult = zone;
+    if (zone === 'pin') {
+      // Rule 1: selecting Pin auto-sets onGreen = true.
+      hole.onGreen = true;
+    }
+  }
+  glacierPersistAndRender(wip);
+}
+
+function glacierToggleOnGreen() {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
+  const hole = wip.holes[GC.holeIdx];
+  hole.onGreen = !hole.onGreen;
+  // Rule 2: if Pin is selected and onGreen just turned off, clear the grid.
+  if (!hole.onGreen && hole.approachResult === 'pin') {
+    hole.approachResult = null;
+  }
+  glacierPersistAndRender(wip);
+}
+
+function glacierToggleField(field) {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
+  const hole = wip.holes[GC.holeIdx];
+  hole[field] = !hole[field];
+  glacierPersistAndRender(wip);
+}
+
+function glacierSetPutts(n) {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
+  const hole = wip.holes[GC.holeIdx];
+  // Tap-to-toggle: same value clears.
+  if (hole.putts === n) {
+    hole.putts = null;
+    // If we cleared putts and result was "holed", clear it too (no longer valid).
+    if (hole.firstPuttResult === 'holed') hole.firstPuttResult = null;
+  } else {
+    hole.putts = n;
+    // Putts === 1 implies first putt was holed. Auto-set per locked v10 spec.
+    if (n === 1) hole.firstPuttResult = 'holed';
+    else if (hole.firstPuttResult === 'holed') {
+      // Putts > 1: "holed" no longer makes sense, clear it.
+      hole.firstPuttResult = null;
+    }
+  }
+  glacierPersistAndRender(wip);
+}
+
+function glacierAdjustScore(delta) {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
+  const hole = wip.holes[GC.holeIdx];
+  const cur = hole.score != null ? hole.score : hole.par;
+  const next = cur + delta;
+  if (next < 1 || next > 12) return; // range 1-12 per locked v10 spec
+  hole.score = next;
+  glacierPersistAndRender(wip);
+}
+
+function glacierAdjustPenalty(delta) {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
+  const hole = wip.holes[GC.holeIdx];
+  const cur = hole.penalty != null ? hole.penalty : 0;
+  const next = cur + delta;
+  if (next < 0 || next > 6) return; // range 0-6 per locked v10 spec
+  hole.penalty = next;
+  glacierPersistAndRender(wip);
+}
+
+function glacierGotoHole(delta) {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes) return;
+  const next = GC.holeIdx + delta;
+  if (next < 0 || next >= wip.holes.length) return;
+  GC.holeIdx = next;
+  // Persist last-viewed-hole index in WIP so resumeWIP returns to this hole.
+  wip._gcLastIdx = GC.holeIdx;
+  saveWIP(wip);
+  glacierRenderHole();
+  // Scroll to top of body when changing holes — user expects a fresh page.
+  const body = document.querySelector('#view-glacier-capture .scroll-body');
+  if (body) body.scrollTop = 0;
+}
+
+function glacierActionTap() {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes) return;
+  if (GC.holeIdx === wip.holes.length - 1) {
+    glacierFinishRound();
+  } else {
+    glacierGotoHole(1);
+  }
+}
+
+function glacierBackToHome() {
+  // Save & Exit: WIP stays, resume banner picks up. No commit to history yet.
+  const wip = glacierGetWIP();
+  if (wip) {
+    wip._gcLastIdx = GC.holeIdx;
+    saveWIP(wip);
+  }
+  showView('home');
+}
+
+function glacierConfirmAbandon() {
+  if (!confirm('Abandon this round? All captured holes will be lost.')) return;
+  saveWIP(null);
+  toast('Round abandoned');
+  showView('home');
+}
+
+function glacierFinishRound() {
+  const wip = glacierGetWIP();
+  if (!wip) return;
+  // Compute totalScore from holes[].score (defaults are par, so even untouched
+  // holes contribute correctly).
+  calcRoundTotal(wip);
+  // Strip transient UI state.
+  delete wip._gcLastIdx;
+  // Commit to pjc_rounds.
+  const rounds = getRounds();
+  rounds.push(wip);
+  saveRounds(rounds);
+  // Mark rounds as locally-changed for sync.
+  const meta = getSyncMeta();
+  meta.roundsTs = Date.now();
+  saveSyncMeta(meta);
+  // Clear WIP.
+  saveWIP(null);
+  toast(`Round saved · ${wip.totalScore} (${wip.totalScore - wip.par >= 0 ? '+' : ''}${wip.totalScore - wip.par})`);
+  showView('home');
+}
+
+// renderDetailV2 — minimum-legibility Round Detail for schemaVersion: 2 rounds.
+// Reuses the existing det-* DOM nodes. Hides v1-only nodes (det-pji, det-miss,
+// det-tee). Byron section is gated separately via byronUpdateUI which already
+// handles schemaVersion. Per Recommendation 5: "Awaiting OBSIDIAN PURGE."
+function renderDetailV2(round) {
+  // Header
+  document.getElementById('det-course').textContent = round.course || '\u2014';
+  const d = round.date ? new Date(round.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+  document.getElementById('det-meta').textContent = [d, round.tees, (round.holesPlayed||0)+' holes'].filter(Boolean).join(' \xb7 ');
+
+  // Score header
+  const rel = round.totalScore != null ? round.totalScore - round.par : null;
+  const relStr = rel == null ? '\u2014' : rel === 0 ? 'E' : rel > 0 ? '+'+rel : String(rel);
+  document.getElementById('det-score-hdr').innerHTML = `
+    <div class="detail-score-hdr">
+      <div class="detail-score-big ${scoreColorClass(rel)}">${round.totalScore ?? '\u2014'}</div>
+      <div class="detail-score-rel ${scoreColorClass(rel)}">${relStr}</div>
+    </div>`;
+
+  // Stats — derive from new shape
+  const holes = round.holes || [];
+  const girCount = holes.filter(h => h.onGreen === true).length;
+  const sandCount = holes.filter(h => h.sand).length;
+  const sandSaves = holes.filter(h => h.sand && h.score <= h.par).length;
+  const totalPenalties = holes.reduce((a,h)=>a+(h.penalty||0),0);
+  const puttsTotal = holes.reduce((a,h)=>a+(h.putts||0),0);
+  const upDownEligible = holes.filter(h => !h.onGreen);
+  const upDowns = upDownEligible.filter(h => h.putts === 1).length;
+  const threePutts = holes.filter(h => h.putts === 3).length;
+  const fourPlusPutts = holes.filter(h => h.putts === 4).length;
+  const longPutts = threePutts + fourPlusPutts;
+
+  document.getElementById('det-stats').innerHTML = [
+    {val: girCount + '/' + holes.length, lbl: 'GIR'},
+    {val: puttsTotal || '\u2014', lbl: 'Putts'},
+    {val: upDownEligible.length ? upDowns + '/' + upDownEligible.length : '\u2014', lbl: 'Up & Down'},
+    {val: longPutts || '0', lbl: '3+ Putts'},
+  ].map(s => `<div class="stat-tile"><div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join('');
+
+  document.getElementById('det-stats2').innerHTML = [
+    {val: sandCount ? sandSaves + '/' + sandCount : '0', lbl: 'Sand Saves'},
+    {val: totalPenalties || '0', lbl: 'Penalties'},
+  ].map(s => `<div class="stat-tile"><div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join('');
+
+  // Hide v1-only blocks
+  ['det-pji','det-miss','det-tee'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '';
+  });
+
+  // Per-hole list — minimum legibility. Show captured fields per hole.
+  const holesEl = document.getElementById('det-holes');
+  if (holesEl) {
+    holesEl.innerHTML = holes.map(h => {
+      const relH = h.score != null ? h.score - h.par : null;
+      const relCls = relH == null ? '' : relH < 0 ? 'c-under' : relH > 0 ? 'c-over' : 'c-even';
+      const relSym = relH == null ? '' : relH === 0 ? 'E' : relH > 0 ? '+'+relH : String(relH);
+      const tags = [];
+      if (h.teeResult && h.teeResult !== 'fairway') tags.push(`Tee ${h.teeResult}`);
+      if (h.teeResult === 'fairway') tags.push('Fairway');
+      if (h.approachYards) tags.push(h.approachYards + 'y');
+      if (h.approachResult) tags.push(h.approachResult.replace(/-/g,' '));
+      if (h.onGreen) tags.push('On green');
+      if (h.putts != null) tags.push(h.putts === 4 ? '4+ putts' : h.putts + 'p');
+      if (h.sand) tags.push('Sand');
+      if (h.doubleChip) tags.push('Double chip');
+      if (h.penalty) tags.push(h.penalty > 1 ? (h.penalty + ' Penalties') : 'Penalty');
+      const tagsHtml = tags.length ? `<div style="font-size:11px;color:var(--chalk3);margin-top:4px">${tags.join(' · ')}</div>` : '';
+      return `<div class="round-row" style="cursor:default">
+        <div class="rr-info">
+          <div class="rr-course" style="font-size:14px">Hole ${h.number} · Par ${h.par}</div>
+          ${tagsHtml}
+        </div>
+        <div class="rr-score-block">
+          <div class="rr-score ${relCls}" style="font-size:22px">${h.score!=null?h.score:'\u2014'}</div>
+          <div class="rr-rel ${relCls}">${relSym}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Byron section — byronUpdateUI handles the schemaVersion gate (returns the
+  // "Awaiting OBSIDIAN PURGE" message for schemaVersion: 2 rounds).
+  byronUpdateUI(round.id);
+
+  // Delete button stays usable.
 }
 
 // ── SETTINGS ─────────────────────────────────────────────────
@@ -4981,6 +5722,14 @@ const DET = { roundId: null, openHoles: new Set(), editHoles: new Set() };
 function renderDetail() {
   const round = getRounds().find(r => r.id === DET.roundId);
   if (!round) { showView('history'); return; }
+
+  // GLACIER CAPTURE (v8.1.0) — schemaVersion: 2 rounds use the new shape
+  // (13-field per-hole capture, no shots array). Branch to renderDetailV2 for
+  // those. The legacy v1 path below is kept for any historical round and for
+  // safety; post-TUNDRA migration no v1 rounds exist on this device, but they
+  // could be pulled from a non-upgraded sync source (the shape validator drops
+  // those, so this is genuinely defensive).
+  if (round.schemaVersion === 2) { renderDetailV2(round); return; }
 
   // Header
   document.getElementById('det-course').textContent = round.course || '\u2014';
