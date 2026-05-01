@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.2.0 · Apr 30, 2026 -->
+<!-- PJ Caddie v8.3.0 · Apr 30, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -187,6 +187,50 @@ body{display:flex;flex-direction:column}
 .stat-tile{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:12px 10px;text-align:center}
 .stat-val{font-family:'DM Serif Display',serif;font-size:26px;color:var(--chalk);line-height:1}
 .stat-lbl{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--chalk3);margin-top:5px}
+.stat-n{font-size:9px;color:var(--chalk3);opacity:.65;margin-top:3px}
+/* SUMMIT REDESIGN (v8.3.0) — tee shot vertical bar chart */
+.det-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px 12px;margin-bottom:14px}
+.det-tee-chart{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;height:120px;padding:0 4px}
+.det-tee-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+.det-tee-count{font-family:'DM Serif Display',serif;font-size:13px;color:var(--chalk);margin-bottom:5px;line-height:1}
+.det-tee-bar{width:100%;border-radius:3px 3px 0 0;background:var(--gold);min-height:2px}
+.det-tee-bar.danger{background:var(--red)}
+.det-tee-bar.in-play{background:var(--green)}
+.det-tee-bar.zero{background:var(--ink3)}
+.det-tee-labels{display:flex;justify-content:space-between;gap:6px;margin-top:8px;padding:0 4px}
+.det-tee-lbl{flex:1;text-align:center;font-size:10px;color:var(--chalk3);letter-spacing:.4px}
+/* SUMMIT REDESIGN (v8.3.0) — approach zone heat-map grids */
+.det-grids{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.det-grid-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:10px}
+.det-grid-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.det-grid-name{font-size:11px;color:var(--chalk2)}
+.det-grid-n{font-size:10px;color:var(--chalk3);opacity:.65}
+.det-zone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+.det-zone-cell{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--chalk);font-weight:500}
+.det-zone-cell.empty{background:var(--ink);color:var(--chalk3);opacity:.4}
+.det-zone-cell.locked{background:#0A0907;color:var(--chalk3);opacity:.4;font-size:14px}
+.det-zone-cell.m-1{background:rgba(201,85,72,0.18);color:#F0D5CF}
+.det-zone-cell.m-2{background:rgba(201,85,72,0.50);color:#FFE2DC}
+.det-zone-cell.m-3{background:rgba(201,85,72,0.85);color:#FFF}
+.det-zone-cell.m-4{background:#C95548;color:#FFF}
+.det-zone-cell.h-1{background:rgba(94,200,94,0.22);color:#D6F0D6}
+.det-zone-cell.h-2{background:rgba(94,200,94,0.45);color:#E5F8E5}
+.det-zone-cell.h-3{background:rgba(94,200,94,0.68);color:#0F1F0F}
+.det-zone-cell.h-4{background:rgba(94,200,94,0.88);color:#0F1F0F}
+/* SUMMIT REDESIGN (v8.3.0) — stacked horizontal bars (GIR / Hole-out by yardage) */
+.det-stack-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:11px}
+.det-stack-row:last-child{margin-bottom:0}
+.det-stack-lbl{width:54px;color:var(--chalk2);text-align:right;font-size:10px}
+.det-stack-track{flex:1;height:10px;background:var(--ink);border-radius:2px;display:flex;overflow:hidden}
+.det-stack-hit{background:var(--green);height:100%}
+.det-stack-hit.alt{background:var(--gold)}
+.det-stack-miss{background:var(--ink3);height:100%}
+.det-stack-num{width:34px;color:var(--chalk3);font-size:10px}
+/* SUMMIT REDESIGN (v8.3.0) — putting analysis lines */
+.det-putt-line{font-size:12px;color:var(--chalk2);line-height:1.6;margin-bottom:6px}
+.det-putt-line:last-child{margin-bottom:0}
+/* SUMMIT REDESIGN (v8.3.0) — missing-data warning pill on hole rows */
+.det-warn-pill{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:rgba(200,168,75,.18);border:1px solid rgba(200,168,75,.5);border-radius:50%;color:var(--gold);font-size:10px;font-weight:600;flex-shrink:0;margin-right:8px}
 .miss-strip{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:12px}
 .miss-cross{display:grid;grid-template-columns:1fr 80px 1fr;grid-template-rows:72px 72px 72px;gap:6px;max-width:280px;margin:0 auto}
 .miss-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--border);background:var(--ink3)}
@@ -428,7 +472,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.2.0 · Apr 30, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.0 · Apr 30, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -735,9 +779,13 @@ body{display:flex;flex-direction:column}
       <div id="det-score-hdr" style="margin-bottom:18px"></div>
       <div class="stat-strip" id="det-stats"></div>
       <div class="stat-strip-2" id="det-stats2"></div>
-      <div id="det-pji" style="margin-bottom:12px"></div>
-      <div id="det-miss" style="margin-bottom:6px"></div>
-      <div id="det-tee" style="margin-bottom:6px"></div>
+      <div id="det-tee-section"></div>
+      <div id="det-zones-section"></div>
+      <div id="det-par-section"></div>
+      <div id="det-rate-section"></div>
+      <div id="det-gir-section"></div>
+      <div id="det-holeout-section"></div>
+      <div id="det-putt-section"></div>
       <span class="section-lbl">Holes</span>
       <div id="det-holes"></div>
       <button class="btn btn-danger" style="margin-top:20px" id="det-delete-btn" onclick="deleteRound()">Delete Round</button>
@@ -933,7 +981,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.2.0 · Spec v2.1</span>
+        <span>v8.3.0 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -2760,36 +2808,34 @@ function initGlacierCapture() {
 
 // COBALT WINDOW (v8.2.0) — target-aware getter. In edit mode (EDIT.roundId
 // set), returns the saved round being edited. In capture mode, returns the
-// active WIP. All glacier-capture handlers go through this; the data model
-// is identical (both have .holes[] indexed by GC.holeIdx) so the handlers
-// don't need to know which mode they're in. Function name kept for stability
-// across ~20 call sites; "WIP" here means "the active capture/edit target".
+// active WIP.
+// SAVE COMMIT (v8.3.0) — in edit mode now synthesizes a target object whose
+// holes[EDIT.holeIdx] IS EDIT.workingHole (a stable reference in EDIT state).
+// Handler mutations on target.holes[GC.holeIdx][field] therefore land on
+// the working copy, not the saved round. Other holes are read-only refs to
+// the saved round (handlers never touch them — GC.holeIdx is fixed in edit).
+// Function name kept for stability across ~14 call sites.
 function glacierGetWIP() {
   if (EDIT.roundId != null) {
-    return getRounds().find(r => r.id === EDIT.roundId) || null;
+    const round = getRounds().find(r => r.id === EDIT.roundId);
+    if (!round) return null;
+    const synthetic = {...round, holes: [...round.holes]};
+    synthetic.holes[EDIT.holeIdx] = EDIT.workingHole;
+    return synthetic;
   }
   return getWIP();
 }
 
 // glacierPersistAndRender — single chokepoint for "field changed" actions.
-// COBALT WINDOW (v8.2.0) — target-aware persistence. In edit mode, splices
-// the mutated target back into pjc_rounds, recomputes calcRoundTotal so the
-// summary screen shows correct numbers on return, and bumps roundsTs so the
-// change syncs. In capture mode, the original saveWIP path. Re-render is
-// cheap (selective DOM updates), no debouncing.
+// COBALT WINDOW (v8.2.0) — was target-aware persistence.
+// SAVE COMMIT (v8.3.0) — in edit mode this no longer writes to pjc_rounds.
+// The handler has already mutated EDIT.workingHole (because glacierGetWIP
+// synthesized a target whose holes[GC.holeIdx] IS workingHole). Persistence
+// to the saved round is deferred to the Save button (gcSave). All we do
+// here in edit mode is re-render so the UI reflects the working copy.
 function glacierPersistAndRender(target) {
   if (!target) { glacierRenderHole(); return; }
-  if (EDIT.roundId != null) {
-    const rounds = getRounds();
-    const idx = rounds.findIndex(r => r.id === EDIT.roundId);
-    if (idx < 0) { glacierRenderHole(); return; }
-    rounds[idx] = target;
-    calcRoundTotal(rounds[idx]);
-    saveRounds(rounds);
-    const meta = getSyncMeta();
-    meta.roundsTs = Date.now();
-    saveSyncMeta(meta);
-  } else {
+  if (EDIT.roundId == null) {
     saveWIP(target);
   }
   glacierRenderHole();
@@ -2921,10 +2967,10 @@ function glacierRenderHole() {
 
   // COBALT WINDOW (v8.2.0) — mode-aware UI. In edit mode: hide hole nav
   // arrows (single-hole edit, no "next"), hide both action buttons (no
-  // Next/Finish concept), hide Abandon (no concept on a saved round),
-  // change back-button text to "Done". In capture mode: restore all the
-  // above to their normal state. Both directions explicit so a re-render
-  // after mode-switch lands cleanly.
+  // Next/Finish concept).
+  // SAVE COMMIT (v8.3.0) — header buttons in edit mode are now Save (left,
+  // gold-highlighted when dirty, muted when clean) and Cancel (right,
+  // chalk2 instead of red). Onclick handlers are swapped per mode.
   const inEdit = EDIT.roundId != null;
   const prevBtn2 = document.getElementById('gc-prev-btn');
   const nextBtn2 = document.getElementById('gc-next-btn');
@@ -2933,9 +2979,35 @@ function glacierRenderHole() {
   if (actionBtn) actionBtn.style.display = inEdit ? 'none' : '';
   if (actionBtnTop) actionBtnTop.style.display = inEdit ? 'none' : '';
   const abandonBtn = document.getElementById('gc-abandon-btn');
-  if (abandonBtn) abandonBtn.style.display = inEdit ? 'none' : '';
   const backBtn = document.getElementById('gc-back-btn');
-  if (backBtn) backBtn.textContent = inEdit ? 'Done' : '\u2302 Save & Exit';
+  if (inEdit) {
+    const dirty = gcEditIsDirty();
+    if (backBtn) {
+      backBtn.textContent = 'Save';
+      backBtn.onclick = gcSave;
+      backBtn.style.color = dirty ? 'var(--gold)' : 'var(--chalk3)';
+    }
+    if (abandonBtn) {
+      abandonBtn.textContent = 'Cancel';
+      abandonBtn.onclick = gcCancel;
+      abandonBtn.style.color = 'var(--chalk2)';
+      abandonBtn.style.opacity = '1';
+      abandonBtn.style.display = '';
+    }
+  } else {
+    if (backBtn) {
+      backBtn.textContent = '\u2302 Save & Exit';
+      backBtn.onclick = glacierBackToHome;
+      backBtn.style.color = '';
+    }
+    if (abandonBtn) {
+      abandonBtn.textContent = 'Abandon';
+      abandonBtn.onclick = glacierConfirmAbandon;
+      abandonBtn.style.color = 'var(--red)';
+      abandonBtn.style.opacity = '.7';
+      abandonBtn.style.display = '';
+    }
+  }
 }
 
 // glacierSetField — write a single field on the current hole, persist WIP, re-render.
@@ -3087,17 +3159,12 @@ function glacierActionTap() {
 }
 
 function glacierBackToHome() {
-  // COBALT WINDOW (v8.2.0) — edit-mode branch. In edit mode the header
-  // back button reads "Done" (set by glacierRenderHole) and returns to the
-  // round detail screen. EDIT state cleared; DET primed with the round
-  // that was being edited. Auto-save means edits are already persisted —
-  // nothing to save here, only navigation.
+  // SAVE COMMIT (v8.3.0) — edit-mode header back-button is "Save" (committing)
+  // and the abandon-slot is "Cancel" (discarding). This function only fires
+  // when something programmatically calls glacierBackToHome — in edit mode
+  // we treat it as cancel intent (matches the OS back-gesture semantics).
   if (EDIT.roundId != null) {
-    const editedRoundId = EDIT.roundId;
-    EDIT.roundId = null;
-    EDIT.holeIdx = null;
-    DET.roundId = editedRoundId;
-    showView('detail');
+    gcCancel();
     return;
   }
   // Capture mode: Save & Exit. WIP stays, resume banner picks up. No
@@ -3157,33 +3224,28 @@ function glacierFinishRound() {
   showView('detail');
 }
 
-// renderDetailV2 — minimum-legibility Round Detail for schemaVersion: 2 rounds.
-// Reuses the existing det-* DOM nodes. Hides v1-only nodes (det-pji, det-miss,
-// det-tee). Byron section is gated separately via byronUpdateUI which already
-// handles schemaVersion. Per Recommendation 5: "Awaiting OBSIDIAN PURGE."
+// renderDetailV2 — Round Detail for schemaVersion: 2 rounds.
+// SUMMIT REDESIGN (v8.3.0) — full rewrite. New sections: tee shot bar
+// chart, two approach-zone heat-map grids, score-by-par tiles, rate tiles
+// (bogey-or-better, tee in-play, bogey+ at ≤124y), GIR-by-yardage stacked
+// bars, hole-out-≤3-by-yardage stacked bars, plain-text putting inferences,
+// per-hole rows with ⚠️ missing-data warnings. Sand Saves removed from this
+// screen (computation kept elsewhere). CARDINAL FIX (v8.3.0) — up & down
+// formula now requires !doubleChip. AMBER LANTERN's inline ternary preserved.
 function renderDetailV2(round) {
-  // Header
+  // ── Header ──────────────────────────────────────────────────
   document.getElementById('det-course').textContent = round.course || '\u2014';
   const d = round.date ? new Date(round.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
-  // GLACIER POLISH (v8.1.1) — show "X of N holes" if partial; "N holes" if complete.
   let holesMeta = (round.holesPlayed||0) + ' holes';
   if (round.playedHoles != null && round.playedHoles < (round.holesPlayed||0)) {
     holesMeta = round.playedHoles + ' of ' + round.holesPlayed + ' holes';
   }
   document.getElementById('det-meta').textContent = [d, round.tees, holesMeta].filter(Boolean).join(' \xb7 ');
 
-  // Score header
-  // GLACIER POLISH (v8.1.1) — rel against playedPar (not full-round par) so a
-  // partial round doesn't display a misleading inflated negative number.
+  // ── Score header ────────────────────────────────────────────
   const relPar = round.playedPar != null ? round.playedPar : round.par;
   const rel = round.totalScore != null ? round.totalScore - relPar : null;
   const relStr = rel == null ? '\u2014' : rel === 0 ? 'E' : rel > 0 ? '+'+rel : String(rel);
-  // AMBER LANTERN (v8.1.3) — scoreColorClass helper was deleted in OBSIDIAN
-  // PURGE alongside the v1 detail chain, but renderDetailV2 still referenced
-  // it here, throwing ReferenceError and aborting before the score header,
-  // stat strips, and per-hole list could render. Inlining the same ternary
-  // already used at roundRowHTML (line ~2596) and the per-hole list below
-  // (line ~3244) keeps a single shared expression pattern, no helper needed.
   const scRel = rel==null?'':rel<0?'c-under':rel>0?'c-over':'c-even';
   document.getElementById('det-score-hdr').innerHTML = `
     <div class="detail-score-hdr">
@@ -3191,57 +3253,197 @@ function renderDetailV2(round) {
       <div class="detail-score-rel ${scRel}">${relStr}</div>
     </div>`;
 
-  // Stats — derive from new shape, restricted to played holes only.
-  // GLACIER POLISH (v8.1.1) — partial-round denominator fix. Untouched holes
-  // (score=0) shouldn't drag down GIR / Up&Down / Putts averages.
-  // GLACIER REFINE (v8.1.2) — sand save formula updated per Matt's spec:
-  // greenside bunker + ≤2 more strokes to hole (counting putts + the chip
-  // out of the bunker if doubleChip is set, since doubleChip implies an
-  // extra short-game stroke before the first putt). Honest stat for an
-  // 18hcp — old "score ≤ par" definition was hiding bad bunker outings on
-  // par 5s where par was made via recovery, not via the sand save itself.
-  // Saves where putts are unlogged are excluded from the numerator (data
-  // incomplete) but still count toward the denominator.
+  // ── Core derived state ──────────────────────────────────────
   const allHoles = round.holes || [];
   const holes = allHoles.filter(h => h.score > 0);
+  const nPlayed = holes.length;
+
+  // CARDINAL FIX (v8.3.0) — up & down requires NOT doubleChip. Two chips
+  // and 1 putt is not up&down (definition: get up in 2 strokes).
+  const upDownEligible = holes.filter(h => !h.onGreen);
+  const upDowns = upDownEligible.filter(h => h.putts === 1 && !h.doubleChip).length;
+
   const girCount = holes.filter(h => h.onGreen === true).length;
-  const sandHoles = holes.filter(h => h.sand);
-  const sandCount = sandHoles.length;
-  const sandSaves = sandHoles.filter(h => {
-    if (h.putts == null) return false;
-    const strokesAfterBunker = h.putts + (h.doubleChip ? 1 : 0);
-    return strokesAfterBunker <= 2;
-  }).length;
   const totalPenalties = holes.reduce((a,h)=>a+(h.penalty||0),0);
   const puttsTotal = holes.reduce((a,h)=>a+(h.putts||0),0);
-  const upDownEligible = holes.filter(h => !h.onGreen);
-  const upDowns = upDownEligible.filter(h => h.putts === 1).length;
   const threePutts = holes.filter(h => h.putts === 3).length;
   const fourPlusPutts = holes.filter(h => h.putts === 4).length;
   const longPutts = threePutts + fourPlusPutts;
+  const doubleChips = holes.filter(h => h.doubleChip).length;
 
+  // ── Stat strips ─────────────────────────────────────────────
   document.getElementById('det-stats').innerHTML = [
-    {val: holes.length ? girCount + '/' + holes.length : '\u2014', lbl: 'GIR'},
+    {val: nPlayed ? girCount + '/' + nPlayed : '\u2014', lbl: 'GIR'},
     {val: puttsTotal || '\u2014', lbl: 'Putts'},
     {val: upDownEligible.length ? upDowns + '/' + upDownEligible.length : '\u2014', lbl: 'Up & Down'},
     {val: longPutts || '0', lbl: '3+ Putts'},
   ].map(s => `<div class="stat-tile"><div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join('');
 
   document.getElementById('det-stats2').innerHTML = [
-    {val: sandCount ? sandSaves + '/' + sandCount : '0', lbl: 'Sand Saves'},
     {val: totalPenalties || '0', lbl: 'Penalties'},
+    {val: doubleChips || '0', lbl: 'Double Chips'},
   ].map(s => `<div class="stat-tile"><div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join('');
 
-  // Hide v1-only blocks
-  ['det-pji','det-miss','det-tee'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = '';
-  });
+  // ── Tee Shots vertical bar chart ────────────────────────────
+  // Par 4/5 only, count by teeResult zone OBL→OBR.
+  const teeHoles = holes.filter(h => h.par >= 4 && h.teeResult != null);
+  const teeZones = ['OBL','LL','L','fairway','R','RR','OBR'];
+  const teeLabels = ['OBL','LL','L','Fwy','R','RR','OBR'];
+  const teeColors = ['danger','','in-play','in-play','in-play','','danger'];
+  const teeCounts = teeZones.map(z => teeHoles.filter(h => h.teeResult === z).length);
+  const teeMax = Math.max(1, ...teeCounts);
+  const teeBars = teeZones.map((z, i) => {
+    const c = teeCounts[i];
+    const heightPct = c === 0 ? 0 : Math.round((c / teeMax) * 100);
+    const cls = c === 0 ? 'zero' : teeColors[i];
+    const heightStyle = c === 0 ? 'height:2px' : `height:${heightPct}%`;
+    return `<div class="det-tee-col"><div class="det-tee-count">${c}</div><div class="det-tee-bar ${cls}" style="${heightStyle}"></div></div>`;
+  }).join('');
+  const teeLabelsHtml = teeLabels.map(l => `<div class="det-tee-lbl">${l}</div>`).join('');
+  document.getElementById('det-tee-section').innerHTML = `
+    <span class="section-lbl">Tee Shots (n=${teeHoles.length})</span>
+    <div class="det-card">
+      <div class="det-tee-chart">${teeBars}</div>
+      <div class="det-tee-labels">${teeLabelsHtml}</div>
+    </div>`;
 
-  // Per-hole list — render ALL holes, but mark untouched ones (score=0) clearly
-  // so the user can spot which holes they didn't capture / didn't play.
-  // COBALT WINDOW (v8.2.0) — rows are now tap-targets that route to
-  // editHoleStart for full per-hole view + edit.
+  // ── Approach Zone heat-maps (Missed | Hit) ──────────────────
+  // 9 zones: long-l, long, long-r / pin-l, pin, pin-r / short-l, short, short-r
+  const zoneOrder = ['long-l','long','long-r','pin-l','pin','pin-r','short-l','short','short-r'];
+  const missed = holes.filter(h => h.onGreen === false && h.approachResult != null);
+  const hit = holes.filter(h => h.onGreen === true && h.approachResult != null);
+  const zoneBucket = (pct, isMissed, isLockedCell) => {
+    if (isLockedCell) return 'locked';
+    if (pct === 0) return 'empty';
+    const prefix = isMissed ? 'm-' : 'h-';
+    if (pct <= 7) return prefix + '1';
+    if (pct <= 14) return prefix + '2';
+    if (pct <= 22) return prefix + '3';
+    return prefix + '4';
+  };
+  const renderZoneCells = (holesSet, isMissed) => {
+    const total = holesSet.length;
+    return zoneOrder.map(z => {
+      const isPin = z === 'pin';
+      const isLocked = isMissed && isPin; // missed-grid pin cell blacked out
+      if (isLocked) return `<div class="det-zone-cell locked">\u2014</div>`;
+      const c = holesSet.filter(h => h.approachResult === z).length;
+      const pct = total ? Math.round((c / total) * 100) : 0;
+      const cls = zoneBucket(pct, isMissed, false);
+      return `<div class="det-zone-cell ${cls}">${pct}%</div>`;
+    }).join('');
+  };
+  document.getElementById('det-zones-section').innerHTML = `
+    <span class="section-lbl">Approach Zones</span>
+    <div class="det-grids">
+      <div class="det-grid-card">
+        <div class="det-grid-hdr"><span class="det-grid-name">Missed</span><span class="det-grid-n">n=${missed.length}</span></div>
+        <div class="det-zone-grid">${renderZoneCells(missed, true)}</div>
+      </div>
+      <div class="det-grid-card">
+        <div class="det-grid-hdr"><span class="det-grid-name">Hit</span><span class="det-grid-n">n=${hit.length}</span></div>
+        <div class="det-zone-grid">${renderZoneCells(hit, false)}</div>
+      </div>
+    </div>`;
+
+  // ── Score by Par Type tiles ─────────────────────────────────
+  const par3Holes = holes.filter(h => h.par === 3);
+  const par4Holes = holes.filter(h => h.par === 4);
+  const par5Holes = holes.filter(h => h.par === 5);
+  const avgScore = arr => arr.length ? (arr.reduce((a,h)=>a+h.score,0) / arr.length).toFixed(1) : '\u2014';
+  document.getElementById('det-par-section').innerHTML = `
+    <span class="section-lbl">Score by Par Type</span>
+    <div class="stat-strip" style="grid-template-columns:repeat(3,1fr);margin-bottom:6px">
+      <div class="stat-tile"><div class="stat-val">${avgScore(par3Holes)}</div><div class="stat-lbl">Par 3</div><div class="stat-n">n=${par3Holes.length}</div></div>
+      <div class="stat-tile"><div class="stat-val">${avgScore(par4Holes)}</div><div class="stat-lbl">Par 4</div><div class="stat-n">n=${par4Holes.length}</div></div>
+      <div class="stat-tile"><div class="stat-val">${avgScore(par5Holes)}</div><div class="stat-lbl">Par 5</div><div class="stat-n">n=${par5Holes.length}</div></div>
+    </div>`;
+
+  // ── Rate tiles: Bogey or Better | Tee In-Play | Bogey+ at ≤124y ──
+  const bogeyOrBetter = holes.filter(h => h.score - h.par <= 1).length;
+  const bogeyPct = nPlayed ? Math.round((bogeyOrBetter / nPlayed) * 100) : 0;
+  const par45Played = holes.filter(h => h.par >= 4);
+  const inPlay = par45Played.filter(h => h.teeResult === 'fairway' || h.teeResult === 'L' || h.teeResult === 'R').length;
+  const inPlayPct = par45Played.length ? Math.round((inPlay / par45Played.length) * 100) : 0;
+  // Item #3: par 4/5, low band, shotsBeforeApproach matches par-2, score-par<=1
+  const lowBands = ['50-74','75-99','100-124'];
+  const item3Eligible = holes.filter(h => {
+    if (h.par < 4) return false;
+    if (!lowBands.includes(h.approachYards)) return false;
+    if (h.putts == null) return false;
+    const shotsBeforeApproach = h.score - 1 - h.putts - (h.doubleChip ? 1 : 0);
+    return shotsBeforeApproach === (h.par - 2);
+  });
+  const item3Met = item3Eligible.filter(h => h.score - h.par <= 1).length;
+  document.getElementById('det-rate-section').innerHTML = `
+    <div class="stat-strip" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+      <div class="stat-tile"><div class="stat-val">${nPlayed ? bogeyPct + '%' : '\u2014'}</div><div class="stat-lbl">Bogey or Better</div><div class="stat-n">n=${nPlayed}</div></div>
+      <div class="stat-tile"><div class="stat-val">${par45Played.length ? inPlayPct + '%' : '\u2014'}</div><div class="stat-lbl">Tee In-Play</div><div class="stat-n">n=${par45Played.length}</div></div>
+      <div class="stat-tile"><div class="stat-val">${item3Eligible.length ? item3Met + '/' + item3Eligible.length : '0/0'}</div><div class="stat-lbl">Bogey+ at ≤124y</div><div class="stat-n">n=${item3Eligible.length}</div></div>
+    </div>`;
+
+  // ── GIR by Yardage / Hole-out ≤3 by Yardage stacked bars ────
+  const bands = ['50-74','75-99','100-124','125-149','150-174','175-199','200+'];
+  const bandRows = (metricFn, hitClass) => bands.map(b => {
+    const inBand = holes.filter(h => h.approachYards === b);
+    const total = inBand.length;
+    const hitCount = inBand.filter(metricFn).length;
+    const hitPct = total ? Math.round((hitCount / total) * 100) : 0;
+    const missPct = total ? 100 - hitPct : 0;
+    const trackInner = total === 0
+      ? `<div class="det-stack-miss" style="width:100%"></div>`
+      : `<div class="det-stack-hit ${hitClass}" style="width:${hitPct}%"></div><div class="det-stack-miss" style="width:${missPct}%"></div>`;
+    const numText = total ? `${hitCount}/${total}` : '0/0';
+    return `<div class="det-stack-row"><span class="det-stack-lbl">${b}</span><div class="det-stack-track">${trackInner}</div><span class="det-stack-num">${numText}</span></div>`;
+  }).join('');
+  document.getElementById('det-gir-section').innerHTML = `
+    <span class="section-lbl">GIR by Yardage</span>
+    <div class="det-card">${bandRows(h => h.onGreen === true, '')}</div>`;
+  // Hole-out ≤3: 1 (approach) + putts + (doubleChip ? 1 : 0) ≤ 3.
+  // Equivalent: putts != null && (putts + (doubleChip ? 1 : 0)) <= 2.
+  document.getElementById('det-holeout-section').innerHTML = `
+    <span class="section-lbl">Hole-out ≤3 by Yardage</span>
+    <div class="det-card">${bandRows(h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2, 'alt')}</div>`;
+
+  // ── Putting plain-text inferences ───────────────────────────
+  const fpInside6 = holes.filter(h => h.firstPuttDist === 'le6');
+  const fpInside6Holed = fpInside6.filter(h => h.firstPuttResult === 'holed').length;
+  const fpInside6Pct = fpInside6.length ? Math.round((fpInside6Holed / fpInside6.length) * 100) : 0;
+  const fpLong = holes.filter(h => h.firstPuttDist === '16-25' || h.firstPuttDist === '26-40' || h.firstPuttDist === '40+');
+  const fpLongClose = fpLong.filter(h => h.firstPuttResult === 'close' || h.firstPuttResult === 'tap-in' || h.firstPuttResult === 'holed').length;
+  const fpLongFar = fpLong.filter(h => h.firstPuttResult === 'medium' || h.firstPuttResult === 'long').length;
+  const threePuttHoles = holes.filter(h => h.putts === 3).map(h => 'H' + h.number);
+  const fourPuttHoles = holes.filter(h => h.putts === 4).map(h => 'H' + h.number);
+  const puttLines = [];
+  if (fpInside6.length) puttLines.push(`Inside 6 ft: ${fpInside6Holed} of ${fpInside6.length} holed (${fpInside6Pct}%)`);
+  if (fpLong.length) puttLines.push(`From 16+ ft: ${fpLongClose} finished close or better; ${fpLongFar} medium or long`);
+  if (threePuttHoles.length) puttLines.push(`3-putts on ${threePuttHoles.join(', ')}`);
+  if (fourPuttHoles.length) puttLines.push(`4+ putts on ${fourPuttHoles.join(', ')}`);
+  const puttBody = puttLines.length
+    ? puttLines.map(l => `<div class="det-putt-line">${l}</div>`).join('')
+    : '<div class="det-putt-line" style="opacity:.5">No putting data yet.</div>';
+  document.getElementById('det-putt-section').innerHTML = `
+    <span class="section-lbl">Putting</span>
+    <div class="det-card">${puttBody}</div>`;
+
+  // ── Per-hole rows with missing-data warnings ────────────────
+  // SUMMIT REDESIGN (v8.3.0) — required-field check on played holes.
+  const isMissingData = h => {
+    if (!(h.score > 0)) return false;
+    if (h.pinPos == null) return true;
+    if (h.approachYards == null) return true;
+    if (h.approachResult == null) return true;
+    if (h.onGreen == null) return true;
+    if (h.putts == null) return true;
+    if (h.firstPuttDist == null) return true;
+    if (h.firstPuttResult == null) return true;
+    if (h.par >= 4) {
+      if (h.teeClub == null || !h.teeClub.abbr) return true;
+      if (h.teeResult == null) return true;
+    }
+    return false;
+  };
+
   const holesEl = document.getElementById('det-holes');
   if (holesEl) {
     holesEl.innerHTML = allHoles.map((h, idx) => {
@@ -3256,18 +3458,19 @@ function renderDetailV2(round) {
       if (h.approachResult) tags.push(h.approachResult.replace(/-/g,' '));
       if (h.onGreen) tags.push('On green');
       if (h.putts != null) tags.push(h.putts === 4 ? '4+ putts' : h.putts + 'p');
-      if (h.sand) tags.push('Sand');
       if (h.doubleChip) tags.push('Double chip');
       if (h.penalty) tags.push(h.penalty > 1 ? (h.penalty + ' Penalties') : 'Penalty');
       const tagsHtml = tags.length
         ? `<div style="font-size:11px;color:var(--chalk3);margin-top:4px">${tags.join(' \xb7 ')}</div>`
         : (isPlayed ? '' : '<div style="font-size:11px;color:var(--chalk3);opacity:.5;margin-top:4px;font-style:italic">Not played</div>');
       const rowOpacity = isPlayed ? '' : 'opacity:.5;';
+      const warnPill = isMissingData(h) ? '<span class="det-warn-pill" title="Missing required data">!</span>' : '';
       const scoreCell = isPlayed
         ? `<div class="rr-score ${relCls}" style="font-size:22px">${h.score}</div>
            <div class="rr-rel ${relCls}">${relSym}</div>`
         : `<div class="rr-score" style="font-size:22px;color:var(--chalk3)">\u2014</div>`;
       return `<div class="round-row" style="${rowOpacity}" onclick="editHoleStart('${round.id}', ${idx})">
+        ${warnPill}
         <div class="rr-info">
           <div class="rr-course" style="font-size:14px">Hole ${h.number} \xb7 Par ${h.par}</div>
           ${tagsHtml}
@@ -3279,8 +3482,7 @@ function renderDetailV2(round) {
     }).join('');
   }
 
-  // IVORY VEIL (v8.1.4) — Byron front-end removed. The byron-section block
-  // and byronUpdateUI call previously here are gone; backend (runByron,
+  // IVORY VEIL (v8.1.4) — Byron front-end removed. Backend (runByron,
   // prompts, cache) preserved for future revival.
 
   // Delete button stays usable.
@@ -4138,22 +4340,74 @@ const DET = { roundId: null };
 
 // COBALT WINDOW (v8.2.0) — edit mode state. When EDIT.roundId is set, the
 // glacier-capture view reads/writes the saved round (pjc_rounds entry) at
-// holes[EDIT.holeIdx], rather than the in-progress WIP. Cleared on entry to
-// any non-edit context. See editHoleStart / glacierBackToHome's edit branch.
-const EDIT = { roundId: null, holeIdx: null };
+// holes[EDIT.holeIdx], rather than the in-progress WIP.
+// SAVE COMMIT (v8.3.0) — added workingHole + originalHole. Mutations now
+// happen on workingHole (a structured-clone of the saved hole, set on
+// editHoleStart). Save commits workingHole into pjc_rounds; Cancel discards
+// it. Dirty check = JSON.stringify(workingHole) !== JSON.stringify(originalHole).
+const EDIT = { roundId: null, holeIdx: null, workingHole: null, originalHole: null };
 
 function editHoleStart(roundId, holeIdx) {
   // Entry point from renderDetailV2's per-hole rows. Sets edit-mode state,
-  // primes glacier-capture's hole pointer, then routes into the capture view.
-  // initGlacierCapture + glacierRenderHole + the target-aware getter/saver
-  // do the rest — no separate edit screen.
+  // clones the saved hole into a working copy, primes glacier-capture's
+  // hole pointer, then routes into the capture view.
+  // SAVE COMMIT (v8.3.0) — clones the saved hole into workingHole and
+  // originalHole. workingHole is what handlers mutate; originalHole is the
+  // dirty-check reference.
   const round = getRounds().find(r => r.id === roundId);
   if (!round || !round.holes || !round.holes[holeIdx]) return;
   EDIT.roundId = roundId;
   EDIT.holeIdx = holeIdx;
+  EDIT.workingHole = JSON.parse(JSON.stringify(round.holes[holeIdx]));
+  EDIT.originalHole = JSON.parse(JSON.stringify(round.holes[holeIdx]));
   GC.holeIdx = holeIdx;
   GC.scoreExpand = false;
   showView('glacier-capture');
+}
+
+// SAVE COMMIT (v8.3.0) — true dirty check on the working copy.
+function gcEditIsDirty() {
+  if (EDIT.roundId == null) return false;
+  return JSON.stringify(EDIT.workingHole) !== JSON.stringify(EDIT.originalHole);
+}
+
+// SAVE COMMIT (v8.3.0) — Save commits workingHole into pjc_rounds.
+// Splices, recomputes total, marks sync dirty, clears EDIT, returns to detail.
+// Tapping Save with no edits is a clean no-op-then-return.
+function gcSave() {
+  if (EDIT.roundId == null) return;
+  const editedRoundId = EDIT.roundId;
+  if (gcEditIsDirty()) {
+    const rounds = getRounds();
+    const idx = rounds.findIndex(r => r.id === editedRoundId);
+    if (idx >= 0) {
+      rounds[idx].holes[EDIT.holeIdx] = EDIT.workingHole;
+      calcRoundTotal(rounds[idx]);
+      saveRounds(rounds);
+      const meta = getSyncMeta();
+      meta.roundsTs = Date.now();
+      saveSyncMeta(meta);
+    }
+  }
+  EDIT.roundId = null;
+  EDIT.holeIdx = null;
+  EDIT.workingHole = null;
+  EDIT.originalHole = null;
+  DET.roundId = editedRoundId;
+  showView('detail');
+}
+
+// SAVE COMMIT (v8.3.0) — Cancel discards working copy. Confirms only when dirty.
+function gcCancel() {
+  if (EDIT.roundId == null) return;
+  if (gcEditIsDirty() && !confirm('Discard your changes?')) return;
+  const editedRoundId = EDIT.roundId;
+  EDIT.roundId = null;
+  EDIT.holeIdx = null;
+  EDIT.workingHole = null;
+  EDIT.originalHole = null;
+  DET.roundId = editedRoundId;
+  showView('detail');
 }
 
 function renderDetail() {
