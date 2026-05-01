@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.1.4 · Apr 30, 2026 -->
+<!-- PJ Caddie v8.2.0 · Apr 30, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -428,7 +428,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.1.4 · Apr 30, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.2.0 · Apr 30, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -549,8 +549,8 @@ body{display:flex;flex-direction:column}
   <div class="safe-top"></div>
   <div class="hdr" style="flex-shrink:0">
     <div class="hdr-row">
-      <button class="back-btn" onclick="glacierBackToHome()">⌂ Save &amp; Exit</button>
-      <button class="hdr-action" onclick="glacierConfirmAbandon()" style="color:var(--red);opacity:.7">Abandon</button>
+      <button class="back-btn" id="gc-back-btn" onclick="glacierBackToHome()">⌂ Save &amp; Exit</button>
+      <button class="hdr-action" id="gc-abandon-btn" onclick="glacierConfirmAbandon()" style="color:var(--red);opacity:.7">Abandon</button>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:10px">
       <button class="gc-nav-arrow" id="gc-prev-btn" onclick="glacierGotoHole(-1)" aria-label="Previous hole">‹</button>
@@ -933,7 +933,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.1.4 · Spec v2.1</span>
+        <span>v8.2.0 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -2738,27 +2738,60 @@ function startRoundSetup() {
 const GC = { holeIdx: 0, scoreExpand: false };
 
 function initGlacierCapture() {
-  const wip = getWIP();
-  if (!wip || wip.schemaVersion !== 2) {
-    // No valid WIP — bail to home. Should not normally happen because callers
-    // (startRoundSetup, resumeWIP) guarantee a WIP exists; this is a safety net.
+  // COBALT WINDOW (v8.2.0) — target-aware init. In edit mode reads the
+  // saved round; in capture mode reads WIP. Same v2 schema check, same
+  // GC.holeIdx clamp, same render path either way.
+  const target = glacierGetWIP();
+  if (!target || target.schemaVersion !== 2) {
+    // No valid target — bail to home. In capture mode this means there's
+    // no in-progress round; in edit mode it means the round wasn't found
+    // (unlikely if editHoleStart guarded correctly, but defensive).
+    EDIT.roundId = null;
+    EDIT.holeIdx = null;
     showView('home');
     return;
   }
   // Clamp holeIdx to valid range.
-  const max = (wip.holes || []).length - 1;
+  const max = (target.holes || []).length - 1;
   if (GC.holeIdx < 0) GC.holeIdx = 0;
   if (GC.holeIdx > max) GC.holeIdx = max;
   glacierRenderHole();
 }
 
-function glacierGetWIP() { return getWIP(); }
+// COBALT WINDOW (v8.2.0) — target-aware getter. In edit mode (EDIT.roundId
+// set), returns the saved round being edited. In capture mode, returns the
+// active WIP. All glacier-capture handlers go through this; the data model
+// is identical (both have .holes[] indexed by GC.holeIdx) so the handlers
+// don't need to know which mode they're in. Function name kept for stability
+// across ~20 call sites; "WIP" here means "the active capture/edit target".
+function glacierGetWIP() {
+  if (EDIT.roundId != null) {
+    return getRounds().find(r => r.id === EDIT.roundId) || null;
+  }
+  return getWIP();
+}
 
 // glacierPersistAndRender — single chokepoint for "field changed" actions.
-// Writes WIP to localStorage and re-renders the current hole. Re-render is
-// cheap (selective DOM updates), so we don't bother with debouncing.
-function glacierPersistAndRender(wip) {
-  saveWIP(wip);
+// COBALT WINDOW (v8.2.0) — target-aware persistence. In edit mode, splices
+// the mutated target back into pjc_rounds, recomputes calcRoundTotal so the
+// summary screen shows correct numbers on return, and bumps roundsTs so the
+// change syncs. In capture mode, the original saveWIP path. Re-render is
+// cheap (selective DOM updates), no debouncing.
+function glacierPersistAndRender(target) {
+  if (!target) { glacierRenderHole(); return; }
+  if (EDIT.roundId != null) {
+    const rounds = getRounds();
+    const idx = rounds.findIndex(r => r.id === EDIT.roundId);
+    if (idx < 0) { glacierRenderHole(); return; }
+    rounds[idx] = target;
+    calcRoundTotal(rounds[idx]);
+    saveRounds(rounds);
+    const meta = getSyncMeta();
+    meta.roundsTs = Date.now();
+    saveSyncMeta(meta);
+  } else {
+    saveWIP(target);
+  }
   glacierRenderHole();
 }
 
@@ -2885,6 +2918,24 @@ function glacierRenderHole() {
   const actionBtnTop = document.getElementById('gc-action-btn-top');
   if (actionBtn) actionBtn.textContent = actionLbl;
   if (actionBtnTop) actionBtnTop.textContent = actionLbl;
+
+  // COBALT WINDOW (v8.2.0) — mode-aware UI. In edit mode: hide hole nav
+  // arrows (single-hole edit, no "next"), hide both action buttons (no
+  // Next/Finish concept), hide Abandon (no concept on a saved round),
+  // change back-button text to "Done". In capture mode: restore all the
+  // above to their normal state. Both directions explicit so a re-render
+  // after mode-switch lands cleanly.
+  const inEdit = EDIT.roundId != null;
+  const prevBtn2 = document.getElementById('gc-prev-btn');
+  const nextBtn2 = document.getElementById('gc-next-btn');
+  if (prevBtn2) prevBtn2.style.display = inEdit ? 'none' : '';
+  if (nextBtn2) nextBtn2.style.display = inEdit ? 'none' : '';
+  if (actionBtn) actionBtn.style.display = inEdit ? 'none' : '';
+  if (actionBtnTop) actionBtnTop.style.display = inEdit ? 'none' : '';
+  const abandonBtn = document.getElementById('gc-abandon-btn');
+  if (abandonBtn) abandonBtn.style.display = inEdit ? 'none' : '';
+  const backBtn = document.getElementById('gc-back-btn');
+  if (backBtn) backBtn.textContent = inEdit ? 'Done' : '\u2302 Save & Exit';
 }
 
 // glacierSetField — write a single field on the current hole, persist WIP, re-render.
@@ -3004,6 +3055,10 @@ function glacierAdjustPenalty(delta) {
 }
 
 function glacierGotoHole(delta) {
+  // COBALT WINDOW (v8.2.0) — capture-only. In edit mode the nav arrows
+  // are hidden by glacierRenderHole, so this should never fire — but if
+  // it does (stale render, programmatic call), bail before saveWIP.
+  if (EDIT.roundId != null) return;
   const wip = glacierGetWIP();
   if (!wip || !wip.holes) return;
   const next = GC.holeIdx + delta;
@@ -3020,6 +3075,8 @@ function glacierGotoHole(delta) {
 }
 
 function glacierActionTap() {
+  // COBALT WINDOW (v8.2.0) — capture-only. Action buttons hidden in edit mode.
+  if (EDIT.roundId != null) return;
   const wip = glacierGetWIP();
   if (!wip || !wip.holes) return;
   if (GC.holeIdx === wip.holes.length - 1) {
@@ -3030,7 +3087,21 @@ function glacierActionTap() {
 }
 
 function glacierBackToHome() {
-  // Save & Exit: WIP stays, resume banner picks up. No commit to history yet.
+  // COBALT WINDOW (v8.2.0) — edit-mode branch. In edit mode the header
+  // back button reads "Done" (set by glacierRenderHole) and returns to the
+  // round detail screen. EDIT state cleared; DET primed with the round
+  // that was being edited. Auto-save means edits are already persisted —
+  // nothing to save here, only navigation.
+  if (EDIT.roundId != null) {
+    const editedRoundId = EDIT.roundId;
+    EDIT.roundId = null;
+    EDIT.holeIdx = null;
+    DET.roundId = editedRoundId;
+    showView('detail');
+    return;
+  }
+  // Capture mode: Save & Exit. WIP stays, resume banner picks up. No
+  // commit to history yet.
   const wip = glacierGetWIP();
   if (wip) {
     wip._gcLastIdx = GC.holeIdx;
@@ -3040,6 +3111,8 @@ function glacierBackToHome() {
 }
 
 function glacierConfirmAbandon() {
+  // COBALT WINDOW (v8.2.0) — capture-only. Abandon button hidden in edit mode.
+  if (EDIT.roundId != null) return;
   if (!confirm('Abandon this round? All captured holes will be lost.')) return;
   saveWIP(null);
   toast('Round abandoned');
@@ -3047,6 +3120,8 @@ function glacierConfirmAbandon() {
 }
 
 function glacierFinishRound() {
+  // COBALT WINDOW (v8.2.0) — capture-only. Defensive guard.
+  if (EDIT.roundId != null) return;
   const wip = glacierGetWIP();
   if (!wip) return;
   // Compute totalScore from holes[].score (defaults are 0, so untouched holes
@@ -3165,9 +3240,11 @@ function renderDetailV2(round) {
 
   // Per-hole list — render ALL holes, but mark untouched ones (score=0) clearly
   // so the user can spot which holes they didn't capture / didn't play.
+  // COBALT WINDOW (v8.2.0) — rows are now tap-targets that route to
+  // editHoleStart for full per-hole view + edit.
   const holesEl = document.getElementById('det-holes');
   if (holesEl) {
-    holesEl.innerHTML = allHoles.map(h => {
+    holesEl.innerHTML = allHoles.map((h, idx) => {
       const isPlayed = h.score > 0;
       const relH = isPlayed ? h.score - h.par : null;
       const relCls = relH == null ? '' : relH < 0 ? 'c-under' : relH > 0 ? 'c-over' : 'c-even';
@@ -3190,7 +3267,7 @@ function renderDetailV2(round) {
         ? `<div class="rr-score ${relCls}" style="font-size:22px">${h.score}</div>
            <div class="rr-rel ${relCls}">${relSym}</div>`
         : `<div class="rr-score" style="font-size:22px;color:var(--chalk3)">\u2014</div>`;
-      return `<div class="round-row" style="cursor:default;${rowOpacity}">
+      return `<div class="round-row" style="${rowOpacity}" onclick="editHoleStart('${round.id}', ${idx})">
         <div class="rr-info">
           <div class="rr-course" style="font-size:14px">Hole ${h.number} \xb7 Par ${h.par}</div>
           ${tagsHtml}
@@ -4058,6 +4135,26 @@ async function runByron(pass) {
 // deleted v1 detailHoleHTML/edit-hole flow used them). v2 Round Detail is a
 // flat read-only render, no per-hole state.
 const DET = { roundId: null };
+
+// COBALT WINDOW (v8.2.0) — edit mode state. When EDIT.roundId is set, the
+// glacier-capture view reads/writes the saved round (pjc_rounds entry) at
+// holes[EDIT.holeIdx], rather than the in-progress WIP. Cleared on entry to
+// any non-edit context. See editHoleStart / glacierBackToHome's edit branch.
+const EDIT = { roundId: null, holeIdx: null };
+
+function editHoleStart(roundId, holeIdx) {
+  // Entry point from renderDetailV2's per-hole rows. Sets edit-mode state,
+  // primes glacier-capture's hole pointer, then routes into the capture view.
+  // initGlacierCapture + glacierRenderHole + the target-aware getter/saver
+  // do the rest — no separate edit screen.
+  const round = getRounds().find(r => r.id === roundId);
+  if (!round || !round.holes || !round.holes[holeIdx]) return;
+  EDIT.roundId = roundId;
+  EDIT.holeIdx = holeIdx;
+  GC.holeIdx = holeIdx;
+  GC.scoreExpand = false;
+  showView('glacier-capture');
+}
 
 function renderDetail() {
   const round = getRounds().find(r => r.id === DET.roundId);
