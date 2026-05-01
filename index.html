@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.1.3 · Apr 30, 2026 -->
+<!-- PJ Caddie v8.1.4 · Apr 30, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -347,35 +347,6 @@ body{display:flex;flex-direction:column}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 #toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,20px) + 70px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:10px 20px;font-size:13px;color:var(--chalk);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:999;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.byron-pass-card{margin-bottom:10px;padding:0;overflow:hidden}
-.byron-pass-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer;user-select:none;transition:background .12s}
-.byron-pass-hdr:active{background:var(--ink3)}
-.byron-pass-title{font-size:14px;font-weight:600;color:var(--chalk)}
-.byron-pass-sub{font-size:10px;color:var(--chalk3);margin-top:2px;letter-spacing:.3px}
-.byron-pass-chev{font-size:11px;color:var(--chalk3);transition:transform .2s;flex-shrink:0}
-.byron-pass-chev.open{transform:rotate(180deg)}
-.byron-pass-body{border-top:1px solid var(--border2);padding:12px 14px 14px}
-.byron-hole-row{border-bottom:1px solid var(--border2);padding:10px 0;cursor:pointer;user-select:none}
-.byron-hole-row:last-child{border-bottom:none;padding-bottom:0}
-.byron-hole-hdr{display:flex;align-items:center;gap:8px}
-.byron-hole-num{font-family:'DM Serif Display',serif;font-size:15px;color:var(--gold);min-width:28px;flex-shrink:0}
-.byron-hole-summary{font-size:12px;color:var(--chalk2);flex:1;line-height:1.4}
-.byron-hole-chev{font-size:10px;color:var(--chalk3);transition:transform .2s;flex-shrink:0}
-.byron-hole-chev.open{transform:rotate(180deg)}
-.byron-hole-detail{font-size:12px;color:var(--chalk3);line-height:1.7;padding:8px 0 2px 36px}
-.byron-section{margin-bottom:14px}
-.byron-section:last-child{margin-bottom:0}
-.byron-section-lbl{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:5px;display:block}
-.byron-section-txt{font-size:12px;color:var(--chalk2);line-height:1.7}
-.byron-headline{font-size:13px;font-weight:600;color:var(--chalk);background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.25);border-radius:var(--rs);padding:10px 12px;margin-bottom:14px;line-height:1.5}
-.byron-gp-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
-.byron-gp-hole{font-family:'DM Serif Display',serif;font-size:13px;color:var(--gold);min-width:28px;flex-shrink:0;padding-top:1px}
-.byron-gp-zone{font-size:9px;letter-spacing:1px;text-transform:uppercase;background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:2px 7px;color:var(--chalk3);flex-shrink:0;white-space:nowrap;margin-top:2px}
-.byron-gp-reason{font-size:12px;color:var(--chalk2);line-height:1.6;flex:1}
-.byron-loading{text-align:center;padding:20px 0}
-.byron-spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
-.byron-error{font-size:12px;color:var(--red);padding:8px 0}
-.byron-warn{font-size:11px;color:var(--gold);background:rgba(200,168,75,.08);border:1px solid rgba(200,168,75,.2);border-radius:var(--rs);padding:8px 10px;margin-bottom:10px;line-height:1.5}
 
 /* GLACIER CAPTURE (v8.1.0) — per-hole capture screen.
    GLACIER POLISH (v8.1.1) — club grid, yardage centered, top section tightened.
@@ -457,7 +428,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.1.3 · Apr 30, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.1.4 · Apr 30, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -769,63 +740,6 @@ body{display:flex;flex-direction:column}
       <div id="det-tee" style="margin-bottom:6px"></div>
       <span class="section-lbl">Holes</span>
       <div id="det-holes"></div>
-      <div id="byron-section" style="margin-top:20px">
-        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px">
-          <span class="section-lbl" style="margin-bottom:0">Byron Analysis</span>
-          <span style="font-size:10px;color:var(--chalk3);opacity:.6" id="byron-version-lbl"></span>
-        </div>
-
-        <!-- Pass 1: Holes -->
-        <div class="card byron-pass-card" id="byron-card-holes">
-          <div class="byron-pass-hdr" onclick="toggleByronCard('holes')">
-            <div>
-              <div class="byron-pass-title">🔍 Holes</div>
-              <div class="byron-pass-sub" id="byron-ts-holes"></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <button class="btn btn-gold btn-sm" id="byron-btn-holes" onclick="event.stopPropagation();runByron('holes')">Run</button>
-              <span class="byron-pass-chev" id="byron-chev-holes">▾</span>
-            </div>
-          </div>
-          <div id="byron-body-holes" class="byron-pass-body" style="display:none">
-            <div id="byron-content-holes"></div>
-          </div>
-        </div>
-
-        <!-- Pass 2: Patterns -->
-        <div class="card byron-pass-card" id="byron-card-patterns">
-          <div class="byron-pass-hdr" onclick="toggleByronCard('patterns')">
-            <div>
-              <div class="byron-pass-title">📊 Patterns</div>
-              <div class="byron-pass-sub" id="byron-ts-patterns"></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <button class="btn btn-gold btn-sm" id="byron-btn-patterns" onclick="event.stopPropagation();runByron('patterns')" disabled>Run</button>
-              <span class="byron-pass-chev" id="byron-chev-patterns">▾</span>
-            </div>
-          </div>
-          <div id="byron-body-patterns" class="byron-pass-body" style="display:none">
-            <div id="byron-content-patterns"></div>
-          </div>
-        </div>
-
-        <!-- Pass 3: Gameplan -->
-        <div class="card byron-pass-card" id="byron-card-gameplan">
-          <div class="byron-pass-hdr" onclick="toggleByronCard('gameplan')">
-            <div>
-              <div class="byron-pass-title">🎯 Gameplan</div>
-              <div class="byron-pass-sub" id="byron-ts-gameplan"></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px">
-              <button class="btn btn-gold btn-sm" id="byron-btn-gameplan" onclick="event.stopPropagation();runByron('gameplan')" disabled>Run</button>
-              <span class="byron-pass-chev" id="byron-chev-gameplan">▾</span>
-            </div>
-          </div>
-          <div id="byron-body-gameplan" class="byron-pass-body" style="display:none">
-            <div id="byron-content-gameplan"></div>
-          </div>
-        </div>
-      </div>
       <button class="btn btn-danger" style="margin-top:20px" id="det-delete-btn" onclick="deleteRound()">Delete Round</button>
     </div>
   </div>
@@ -841,7 +755,7 @@ body{display:flex;flex-direction:column}
   </div>
   <div class="scroll-body">
     <div class="pad pad-b">
-      <div style="font-size:12px;color:var(--chalk3);margin-bottom:10px;line-height:1.5">Upload a screenshot (Bluegolf or similar) or a photo of a physical scorecard. Byron will extract the course structure and tee yardages.</div>
+      <div style="font-size:12px;color:var(--chalk3);margin-bottom:10px;line-height:1.5">Upload a screenshot (Bluegolf or similar) or a photo of a physical scorecard. We'll extract the course structure and tee yardages.</div>
       <input type="file" id="ci-file-input" accept="image/*" style="display:none" onchange="onCourseImportFileSelected(this.files)">
       <div class="pi-drop" id="ci-drop-zone" onclick="document.getElementById('ci-file-input').click()">
         <div class="pi-drop-icon">📇</div>
@@ -907,7 +821,7 @@ body{display:flex;flex-direction:column}
           <div class="sr-val">→</div>
         </div>
         <div class="settings-row" style="cursor:pointer;border-bottom:none" onclick="showView('player-hub')">
-          <div><div class="sr-label">🎯 My Game</div><div class="sr-sub">Personal tendencies &amp; profile for Byron</div></div>
+          <div><div class="sr-label">🎯 My Game</div><div class="sr-sub">Personal tendencies &amp; profile</div></div>
           <div class="sr-val">→</div>
         </div>
       </div>
@@ -1019,7 +933,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.1.3 · Spec v2.1</span>
+        <span>v8.1.4 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1131,10 +1045,10 @@ body{display:flex;flex-direction:column}
         </div>
         <div class="player-field" style="margin-bottom:0">
           <span class="player-field-lbl">General Notes</span>
-          <textarea class="player-textarea" id="ph-notes" placeholder="Any other tendencies, patterns, or context for Byron…" onblur="autoSavePlayer()"></textarea>
+          <textarea class="player-textarea" id="ph-notes" placeholder="Any other tendencies, patterns, or context…" onblur="autoSavePlayer()"></textarea>
         </div>
       </div>
-      <div style="font-size:11px;color:var(--chalk3);text-align:center;opacity:.7">Profile auto-saves. Byron uses this context in analysis.</div>
+      <div style="font-size:11px;color:var(--chalk3);text-align:center;opacity:.7">Profile auto-saves.</div>
     </div>
   </div>
 </div>
@@ -1636,7 +1550,7 @@ function genId() { return Date.now().toString(36) + Math.random().toString(36).s
 // parsing. If parse still fails, throw an error including the raw text so the UI can
 // surface what Byron actually returned instead of a cryptic generic JSON error.
 function parseByronJSON(raw) {
-  if (!raw) throw new Error('Empty response from Byron');
+  if (!raw) throw new Error('Empty response from API');
   let cleaned = raw.trim();
   // Strip ```json ... ``` or ``` ... ``` fences if present (flexible on language tag/whitespace)
   cleaned = cleaned.replace(/^```(?:json|JSON)?\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
@@ -1644,7 +1558,7 @@ function parseByronJSON(raw) {
     return JSON.parse(cleaned);
   } catch (err) {
     const preview = cleaned.slice(0, 200).replace(/\s+/g, ' ');
-    throw new Error('Byron returned unparseable output. First 200 chars: ' + preview);
+    throw new Error('API returned unparseable output. First 200 chars: ' + preview);
   }
 }
 
@@ -2079,7 +1993,7 @@ function flushGlacierToasts() {
         const d = JSON.parse(m);
         const parts = [];
         if (d.rounds) parts.push(d.rounds + ' round' + (d.rounds === 1 ? '' : 's'));
-        if (d.byronCache) parts.push(d.byronCache + ' Byron analyses');
+        if (d.byronCache) parts.push(d.byronCache + ' cached analyses');
         if (d.courseBags) parts.push(d.courseBags + ' course-bag mappings');
         if (d.wip) parts.push('round in progress');
         const msg = parts.length ? 'v8 upgrade: cleared ' + parts.join(', ') : 'v8 upgrade complete';
@@ -3288,9 +3202,9 @@ function renderDetailV2(round) {
     }).join('');
   }
 
-  // Byron section — byronUpdateUI handles the schemaVersion gate (returns the
-  // "Awaiting OBSIDIAN PURGE" message for schemaVersion: 2 rounds).
-  byronUpdateUI(round.id);
+  // IVORY VEIL (v8.1.4) — Byron front-end removed. The byron-section block
+  // and byronUpdateUI call previously here are gone; backend (runByron,
+  // prompts, cache) preserved for future revival.
 
   // Delete button stays usable.
 }
@@ -4073,154 +3987,30 @@ function bgsSaveNewBag() {
 }
 
 // ── BYRON 3.0 ENGINE ─────────────────────────────────────────
-function byronTimeAgo(ts) {
-  const mins = Math.round((Date.now()-ts)/60000);
-  if (mins<1) return 'just now';
-  if (mins<60) return mins+'m ago';
-  return Math.round(mins/60)+'h ago';
-}
-
-function toggleByronCard(pass) {
-  const body = document.getElementById('byron-body-'+pass);
-  const chev = document.getElementById('byron-chev-'+pass);
-  if (!body) return;
-  const isOpen = body.style.display!=='none';
-  body.style.display = isOpen?'none':'';
-  if (chev) chev.classList.toggle('open', !isOpen);
-}
-
-function toggleByronHole(row) {
-  const detail = row.querySelector('.byron-hole-detail');
-  const chev = row.querySelector('.byron-hole-chev');
-  if (!detail) return;
-  const isOpen = detail.style.display!=='none';
-  detail.style.display = isOpen?'none':'';
-  if (chev) chev.classList.toggle('open', !isOpen);
-}
-
-function renderByronHoles(el, result) {
-  if (!result?.holes) { el.innerHTML = '<div class="byron-error">Invalid response from Byron.</div>'; return; }
-  const warn = result.lowDataWarning?`<div class="byron-warn">\u26a0\ufe0f ${result.lowDataWarning}</div>`:'';
-  const rows = result.holes.map(h=>`
-    <div class="byron-hole-row" onclick="toggleByronHole(this)">
-      <div class="byron-hole-hdr">
-        <span class="byron-hole-num">H${h.number}</span>
-        <span class="byron-hole-summary">${h.summary||''}</span>
-        <span class="byron-hole-chev">\u25be</span>
-      </div>
-      <div class="byron-hole-detail" style="display:none">${h.detail||''}</div>
-    </div>`).join('');
-  el.innerHTML = warn + rows;
-}
-
-function renderByronPatterns(el, result) {
-  if (!result) { el.innerHTML = '<div class="byron-error">Invalid response from Byron.</div>'; return; }
-  const warn = result.lowDataWarning?`<div class="byron-warn">\u26a0\ufe0f ${result.lowDataWarning}</div>`:'';
-  const sections = [
-    {key:'missPattern',    label:'Miss Pattern'},
-    {key:'clubValidation', label:'Club Validation'},
-    {key:'partialSwings',  label:'Partial Swings'},
-    {key:'penaltySummary', label:'Penalties'},
-    {key:'chipProximity',  label:'Short Game'},
-    {key:'historicalComparison', label:'vs. History'}
-  ];
-  const html = sections.filter(s=>result[s.key]&&result[s.key]!=='null'&&result[s.key]!==null).map(s=>
-    `<div class="byron-section"><span class="byron-section-lbl">${s.label}</span><div class="byron-section-txt">${result[s.key]}</div></div>`
-  ).join('');
-  el.innerHTML = warn + (html||'<div class="byron-error">No patterns identified.</div>');
-}
-
-function renderByronGameplan(el, result) {
-  if (!result) { el.innerHTML = '<div class="byron-error">Invalid response from Byron.</div>'; return; }
-  let html = '';
-  if (result.headline) html += `<div class="byron-headline">${result.headline}</div>`;
-  if (result.bogeyBudget?.length) {
-    html += '<div class="byron-section"><span class="byron-section-lbl">Bogey Budget</span>';
-    result.bogeyBudget.forEach(b=>{
-      html += `<div class="byron-gp-row"><span class="byron-gp-hole">H${b.hole}</span><span class="byron-gp-zone">${b.zone}</span><div class="byron-gp-reason">${b.reasoning}</div></div>`;
-    });
-    html += '</div>';
-  }
-  if (result.otherAdjustments?.length) {
-    html += '<div class="byron-section"><span class="byron-section-lbl">Other Adjustments</span>';
-    result.otherAdjustments.forEach(a=>{
-      html += `<div class="byron-section-txt" style="margin-bottom:6px">\u2022 ${a}</div>`;
-    });
-    html += '</div>';
-  }
-  el.innerHTML = html || '<div class="byron-error">No gameplan generated.</div>';
-}
-
-function byronUpdateUI(roundId) {
-  const vEl = document.getElementById('byron-version-lbl');
-  if (vEl) vEl.textContent = BYRON_VERSION;
-  // GLACIER GATE \u2014 Byron's prompts read schema BYRON_SCHEMA_VERSION (currently 1).
-  // After GLACIER ships, rounds are written with schemaVersion: 2 and won't match
-  // until OBSIDIAN PURGE rewrites the prompts and bumps BYRON_SCHEMA_VERSION to 2.
-  // In TUNDRA itself this gate is theoretical (no rounds exist post-migration); it
-  // becomes operative during the GLACIER \u2192 OBSIDIAN window.
-  const round = getRounds().find(r => r.id === roundId);
-  const roundSchema = (round && round.schemaVersion) || 1;
-  if (round && roundSchema !== BYRON_SCHEMA_VERSION) {
-    ['holes','patterns','gameplan'].forEach(pass => {
-      const btn = document.getElementById('byron-btn-'+pass);
-      const tsEl = document.getElementById('byron-ts-'+pass);
-      const contentEl = document.getElementById('byron-content-'+pass);
-      if (btn) { btn.disabled = true; btn.textContent = 'Disabled'; }
-      if (tsEl) tsEl.textContent = 'Awaiting OBSIDIAN PURGE';
-      if (contentEl) contentEl.innerHTML = '<div class="byron-error" style="text-align:center;padding:14px">Byron analysis is being rebuilt for the new round shape.<br><span style="opacity:.7;font-size:11px">Re-enabled in a future update.</span></div>';
-    });
-    return;
-  }
-  const passes = ['holes','patterns','gameplan'];
-  passes.forEach((pass, i) => {
-    const cache = byronGetCache(roundId, pass);
-    const btn     = document.getElementById('byron-btn-'+pass);
-    const tsEl    = document.getElementById('byron-ts-'+pass);
-    const contentEl = document.getElementById('byron-content-'+pass);
-    const prevCached = i===0 || !!byronGetCache(roundId, passes[i-1]);
-    if (cache) {
-      if (tsEl) tsEl.textContent = 'Run '+byronTimeAgo(cache.ts);
-      if (btn) { btn.textContent='Re-run'; btn.disabled=false; }
-      if (contentEl) {
-        if (pass==='holes')    renderByronHoles(contentEl, cache.result);
-        else if (pass==='patterns') renderByronPatterns(contentEl, cache.result);
-        else                   renderByronGameplan(contentEl, cache.result);
-      }
-    } else {
-      if (tsEl) tsEl.textContent = i===0?'Run after completing round':prevCached?'Ready to run':'Run Holes first';
-      if (btn) { btn.textContent='Run'; btn.disabled=!prevCached; }
-      if (contentEl) contentEl.innerHTML='';
-    }
-  });
-}
+// IVORY VEIL (v8.1.4) — front-end removed. The seven UI/render functions
+// that lived here (byronTimeAgo, toggleByronCard, toggleByronHole,
+// renderByronHoles, renderByronPatterns, renderByronGameplan, byronUpdateUI)
+// were all DOM-coupled — they read/wrote to byron-* element IDs that no
+// longer exist in view-detail. Removed cleanly. Backend (runByron, prompts,
+// bundle composer, cache layer) preserved intact below for future revival.
+// Note: prompts target schemaVersion: 1 only and will need OBSIDIAN BYRON
+// rewrite work to run on v2 rounds when Byron returns.
 
 async function runByron(pass) {
+  // IVORY VEIL (v8.1.4) — runByron preserved as backend-only. Every DOM
+  // mutation removed. Schema gate, prompt build, API fetch, cache write,
+  // and toast notifications survive. Caller is responsible for UI.
   const antKey = localStorage.getItem('caddie_ant_key');
   if (!antKey) { toast('Add API key in Settings first'); return; }
   const round = getRounds().find(r=>r.id===DET.roundId);
   if (!round) return;
-  // GLACIER GATE \u2014 refuse to invoke Byron on rounds whose shape doesn't match
-  // what BYRON_SCHEMA_VERSION's prompts can read. byronUpdateUI also disables the
-  // buttons, but we re-check here in case a stale handler fires.
+  // Schema gate — refuse to invoke on rounds whose shape doesn't match
+  // what BYRON_SCHEMA_VERSION's prompts can read.
   const roundSchema = round.schemaVersion || 1;
   if (roundSchema !== BYRON_SCHEMA_VERSION) {
-    toast('Byron is being rebuilt for this round version');
+    toast('Analysis is being rebuilt for this round version');
     return;
   }
-
-  const btn       = document.getElementById('byron-btn-'+pass);
-  const contentEl = document.getElementById('byron-content-'+pass);
-  const bodyEl    = document.getElementById('byron-body-'+pass);
-  const chevEl    = document.getElementById('byron-chev-'+pass);
-
-  // Open card
-  if (bodyEl) bodyEl.style.display='';
-  if (chevEl) chevEl.classList.add('open');
-
-  // Loading state
-  if (btn) { btn.disabled=true; btn.textContent='Running\u2026'; }
-  if (contentEl) contentEl.innerHTML='<div class="byron-loading"><div class="byron-spinner"></div><div style="font-size:12px;color:var(--chalk3);margin-top:10px">Byron is thinking\u2026</div></div>';
 
   try {
     const bundle = byronBuildBundle(round);
@@ -4229,12 +4019,12 @@ async function runByron(pass) {
       prompt = byronHolesPrompt(bundle);
     } else if (pass==='patterns') {
       const hc = byronGetCache(round.id,'holes');
-      if (!hc) { toast('Run Holes first'); byronUpdateUI(round.id); return; }
+      if (!hc) { toast('Run Holes first'); return; }
       prompt = byronPatternsPrompt(bundle, hc.result);
     } else {
       const hc = byronGetCache(round.id,'holes');
       const pc = byronGetCache(round.id,'patterns');
-      if (!hc||!pc) { toast('Run Holes and Patterns first'); byronUpdateUI(round.id); return; }
+      if (!hc||!pc) { toast('Run Holes and Patterns first'); return; }
       prompt = byronGameplanPrompt(bundle, hc.result, pc.result);
     }
 
@@ -4257,11 +4047,9 @@ async function runByron(pass) {
     const raw = (data.content?.[0]?.text||'').trim().replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'').trim();
     const result = JSON.parse(raw);
     byronSetCache(round.id, pass, result);
-    byronUpdateUI(round.id);
 
   } catch(err) {
-    if (contentEl) contentEl.innerHTML=`<div class="byron-error">\u26a0\ufe0f ${err.message}</div>`;
-    if (btn) { btn.disabled=false; btn.textContent='Retry'; }
+    toast('\u26a0\ufe0f '+err.message);
   }
 }
 
@@ -5257,7 +5045,7 @@ async function parseScorecardWithByron() {
   if (!CI.base64) return;
   document.getElementById('ci-parse-btn').disabled = true;
   const status = document.getElementById('ci-status');
-  status.textContent = 'Byron is reading the scorecard…';
+  status.textContent = 'Reading scorecard\u2026';
   status.className = 'pi-status';
 
   try {
@@ -5363,7 +5151,7 @@ function renderCourseReview() {
 
   // Parse notes
   const notesHTML = p.parseNotes
-    ? `<div style="padding:8px 12px;background:var(--ink3);border-radius:var(--rs);margin-bottom:12px;font-size:11px;color:var(--chalk3);line-height:1.5"><strong style="color:var(--chalk2)">Byron's notes:</strong> ${escHtml(p.parseNotes)}</div>`
+    ? `<div style="padding:8px 12px;background:var(--ink3);border-radius:var(--rs);margin-bottom:12px;font-size:11px;color:var(--chalk3);line-height:1.5"><strong style="color:var(--chalk2)">Parser notes:</strong> ${escHtml(p.parseNotes)}</div>`
     : '';
 
   body.innerHTML = `
