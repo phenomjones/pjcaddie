@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.0 · Apr 30, 2026 -->
+<!-- PJ Caddie v8.3.1 · Apr 30, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -231,6 +231,26 @@ body{display:flex;flex-direction:column}
 .det-putt-line:last-child{margin-bottom:0}
 /* SUMMIT REDESIGN (v8.3.0) — missing-data warning pill on hole rows */
 .det-warn-pill{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:rgba(200,168,75,.18);border:1px solid rgba(200,168,75,.5);border-radius:50%;color:var(--gold);font-size:10px;font-weight:600;flex-shrink:0;margin-right:8px}
+/* AMBER ECHO (v8.3.1) — tee zone selection: dim non-selected bars/dots when one is active */
+.det-tee-col.dim,.det-spark-dot.dim{opacity:.25}
+.det-tee-col,.det-spark-dot{transition:opacity .15s}
+.det-tee-col{cursor:pointer}
+.det-tee-bar{pointer-events:none}
+.det-tee-selection{font-size:11px;color:var(--gold);margin-top:10px;padding:6px 10px;background:rgba(200,168,75,.06);border:1px solid rgba(200,168,75,.2);border-radius:var(--rs);min-height:16px;line-height:1.3;display:none}
+.det-tee-selection.on{display:block}
+/* HORIZON DRIFT (v8.3.1) — hole-by-hole tee shot sparkline */
+.det-spark{margin-top:14px}
+.det-spark-row{display:flex;align-items:center;gap:6px;height:14px}
+.det-spark-lane-lbl{width:28px;font-size:9px;color:var(--chalk3);text-align:right;flex-shrink:0;letter-spacing:.4px}
+.det-spark-lane{flex:1;position:relative;height:100%;border-bottom:1px solid var(--ink);background:var(--ink)}
+.det-spark-row:nth-child(odd) .det-spark-lane{background:rgba(255,255,255,.015)}
+.det-spark-dot{position:absolute;top:50%;width:8px;height:8px;border-radius:50%;background:var(--gold);transform:translate(-50%,-50%);cursor:pointer}
+.det-spark-dot.danger{background:var(--red)}
+.det-spark-dot.in-play{background:var(--green)}
+.det-spark-axis{display:flex;gap:6px;margin-top:4px;align-items:flex-start}
+.det-spark-axis-spacer{width:28px;flex-shrink:0}
+.det-spark-axis-numbers{flex:1;position:relative;height:12px}
+.det-spark-axis-numbers span{position:absolute;top:0;font-size:8px;color:var(--chalk3);transform:translateX(-50%);letter-spacing:.2px}
 .miss-strip{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:12px}
 .miss-cross{display:grid;grid-template-columns:1fr 80px 1fr;grid-template-rows:72px 72px 72px;gap:6px;max-width:280px;margin:0 auto}
 .miss-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--border);background:var(--ink3)}
@@ -472,7 +492,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.0 · Apr 30, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.1 · Apr 30, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -981,7 +1001,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.0 · Spec v2.1</span>
+        <span>v8.3.1 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -2584,7 +2604,7 @@ function renderHistory() {
   el.innerHTML = rounds.map(roundRowHTML).join('');
 }
 
-function showDetail(id) { DET.roundId = id; showView('detail'); }
+function showDetail(id) { DET.roundId = id; DET.teeZoneSel = null; showView('detail'); }
 
 // ── COURSE SETUP ─────────────────────────────────────────────
 function initCourseSetup() {
@@ -3224,6 +3244,47 @@ function glacierFinishRound() {
   showView('detail');
 }
 
+// AMBER ECHO + HORIZON DRIFT (v8.3.1) — tee zone selection helpers.
+// teeZoneSelect: toggle DET.teeZoneSel. Re-tapping the active zone clears.
+// teeZoneApplySelection: dim non-selected bars + sparkline dots, update the
+// text-line below the chart with the zone label and matching hole numbers.
+// Updates DOM directly (no full re-render) to preserve selection across
+// chip-tap-style state without bouncing through renderDetailV2.
+const TEE_ZONE_LABELS = {
+  OBL: 'OB Left', LL: 'Far Left', L: 'Left', fairway: 'Fairway',
+  R: 'Right', RR: 'Far Right', OBR: 'OB Right'
+};
+function teeZoneSelect(zone) {
+  DET.teeZoneSel = (DET.teeZoneSel === zone) ? null : zone;
+  teeZoneApplySelection();
+}
+function teeZoneApplySelection() {
+  const sel = DET.teeZoneSel;
+  // Dim bars whose zone doesn't match the selection. Null sel = all bright.
+  document.querySelectorAll('#det-tee-section .det-tee-col').forEach(col => {
+    col.classList.toggle('dim', sel != null && col.dataset.zone !== sel);
+  });
+  document.querySelectorAll('#det-tee-section .det-spark-dot').forEach(dot => {
+    dot.classList.toggle('dim', sel != null && dot.dataset.zone !== sel);
+  });
+  const lineEl = document.getElementById('det-tee-selection');
+  if (!lineEl) return;
+  if (sel == null) {
+    lineEl.textContent = '';
+    lineEl.classList.remove('on');
+    return;
+  }
+  const round = getRounds().find(r => r.id === DET.roundId);
+  const matched = ((round && round.holes) || [])
+    .filter(h => h.par >= 4 && h.score > 0 && h.teeResult === sel)
+    .map(h => 'H' + h.number);
+  const label = TEE_ZONE_LABELS[sel] || sel;
+  lineEl.textContent = matched.length
+    ? `${label} \u2014 Holes ${matched.join(', ')}`
+    : `${label} \u2014 (no holes)`;
+  lineEl.classList.add('on');
+}
+
 // renderDetailV2 — Round Detail for schemaVersion: 2 rounds.
 // SUMMIT REDESIGN (v8.3.0) — full rewrite. New sections: tee shot bar
 // chart, two approach-zone heat-map grids, score-by-par tiles, rate tiles
@@ -3286,6 +3347,9 @@ function renderDetailV2(round) {
 
   // ── Tee Shots vertical bar chart ────────────────────────────
   // Par 4/5 only, count by teeResult zone OBL→OBR.
+  // AMBER ECHO (v8.3.1) — bars are tap targets; data-zone drives selection.
+  // HORIZON DRIFT (v8.3.1) — sparkline below shows tee landing zone hole-by-hole
+  // for par 4/5 holes in numerical order. Same selection mechanic.
   const teeHoles = holes.filter(h => h.par >= 4 && h.teeResult != null);
   const teeZones = ['OBL','LL','L','fairway','R','RR','OBR'];
   const teeLabels = ['OBL','LL','L','Fwy','R','RR','OBR'];
@@ -3297,14 +3361,43 @@ function renderDetailV2(round) {
     const heightPct = c === 0 ? 0 : Math.round((c / teeMax) * 100);
     const cls = c === 0 ? 'zero' : teeColors[i];
     const heightStyle = c === 0 ? 'height:2px' : `height:${heightPct}%`;
-    return `<div class="det-tee-col"><div class="det-tee-count">${c}</div><div class="det-tee-bar ${cls}" style="${heightStyle}"></div></div>`;
+    return `<div class="det-tee-col" data-zone="${z}" onclick="teeZoneSelect('${z}')"><div class="det-tee-count">${c}</div><div class="det-tee-bar ${cls}" style="${heightStyle}"></div></div>`;
   }).join('');
   const teeLabelsHtml = teeLabels.map(l => `<div class="det-tee-lbl">${l}</div>`).join('');
+
+  // HORIZON DRIFT — par-4/5 holes in original order; sparkline lanes top→bottom
+  // match teeZones order (OBL up to OBR down). Each played par-4/5 hole gets a
+  // dot in its zone's lane at left% = (idx / (n-1)) * 100, or centered if n==1.
+  const par45InOrder = (allHoles).filter(h => h.par >= 4 && h.score > 0 && h.teeResult != null);
+  const nSpark = par45InOrder.length;
+  const sparkLanesHtml = teeZones.map((z, zoneIdx) => {
+    const dots = par45InOrder.map((h, holeIdx) => {
+      if (h.teeResult !== z) return '';
+      const leftPct = nSpark <= 1 ? 50 : (holeIdx / (nSpark - 1)) * 100;
+      const colorCls = teeColors[zoneIdx];
+      return `<div class="det-spark-dot ${colorCls}" style="left:${leftPct.toFixed(1)}%" data-zone="${z}" data-hole="${h.number}" onclick="teeZoneSelect('${z}')" title="Hole ${h.number}"></div>`;
+    }).join('');
+    return `<div class="det-spark-row"><span class="det-spark-lane-lbl">${teeLabels[zoneIdx]}</span><div class="det-spark-lane">${dots}</div></div>`;
+  }).join('');
+  // Axis labels: hole numbers under each dot column. To avoid clutter on long
+  // lists, show every label up to 9 holes; every other for 10-14; every 3rd for 15+.
+  const axisStep = nSpark <= 9 ? 1 : nSpark <= 14 ? 2 : 3;
+  const axisHtml = par45InOrder.map((h, holeIdx) => {
+    if (holeIdx % axisStep !== 0 && holeIdx !== nSpark - 1) return '';
+    const leftPct = nSpark <= 1 ? 50 : (holeIdx / (nSpark - 1)) * 100;
+    return `<span style="left:${leftPct.toFixed(1)}%">${h.number}</span>`;
+  }).join('');
+  const sparkBlock = nSpark
+    ? `<div class="det-spark">${sparkLanesHtml}<div class="det-spark-axis"><span class="det-spark-axis-spacer"></span><div class="det-spark-axis-numbers">${axisHtml}</div></div></div>`
+    : '';
+
   document.getElementById('det-tee-section').innerHTML = `
     <span class="section-lbl">Tee Shots (n=${teeHoles.length})</span>
     <div class="det-card">
       <div class="det-tee-chart">${teeBars}</div>
       <div class="det-tee-labels">${teeLabelsHtml}</div>
+      ${sparkBlock}
+      <div class="det-tee-selection" id="det-tee-selection"></div>
     </div>`;
 
   // ── Approach Zone heat-maps (Missed | Hit) ──────────────────
@@ -3359,14 +3452,22 @@ function renderDetailV2(round) {
       <div class="stat-tile"><div class="stat-val">${avgScore(par5Holes)}</div><div class="stat-lbl">Par 5</div><div class="stat-n">n=${par5Holes.length}</div></div>
     </div>`;
 
-  // ── Rate tiles: Bogey or Better | Tee In-Play | Bogey+ at ≤124y ──
+  // ── Rate tiles: round-wide + short-range conversion ────────
+  // MARBLE RECOIL (v8.3.1) — split into two 2-tile rows. Round-wide rates
+  // (Bogey or Better, Tee In-Play) on top. Short-Range Conversion sub-section
+  // below: Hole-out ≤3 from ≤124y (restored — chart shows distribution, this
+  // is the headline) + Bogey or Better at ≤124y (renamed from Bogey+ which
+  // was misleading — the metric IS bogey-or-better, not bogey-or-worse).
   const bogeyOrBetter = holes.filter(h => h.score - h.par <= 1).length;
   const bogeyPct = nPlayed ? Math.round((bogeyOrBetter / nPlayed) * 100) : 0;
   const par45Played = holes.filter(h => h.par >= 4);
   const inPlay = par45Played.filter(h => h.teeResult === 'fairway' || h.teeResult === 'L' || h.teeResult === 'R').length;
   const inPlayPct = par45Played.length ? Math.round((inPlay / par45Played.length) * 100) : 0;
-  // Item #3: par 4/5, low band, shotsBeforeApproach matches par-2, score-par<=1
+  // Item #2 — Hole-out ≤3 from ≤124y (no score filter, just shots-from-approach ≤ 3).
   const lowBands = ['50-74','75-99','100-124'];
+  const item2Eligible = holes.filter(h => lowBands.includes(h.approachYards));
+  const item2Met = item2Eligible.filter(h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2).length;
+  // Item #3 — Bogey or Better at ≤124y after 1 stroke par 4 / 2 strokes par 5.
   const item3Eligible = holes.filter(h => {
     if (h.par < 4) return false;
     if (!lowBands.includes(h.approachYards)) return false;
@@ -3376,10 +3477,14 @@ function renderDetailV2(round) {
   });
   const item3Met = item3Eligible.filter(h => h.score - h.par <= 1).length;
   document.getElementById('det-rate-section').innerHTML = `
-    <div class="stat-strip" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+    <div class="stat-strip-2" style="margin-bottom:14px">
       <div class="stat-tile"><div class="stat-val">${nPlayed ? bogeyPct + '%' : '\u2014'}</div><div class="stat-lbl">Bogey or Better</div><div class="stat-n">n=${nPlayed}</div></div>
       <div class="stat-tile"><div class="stat-val">${par45Played.length ? inPlayPct + '%' : '\u2014'}</div><div class="stat-lbl">Tee In-Play</div><div class="stat-n">n=${par45Played.length}</div></div>
-      <div class="stat-tile"><div class="stat-val">${item3Eligible.length ? item3Met + '/' + item3Eligible.length : '0/0'}</div><div class="stat-lbl">Bogey+ at ≤124y</div><div class="stat-n">n=${item3Eligible.length}</div></div>
+    </div>
+    <span class="section-lbl">Short-Range Conversion</span>
+    <div class="stat-strip-2">
+      <div class="stat-tile"><div class="stat-val">${item2Eligible.length ? item2Met + '/' + item2Eligible.length : '0/0'}</div><div class="stat-lbl">Hole-out ≤3 from ≤124y</div></div>
+      <div class="stat-tile"><div class="stat-val">${item3Eligible.length ? item3Met + '/' + item3Eligible.length : '0/0'}</div><div class="stat-lbl">Bogey or Better at ≤124y</div><div class="stat-n">n=${item3Eligible.length}</div></div>
     </div>`;
 
   // ── GIR by Yardage / Hole-out ≤3 by Yardage stacked bars ────
@@ -3484,6 +3589,10 @@ function renderDetailV2(round) {
 
   // IVORY VEIL (v8.1.4) — Byron front-end removed. Backend (runByron,
   // prompts, cache) preserved for future revival.
+
+  // AMBER ECHO (v8.3.1) — restore the tee-zone selection visual after a
+  // re-render. If DET.teeZoneSel is null this is a no-op (all bright).
+  teeZoneApplySelection();
 
   // Delete button stays usable.
 }
@@ -4336,7 +4445,10 @@ async function runByron(pass) {
 // OBSIDIAN PURGE (v8.1.2) — DET.openHoles and DET.editHoles dropped (only the
 // deleted v1 detailHoleHTML/edit-hole flow used them). v2 Round Detail is a
 // flat read-only render, no per-hole state.
-const DET = { roundId: null };
+// AMBER ECHO (v8.3.1) — teeZoneSel holds the currently-tapped tee zone so the
+// bar chart and sparkline can highlight it and show the matching hole list.
+// Reset on showDetail entry (different round = no carry-over selection).
+const DET = { roundId: null, teeZoneSel: null };
 
 // COBALT WINDOW (v8.2.0) — edit mode state. When EDIT.roundId is set, the
 // glacier-capture view reads/writes the saved round (pjc_rounds entry) at
