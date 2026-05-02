@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.5 · May 01, 2026 -->
+<!-- PJ Caddie v8.3.6 · May 01, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -248,13 +248,16 @@ body{display:flex;flex-direction:column}
 .det-spark-dot.gold{background:var(--gold)}
 .det-spark-dot.in-play{background:var(--green)}
 .det-spark-axis{display:flex;justify-content:space-between;margin-top:8px;padding-left:30px;font-size:9px;color:var(--chalk3);letter-spacing:.4px}
-/* SHOTGUN ASCEND (v8.3.5) — SVG overlay for connecting dotted lines between
-   consecutive sparkline dots in play order. Sits behind dots in DOM order so
-   they paint on top; pointer-events:none so taps pass through to dots. Sized
-   inline (height depends on row count); X bounds match the .det-spark-track
-   geometry (22px hole-num label + 8px gap = 30px from row left edge). */
+/* SHOTGUN ASCEND (v8.3.5) + STAGECOACH PIVOT (v8.3.6) — connecting dotted lines.
+   The SVG is rendered INSIDE the first row's .det-spark-track (which has a known
+   flex-determined width and offset thanks to the row's display:flex). The SVG
+   uses position:absolute (anchored to track top-left) and overflow:visible so
+   the polyline can extend downward past the first row to naturally align with
+   dot centers in subsequent rows. ViewBox X=0..100 maps to track width (percent);
+   Y is pixel space matching the SVG element height. preserveAspectRatio='none'
+   stretches X and Y independently. pointer-events:none keeps dots tappable. */
 .det-spark-rows{position:relative}
-.det-spark-lines{position:absolute;top:9px;left:30px;right:0;pointer-events:none}
+.det-spark-lines{position:absolute;left:0;right:0;top:0;overflow:visible;pointer-events:none}
 /* VELVET LATTICE (v8.3.2) — universal tappable-stat panel pattern. Any element
    with [data-stat-key] is a tap target; tapping renders the matching panel
    beneath its section showing the holes that contribute. */
@@ -524,7 +527,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.5 · May 01, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.6 · May 01, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -1047,7 +1050,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.5 · Spec v2.1</span>
+        <span>v8.3.6 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1753,7 +1756,15 @@ function snapshotActiveBag() {
 }
 
 function buildExpectedHoles(startingHole, holesPlayed) {
-  if (holesPlayed===18) return Array.from({length:18},(_,i)=>i+1);
+  // STAGECOACH PIVOT (v8.3.6) — full-18 rounds now respect startingHole. A shotgun
+  // start at hole 7 produces [7, 8, ..., 18, 1, 2, ..., 6] so capture iterates in
+  // play order. Pre-v8.3.5 rounds default startingHole to 1 (no behavior change).
+  // 9-hole front/back branches unchanged: Front 9 = [1..9] (startingHole irrelevant);
+  // Back 9 = [10..18] (still keyed off startingHole === 10 from setRoundHoles 'back').
+  if (holesPlayed===18) {
+    const start = startingHole || 1;
+    return Array.from({length:18}, (_,i) => ((start - 1 + i) % 18) + 1);
+  }
   if (startingHole===10) return Array.from({length:9},(_,i)=>i+10);
   return Array.from({length:9},(_,i)=>i+1);
 }
@@ -3581,42 +3592,46 @@ function renderDetailV2(round) {
   // Reverse for display: row 0 (top) = last played; row N-1 (bottom) = first played.
   const par45Reversed = par45ByPlayOrder.slice().reverse();
   const nSpark = par45Reversed.length;
-  const sparkRowsHtml = par45Reversed.map(h => {
+  const sparkRowsHtml = par45Reversed.map((h, rowIdx) => {
     const zoneIdx = teeZones.indexOf(h.teeResult);
     if (zoneIdx < 0) return '';
     const leftPct = (zoneIdx / 6) * 100;
     const colorCls = teeColors[zoneIdx];
+    const dotHtml = `<div class="det-spark-dot ${colorCls}" style="left:${leftPct.toFixed(1)}%" data-zone="${h.teeResult}" data-stat-key="teeZone" data-stat-param="${h.teeResult}" onclick="statSelect('teeZone','${h.teeResult}')" title="Hole ${h.number} \u2014 ${teeLabels[zoneIdx]}"></div>`;
+    // STAGECOACH PIVOT (v8.3.6) — connecting-line SVG renders inside the FIRST
+    // row's track (rowIdx === 0) so it inherits the track's flex-determined
+    // width and left offset. overflow:visible lets the polyline extend into
+    // subsequent rows. Each row pitch is 19px (18px track height + 1px row
+    // margin-bottom); dot centers sit at y = rowIdx*19 + 9 in track-relative
+    // pixel space. SVG height spans the first track plus full pitches for
+    // each additional row, so the last dot center lands exactly at the SVG's
+    // last pixel (no overflow needed beyond what overflow:visible permits).
+    let linesSvg = '';
+    if (rowIdx === 0 && nSpark >= 2) {
+      const ROW_PITCH = 19;
+      const TRACK_H = 18;
+      const DOT_Y = 9; // dot center y within a track
+      const svgHeight = TRACK_H + (nSpark - 1) * ROW_PITCH;
+      const points = par45Reversed.map((rh, ri) => {
+        const rZoneIdx = teeZones.indexOf(rh.teeResult);
+        const rLeftPct = (rZoneIdx / 6) * 100;
+        const yPx = ri * ROW_PITCH + DOT_Y;
+        return `${rLeftPct.toFixed(1)},${yPx}`;
+      }).join(' ');
+      linesSvg = `<svg class="det-spark-lines" viewBox="0 0 100 ${svgHeight}" preserveAspectRatio="none" style="height:${svgHeight}px">`
+               + `<polyline points="${points}" fill="none" stroke="var(--chalk3)" stroke-width="1.5" stroke-dasharray="3 3" stroke-linecap="round" vector-effect="non-scaling-stroke" />`
+               + `</svg>`;
+    }
     return `<div class="det-spark-row">`
          + `<span class="det-spark-hole-lbl">${h.number}</span>`
-         + `<div class="det-spark-track">`
-         +   `<div class="det-spark-dot ${colorCls}" style="left:${leftPct.toFixed(1)}%" data-zone="${h.teeResult}" data-stat-key="teeZone" data-stat-param="${h.teeResult}" onclick="statSelect('teeZone','${h.teeResult}')" title="Hole ${h.number} \u2014 ${teeLabels[zoneIdx]}"></div>`
-         + `</div>`
+         + `<div class="det-spark-track">${linesSvg}${dotHtml}</div>`
          + `</div>`;
   }).join('');
 
-  // Connecting dotted lines: only renders when nSpark >= 2 (at least one pair
-  // of consecutive dots to connect). Each row's pitch is 19px (18px row height
-  // + 1px margin-bottom); dots sit at 9px from row top. SVG positioned at top:9px,
-  // height (N-1)*19, covers exactly the dot-center-to-dot-center span.
-  // ViewBox X=0..100 (percent of track width) and Y=0..(N-1) (row index) with
-  // preserveAspectRatio='none' stretches to fill. vector-effect='non-scaling-stroke'
-  // keeps line width constant regardless of container size.
-  let linesSvg = '';
-  if (nSpark >= 2) {
-    const points = par45Reversed.map((h, rowIdx) => {
-      const zoneIdx = teeZones.indexOf(h.teeResult);
-      const leftPct = (zoneIdx / 6) * 100;
-      return `${leftPct.toFixed(1)},${rowIdx}`;
-    }).join(' ');
-    const svgHeight = (nSpark - 1) * 19;
-    linesSvg = `<svg class="det-spark-lines" viewBox="0 0 100 ${nSpark - 1}" preserveAspectRatio="none" style="height:${svgHeight}px">`
-             + `<polyline points="${points}" fill="none" stroke="var(--chalk3)" stroke-width="1.5" stroke-dasharray="3 3" stroke-linecap="round" vector-effect="non-scaling-stroke" />`
-             + `</svg>`;
-  }
   const sparkBlock = nSpark
     ? `<div class="det-spark">`
     +   `<div class="det-spark-hdr">Tee Shot Sparkline</div>`
-    +   `<div class="det-spark-rows">${linesSvg}${sparkRowsHtml}</div>`
+    +   `<div class="det-spark-rows">${sparkRowsHtml}</div>`
     +   `<div class="det-spark-axis"><span>OBL</span><span>Fwy</span><span>OBR</span></div>`
     + `</div>`
     : '';
