@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.4 · May 01, 2026 -->
+<!-- PJ Caddie v8.3.5 · May 01, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -248,6 +248,13 @@ body{display:flex;flex-direction:column}
 .det-spark-dot.gold{background:var(--gold)}
 .det-spark-dot.in-play{background:var(--green)}
 .det-spark-axis{display:flex;justify-content:space-between;margin-top:8px;padding-left:30px;font-size:9px;color:var(--chalk3);letter-spacing:.4px}
+/* SHOTGUN ASCEND (v8.3.5) — SVG overlay for connecting dotted lines between
+   consecutive sparkline dots in play order. Sits behind dots in DOM order so
+   they paint on top; pointer-events:none so taps pass through to dots. Sized
+   inline (height depends on row count); X bounds match the .det-spark-track
+   geometry (22px hole-num label + 8px gap = 30px from row left edge). */
+.det-spark-rows{position:relative}
+.det-spark-lines{position:absolute;top:9px;left:30px;right:0;pointer-events:none}
 /* VELVET LATTICE (v8.3.2) — universal tappable-stat panel pattern. Any element
    with [data-stat-key] is a tap target; tapping renders the matching panel
    beneath its section showing the holes that contribute. */
@@ -517,7 +524,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.4 · May 01, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.5 · May 01, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -621,6 +628,11 @@ body{display:flex;flex-direction:column}
           <button class="tgl" id="rs-h9" onclick="setRoundHoles(9)">Front 9</button>
           <button class="tgl" id="rs-hb9" onclick="setRoundHoles('back')">Back 9</button>
         </div>
+      </div>
+      <div class="inp-grp" id="rs-start-grp" style="display:none">
+        <label class="inp-label">Starting Hole</label>
+        <select class="inp" id="rs-start-select" onchange="setStartingHole(this.value)"></select>
+        <div class="inp-hint">For shotgun starts. Defaults to 1.</div>
       </div>
       <button class="btn btn-gold" id="rs-start-btn" onclick="startRoundSetup()" disabled>Start Round →</button>
     </div>
@@ -1035,7 +1047,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.4 · Spec v2.1</span>
+        <span>v8.3.5 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -2495,7 +2507,11 @@ const S = {
   selectedCourseId: null, selectedTeeIdx: null,
   roundHoles: 18, courseHoles: 9,
   courseHolePars: [], courseHoleYards: [],
-  setupMode: 'manual'
+  setupMode: 'manual',
+  // SHOTGUN ASCEND (v8.3.5) — defaults to 1 (non-shotgun). Picker only appears
+  // for full-18 rounds; reset to 1 on every initRoundSetup and when switching
+  // to a 9-hole option (front-9 = 1, back-9 = 10 are implicit, no picker needed).
+  startingHole: 1
 };
 
 // ── NAVIGATION ───────────────────────────────────────────────
@@ -2690,8 +2706,13 @@ function saveCourseSetup() {
 function initRoundSetup() {
   document.getElementById('rs-date').value = new Date().toISOString().slice(0,10);
   S.selectedCourseId = null; S.selectedTeeIdx = null; S.roundHoles = 9;
+  S.startingHole = 1;
   document.getElementById('rs-tee-grp').style.display = 'none';
   document.getElementById('rs-holes-grp').style.display = 'none';
+  // SHOTGUN ASCEND (v8.3.5) — hide picker on entry; setRoundHoles unhides it
+  // when the user picks Full 18.
+  const startGrp = document.getElementById('rs-start-grp');
+  if (startGrp) startGrp.style.display = 'none';
   renderCourseList();
   updateRoundButtons();
 }
@@ -2761,6 +2782,36 @@ function setRoundHoles(n) {
   document.getElementById('rs-h18').classList.toggle('on', n===18);
   document.getElementById('rs-h9').classList.toggle('on', n===9);
   document.getElementById('rs-hb9').classList.toggle('on', n==='back');
+  // SHOTGUN ASCEND (v8.3.5) — picker only appears for Full 18 rounds. Front-9
+  // and Back-9 have implicit starting holes (1 and 10) handled by the existing
+  // buildExpectedHoles branches, so no UI is needed there. Switching away from
+  // 18 resets startingHole to 1 so an unrelated front-9/back-9 round doesn't
+  // inherit a stale shotgun value.
+  const startGrp = document.getElementById('rs-start-grp');
+  if (!startGrp) return;
+  if (n === 18) {
+    startGrp.style.display = '';
+    populateStartingHolePicker();
+  } else {
+    startGrp.style.display = 'none';
+    S.startingHole = 1;
+  }
+}
+
+// SHOTGUN ASCEND (v8.3.5) — fill the starting-hole select with options 1-18,
+// preselected to the current S.startingHole. Re-runs whenever the picker
+// becomes visible to ensure DOM matches state.
+function populateStartingHolePicker() {
+  const sel = document.getElementById('rs-start-select');
+  if (!sel) return;
+  sel.innerHTML = Array.from({length: 18}, (_, i) => {
+    const n = i + 1;
+    return `<option value="${n}"${n === S.startingHole ? ' selected' : ''}>${n}</option>`;
+  }).join('');
+}
+
+function setStartingHole(n) {
+  S.startingHole = parseInt(n) || 1;
 }
 
 function updateRoundButtons() {
@@ -3512,12 +3563,25 @@ function renderDetailV2(round) {
   }).join('');
   const teeLabelsHtml = teeLabels.map(l => `<div class="det-tee-lbl">${l}</div>`).join('');
 
-  // CRIMSON COMPASS — vertical timeline. Played par-4/5 holes in numerical order
-  // (top→bottom). Each row has a single dot whose horizontal position encodes
-  // the landing zone: zoneIdx 0 (OBL) = 0%, zoneIdx 6 (OBR) = 100%, evenly spaced.
-  const par45InOrder = allHoles.filter(h => h.par >= 4 && h.score > 0 && h.teeResult != null);
-  const nSpark = par45InOrder.length;
-  const sparkRowsHtml = par45InOrder.map(h => {
+  // CRIMSON COMPASS + SHOTGUN ASCEND (v8.3.5) — vertical timeline ordered by
+  // play order, first played hole on the bottom and last on top. Shotgun rounds
+  // (round.startingHole != 1) wrap correctly via modulo for full-18 rounds; for
+  // 9-hole rounds (front/back) the formula degrades to numerical order which is
+  // also play order. Connecting dotted lines trace trajectory between consecutive
+  // shots. SVG overlay sits behind dots, pointer-events:none lets dots stay tappable.
+  const startingHole = round.startingHole || 1;
+  const holesPlayedRound = round.holesPlayed || 18;
+  const playIdx = h => {
+    if (holesPlayedRound === 18) return ((h.number - startingHole + 18) % 18) + 1;
+    return (h.number - startingHole + 1);
+  };
+  const par45ByPlayOrder = allHoles
+    .filter(h => h.par >= 4 && h.score > 0 && h.teeResult != null)
+    .sort((a,b) => playIdx(a) - playIdx(b));
+  // Reverse for display: row 0 (top) = last played; row N-1 (bottom) = first played.
+  const par45Reversed = par45ByPlayOrder.slice().reverse();
+  const nSpark = par45Reversed.length;
+  const sparkRowsHtml = par45Reversed.map(h => {
     const zoneIdx = teeZones.indexOf(h.teeResult);
     if (zoneIdx < 0) return '';
     const leftPct = (zoneIdx / 6) * 100;
@@ -3529,10 +3593,30 @@ function renderDetailV2(round) {
          + `</div>`
          + `</div>`;
   }).join('');
+
+  // Connecting dotted lines: only renders when nSpark >= 2 (at least one pair
+  // of consecutive dots to connect). Each row's pitch is 19px (18px row height
+  // + 1px margin-bottom); dots sit at 9px from row top. SVG positioned at top:9px,
+  // height (N-1)*19, covers exactly the dot-center-to-dot-center span.
+  // ViewBox X=0..100 (percent of track width) and Y=0..(N-1) (row index) with
+  // preserveAspectRatio='none' stretches to fill. vector-effect='non-scaling-stroke'
+  // keeps line width constant regardless of container size.
+  let linesSvg = '';
+  if (nSpark >= 2) {
+    const points = par45Reversed.map((h, rowIdx) => {
+      const zoneIdx = teeZones.indexOf(h.teeResult);
+      const leftPct = (zoneIdx / 6) * 100;
+      return `${leftPct.toFixed(1)},${rowIdx}`;
+    }).join(' ');
+    const svgHeight = (nSpark - 1) * 19;
+    linesSvg = `<svg class="det-spark-lines" viewBox="0 0 100 ${nSpark - 1}" preserveAspectRatio="none" style="height:${svgHeight}px">`
+             + `<polyline points="${points}" fill="none" stroke="var(--chalk3)" stroke-width="1.5" stroke-dasharray="3 3" stroke-linecap="round" vector-effect="non-scaling-stroke" />`
+             + `</svg>`;
+  }
   const sparkBlock = nSpark
     ? `<div class="det-spark">`
     +   `<div class="det-spark-hdr">Tee Shot Sparkline</div>`
-    +   sparkRowsHtml
+    +   `<div class="det-spark-rows">${linesSvg}${sparkRowsHtml}</div>`
     +   `<div class="det-spark-axis"><span>OBL</span><span>Fwy</span><span>OBR</span></div>`
     + `</div>`
     : '';
