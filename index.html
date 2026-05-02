@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.7 · May 01, 2026 -->
+<!-- PJ Caddie v8.3.8 · May 02, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -183,11 +183,16 @@ body{display:flex;flex-direction:column}
 .confirm-bar{flex-shrink:0;background:var(--ink);border-top:1px solid var(--border);padding:12px max(28px,calc((100% - 460px)/2))}
 .confirm-bar .safe-pad{height:calc(env(safe-area-inset-bottom,20px) + 2px)}
 .stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
-.stat-strip-2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px}
+.stat-strip-2{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
 .stat-tile{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:12px 10px;text-align:center}
 .stat-val{font-family:'DM Serif Display',serif;font-size:26px;color:var(--chalk);line-height:1}
 .stat-lbl{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--chalk3);margin-top:5px}
 .stat-n{font-size:9px;color:var(--chalk3);opacity:.65;margin-top:3px}
+/* MARBLE SENTENCE (v8.3.8) — per-hole row gets a flowing prose summary instead
+   of dot-separated tag chips. Base text is muted (chalk3, 11px) so the BOLD
+   key-term spans (chalk, 13px, weight 700) stand out for at-a-glance scanning. */
+.rr-sentence{font-size:11px;color:var(--chalk3);line-height:1.55;margin-top:4px}
+.rr-sentence b{color:var(--chalk);font-weight:700;font-size:13px}
 /* SUMMIT REDESIGN (v8.3.0) — tee shot vertical bar chart */
 .det-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px 12px;margin-bottom:14px}
 .det-tee-chart{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;height:120px;padding:0 4px}
@@ -533,7 +538,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.7 · May 01, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.8 · May 02, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -789,13 +794,20 @@ body{display:flex;flex-direction:column}
         </div>
       </div>
 
-      <!-- Bottom row: Double chip | Greenside bunker -->
+      <!-- BUNKER QUARTET (v8.3.8) — 4-across trouble-flag toggles. Labels
+           shortened to fit 380px width. Handlers reuse glacierToggleField. -->
       <div class="gc-bottom-row">
         <button class="gc-toggle gc-toggle-bottom" id="gc-double-chip-toggle" onclick="glacierToggleField('doubleChip')">
-          <div class="gc-toggle-lbl">Double chip</div>
+          <div class="gc-toggle-lbl">Dbl chip</div>
         </button>
         <button class="gc-toggle gc-toggle-bottom" id="gc-sand-toggle" onclick="glacierToggleField('sand')">
-          <div class="gc-toggle-lbl">Greenside bunker</div>
+          <div class="gc-toggle-lbl">Grn bunker</div>
+        </button>
+        <button class="gc-toggle gc-toggle-bottom" id="gc-fwy-bunker-toggle" onclick="glacierToggleField('fwyBunker')">
+          <div class="gc-toggle-lbl">Fwy bunker</div>
+        </button>
+        <button class="gc-toggle gc-toggle-bottom" id="gc-duffed-toggle" onclick="glacierToggleField('duffedApproach')">
+          <div class="gc-toggle-lbl">Duffed</div>
         </button>
       </div>
 
@@ -1056,7 +1068,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.7 · Spec v2.1</span>
+        <span>v8.3.8 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1735,7 +1747,9 @@ function createHole({ number, par, score }) {
     firstPuttDist: null,
     firstPuttResult: null,
     doubleChip: false,
-    sand: false
+    sand: false,
+    fwyBunker: false,
+    duffedApproach: false
   };
 }
 
@@ -3053,8 +3067,12 @@ function glacierRenderHole() {
   // Bottom row toggles
   const dcBtn = document.getElementById('gc-double-chip-toggle');
   const sandBtn = document.getElementById('gc-sand-toggle');
+  const fbBtn = document.getElementById('gc-fwy-bunker-toggle');
+  const duffBtn = document.getElementById('gc-duffed-toggle');
   if (dcBtn) dcBtn.classList.toggle('on', !!hole.doubleChip);
   if (sandBtn) sandBtn.classList.toggle('on', !!hole.sand);
+  if (fbBtn) fbBtn.classList.toggle('on', !!hole.fwyBunker);
+  if (duffBtn) duffBtn.classList.toggle('on', !!hole.duffedApproach);
 
   // Action button labels (top + bottom kept in sync).
   const actionLbl = (GC.holeIdx === total - 1) ? '\u2713 Finish & Save Round' : 'Next Hole \u2192';
@@ -3407,6 +3425,12 @@ function resolveStatPanel(key, param, played) {
     case 'doubleChips':
       return { panelId:'det-panel-stats', type:'list',
                holes: numsOf(played.filter(h => h.doubleChip)) };
+    case 'fwyBunker':
+      return { panelId:'det-panel-stats', type:'list',
+               holes: numsOf(played.filter(h => h.fwyBunker)) };
+    case 'duffedApproach':
+      return { panelId:'det-panel-stats', type:'list',
+               holes: numsOf(played.filter(h => h.duffedApproach)) };
     case 'teeZone':
       return { panelId:'det-panel-tee', type:'list',
                holes: numsOf(played.filter(h => h.par >= 4 && h.teeResult === param)) };
@@ -3531,6 +3555,11 @@ function renderDetailV2(round) {
   const fourPlusPutts = holes.filter(h => h.putts === 4).length;
   const longPutts = threePutts + fourPlusPutts;
   const doubleChips = holes.filter(h => h.doubleChip).length;
+  // BUNKER QUARTET (v8.3.8) — two new trouble counters surfaced as tappable
+  // tiles in det-stats2 alongside Penalties + Double Chips. Tap reveals the
+  // contributing holes via the existing VELVET LATTICE panel pattern.
+  const fwyBunkers = holes.filter(h => h.fwyBunker).length;
+  const duffedApproaches = holes.filter(h => h.duffedApproach).length;
 
   // ── Stat strips ─────────────────────────────────────────────
   // VELVET LATTICE (v8.3.2) — every stat with a clean hole decomposition is a
@@ -3552,6 +3581,8 @@ function renderDetailV2(round) {
   document.getElementById('det-stats2').innerHTML = [
     {val: totalPenalties || '0', lbl: 'Penalties', k: totalPenalties ? 'penalties' : null},
     {val: doubleChips || '0', lbl: 'Double Chips', k: doubleChips ? 'doubleChips' : null},
+    {val: fwyBunkers || '0', lbl: 'Fwy Bunker', k: fwyBunkers ? 'fwyBunker' : null},
+    {val: duffedApproaches || '0', lbl: 'Duffed', k: duffedApproaches ? 'duffedApproach' : null},
   ].map(statTileHtml).join('');
 
   // ── Tee Shots vertical bar chart ────────────────────────────
@@ -3835,21 +3866,76 @@ function renderDetailV2(round) {
       if (rel === 2) return 'sm-double';
       return 'sm-triple'; // +3 and worse — caps at triple square
     };
+    // MARBLE SENTENCE (v8.3.8) — flowing prose summary of the hole. Key terms
+    // bold + 2px larger than surrounding muted text. Builder splits the sentence
+    // into 5 segments: tee shot, approach, on/off green + zone, putts, trailing
+    // trouble flags. Empty segments collapse cleanly; sentence-final period
+    // attaches to the last non-empty segment. Par 3 holes have no separate tee
+    // shot — first stroke is the approach.
+    const TEE_PHRASE = {
+      fairway: 'in the <b>fairway</b>',
+      L:   'in the <b>left rough</b>',
+      R:   'in the <b>right rough</b>',
+      LL:  'in the <b>far left rough</b>',
+      RR:  'in the <b>far right rough</b>',
+      OBL: '<b>OB left</b>',
+      OBR: '<b>OB right</b>'
+    };
+    const ZONE_PHRASE = {
+      'pin': 'pin high',
+      'pin-l': 'pin high left',
+      'pin-r': 'pin high right',
+      'long': 'long',
+      'long-l': 'long left',
+      'long-r': 'long right',
+      'short': 'short',
+      'short-l': 'short left',
+      'short-r': 'short right'
+    };
+    const buildHoleSentence = h => {
+      const parts = [];
+      // Tee shot — par 4/5 only; par 3 first shot is the approach.
+      if (h.par >= 4 && h.teeResult) {
+        parts.push('Tee shot landed ' + (TEE_PHRASE[h.teeResult] || ('in <b>'+h.teeResult+'</b>')));
+      }
+      // Approach yardage + result
+      const approachClauses = [];
+      if (h.par >= 4 && h.approachYards) {
+        approachClauses.push('leaving a <b>' + h.approachYards + ' yard</b> approach');
+      }
+      if (h.approachResult || h.onGreen != null) {
+        const greenPrefix = h.onGreen ? 'on the green' : 'off the green';
+        const zonePart = h.approachResult ? (' ' + (ZONE_PHRASE[h.approachResult] || h.approachResult.replace(/-/g,' '))) : '';
+        // Verb depends on whether par 3 (tee shot landed) vs par 4/5 (approach landed).
+        const verb = h.par <= 3 ? 'Tee shot landed' : 'which landed';
+        approachClauses.push(verb + ' <b>' + greenPrefix + zonePart + '</b>');
+      }
+      if (approachClauses.length) parts.push(approachClauses.join(', '));
+      // Putts
+      if (h.putts != null) {
+        const puttLabel = h.putts === 4 ? '4+ putt' : (h.putts + ' putt');
+        parts.push('finishing with a <b>' + puttLabel + '</b>');
+      }
+      // Trailing trouble flags as separate sentences (each capitalized, period
+      // appended). Penalties first (most consequential), then double chip,
+      // greenside bunker, fwy bunker, duffed approach.
+      let body = parts.length ? parts.join(', ') + '.' : '';
+      const trouble = [];
+      if (h.penalty) trouble.push(h.penalty > 1 ? (h.penalty + ' penalties') : 'Penalty');
+      if (h.doubleChip) trouble.push('Double chip');
+      if (h.sand) trouble.push('Greenside bunker');
+      if (h.fwyBunker) trouble.push('Fwy bunker');
+      if (h.duffedApproach) trouble.push('Duffed approach');
+      const troubleHtml = trouble.map(t => '<b>' + t + '</b>.').join(' ');
+      return [body, troubleHtml].filter(Boolean).join(' ');
+    };
     holesEl.innerHTML = allHoles.map((h, idx) => {
       const isPlayed = h.score > 0;
       const relH = isPlayed ? h.score - h.par : null;
-      const tags = [];
-      if (h.teeResult && h.teeResult !== 'fairway') tags.push(`Tee ${h.teeResult}`);
-      if (h.teeResult === 'fairway') tags.push('Fairway');
-      if (h.approachYards) tags.push(h.approachYards + 'y');
-      if (h.approachResult) tags.push(h.approachResult.replace(/-/g,' '));
-      if (h.onGreen) tags.push('On green');
-      if (h.putts != null) tags.push(h.putts === 4 ? '4+ putts' : h.putts + 'p');
-      if (h.doubleChip) tags.push('Double chip');
-      if (h.penalty) tags.push(h.penalty > 1 ? (h.penalty + ' Penalties') : 'Penalty');
-      const tagsHtml = tags.length
-        ? `<div style="font-size:11px;color:var(--chalk3);margin-top:4px">${tags.join(' \xb7 ')}</div>`
-        : (isPlayed ? '' : '<div style="font-size:11px;color:var(--chalk3);opacity:.5;margin-top:4px;font-style:italic">Not played</div>');
+      const sentence = isPlayed ? buildHoleSentence(h) : '';
+      const sentenceHtml = sentence
+        ? `<div class="rr-sentence">${sentence}</div>`
+        : (isPlayed ? '' : '<div class="rr-sentence" style="opacity:.5;font-style:italic">Not played</div>');
       const rowOpacity = isPlayed ? '' : 'opacity:.5;';
       const warnPill = isMissingData(h) ? '<span class="det-warn-pill" title="Missing required data">!</span>' : '';
       const scoreCell = isPlayed
@@ -3859,7 +3945,7 @@ function renderDetailV2(round) {
         ${warnPill}
         <div class="rr-info">
           <div class="rr-course" style="font-size:14px">Hole ${h.number} \xb7 Par ${h.par}</div>
-          ${tagsHtml}
+          ${sentenceHtml}
         </div>
         <div class="rr-score-block">
           ${scoreCell}
