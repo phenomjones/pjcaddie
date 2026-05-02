@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.6 · May 01, 2026 -->
+<!-- PJ Caddie v8.3.7 · May 01, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -248,14 +248,20 @@ body{display:flex;flex-direction:column}
 .det-spark-dot.gold{background:var(--gold)}
 .det-spark-dot.in-play{background:var(--green)}
 .det-spark-axis{display:flex;justify-content:space-between;margin-top:8px;padding-left:30px;font-size:9px;color:var(--chalk3);letter-spacing:.4px}
-/* SHOTGUN ASCEND (v8.3.5) + STAGECOACH PIVOT (v8.3.6) — connecting dotted lines.
-   The SVG is rendered INSIDE the first row's .det-spark-track (which has a known
-   flex-determined width and offset thanks to the row's display:flex). The SVG
-   uses position:absolute (anchored to track top-left) and overflow:visible so
-   the polyline can extend downward past the first row to naturally align with
-   dot centers in subsequent rows. ViewBox X=0..100 maps to track width (percent);
-   Y is pixel space matching the SVG element height. preserveAspectRatio='none'
-   stretches X and Y independently. pointer-events:none keeps dots tappable. */
+/* SHOTGUN ASCEND (v8.3.5) + STAGECOACH PIVOT (v8.3.6) + STAGECOACH WIDTH (v8.3.7) —
+   connecting dotted lines. The SVG renders INSIDE the first row's .det-spark-track
+   (which has a known flex-determined width and offset thanks to the row's flex
+   layout). The SVG uses position:absolute (anchored to track top-left) and
+   overflow:visible so the polyline can extend downward past the first row to
+   naturally align with dot centers in subsequent rows. ViewBox X=0..100 maps to
+   track width (percent); Y is pixel space matching the SVG element height.
+   preserveAspectRatio='none' stretches X and Y independently. pointer-events:none
+   keeps dots tappable.
+   STAGECOACH WIDTH (v8.3.7) — SVG is a CSS replaced element; with viewBox set and
+   no explicit width, browsers compute width from intrinsic aspect ratio (viewBox
+   100:75 → 100px wide), even with position:absolute/left:0/right:0. The inline
+   width:100%;display:block on the SVG element forces the CSS-computed width.
+   Don't drop it — line will collapse to leftmost ~100px again. */
 .det-spark-rows{position:relative}
 .det-spark-lines{position:absolute;left:0;right:0;top:0;overflow:visible;pointer-events:none}
 /* VELVET LATTICE (v8.3.2) — universal tappable-stat panel pattern. Any element
@@ -527,7 +533,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.6 · May 01, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.7 · May 01, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -1050,7 +1056,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.6 · Spec v2.1</span>
+        <span>v8.3.7 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -3618,7 +3624,7 @@ function renderDetailV2(round) {
         const yPx = ri * ROW_PITCH + DOT_Y;
         return `${rLeftPct.toFixed(1)},${yPx}`;
       }).join(' ');
-      linesSvg = `<svg class="det-spark-lines" viewBox="0 0 100 ${svgHeight}" preserveAspectRatio="none" style="height:${svgHeight}px">`
+      linesSvg = `<svg class="det-spark-lines" viewBox="0 0 100 ${svgHeight}" preserveAspectRatio="none" style="width:100%;height:${svgHeight}px;display:block">`
                + `<polyline points="${points}" fill="none" stroke="var(--chalk3)" stroke-width="1.5" stroke-dasharray="3 3" stroke-linecap="round" vector-effect="non-scaling-stroke" />`
                + `</svg>`;
     }
