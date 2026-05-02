@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.8 · May 02, 2026 -->
+<!-- PJ Caddie v8.3.9 · May 02, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -538,7 +538,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.8 · May 02, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.9 · May 02, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -841,7 +841,6 @@ body{display:flex;flex-direction:column}
   </div>
 </div>
 
-
 <!-- ROUND DETAIL -->
 <div class="view" id="view-detail">
   <div class="safe-top"></div>
@@ -931,7 +930,6 @@ body{display:flex;flex-direction:column}
     <div class="pad pad-b" id="ce-body"></div>
   </div>
 </div>
-
 
 <!-- SETTINGS -->
 <div class="view" id="view-settings">
@@ -1068,7 +1066,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.8 · Spec v2.1</span>
+        <span>v8.3.9 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1220,390 +1218,6 @@ body{display:flex;flex-direction:column}
 <script>
 'use strict';
 
-// ── CADDIE VOICE ─────────────────────────────────────────────
-const BYRON_VERSION = 'Byron 3.0';
-const BYRON_PERSONA = 'IDENTITY: You are Byron \u2014 elite caddie and data analyst. Your voice draws from four sources: Cory Jez / TourIQ (reads and synthesizes shot data into caddie intelligence), Scott Fawcett / DECADE (dispersion-based targets, probability framework, aim away from the big number), Jon Sherman / Practical Golf (tone calibration for 18-handicap reality, no false hope), and your own voice (direct, specific, dry, never preachy).\n\nLANGUAGE RULE: Never use the word \u201cStrackaline\u201d \u2014 refer to course yardage and green-reading materials as \u201cgreen book\u201d instead.\n\nWHAT YOU ARE NOT: You are not a swing instructor. Never give swing tips, mechanics advice, or range drills. Your job is course management, not technique.\n\nCOURSE NOTES AUTHORITY: COURSE NOTES are the player\u2019s pre-established course management decisions based on personal knowledge of the course. They represent binding strategic context, not flavor text. When a club selection, aim point, or strategy is consistent with documented hazards, distances, or conditions in the notes, DO NOT question it \u2014 analyze execution quality of the chosen strategy instead. Only question a decision when it contradicts or ignores the documented notes. If the notes document a hazard at 240y and the player laid up with a 3-wood, that is the correct play \u2014 evaluate the execution, not the choice.\n\nTONE: Direct. Specific. Dry when warranted. Never generic. Never preachy. Every insight must cite a hole, club, yardage, miss direction, or data point. If the data doesn\u2019t support a claim, don\u2019t make it.\n\nWRITING STYLE FOR MOBILE: Write SHORT. Maximum 3 sentences per block \u2014 then stop. No paragraph walls. Each sentence should stand alone.\n\n18-HANDICAP REALITY: Bogey is a good score on a hard hole. Double bogey is acceptable on the hardest holes. Scoring zones: PARITY TARGET (realistic par opportunity), DAMAGE CONTROL (bogey is fine, avoid doubles), SURVIVAL (bogey/double acceptable \u2014 just get out clean). Never chase scores that aren\u2019t there.';
-
-// ── BYRON 3.0 CACHE ───────────────────────────────────────────
-// BYRON_PROMPT_VERSION \u2014 bump whenever a prompt change invalidates prior outputs.
-// Caches without this version or with a mismatched version are treated as stale (cache miss).
-const BYRON_PROMPT_VERSION = 4;
-
-// BYRON_SCHEMA_VERSION \u2014 the round shape Byron's prompts know how to read.
-// v8.0.0 (TUNDRA REWRITE) sets this to 1 (legacy shot-array shape). After
-// migration, all rounds are deleted and the new round shape is schemaVersion: 2,
-// so Byron has nothing to run on \u2014 the empty state on Home is the user-visible
-// "no data yet" signal. The constant is insurance for the GLACIER \u2192 OBSIDIAN PURGE
-// window: when GLACIER ships and schemaVersion: 2 rounds exist, byronUpdateUI and
-// runByron gate on roundSchema === BYRON_SCHEMA_VERSION and refuse with a
-// "Byron is being rebuilt" message until OBSIDIAN PURGE bumps this to 2 and
-// rewrites the prompts.
-const BYRON_SCHEMA_VERSION = 1;
-
-function byronGetCache(roundId, pass) {
-  try {
-    const raw = JSON.parse(localStorage.getItem('byron3_'+roundId+'_'+pass)||'null');
-    if (!raw) return null;
-    if (raw.promptVersion !== BYRON_PROMPT_VERSION) return null;
-    return raw;
-  } catch { return null; }
-}
-function byronSetCache(roundId, pass, result) {
-  localStorage.setItem('byron3_'+roundId+'_'+pass, JSON.stringify({result, ts: Date.now(), promptVersion: BYRON_PROMPT_VERSION}));
-}
-function byronClearRoundCache(roundId) {
-  ['holes','patterns','gameplan'].forEach(p => localStorage.removeItem('byron3_'+roundId+'_'+p));
-}
-// BYRON BRIDGE \u2014 collect all byron3_* cache entries for cross-device sync
-function collectByronCache() {
-  const out = {};
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && k.startsWith('byron3_')) {
-      try { out[k] = JSON.parse(localStorage.getItem(k)); }
-      catch { /* skip malformed */ }
-    }
-  }
-  return out;
-}
-
-// ── BYRON 3.0 DATA ASSEMBLY ───────────────────────────────────
-function byronHistoricalSummary(courseId, currentRoundId) {
-  const prior = getRounds().filter(r => r.courseId===courseId && r.id!==currentRoundId && r.holes?.length);
-  if (!prior.length) return null;
-  const holeStats = {};
-  prior.forEach(r => {
-    (r.holes||[]).forEach(h => {
-      if (!holeStats[h.number]) holeStats[h.number] = {scores:[], gir:[], misses:[]};
-      const hs = holeStats[h.number];
-      if (h.score!=null && h.par) hs.scores.push(h.score-h.par);
-      if (h.gir!=null) hs.gir.push(h.gir?1:0);
-      (h.shots||[]).forEach(sh => {
-        if (sh.type==='approach' && sh.result==='M' && sh.missDirection) hs.misses.push(sh.missDirection);
-      });
-    });
-  });
-  const summary = {};
-  for (const [num, st] of Object.entries(holeStats)) {
-    const avgOP = st.scores.length ? (st.scores.reduce((a,b)=>a+b,0)/st.scores.length).toFixed(1) : null;
-    const girPct = st.gir.length ? Math.round(st.gir.reduce((a,b)=>a+b,0)/st.gir.length*100) : null;
-    const mc = {}; st.misses.forEach(m => mc[m]=(mc[m]||0)+1);
-    const domMiss = Object.entries(mc).sort((a,b)=>b[1]-a[1])[0]?.[0]||null;
-    summary[num] = {avgOverPar:avgOP, girPct, dominantMiss:domMiss};
-  }
-  return {roundCount:prior.length, holes:summary};
-}
-
-const PARTIAL_THRESHOLD = 0.88; // yardage / carry < this = partial swing
-
-function byronRoundStats(round, clubCarries) {
-  const holes = round.holes||[];
-  const approaches = holes.flatMap(h=>(h.shots||[]).filter(s=>s.type==='approach'));
-  const teeShots = holes.flatMap(h=>(h.shots||[]).filter(s=>s.isTeeShot));
-  const misses = approaches.filter(s=>s.result==='M'&&s.missDirection);
-  const missDir = {left:0,right:0,short:0,long:0,center:0};
-  misses.forEach(s=>{if(missDir[s.missDirection]!=null)missDir[s.missDirection]++;});
-  const penalties = [];
-  holes.forEach(h=>{
-    const shots = h.shots || [];
-    const ob = shots.find(s => s.position==='OBL' || s.position==='OBR');
-    if (ob) {
-      penalties.push({hole:h.number, position:ob.position, club:ob.club});
-    } else {
-      const dr = shots.find(s => s.type==='drop');
-      if (dr) penalties.push({hole:h.number, type:'drop', club:dr.club||null});
-    }
-  });
-  const chipProx = [];
-  holes.forEach(h=>{
-    const hasChip=(h.shots||[]).some(s=>s.type==='chip'||s.type==='recovery');
-    if(hasChip&&h.putts?.distances?.length) chipProx.push(h.putts.distances[0]);
-  });
-  const clubData = {};
-  const partialShots = [];
-  approaches.forEach(s=>{
-    if(!s.club||!s.yardage) return;
-    const carryKey = s.clubId || s.club; // prefer clubId, abbr as legacy fallback
-    if(!clubData[s.club]) clubData[s.club]=[];
-    const carry = clubCarries?.[carryKey];
-    const isPartial = carry ? (s.yardage/carry) < PARTIAL_THRESHOLD : null;
-    if(isPartial) partialShots.push({hole:holes.find(h=>(h.shots||[]).includes(s))?.number,club:s.club,yds:s.yardage,carry,pct:Math.round(s.yardage/carry*100),result:s.result,miss:s.missDirection});
-    clubData[s.club].push({yds:s.yardage,result:s.result,intended:s.intendedZone,finish:s.finishZone,miss:s.missDirection,isPartial});
-  });
-  // DRIVE STATS — per-hole tee-shot carry data for Pass 2 driver validation.
-  // Raw carry uses clean-hole math (holeYds - firstApproachYds, no recovery).
-  // Effective carry applies net elevation folklore (+1y per 3ft uphill) — a coarser
-  // approximation than Pass 1's rolling-gradient, but sufficient for multi-hole averaging.
-  const driveStats = [];
-  holes.forEach(h => {
-    if (!h.par || h.par <= 3) return;
-    const shots = h.shots || [];
-    const teeShot = shots.find(s => s.isTeeShot);
-    if (!teeShot) return;
-    const hasRec = shots.some(s => s.type === 'recovery');
-    const hasLay = shots.some(s => s.type === 'layup');
-    const apps = shots.filter(s => s.type === 'approach' && !s.isTeeShot);
-    const holeYds = round.holeYards?.[h.number-1] || null;
-    const firstAppYds = apps[0]?.yardage || null;
-    const rawCarry = (holeYds && firstAppYds) ? holeYds - firstAppYds : null;
-    const teeIdForElev = round.teeId;
-    const elevFt = (round.courseId && teeIdForElev)
-      ? getHoleElevation(round.courseId, teeIdForElev, h.number-1) : null;
-    const effCarry = (rawCarry != null && typeof elevFt === 'number')
-      ? Math.round(rawCarry + elevFt/3) : null;
-    driveStats.push({
-      hole: h.number,
-      club: teeShot.club || null,
-      position: teeShot.position || null,
-      hasRecovery: hasRec,
-      hasLayup: hasLay,
-      driveCarry: (!hasRec && !hasLay && rawCarry != null) ? rawCarry : null,
-      driveCarryEffective: (!hasRec && !hasLay && effCarry != null) ? effCarry : null,
-      elevationFt: elevFt
-    });
-  });
-  // COPPER LANTERN — explicit scalars so Byron never computes penalty counts from arrays.
-  // teeShotPenaltyCount = par 4/5 tee shots with stroke-and-distance penalty (OBL/OBR).
-  // teeShotTroubleCount = par 4/5 tee shots that needed recovery but were NOT penalty (LL/RR kind of trouble).
-  const teeShotPenaltyCount = driveStats.filter(d => d.position==='OBL' || d.position==='OBR').length;
-  const teeShotTroubleCount = driveStats.filter(d => d.hasRecovery && d.position!=='OBL' && d.position!=='OBR').length;
-  return {
-    approachCount:approaches.length,
-    girCount:holes.filter(h=>h.gir).length,
-    totalHoles:holes.length,
-    totalPutts:holes.reduce((a,h)=>a+(h.putts?.count||0),0),
-    missDir, missTotal:misses.length,
-    penalties,
-    teeShotPenaltyCount, teeShotTroubleCount,
-    chipProx,
-    avgChipProx:chipProx.length?Math.round(chipProx.reduce((a,b)=>a+b,0)/chipProx.length):null,
-    clubData,
-    partialShots,
-    driveStats
-  };
-}
-
-// ── BYRON COACHING MODE (CINNAMON BEACON) ────────────────────
-// Pre-computed scalar tag that Byron prompts reference in a single line rather
-// than deriving from profile fields. Scalars-over-arrays rule (COPPER LANTERN
-// lesson): LLMs read scalars reliably, derive inconsistently. This function is
-// authoritative; prompts never re-derive the mode from primaryMissLat/Long.
-function computeCoachingMode(player) {
-  const lat  = player?.primaryMissLat  || 'unset';
-  const long = player?.primaryMissLong || 'unset';
-  if (lat === 'unset' || long === 'unset') return 'low-data';
-  const latDir  = (lat === 'left'  || lat === 'right');
-  const longDir = (long === 'short' || long === 'long');
-  const latTwo  = (lat === 'either');
-  const longTwo = (long === 'either');
-  if (latDir && longDir) return 'directional-both';
-  if (latDir && !longTwo) return 'directional-lat';
-  if (longDir && !latTwo) return 'directional-long';
-  if (latTwo && longTwo) return 'two-way-both';
-  if (latTwo && !longDir) return 'two-way-lat';
-  if (longTwo && !latDir) return 'two-way-long';
-  return 'mixed';
-}
-
-function byronBuildBundle(round) {
-  const rawPlayer = getPlayerProfile();
-  // Shallow-clone so coachingMode is visible to Byron without mutating the
-  // localStorage-backed profile object in memory.
-  const player = Object.assign({}, rawPlayer, { coachingMode: computeCoachingMode(rawPlayer) });
-  const courses = getCourses();
-  const course = courses.find(c=>c.id===round.courseId);
-  const courseNotes = getCourseNotes(round.courseId, round.holesPlayed||18);
-  const hist = byronHistoricalSummary(round.courseId, round.id);
-  // Build carry and shaft maps — prefer immutable clubSnapshot (v7.10.18+),
-  // fall back to current bag lookup for rounds predating the snapshot.
-  // Maps are keyed by BOTH clubId (for new shots) and abbr (legacy fallback).
-  const clubCarries = {};
-  const clubShaftMap = {};
-  if (round.clubSnapshot && Object.keys(round.clubSnapshot).length) {
-    // Snapshot path: ground-truth data frozen at round start
-    Object.entries(round.clubSnapshot).forEach(([abbr, profile]) => {
-      if (profile.carry) {
-        if (profile.clubId) clubCarries[profile.clubId] = profile.carry;
-        clubCarries[abbr] = profile.carry; // abbr key for legacy shots
-      }
-      if (profile.shaft) {
-        if (profile.clubId) clubShaftMap[profile.clubId] = profile.shaft;
-        clubShaftMap[abbr] = profile.shaft; // abbr key for legacy shots
-      }
-    });
-  } else if (round.bagClubs?.length) {
-    // Legacy path: look up current bag state (pre-v7.10.18 rounds)
-    const bag = round.bagId ? getBags().find(b=>b.id===round.bagId) : null;
-    const allClubs = bag ? bag.clubs : getBags().flatMap(b=>b.clubs);
-    round.bagClubs.forEach(abbr=>{
-      const club = allClubs.find(c=>c.abbr===abbr);
-      if(club?.carry) clubCarries[abbr] = club.carry;
-      if(club?.shaft) clubShaftMap[abbr] = club.shaft;
-    });
-  }
-  const stats = byronRoundStats(round, clubCarries);
-  const rel = round.totalScore!=null&&round.par ? round.totalScore-round.par : null;
-  const relStr = rel==null?'?':rel===0?'E':rel>0?'+'+rel:String(rel);
-  // Master tee — the tee set notes were written from (may differ from round tee)
-  const masterTee = getMasterTee(round.courseId);
-  // Current round tee set — look up by teeId first, fall back to name match
-  const roundTee = course?.tees.find(t => t.id === round.teeId) ||
-                   course?.tees.find(t => t.name === round.tees) || null;
-  return {round, player, courseNotes, hist, stats, rel, relStr, courseName:round.course, clubCarries, clubShaftMap, masterTee, roundTee};
-}
-
-// ── BYRON 3.0 PROMPTS ─────────────────────────────────────────
-function byronHolesPrompt(bundle) {
-  const {round, player, courseNotes, stats, relStr, masterTee, roundTee} = bundle;
-  // Adjust a raw yardage by elevation: +1y per 3ft uphill, -1y per 3ft downhill
-  const adjustY = (y, elev) => (typeof y === 'number' && typeof elev === 'number') ? Math.round(y + elev/3) : null;
-  const holesData = (round.holes||[]).sort((a,b)=>a.number-b.number).map(h=>{
-    const apps=(h.shots||[]).filter(s=>s.type==='approach'&&!s.isTeeShot);
-    const hasRecovery=(h.shots||[]).some(s=>s.type==='recovery');
-    const hasLayup=(h.shots||[]).some(s=>s.type==='layup');
-    const holeYds = round.holeYards?.[h.number-1] || null;
-    const firstApproachYds = apps[0]?.yardage || null;
-    const driveCombo = (holeYds && firstApproachYds && h.par > 3)
-      ? holeYds - firstApproachYds : null;
-    // Elevation for this hole — net and per-segment if pinned
-    const teeIdForElev = round.teeId || roundTee?.id;
-    const elevFt = (round.courseId && teeIdForElev)
-      ? getHoleElevation(round.courseId, teeIdForElev, h.number-1) : null;
-    const elevSegments = (round.courseId && teeIdForElev)
-      ? getHoleElevationSegments(round.courseId, teeIdForElev, h.number-1) : null;
-    // ROLLING GRADIENT — compute per-shot elevation based on actual drive carry when available
-    // Only activates when v2 segments exist (have absolute elevations + landing distance)
-    const isV2 = elevSegments?.schemaVersion === 2
-      && typeof elevSegments.teeElevFt === 'number'
-      && typeof elevSegments.landElevFt === 'number'
-      && typeof elevSegments.greenElevFt === 'number'
-      && typeof elevSegments.tee2landYd === 'number';
-    let driveCarryEst = null;       // estimated drive carry in yards (for rolling gradient)
-    let driveFinishElevFt = null;   // interpolated elevation at drive-finish point
-    let driveElevDelta = null;      // elevation change: tee → drive-finish (for tee shot)
-    let approachElevDelta = null;   // elevation change: drive-finish → green (for approach)
-    if (isV2 && h.par > 3 && driveCombo && !hasRecovery && !hasLayup) {
-      driveCarryEst = driveCombo;
-      const { teeElevFt, landElevFt, greenElevFt, tee2landYd } = elevSegments;
-      // Piecewise linear interpolation along the tee → landing → green path
-      if (driveCarryEst <= 0) {
-        driveFinishElevFt = teeElevFt;
-      } else if (driveCarryEst <= tee2landYd) {
-        // Between tee and landing pin
-        const ratio = tee2landYd > 0 ? driveCarryEst / tee2landYd : 0;
-        driveFinishElevFt = Math.round(teeElevFt + ratio * (landElevFt - teeElevFt));
-      } else {
-        // Past landing pin — interpolate between landing and green
-        const remainingY = holeYds - tee2landYd;
-        const pastLandingY = Math.min(driveCarryEst - tee2landYd, remainingY);
-        const ratio = remainingY > 0 ? pastLandingY / remainingY : 0;
-        driveFinishElevFt = Math.round(landElevFt + ratio * (greenElevFt - landElevFt));
-      }
-      driveElevDelta = driveFinishElevFt - teeElevFt;
-      approachElevDelta = greenElevFt - driveFinishElevFt;
-    }
-    // Per-shot elevation router, with rolling-gradient interpolation when available
-    // Priority:
-    //   1. Par 3: net elevation for every shot
-    //   2. Par 4/5 with v2 segments AND computed drive carry: interpolated delta
-    //   3. Par 4/5 with v1 segments only: fixed tee2land / land2green split
-    //   4. No segments: net elevation for every shot
-    const elevForShot = (shot) => {
-      if (h.par === 3) return elevFt;
-      if (!elevSegments) return elevFt;
-      // Interpolated path
-      if (isV2 && driveElevDelta != null && approachElevDelta != null) {
-        return shot.isTeeShot ? driveElevDelta : approachElevDelta;
-      }
-      // Legacy fixed-segment fallback
-      return shot.isTeeShot ? elevSegments.tee2land : elevSegments.land2green;
-    };
-    // SHOT SEQUENCE — preserve stored order so Byron reads shots linearly.
-    const shotSequence = (h.shots||[]).map((s, idx) => {
-      const base = { order: idx+1, type: s.type };
-      if (s.club) base.club = s.club;
-      if (s.position) base.position = s.position;
-      if (typeof s.yardage === 'number') {
-        base.yds = s.yardage;
-        const shotElev = elevForShot(s);
-        const adj = adjustY(s.yardage, shotElev);
-        if (adj != null && adj !== s.yardage) {
-          base.ydsEffective = adj;
-          base.elevSegment = shotElev;
-        }
-      }
-      if (s.intendedZone) base.intended = s.intendedZone;
-      if (s.finishZone) base.finish = s.finishZone;
-      if (s.result) base.result = s.result;
-      if (s.missDirection) base.miss = s.missDirection;
-      if (s.lie) base.lie = s.lie;
-      if (s.isTeeShot) base.isTeeShot = true;
-      return base;
-    });
-    return {
-      hole:h.number,par:h.par,score:h.score,overPar:h.score&&h.par?h.score-h.par:null,
-      gir:h.gir,pinZone:h.pinZone,holeYards:holeYds,
-      elevationFt: elevFt,
-      elevationSegments: elevSegments,
-      driveCarryEst,        // estimated actual drive carry used for interpolation (null if N/A)
-      driveElevDelta,       // interpolated elevation change during drive (null if not interpolated)
-      approachElevDelta,    // interpolated elevation change during approach (null if not interpolated)
-      driveCombo: (hasRecovery || hasLayup) ? driveCombo : null,
-      driveCarry: (!hasRecovery && !hasLayup && driveCombo) ? driveCombo : null,
-      driveCarryEffective: (!hasRecovery && !hasLayup && driveCombo != null && driveElevDelta != null) ? Math.round(driveCombo + driveElevDelta/3) : null,
-      hasRecovery,
-      hasLayup,
-      putts:{count:h.putts?.count||0,distances:h.putts?.distances||[]},
-      shotSequence
-    };
-  });
-  const noteLines = courseNotes.map((n,i)=>{
-    const p=[n.tee&&'Tee:'+n.tee,n.approach&&'App:'+n.approach,n.green&&'Grn:'+n.green].filter(Boolean);
-    return p.length?`H${i+1}: ${p.join(' | ')}`:null;
-  }).filter(Boolean).join('\n');
-  const lowWarn = stats.approachCount<9?`Only ${stats.approachCount} approach shots \u2014 limited sample.`:null;
-
-  // Build master tee / round tee delta context for notes adjustment
-  const masterName = masterTee?.name || null;
-  const roundTeeName = roundTee?.name || round.tees || null;
-  const teesMatch = !masterTee || !roundTee || masterTee.id === roundTee.id;
-  let notesHeader = `COURSE NOTES (written from ${masterName||'unknown'} tees):`;
-  let notesAdjustInstruction = '';
-  if (!teesMatch && masterTee?.holeYards && roundTee?.holeYards) {
-    const deltas = masterTee.holeYards.map((my, i) => {
-      const ry = roundTee.holeYards[i] || my;
-      return my - ry; // positive = master is longer; adjustment = note_yardage - delta
-    });
-    const deltaStr = deltas.map((d,i)=>`H${i+1}:${d>0?'-'+d:d<0?'+'+Math.abs(d):'0'}`).join(' ');
-    notesHeader = `COURSE NOTES (written from ${masterName} tees; this round played from ${roundTeeName} tees):`;
-    notesAdjustInstruction = `\nYARDAGE ADJUSTMENT RULE: Notes were written from ${masterName} tees. This round is from ${roundTeeName} tees. Per-hole delta (subtract from note yardage to get ${roundTeeName} yardage): ${deltaStr}\nFor every numeric yardage in the notes, apply the hole's delta and cite both values — e.g. "bunker at 190yd (250yd from ${masterName})". Holes with delta=0 need no adjustment. Non-numeric prose passes through unchanged.`;
-  }
-
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 1: HOLE-BY-HOLE \u2501\u2501\u2501\n\nPLAYER: Miss profile lat=${player.primaryMissLat||'?'} | long=${player.primaryMissLong||'?'} | coachingMode=${player.coachingMode||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}${player.notes?'\nNotes: '+player.notes:''}\n\nROUND: ${round.course}, ${round.date}, ${round.tees||''}, ${round.holesPlayed}H, Score ${round.totalScore} (${relStr}), Par ${round.par}\n\nZONE GRID (numpad): 7=long-L 8=long-C 9=long-R / 4=mid-L 5=center 6=mid-R / 1=short-L 2=short-C 3=short-R. Lateral miss priority over longitudinal.\n\nSHOT SEQUENCE RULE: Each hole has a shotSequence array where each entry has an order field (1, 2, 3, …). Read shots in order. Any yds field refers to the distance of THAT specific shot only — never attribute one shot's yardage to a different shot in the sequence.\n\nELEVATION RULE: Each hole may include elevationFt (net tee-to-green delta, signed, positive=uphill) and optionally elevationSegments for par 4/5 with a pinned landing area. The app pre-computes ydsEffective per-shot using the correct elevation for THAT shot. When elevationSegments.schemaVersion is 2, the app uses ROLLING GRADIENT interpolation: it estimates actual drive carry from (holeYards - firstApproachYds), interpolates along the pinned tee→landing→green path, and emits driveElevDelta (tee→drive-finish) and approachElevDelta (drive-finish→green). The elevSegment field on each shot shows which elevation delta was applied. Cite BOTH raw and effective when the difference matters, e.g. "6I from 190y raw / 208y effective (+18y for uphill approach segment)". Never re-apply the elevation correction — ydsEffective is pre-computed. If elevationFt is null, skip elevation commentary entirely. For par 5 middle shots (layups) and holes with recoveries, segment data may be less precise — use judgment.\n\nDOGLEG GUARD: Rolling gradient interpolation assumes the hole plays roughly straight from tee to landing to green. If COURSE NOTES for a hole describe a dogleg, blind carry, or mention "corner" / "turns left" / "turns right" / "kick" in a way that implies the terrain between tee and landing deviates from a straight line, REDUCE confidence in driveElevDelta and approachElevDelta. In that case, prefer the fixed segment values elevationSegments.tee2land (tee shot) and elevationSegments.land2green (later shots), or defer to the player's own written observation.\n\nNOTES-OVERRIDE-ELEVATION: The numeric elevation values are an approximation based on 2-3 pinned points per hole — they do not capture every contour, cross-slope, or wind-tunnel effect. If COURSE NOTES document specific shot-level elevation behavior for a hole (e.g. "approach plays +10yd", "green sits in a bowl 8ft below the front", "drive kicks forward on downslope"), those player observations take PRECEDENCE over the numeric elevation for the affected shot. When notes and numeric elevation conflict, trust the notes.\n\nDRIVE DISTANCE RULE: On par 4/5 holes, driveCarry = hole_yards - first_approach_yards (clean holes only). When driveCarryEffective is present and differs from driveCarry, cite BOTH raw and effective — e.g. "220y raw / 240y effective drive (+20y for uphill drive segment)." On holes with hasRecovery:true, driveCombo = hole_yards - first_approach_yards represents drive+recovery combined — do NOT cite as drive carry. On holes with a recovery, analyze tee shot position and score cost instead of distance.\n\nPENALTY DEFINITION: The word "penalty" means stroke-and-distance only — a tee shot with position OBL or OBR, or a drop/retee event. Trouble tee shots (positions LL, RR, or drives that needed recovery but stayed in bounds) are NOT penalties. Call them "trouble tee shots" or describe the position directly. Never aggregate penalty counts in Pass 1 — that is Pass 2's job. Describe each hole's events on their own.\n\nMISS PROFILE AIM RULE (coachingMode=${player.coachingMode||'?'}): When prescribing aim on approach shots, apply the player's miss profile. If the player has a lateral tendency and the pin is on that side, prescribe aim AWAY from pin side — the pin penalizes the player's natural miss. If the pin is OPPOSITE the player's tendency, center aim is fine — the pin already favors the miss. For two-way axes, no favorable side exists — prescribe center and accept outcome. If coachingMode is 'low-data', DO NOT prescribe profile-aware aim — fall back to generic DECADE aim only. Aim prescriptions must cite the profile tendency in their reasoning (one sentence).\n\n${notesHeader}${notesAdjustInstruction}\n${noteLines||'None'}\n\nHOLE DATA:\n${JSON.stringify(holesData)}\n\nEVERY HOLE PLAYED must appear in the holes array \u2014 no exceptions, including clean pars. Pars get brief confirmation; problem holes get full analysis.\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "holes": [\n    {\n      "number": 4,\n      "summary": "Max 8-word headline. For clean par holes, a brief confirmation like 'Solid par \u2014 plan executed'. For problem holes, the headline of what happened.",\n      "detail": "1-3 sentences for problem holes (penalty, miss pattern, aim issue, trouble); 1 brief sentence for clean par holes. Cite hole, club, zone, or yardage where relevant. If pinZone is provided and result is M, state whether the miss was short-side or long-side of the pin and what it cost. If the original intendedZone was the mistake (e.g. aimed at a front pin on a firm green, aimed adjacent to OB), prescribe a corrected aim zone. If the aim was sound by DECADE principles but the miss pattern exposed the bad side of the pin, call that out as a miss-pattern or club-selection issue — do NOT prescribe an alternative aim. Trace any OBL/OBR to the decision that caused it. No swing tips."\n    }\n  ],\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}\n\nlowDataWarning RULE: Copy the lowDataWarning value from the schema above verbatim. Do not rewrite, elaborate, or substitute your own warning text. If the schema shows null, return null.`;
-}
-
-function byronPatternsPrompt(bundle, holesResult) {
-  const {round, player, hist, stats, relStr, clubCarries, clubShaftMap} = bundle;
-  const histStr = hist
-    ? `${hist.roundCount} prior round(s) at ${round.course}. Per-hole history: ${JSON.stringify(hist.holes)}`
-    : `No prior rounds at ${round.course} on record.`;
-  const lowWarn = stats.approachCount<9?`Only ${stats.approachCount} approach shots \u2014 pattern confidence is low.`:null;
-  const carryLine = Object.keys(clubCarries||{}).length
-    ? `Club carry distances (full swing): ${JSON.stringify(clubCarries)}\nPartial swings detected (<${Math.round(PARTIAL_THRESHOLD*100)}% of carry): ${stats.partialShots.length?JSON.stringify(stats.partialShots):'none'}`
-    : 'No carry distances on file \u2014 skip partial swing analysis.';
-  const shaftLine = Object.keys(clubShaftMap||{}).length
-    ? `Club shaft assignments: ${JSON.stringify(clubShaftMap)}`
-    : null;
-
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 2: PATTERN ANALYSIS \u2501\u2501\u2501\n\nPLAYER: Miss profile lat=${player.primaryMissLat||'?'} | long=${player.primaryMissLong||'?'} | coachingMode=${player.coachingMode||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}\n\nROUND: ${round.course}, ${round.date}, Score ${round.totalScore} (${relStr})\n\nHOLES OUTPUT (Pass 1):\n${JSON.stringify(holesResult)}\n\nROUND STATS:\nApproaches: ${stats.approachCount} | GIR: ${stats.girCount}/${stats.totalHoles} | Putts: ${stats.totalPutts}\nMiss directions: ${stats.missTotal} total approach misses. Breakdown: {long: ${stats.missDir.long}, right: ${stats.missDir.right}, short: ${stats.missDir.short}, left: ${stats.missDir.left}, center: ${stats.missDir.center}}. Read these numbers literally \u2014 do not count the number of non-zero categories.\nPenalties: ${stats.penalties.length} \u2014 ${JSON.stringify(stats.penalties)}\nTee shot penalties (stroke-and-distance, OBL/OBR only): ${stats.teeShotPenaltyCount}\nTee shot trouble (needed recovery but NOT penalty): ${stats.teeShotTroubleCount}\nChip/recovery first-putt distances: ${stats.chipProx.length?stats.chipProx.join(', ')+'ft (avg '+stats.avgChipProx+'ft)':'no data'}\nClub data: ${JSON.stringify(stats.clubData)}\nDrive data (per par 4/5 tee shot): ${JSON.stringify(stats.driveStats)}\n${carryLine}\n${shaftLine?shaftLine+'\\n':''}\nHISTORICAL: ${histStr}\n\nDRIVE DISTANCE RULE: Use only driveCarry values (clean tee shots, no recovery) for club carry validation. Holes with hasRecovery:true — analyze by tee position and score outcome, not distance. Keep two categories distinct when describing tee shot results: penalty events (OBL/OBR only) and trouble tee shots (LL/RR/recovery but not OB). Never merge them into one "penalty" count.\n\nPENALTY LANGUAGE RULE: The word "penalty" means stroke-and-distance only. Use teeShotPenaltyCount for the exact count \u2014 never compute it from positions or arrays. Never call trouble tee shots (LL, RR, recovery without OB) "penalties." Call them "trouble tee shots."\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "missPattern": "Read the breakdown counts literally \u2014 the number of non-zero buckets is NOT the miss count. If any single direction is >= 40% of total misses AND the count of that direction is >= 2, name the tendency with explicit counts, e.g. '3 of 5 misses went long.' Add a sample-size caveat if total misses < 8 but do NOT suppress the flag. Do NOT say 'no pattern established' when a direction reaches the threshold. Then compare today's pattern to the player's coachingMode: if today confirms the profile, state the alignment with sample counts; if today DIVERGES from the profile, note the divergence with hole citations (e.g., 'profile says short-miss but today went 3 long'). For coachingMode=low-data, do NOT assert profile confirmation \u2014 describe today's pattern only. For two-way modes (two-way-lat, two-way-long, two-way-both), acknowledge that miss direction is inherently variable; focus on magnitude and hole-specific cost instead of directional tendency. Note yardage bands if club data supports it.",\n  "clubValidation": "Use driveStats entries where hasRecovery is false AND driveCarry is not null \u2014 these are the clean drives for carry validation. Compute the average driveCarry (and driveCarryEffective if available) per club, and compare to the club's carry target from the carry distances map. If avg differs from target by > 15y with at least 3 clean drives, flag systematic short/long and cite the specific holes. If fewer than 3 clean drives, report the data points with 'sample too small for definitive call' and skip the flag. Drives with hasRecovery:true are NOT carry data \u2014 they are trouble-drive instances and belong to the penalty/position analysis instead. Null if no clean drives.",\n  "partialSwings": "If carry data exists: compare GIR rate on partial swings vs full swings. Cite specific clubs and yardages. If no carry data: null.",\n  "penaltySummary": "Use teeShotPenaltyCount for the exact tee shot penalty count \u2014 never derive this yourself. Trace each penalty event to the decision; cite hole, club, position. Separately describe trouble tee shots (count = teeShotTroubleCount) as their own category \u2014 never call them penalties. For holes with penalties or trouble tee shots, compare avg score vs clean-drive holes to quantify cost. Null if both counts are zero.",\n  "chipProximity": "First-putt distance after chips/recoveries. Avg, range, and what it costs in putts. Null if no data.",\n  "historicalComparison": "How does this round compare to prior rounds at this course? Cite specific holes or stats where history exists.",\n  "shaftAnalysis": "If shaft data exists: compare GIR rate and miss direction by shaft. Require minimum 5 shots per shaft variant. Null if no shaft data.",\n  "lowDataWarning": ${lowWarn?'"'+lowWarn+'"':'null'}\n}`;
-}
-
-function byronGameplanPrompt(bundle, holesResult, patternsResult) {
-  const {round, player, relStr} = bundle;
-
-  return BYRON_PERSONA+`\n\n\u2501\u2501\u2501 PASS 3: GAMEPLAN FOR NEXT ROUND \u2501\u2501\u2501\n\nPLAYER: Miss profile lat=${player.primaryMissLat||'?'} | long=${player.primaryMissLong||'?'} | coachingMode=${player.coachingMode||'?'} | Driver=${player.driverShape||'?'} | Approach=${player.approachShape||'?'}\n\nROUND: ${round.course}, ${round.date}, Score ${round.totalScore} (${relStr})\n\nHOLES OUTPUT:\n${JSON.stringify(holesResult)}\n\nPATTERNS OUTPUT:\n${JSON.stringify(patternsResult)}\n\nSCORING ZONES: PARITY TARGET=realistic par opportunity. DAMAGE CONTROL=bogey is the plan. SURVIVAL=get out clean.\n\nHEADLINE BY COACHING MODE:\n- directional-lat / directional-long / directional-both: headline describes the miss pattern and its cost from THIS round (e.g. "Your long miss cost you on 3 holes today"). Do NOT prescribe blanket aim direction \u2014 aim is pin- and hazard-dependent.\n- two-way-lat / two-way-long / two-way-both: headline MUST be center-oriented (e.g. "Hit center aims only \u2014 no favorable side").\n- low-data: headline avoids profile-based claims; focus on the most concrete pattern from THIS round's data.\n- mixed: pick the more actionable axis; do NOT blend both into one headline.\n\nReturn ONLY valid JSON. No preamble. No markdown fences.\n{\n  "headline": "Single most important change for next round. One sentence. Follow HEADLINE BY COACHING MODE rules above.",\n  "bogeyBudget": [\n    {"hole": 7, "zone": "DAMAGE CONTROL", "reasoning": "Why \u2014 cite avg score or pattern. 1-2 sentences."}\n  ],\n  "otherAdjustments": [\n    "Specific club, distance, or layup change. Cite data. 1 sentence each."\n  ]\n}`;
-}
-
 // Club list \u2014 used by scoring screen (Phase 4)
 const CLUBS = ['Dr','3w','5w','2h','3h','4h','5h','3i','4i','5i','6i','7i','8i','9i','PW','GW','SW','LW','PT','TW','HW','?'];
 
@@ -1614,10 +1228,6 @@ const CLUBS = ['Dr','3w','5w','2h','3h','4h','5h','3i','4i','5i','6i','7i','8i',
 // stacked tee groups, combo tees, and pre-output self-check to prevent axis
 // transposition on unusual physical scorecard layouts.
 const BYRON_SCORECARD_PROMPT = `You are Byron, a golf course scorecard parser. You are reading a photo of a golf scorecard and extracting the course structure: name, hole count, par per hole, and one or more tee sets with yardages.\n\nSOURCES YOU WILL SEE:\n1. Bluegolf.com screenshots \u2014 tight crop of a table, usually ONE tee set at a time\n2. Physical scorecards (photos) \u2014 wider image, OFTEN MULTIPLE tee sets, may include ads, logos, handwritten round data, and unusual layouts\n3. Course website screenshots \u2014 varies\n\nSTEP 1 \u2014 IDENTIFY THE COURSE\nFind the course name. Usually a large title at the top or a logo/letterhead. Use the printed name verbatim (e.g. "Paramount Country Club", not "Paramount CC"). If unreadable, return parseable:false.\n\nSTEP 2 \u2014 ESTABLISH ORIENTATION (CRITICAL \u2014 DO THIS BEFORE READING ANY NUMBERS)\nFind the HOLE LABEL axis first. This is the row or column containing the sequence "1 2 3 4 5 6 7 8 9 OUT 10 11 12 13 14 15 16 17 18 IN" (or similar, possibly with TOT at the end). This axis defines how the scorecard is oriented.\n- If the hole labels run LEFT-TO-RIGHT as a row, then each tee is a ROW and each hole is a COLUMN. Read tee yardages horizontally.\n- If the hole labels run TOP-TO-BOTTOM as a column, then each tee is a COLUMN and each hole is a ROW. Read tee yardages vertically.\nNEVER extract yardages until you have confirmed the hole-label axis. If you cannot identify the hole labels, return parseable:false with parseError: "Could not identify hole-number axis".\n\nSTEP 3 \u2014 HANDLE SPLIT AND STACKED LAYOUTS\nPhysical scorecards often split the card in ways that Bluegolf screenshots do not:\n\nA) FRONT-9 / BACK-9 SPLIT: Holes 1-9 are in one block of columns, holes 10-18 are in a SEPARATE block of columns (often with an "OUT" column between them and an "IN" column at the end). Each tee row will appear TWICE \u2014 once spanning holes 1-9 and OUT, once spanning holes 10-18 and IN. You must JOIN the two halves horizontally to produce a single 18-value array per tee. Do not emit two 9-hole tees from one 18-hole tee.\n\nB) STACKED TEE GROUPS: A single card may have TWO OR MORE separate tee-label sections, typically men's/championship tees at the top, women's/forward tees at the bottom, with blank or unrelated rows (player score grid, ads) between them. Parse each section independently as its own set of tee rows, then concatenate the results into the final tees array.\n\nC) COMBO TEES: Scorecards sometimes list composite tee sets like "Black/Blue", "Blue/Silver", or "Silver/Green" \u2014 typically shown with triangle markers (\u25bc) next to certain holes indicating which of the two tees that hole plays from. These ARE legitimate tee sets. If they show a complete yardage row, emit them using the combined label verbatim (e.g. "Black/Blue"). Do not split or reinterpret combo tees.\n\nSTEP 4 \u2014 EXTRACT TEES\nFor each tee-set row (or column, per orientation) found, emit: {name, holePars, holeYards}\n- name: the label used on the scorecard VERBATIM (e.g. "Blue", "Championship", "Silver Tees", "Black/Blue"). Do not normalize, translate, or reword.\n- holePars: array of integers from the Par row, length matches hole count. The par row is often shared across all tees on a card \u2014 reuse it.\n- holeYards: array of integers from this tee's row, length matches hole count\nIf only front 9 or back 9 is visible, emit 9 values. If 18 holes visible, emit 18 \u2014 including any data reconstructed from front/back splits per Step 3A.\n\nSTEP 5 \u2014 IGNORE\nDo NOT extract or emit:\n- Handicap / HDCP / Stroke Index rows (these are 1-18 integers but represent hole difficulty ranking, not par or yardage)\n- Player names, scores, dates, handwritten marks\n- Slope / Rating / Course Rating numbers\n- Advertisements, sponsor logos\n- Total / OUT / IN / 9-hole summary columns (use individual hole values only)\n- The "INITIALS" column that often appears between the front-9 block and the back-9 block\n\nSTEP 6 \u2014 SELF-CHECK (REQUIRED BEFORE OUTPUT)\nBefore returning JSON, verify ALL of the following. If ANY check fails, either fix the problem or lower confidence to "low" and explain in parseNotes:\n1. Each tee's holePars.length === holes count (9 or 18)\n2. Each tee's holeYards.length === holes count (9 or 18)\n3. All pars are integers in range 3-6\n4. All yardages are integers in range 50-750\n5. No two distinct tees have identical holeYards arrays. If two tees match exactly, you likely read the same row twice or confused axis \u2014 re-examine.\n6. For 18-hole cards, front-9 sum and back-9 sum are each 1000-4200 yards (sanity range). If either half sums outside that range, you may have transposed axis.\n7. For 18-hole cards, total par sum is in range 68-74. If not, verify the par row wasn't mis-read.\n\nSTEP 7 \u2014 OUTPUT\nReturn ONLY valid JSON. No preamble, no markdown fences.\nIf the image is not a readable scorecard: {"parseable":false,"parseError":"<short reason>"}\nOtherwise:\n{"parseable":true,"courseName":"Paramount Country Club","holes":18,"tees":[{"name":"Blue","holePars":[4,4,3,5,4,4,3,5,4,4,4,3,5,4,4,3,4,5],"holeYards":[402,387,178,510,420,395,165,525,398,410,395,180,495,405,410,170,390,520]}],"confidence":"high","parseNotes":""}\n\nCONFIDENCE: high=clear scan, all values readable, all self-checks pass / medium=minor uncertainty on 1-2 cells / low=multiple uncertain values, failed self-check, or structural ambiguity\n\nRULES THAT OVERRIDE EVERYTHING:\n1. Establish orientation (Step 2) BEFORE reading any yardage. Tee yardages are read PERPENDICULAR to the hole-number axis, NEVER parallel to it.\n2. NEVER emit a tee whose yardages array was assembled by reading DOWN a single hole column (that would mean each value is from a different tee).\n3. Use the course name verbatim. Do not abbreviate.\n4. Use tee labels verbatim. Do not translate "Championship" to "Black" or rewrite combo tees.\n5. Never emit a handicap or slope row as pars/yards.\n6. Never include Total / OUT / IN / 9 / INITIALS columns in the arrays.\n7. If only front 9 or back 9 visible, emit 9 values \u2014 do not fabricate the missing nine. If both halves of a split card are visible, JOIN them into 18.\n8. Do not parse handwritten round data \u2014 scorecard structure only.\n9. Run Step 6 self-check before outputting. If two tees have identical yardages, you made a transposition mistake \u2014 re-read.\n10. Return only JSON.`;
-
-
-// Byron parser prompt — handwritten round notation (v7)
-const BYRON_PARSER_PROMPT = `You are Byron, a golf shot data parser. You are reading a photo of handwritten golf notes and extracting structured shot data hole by hole.\n\nROUND CONTEXT:\nCourse: {{course}}\nDate: {{date}}\nExpected holes: {{expectedHoles}}\nPar per hole: {{holePars}}\n\nSTEP 1 \u2014 FIND THE HOLES\nEach hole begins with a label in the format H1, H2, H3 \u2026 H18 written by hand.\n- Scan the entire image for these labels before parsing anything.\n- Do not assume holes are sequential by position on the page \u2014 always read the written label.\n- Do not infer a hole number if you cannot read it clearly \u2014 flag it instead.\n- Everything written between H[n] and the next H[n+anything] belongs to hole n.\n- The first hole may appear at the very top edge of the image \u2014 do not skip it.\n- Ignore all pre-printed text. Parse handwritten content only.\nAfter finding all holes, compare against expectedHoles. Any expected hole not found must be flagged as missing.\n\nSTEP 2 \u2014 PARSE EACH HOLE\nShots are separated by \u00b7 (middle dot). Element order within each shot is flexible.\n\nTEE SHOT (par 4 and par 5 holes only):\nFirst shot is the tee shot. Contains:\n- Club: Dr, 3w, 5w, 2h, 3h, 4h, 5h, 3i, 4i, 5i, 6i, 7i, 8i, 9i, PW, GW, SW, LW, Rh\n- Position (exactly one of): OBL, OBR, LL, RR, L, R, C\n  OBL=OB or hazard left, OBR=OB or hazard right, LL=left out of position, RR=right out of position, L=left in play, R=right in play, C=center/fairway\n- After OBL or OBR expect RT or Rehit [club] [position] (rehit from original spot) or D (drop). Flag if neither follows.\nCRITICAL \u2014 L vs LY: L as tee position is single capital letter in tee shot context. LY or LAY is a layup appearing after tee shot. Never confuse these.\n\nPAR 3 TEE SHOT: Par 3 holes have NO tee shot line. First shot is approach. Do not look for position values.\n\nAPPROACH SHOT:\n- Yardage: standalone integer (e.g. 145)\n- Zone pair: two digits separated by ' or : (e.g. 2'7 or 2:7). First=intendedZone(1-9), second=finishZone(1-9)\n- Result: H (hit green) or M (missed)\n- Optional club, optional lie: Rh (rough) or Sd (sand). Omit=fairway.\nZone grid: 7|8|9 (long) / 4|5|6 (mid) / 1|2|3 (short) \u2014 L|C|R\n\nSHORT GAME: Ch=chip, REC or RC=recovery, LAY or LY=layup, X=untracked, D=drop, RT or Rehit [club] [pos]=rehit from original spot, TW=Texas Wedge (putt from off green), HW=Hybrid Wedge (putt with hybrid from off green)\n\nPIN: p followed by digit 1-9 (e.g. p6)\n\nPUTTING: begins with \\ or / or |\n- Single number = count only (e.g. \\ 2)\n- Multiple numbers = distances in feet (e.g. \\ 15 3)\n\nSCORE: standalone number. Read the written score. Do not calculate. Compare to shot count and flag if different.\n\nSTEP 3 \u2014 VALIDATE\n1. SCORE_MISMATCH: shot count vs written score differ\n2. HOLE_MISSING: expected hole not in image\n3. FIELD_UNCLEAR: cannot read a specific field\n4. FIELD_MISSING: required field absent\n5. OB_UNRESOLVED: OBL/OBR not followed by RT or D\n6. SCORE_UNCLEAR: cannot read written score\nConfidence: high=all clear+score matches, medium=minor uncertainty, low=multiple issues or mismatch\n\nSTEP 4 \u2014 OUTPUT\nReturn ONLY valid JSON. No preamble, no markdown fences.\nIf no H[n] labels found: {"parseable":false,"parseError":"No hole labels found"}\nOtherwise:\n{"parseable":true,"holes":[{"number":4,"par":5,"score":6,"notation_raw":"Dr RR \u00b7 LY \u00b7 Rh 170 2'7 M \u00b7 p4 \\\\ 3 60","confidence":"high","flags":[],"pinZone":4,"shots":[{"type":"tee","club":"Dr","position":"RR","isTeeShot":true},{"type":"layup"},{"type":"approach","club":"Rh","yardage":170,"intendedZone":2,"finishZone":7,"result":"M","lie":"Rh","isTeeShot":false}],"putts":{"count":2,"distances":[3,60]}}],"missingHoles":[],"parseNotes":""}\n\nFLAG FORMAT: {"type":"score_mismatch","field":"score","detail":"Byron counts 6, written score reads 7"}\nSHOT TYPES: tee|approach|chip|recovery|layup|untracked|retee|drop\nRESULT (approach): H|M\nLIE (approach): null|"Rh"|"Sd"\nPOSITION (tee/retee): OBL|OBR|LL|RR|L|R|C\n\nRULES THAT OVERRIDE EVERYTHING:\n1. Never skip the first hole even at the top edge.\n2. Never infer a hole number \u2014 always read H[n].\n3. Never parse pre-printed scorecard text.\n4. Par 3 holes: no tee shot, first shot is approach.\n5. L (position) and LY/LAY (layup) are never interchangeable.\n6. OBL or OBR must be followed by RT/Rehit or D. Flag if not.\n7. Read the written score. Do not calculate it.\n8. Flag uncertainty \u2014 never guess silently.\n9. Return only JSON.`;
 
 // ── PRELOADED COURSES ────────────────────────────────────────
 const PRELOADED_COURSES = [
@@ -2402,7 +2012,6 @@ function migrateEntityIds() {
 
   localStorage.setItem('pjc_ids_migrated', '1');
 }
-
 
 // ── MISS PROFILE MIGRATION (IVORY PELICAN) ───────────────────
 // Legacy pjc_player had a single primaryMiss field ('L'|'C'|'R'|undefined).
@@ -3954,9 +3563,6 @@ function renderDetailV2(round) {
     }).join('');
   }
 
-  // IVORY VEIL (v8.1.4) — Byron front-end removed. Backend (runByron,
-  // prompts, cache) preserved for future revival.
-
   // VELVET LATTICE (v8.3.2) — restore the active stat selection (panel content
   // + .selected highlight + tee-chart dimming if teeZone) after a re-render.
   // If DET.statSel is null this is a no-op (all panels closed, all stats bright).
@@ -4329,7 +3935,7 @@ async function ghPullSection(label, btnId, tsKey, restoreFn, sectionKey) {
 
 function ghPushRounds() {
   return ghPushSection('Rounds', 'gh-push-rounds-btn', now => ({
-    fields: { rounds: getRounds(), byronCache: collectByronCache(), roundsTs: now },
+    fields: { rounds: getRounds(), roundsTs: now },
     metaFields: { roundsTs: now }
   }), 'rounds');
 }
@@ -4389,33 +3995,6 @@ async function ghPullRounds() {
     // here so old-shape rounds never reach the round detail / Byron paths. Surfaced
     // by flushGlacierToasts (re-invoked below post-pull) if anything was dropped.
     validateRoundsShape();
-    // BYRON BRIDGE \u2014 merge byron cache; per roundId_pass last-write-wins by ts; clean orphans
-    const remoteBC = remote.byronCache || {};
-    const mergedRoundIds = new Set(merged.map(r => r.id));
-    let bcUpdated = 0;
-    Object.keys(remoteBC).forEach(k => {
-      const m = k.match(/^byron3_(.+)_(holes|patterns|gameplan)$/);
-      if (!m) return;
-      if (!mergedRoundIds.has(m[1])) return; // orphan on remote side \u2014 don't import
-      const remoteEntry = remoteBC[k];
-      if (!remoteEntry || typeof remoteEntry !== 'object') return;
-      const localRaw = localStorage.getItem(k);
-      let localEntry = null;
-      if (localRaw) { try { localEntry = JSON.parse(localRaw); } catch {} }
-      if (!localEntry || (remoteEntry.ts||0) > (localEntry.ts||0)) {
-        localStorage.setItem(k, JSON.stringify(remoteEntry));
-        bcUpdated++;
-      }
-    });
-    // Clean orphan byron3_* keys (round no longer exists in merged)
-    const orphanKeys = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const k = localStorage.key(i);
-      if (!k || !k.startsWith('byron3_')) continue;
-      const m = k.match(/^byron3_(.+)_(holes|patterns|gameplan)$/);
-      if (m && !mergedRoundIds.has(m[1])) orphanKeys.push(k);
-    }
-    orphanKeys.forEach(k => localStorage.removeItem(k));
     const meta = getSyncMeta();
     meta.lastPull = Date.now();
     // TIMESTAMP PARITY — record per-section pull + observed remote ts for Rounds
@@ -4427,8 +4006,7 @@ async function ghPullRounds() {
     saveSyncMeta(meta);
     renderSettings();
     const t = new Date(meta.lastPull).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    const bcStr = bcUpdated>0 ? ' \u00b7 '+bcUpdated+' analyses' : '';
-    ghSetStatus('\u2713 Pulled Rounds \u00b7 '+merged.length+' rounds'+bcStr+' \u00b7 '+t, 'var(--green)');
+    ghSetStatus('\u2713 Pulled Rounds \u00b7 '+merged.length+' rounds \u00b7 '+t, 'var(--green)');
     toast('Pulled Rounds \u2713');
     // GLACIER REDESIGN \u2014 if validateRoundsShape dropped anything during the merge,
     // surface the drop count after the success toast finishes (default 2400ms).
@@ -4742,73 +4320,6 @@ function bgsSaveNewBag() {
   toast('Bag added \u2713');
 }
 
-// ── BYRON 3.0 ENGINE ─────────────────────────────────────────
-// IVORY VEIL (v8.1.4) — front-end removed. The seven UI/render functions
-// that lived here (byronTimeAgo, toggleByronCard, toggleByronHole,
-// renderByronHoles, renderByronPatterns, renderByronGameplan, byronUpdateUI)
-// were all DOM-coupled — they read/wrote to byron-* element IDs that no
-// longer exist in view-detail. Removed cleanly. Backend (runByron, prompts,
-// bundle composer, cache layer) preserved intact below for future revival.
-// Note: prompts target schemaVersion: 1 only and will need OBSIDIAN BYRON
-// rewrite work to run on v2 rounds when Byron returns.
-
-async function runByron(pass) {
-  // IVORY VEIL (v8.1.4) — runByron preserved as backend-only. Every DOM
-  // mutation removed. Schema gate, prompt build, API fetch, cache write,
-  // and toast notifications survive. Caller is responsible for UI.
-  const antKey = localStorage.getItem('caddie_ant_key');
-  if (!antKey) { toast('Add API key in Settings first'); return; }
-  const round = getRounds().find(r=>r.id===DET.roundId);
-  if (!round) return;
-  // Schema gate — refuse to invoke on rounds whose shape doesn't match
-  // what BYRON_SCHEMA_VERSION's prompts can read.
-  const roundSchema = round.schemaVersion || 1;
-  if (roundSchema !== BYRON_SCHEMA_VERSION) {
-    toast('Analysis is being rebuilt for this round version');
-    return;
-  }
-
-  try {
-    const bundle = byronBuildBundle(round);
-    let prompt;
-    if (pass==='holes') {
-      prompt = byronHolesPrompt(bundle);
-    } else if (pass==='patterns') {
-      const hc = byronGetCache(round.id,'holes');
-      if (!hc) { toast('Run Holes first'); return; }
-      prompt = byronPatternsPrompt(bundle, hc.result);
-    } else {
-      const hc = byronGetCache(round.id,'holes');
-      const pc = byronGetCache(round.id,'patterns');
-      if (!hc||!pc) { toast('Run Holes and Patterns first'); return; }
-      prompt = byronGameplanPrompt(bundle, hc.result, pc.result);
-    }
-
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key':antKey,
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
-      body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:3000,
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error.message||'API error');
-    const raw = (data.content?.[0]?.text||'').trim().replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'').trim();
-    const result = JSON.parse(raw);
-    byronSetCache(round.id, pass, result);
-
-  } catch(err) {
-    toast('\u26a0\ufe0f '+err.message);
-  }
-}
-
 // ── ROUND DETAIL ─────────────────────────────────────────────
 // OBSIDIAN PURGE (v8.1.2) — DET.openHoles and DET.editHoles dropped (only the
 // deleted v1 detailHoleHTML/edit-hole flow used them). v2 Round Detail is a
@@ -4903,13 +4414,11 @@ function renderDetail() {
   showView('history');
 }
 
-
 function deleteRound() {
   if (!confirm('Delete this round? This cannot be undone.')) return;
   const deletedId = DET.roundId;
   const rounds = getRounds().filter(r => r.id !== deletedId);
   saveRounds(rounds);
-  byronClearRoundCache(deletedId); // BYRON BRIDGE \u2014 clean associated Byron cache
   DET.roundId = null;
   showView('history');
   toast('Round deleted');
@@ -5753,7 +5262,6 @@ function toast(msg,dur) {
   el.textContent=msg; el.classList.add('show');
   clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),dur||2400);
 }
-
 
 // ── VIOLET MARSH · COPPER BROOK · INDIGO FORGE ───────────────
 // Scorecard import + course edit. Shares one Claude vision parser
