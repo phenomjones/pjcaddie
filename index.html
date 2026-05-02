@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.1 · Apr 30, 2026 -->
+<!-- PJ Caddie v8.3.3 · May 01, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -195,6 +195,8 @@ body{display:flex;flex-direction:column}
 .det-tee-count{font-family:'DM Serif Display',serif;font-size:13px;color:var(--chalk);margin-bottom:5px;line-height:1}
 .det-tee-bar{width:100%;border-radius:3px 3px 0 0;background:var(--gold);min-height:2px}
 .det-tee-bar.danger{background:var(--red)}
+.det-tee-bar.warn{background:var(--orange)}
+.det-tee-bar.gold{background:var(--gold)}
 .det-tee-bar.in-play{background:var(--green)}
 .det-tee-bar.zero{background:var(--ink3)}
 .det-tee-labels{display:flex;justify-content:space-between;gap:6px;margin-top:8px;padding:0 4px}
@@ -231,26 +233,49 @@ body{display:flex;flex-direction:column}
 .det-putt-line:last-child{margin-bottom:0}
 /* SUMMIT REDESIGN (v8.3.0) — missing-data warning pill on hole rows */
 .det-warn-pill{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:rgba(200,168,75,.18);border:1px solid rgba(200,168,75,.5);border-radius:50%;color:var(--gold);font-size:10px;font-weight:600;flex-shrink:0;margin-right:8px}
-/* AMBER ECHO (v8.3.1) — tee zone selection: dim non-selected bars/dots when one is active */
-.det-tee-col.dim,.det-spark-dot.dim{opacity:.25}
-.det-tee-col,.det-spark-dot{transition:opacity .15s}
-.det-tee-col{cursor:pointer}
-.det-tee-bar{pointer-events:none}
-.det-tee-selection{font-size:11px;color:var(--gold);margin-top:10px;padding:6px 10px;background:rgba(200,168,75,.06);border:1px solid rgba(200,168,75,.2);border-radius:var(--rs);min-height:16px;line-height:1.3;display:none}
-.det-tee-selection.on{display:block}
-/* HORIZON DRIFT (v8.3.1) — hole-by-hole tee shot sparkline */
-.det-spark{margin-top:14px}
-.det-spark-row{display:flex;align-items:center;gap:6px;height:14px}
-.det-spark-lane-lbl{width:28px;font-size:9px;color:var(--chalk3);text-align:right;flex-shrink:0;letter-spacing:.4px}
-.det-spark-lane{flex:1;position:relative;height:100%;border-bottom:1px solid var(--ink);background:var(--ink)}
-.det-spark-row:nth-child(odd) .det-spark-lane{background:rgba(255,255,255,.015)}
-.det-spark-dot{position:absolute;top:50%;width:8px;height:8px;border-radius:50%;background:var(--gold);transform:translate(-50%,-50%);cursor:pointer}
+/* CRIMSON COMPASS (v8.3.2) — vertical-timeline tee shot sparkline. One row per
+   par-4/5 hole in numerical order. Single dot per row, positioned horizontally
+   by landing zone (OBL=far left … OBR=far right). Same color scheme as bars. */
+.det-spark{margin-top:14px;border-top:1px solid var(--border2);padding-top:12px}
+.det-spark-hdr{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--chalk3);margin-bottom:10px;text-align:center}
+.det-spark-row{display:flex;align-items:center;gap:8px;height:18px;margin-bottom:1px}
+.det-spark-hole-lbl{width:22px;font-size:10px;color:var(--chalk3);text-align:right;flex-shrink:0;letter-spacing:.3px}
+.det-spark-track{flex:1;position:relative;height:100%}
+.det-spark-track::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border2)}
+.det-spark-dot{position:absolute;top:50%;width:9px;height:9px;border-radius:50%;background:var(--gold);transform:translate(-50%,-50%);cursor:pointer;transition:opacity .15s}
 .det-spark-dot.danger{background:var(--red)}
+.det-spark-dot.warn{background:var(--orange)}
+.det-spark-dot.gold{background:var(--gold)}
 .det-spark-dot.in-play{background:var(--green)}
-.det-spark-axis{display:flex;gap:6px;margin-top:4px;align-items:flex-start}
-.det-spark-axis-spacer{width:28px;flex-shrink:0}
-.det-spark-axis-numbers{flex:1;position:relative;height:12px}
-.det-spark-axis-numbers span{position:absolute;top:0;font-size:8px;color:var(--chalk3);transform:translateX(-50%);letter-spacing:.2px}
+.det-spark-axis{display:flex;justify-content:space-between;margin-top:8px;padding-left:30px;font-size:9px;color:var(--chalk3);letter-spacing:.4px}
+/* VELVET LATTICE (v8.3.2) — universal tappable-stat panel pattern. Any element
+   with [data-stat-key] is a tap target; tapping renders the matching panel
+   beneath its section showing the holes that contribute. */
+.stat-tile[data-stat-key],.det-tee-col,.det-zone-cell[data-stat-key],.det-stack-row{cursor:pointer}
+.det-tee-bar{pointer-events:none}
+.stat-tile.selected,.det-tee-col.selected,.det-zone-cell.selected{box-shadow:inset 0 0 0 2px var(--gold)}
+.det-stack-row.selected .det-stack-track{box-shadow:inset 0 0 0 2px var(--gold)}
+.det-stat-panel{display:none;background:rgba(200,168,75,.04);border:1px solid rgba(200,168,75,.2);border-radius:var(--rs);padding:11px 13px;margin:-4px 0 16px}
+.det-stat-panel.on{display:block}
+.dsp-group{margin-bottom:8px}
+.dsp-group:last-child{margin-bottom:0}
+.dsp-hdr{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--chalk3);margin-bottom:6px}
+.dsp-holes{font-family:'DM Serif Display',serif;font-size:22px;color:var(--gold);line-height:1.3;letter-spacing:.5px}
+.dsp-holes span{display:inline-block;margin-right:14px}
+.dsp-empty{font-size:11px;color:var(--chalk3);font-style:italic}
+/* AMBER ECHO carry-over (v8.3.2) — tee bar/dot dim only when teeZone is active */
+.det-tee-col.dim,.det-spark-dot.dim{opacity:.25}
+.det-tee-col{transition:opacity .15s}
+/* MARBLE NOTATION (v8.3.2) — golf-standard score markers in per-hole rows.
+   Eagle: double circle (green). Birdie: single circle (green). Par: plain.
+   Bogey: square (red). Double: double square. Triple+: triple square (caps). */
+.score-marker{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;font-family:'DM Serif Display',serif;font-weight:700;font-size:16px;background:transparent;line-height:1;margin:11px}
+.score-marker.sm-eagle{border-radius:50%;box-shadow:0 0 0 2px var(--green),0 0 0 4px var(--ink2),0 0 0 6px var(--green);color:var(--green)}
+.score-marker.sm-birdie{border-radius:50%;box-shadow:0 0 0 2px var(--green);color:var(--green)}
+.score-marker.sm-par{color:var(--chalk)}
+.score-marker.sm-bogey{border-radius:3px;box-shadow:0 0 0 2px var(--red);color:var(--red)}
+.score-marker.sm-double{border-radius:3px;box-shadow:0 0 0 2px var(--red),0 0 0 4px var(--ink2),0 0 0 6px var(--red);color:var(--red)}
+.score-marker.sm-triple{border-radius:3px;box-shadow:0 0 0 2px var(--red),0 0 0 4px var(--ink2),0 0 0 6px var(--red),0 0 0 8px var(--ink2),0 0 0 10px var(--red);color:var(--red)}
 .miss-strip{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:12px}
 .miss-cross{display:grid;grid-template-columns:1fr 80px 1fr;grid-template-rows:72px 72px 72px;gap:6px;max-width:280px;margin:0 auto}
 .miss-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--border);background:var(--ink3)}
@@ -492,7 +517,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.1 · Apr 30, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.3 · May 01, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')" style="margin-bottom:9px">＋ Start Round</button>
       <button class="btn btn-outline" onclick="showView('round-setup')">📷 Import from Photo</button>
       <div style="font-size:11px;color:var(--chalk3);text-align:center;margin-top:5px;opacity:.7">Select course &amp; date first, then choose Import</div>
@@ -799,14 +824,23 @@ body{display:flex;flex-direction:column}
       <div id="det-score-hdr" style="margin-bottom:18px"></div>
       <div class="stat-strip" id="det-stats"></div>
       <div class="stat-strip-2" id="det-stats2"></div>
+      <div class="det-stat-panel" id="det-panel-stats"></div>
       <div id="det-tee-section"></div>
+      <div class="det-stat-panel" id="det-panel-tee"></div>
       <div id="det-zones-section"></div>
+      <div class="det-stat-panel" id="det-panel-zones"></div>
       <div id="det-par-section"></div>
+      <div class="det-stat-panel" id="det-panel-par"></div>
       <div id="det-rate-section"></div>
+      <div class="det-stat-panel" id="det-panel-rate"></div>
+      <div id="det-shortrange-section"></div>
+      <div class="det-stat-panel" id="det-panel-shortrange"></div>
       <div id="det-gir-section"></div>
+      <div class="det-stat-panel" id="det-panel-gir"></div>
       <div id="det-holeout-section"></div>
+      <div class="det-stat-panel" id="det-panel-holeout"></div>
       <div id="det-putt-section"></div>
-      <span class="section-lbl">Holes</span>
+      <span class="section-lbl">Hole-by-Hole</span>
       <div id="det-holes"></div>
       <button class="btn btn-danger" style="margin-top:20px" id="det-delete-btn" onclick="deleteRound()">Delete Round</button>
     </div>
@@ -1001,7 +1035,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.1 · Spec v2.1</span>
+        <span>v8.3.3 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1594,23 +1628,7 @@ const PRELOADED_COURSES = [
   }
 ];
 
-// ── CONSTANTS ────────────────────────────────────────────────
-const SHOT_TYPES = ['tee','approach','chip','recovery','layup','untracked','retee','drop'];
-const TEE_POSITIONS = ['OBL','LL','L','C','R','RR','OBR'];
-
-function validateShot(shot) {
-  const t = (shot.type||'').toLowerCase();
-  if (!SHOT_TYPES.includes(t)) { console.warn('[PJC] Invalid shot type:', shot.type, shot); return false; }
-  if (t === 'tee' && shot.position) {
-    const pos = (shot.position||'').toUpperCase();
-    if (!TEE_POSITIONS.includes(pos)) { console.warn('[PJC] Invalid tee position:', shot.position, shot); return false; }
-  }
-  return true;
-}
-const ZONE_COLS = z => ((z - 1) % 3) + 1;
-const ZONE_ROWS = z => Math.ceil(z / 3);
-
-// ── DATA LAYER \u2014 SCHEMA ────────────────────────────────────────
+// ── DATA LAYER — SCHEMA ────────────────────────────────────────
 function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 
 // MARBLE BEACON — defensive JSON parse for Byron vision responses. Claude sometimes
@@ -1705,29 +1723,6 @@ function snapshotActiveBag() {
       clubs: active.clubs.map(c => ({ ...c }))
     };
   } catch { return null; }
-}
-
-function deriveMissDirection(intendedZone, finishZone, result) {
-  if (result === 'H') return null;
-  if (!intendedZone || !finishZone) return null;
-  if (intendedZone === finishZone) return 'center';
-  const iCol = ZONE_COLS(intendedZone), fCol = ZONE_COLS(finishZone);
-  const iRow = ZONE_ROWS(intendedZone), fRow = ZONE_ROWS(finishZone);
-  if (fCol > iCol) return 'right';
-  if (fCol < iCol) return 'left';
-  if (fRow > iRow) return 'long';
-  if (fRow < iRow) return 'short';
-  return 'center';
-}
-
-function deriveGIR(shots, par) {
-  let n = 0, hit = false;
-  for (const sh of shots) {
-    if (['tee','retee','approach','layup','chip','recovery','untracked','drop'].includes(sh.type)) n++;
-    if ((sh.type==='approach'||sh.type==='tee') && sh.result==='H') { hit=true; break; }
-  }
-  const gir = hit && n<=(par-2);
-  return { gir, girPlusOne: hit && !gir && n<=(par-1) };
 }
 
 function buildExpectedHoles(startingHole, holesPlayed) {
@@ -2604,7 +2599,7 @@ function renderHistory() {
   el.innerHTML = rounds.map(roundRowHTML).join('');
 }
 
-function showDetail(id) { DET.roundId = id; DET.teeZoneSel = null; showView('detail'); }
+function showDetail(id) { DET.roundId = id; DET.statSel = null; showView('detail'); }
 
 // ── COURSE SETUP ─────────────────────────────────────────────
 function initCourseSetup() {
@@ -3244,45 +3239,167 @@ function glacierFinishRound() {
   showView('detail');
 }
 
-// AMBER ECHO + HORIZON DRIFT (v8.3.1) — tee zone selection helpers.
-// teeZoneSelect: toggle DET.teeZoneSel. Re-tapping the active zone clears.
-// teeZoneApplySelection: dim non-selected bars + sparkline dots, update the
-// text-line below the chart with the zone label and matching hole numbers.
-// Updates DOM directly (no full re-render) to preserve selection across
-// chip-tap-style state without bouncing through renderDetailV2.
-const TEE_ZONE_LABELS = {
-  OBL: 'OB Left', LL: 'Far Left', L: 'Left', fairway: 'Fairway',
-  R: 'Right', RR: 'Far Right', OBR: 'OB Right'
-};
-function teeZoneSelect(zone) {
-  DET.teeZoneSel = (DET.teeZoneSel === zone) ? null : zone;
-  teeZoneApplySelection();
+// VELVET LATTICE (v8.3.2) — universal tappable-stat machinery. Every stat with
+// a hole-level decomposition becomes a tap target. Tapping renders a panel
+// beneath the section showing the matching holes as bold numbers — no prose.
+//
+// Pattern: each tap target carries data-stat-key and (optionally) data-stat-param.
+// statSelect toggles DET.statSel; statApplySelection rebuilds DOM (panel + .selected
+// highlight + tee-chart dimming for the teeZone case) without re-rendering the
+// whole detail screen. Called once after every renderDetailV2 to restore state.
+//
+// Replaces AMBER ECHO + HORIZON DRIFT helpers (teeZoneSelect/teeZoneApplySelection)
+// — the tee-zone case is now just one stat-key among many.
+function statSelect(key, param) {
+  param = (param == null) ? null : String(param);
+  const same = DET.statSel && DET.statSel.key === key && DET.statSel.param === param;
+  DET.statSel = same ? null : { key, param };
+  statApplySelection();
 }
-function teeZoneApplySelection() {
-  const sel = DET.teeZoneSel;
-  // Dim bars whose zone doesn't match the selection. Null sel = all bright.
-  document.querySelectorAll('#det-tee-section .det-tee-col').forEach(col => {
-    col.classList.toggle('dim', sel != null && col.dataset.zone !== sel);
+function statApplySelection() {
+  // Clear all panel content and stat .selected highlights from prior selection.
+  document.querySelectorAll('#view-detail .det-stat-panel').forEach(p => {
+    p.classList.remove('on'); p.innerHTML = '';
   });
-  document.querySelectorAll('#det-tee-section .det-spark-dot').forEach(dot => {
-    dot.classList.toggle('dim', sel != null && dot.dataset.zone !== sel);
+  document.querySelectorAll('#view-detail .selected').forEach(el => el.classList.remove('selected'));
+  // Always clear tee-chart dimming first; only re-apply if the active selection
+  // is teeZone (Mara's exception — bars/dots dim only when that's what's tapped).
+  document.querySelectorAll('#det-tee-section .det-tee-col, #det-tee-section .det-spark-dot').forEach(el => {
+    el.classList.remove('dim');
   });
-  const lineEl = document.getElementById('det-tee-selection');
-  if (!lineEl) return;
-  if (sel == null) {
-    lineEl.textContent = '';
-    lineEl.classList.remove('on');
-    return;
-  }
+  const sel = DET.statSel;
+  if (!sel) return;
   const round = getRounds().find(r => r.id === DET.roundId);
-  const matched = ((round && round.holes) || [])
-    .filter(h => h.par >= 4 && h.score > 0 && h.teeResult === sel)
-    .map(h => 'H' + h.number);
-  const label = TEE_ZONE_LABELS[sel] || sel;
-  lineEl.textContent = matched.length
-    ? `${label} \u2014 Holes ${matched.join(', ')}`
-    : `${label} \u2014 (no holes)`;
-  lineEl.classList.add('on');
+  if (!round) return;
+  const allHoles = round.holes || [];
+  const played = allHoles.filter(h => h.score > 0);
+  const result = resolveStatPanel(sel.key, sel.param, played);
+  if (!result) return;
+  // teeZone-only: dim non-matching bars and dots.
+  if (sel.key === 'teeZone') {
+    document.querySelectorAll('#det-tee-section .det-tee-col').forEach(col => {
+      col.classList.toggle('dim', col.dataset.zone !== sel.param);
+    });
+    document.querySelectorAll('#det-tee-section .det-spark-dot').forEach(dot => {
+      dot.classList.toggle('dim', dot.dataset.zone !== sel.param);
+    });
+  }
+  // Mark the originating stat element as .selected via attribute match.
+  let attrSel = `[data-stat-key="${sel.key}"]`;
+  if (sel.param != null) attrSel += `[data-stat-param="${sel.param}"]`;
+  document.querySelectorAll(`#view-detail ${attrSel}`).forEach(el => el.classList.add('selected'));
+  // Render panel content into the section's anchor.
+  const panel = document.getElementById(result.panelId);
+  if (!panel) return;
+  panel.innerHTML = renderStatPanelHtml(result);
+  panel.classList.add('on');
+}
+// resolveStatPanel — given a stat-key (and optional param), decompose the round
+// into the holes that contribute. Binary stats produce {hits, misses}; list
+// stats produce {holes}. Hole numbers are returned as integers in display order.
+function resolveStatPanel(key, param, played) {
+  const numsOf = arr => arr.map(h => h.number);
+  const lowBands = ['50-74','75-99','100-124'];
+  switch (key) {
+    case 'gir': {
+      const elig = played.filter(h => h.onGreen != null);
+      return { panelId:'det-panel-stats', type:'binary',
+               hitLabel:'HIT', missLabel:'MISSED',
+               hits: numsOf(elig.filter(h => h.onGreen === true)),
+               misses: numsOf(elig.filter(h => h.onGreen === false)) };
+    }
+    case 'upDown': {
+      const elig = played.filter(h => h.onGreen === false && h.score - h.par <= 1);
+      return { panelId:'det-panel-stats', type:'binary',
+               hitLabel:'CONVERTED', missLabel:'MISSED',
+               hits: numsOf(elig.filter(h => h.putts === 1 && !h.doubleChip)),
+               misses: numsOf(elig.filter(h => !(h.putts === 1 && !h.doubleChip))) };
+    }
+    case 'longPutts':
+      return { panelId:'det-panel-stats', type:'list',
+               holes: numsOf(played.filter(h => h.putts === 3 || h.putts === 4)) };
+    case 'penalties':
+      return { panelId:'det-panel-stats', type:'list',
+               holes: numsOf(played.filter(h => (h.penalty || 0) > 0)) };
+    case 'doubleChips':
+      return { panelId:'det-panel-stats', type:'list',
+               holes: numsOf(played.filter(h => h.doubleChip)) };
+    case 'teeZone':
+      return { panelId:'det-panel-tee', type:'list',
+               holes: numsOf(played.filter(h => h.par >= 4 && h.teeResult === param)) };
+    case 'approachZone': {
+      // param format: 'h-pin', 'm-long-l', etc. First char marks hit/miss.
+      const isHit = param.startsWith('h-');
+      const zone = param.substring(2);
+      return { panelId:'det-panel-zones', type:'list',
+               holes: numsOf(played.filter(h => h.approachResult === zone && h.onGreen === isHit)) };
+    }
+    case 'parType':
+      return { panelId:'det-panel-par', type:'list',
+               holes: numsOf(played.filter(h => h.par === Number(param))) };
+    case 'bogeyOrBetter':
+      return { panelId:'det-panel-rate', type:'binary',
+               hitLabel:'BOGEY OR BETTER', missLabel:'WORSE',
+               hits: numsOf(played.filter(h => h.score - h.par <= 1)),
+               misses: numsOf(played.filter(h => h.score - h.par > 1)) };
+    case 'teeInPlay': {
+      const elig = played.filter(h => h.par >= 4);
+      const inPlayFn = h => h.teeResult === 'fairway' || h.teeResult === 'L' || h.teeResult === 'R';
+      return { panelId:'det-panel-rate', type:'binary',
+               hitLabel:'IN PLAY', missLabel:'OFF FAIRWAY',
+               hits: numsOf(elig.filter(inPlayFn)),
+               misses: numsOf(elig.filter(h => !inPlayFn(h))) };
+    }
+    case 'srHoleout': {
+      const elig = played.filter(h => lowBands.includes(h.approachYards));
+      const succFn = h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2;
+      return { panelId:'det-panel-shortrange', type:'binary',
+               hitLabel:'HOLED IN ≤3', missLabel:'MORE THAN 3',
+               hits: numsOf(elig.filter(succFn)),
+               misses: numsOf(elig.filter(h => !succFn(h))) };
+    }
+    case 'srBogeyOrBetter': {
+      const elig = played.filter(h => {
+        if (h.par < 4) return false;
+        if (!lowBands.includes(h.approachYards)) return false;
+        if (h.putts == null) return false;
+        const shotsBeforeApproach = h.score - 1 - h.putts - (h.doubleChip ? 1 : 0);
+        return shotsBeforeApproach === (h.par - 2);
+      });
+      return { panelId:'det-panel-shortrange', type:'binary',
+               hitLabel:'BOGEY OR BETTER', missLabel:'WORSE',
+               hits: numsOf(elig.filter(h => h.score - h.par <= 1)),
+               misses: numsOf(elig.filter(h => h.score - h.par > 1)) };
+    }
+    case 'girBand': {
+      const elig = played.filter(h => h.approachYards === param);
+      return { panelId:'det-panel-gir', type:'binary',
+               hitLabel:'HIT', missLabel:'MISSED',
+               hits: numsOf(elig.filter(h => h.onGreen === true)),
+               misses: numsOf(elig.filter(h => h.onGreen === false)) };
+    }
+    case 'holeoutBand': {
+      const elig = played.filter(h => h.approachYards === param);
+      const succFn = h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2;
+      return { panelId:'det-panel-holeout', type:'binary',
+               hitLabel:'HOLED IN ≤3', missLabel:'MORE THAN 3',
+               hits: numsOf(elig.filter(succFn)),
+               misses: numsOf(elig.filter(h => !succFn(h))) };
+    }
+  }
+  return null;
+}
+function renderStatPanelHtml(r) {
+  const numsHtml = arr => arr.length
+    ? '<div class="dsp-holes">' + arr.map(n => '<span>' + n + '</span>').join('') + '</div>'
+    : '<div class="dsp-empty">None.</div>';
+  if (r.type === 'list') {
+    if (!r.holes.length) return '<div class="dsp-empty">No matching holes.</div>';
+    return `<div class="dsp-group"><div class="dsp-hdr">HOLES (${r.holes.length})</div>${numsHtml(r.holes)}</div>`;
+  }
+  // binary
+  return `<div class="dsp-group"><div class="dsp-hdr">${r.hitLabel} (${r.hits.length})</div>${numsHtml(r.hits)}</div>`
+       + `<div class="dsp-group"><div class="dsp-hdr">${r.missLabel} (${r.misses.length})</div>${numsHtml(r.misses)}</div>`;
 }
 
 // renderDetailV2 — Round Detail for schemaVersion: 2 rounds.
@@ -3333,27 +3450,42 @@ function renderDetailV2(round) {
   const doubleChips = holes.filter(h => h.doubleChip).length;
 
   // ── Stat strips ─────────────────────────────────────────────
+  // VELVET LATTICE (v8.3.2) — every stat with a clean hole decomposition is a
+  // tap target. Putts is excluded (no clean per-hole binary or list — it's a
+  // simple sum). The 'k' field controls tappability; null = not tappable.
+  const statTileHtml = s => {
+    const attrs = s.k
+      ? ` data-stat-key="${s.k}" onclick="statSelect('${s.k}')"`
+      : '';
+    return `<div class="stat-tile"${attrs}><div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`;
+  };
   document.getElementById('det-stats').innerHTML = [
-    {val: nPlayed ? girCount + '/' + nPlayed : '\u2014', lbl: 'GIR'},
-    {val: puttsTotal || '\u2014', lbl: 'Putts'},
-    {val: upDownEligible.length ? upDowns + '/' + upDownEligible.length : '\u2014', lbl: 'Up & Down'},
-    {val: longPutts || '0', lbl: '3+ Putts'},
-  ].map(s => `<div class="stat-tile"><div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join('');
+    {val: nPlayed ? girCount + '/' + nPlayed : '\u2014', lbl: 'GIR', k: nPlayed ? 'gir' : null},
+    {val: puttsTotal || '\u2014', lbl: 'Putts', k: null},
+    {val: upDownEligible.length ? upDowns + '/' + upDownEligible.length : '\u2014', lbl: 'Up & Down', k: upDownEligible.length ? 'upDown' : null},
+    {val: longPutts || '0', lbl: '3+ Putts', k: longPutts ? 'longPutts' : null},
+  ].map(statTileHtml).join('');
 
   document.getElementById('det-stats2').innerHTML = [
-    {val: totalPenalties || '0', lbl: 'Penalties'},
-    {val: doubleChips || '0', lbl: 'Double Chips'},
-  ].map(s => `<div class="stat-tile"><div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>`).join('');
+    {val: totalPenalties || '0', lbl: 'Penalties', k: totalPenalties ? 'penalties' : null},
+    {val: doubleChips || '0', lbl: 'Double Chips', k: doubleChips ? 'doubleChips' : null},
+  ].map(statTileHtml).join('');
 
   // ── Tee Shots vertical bar chart ────────────────────────────
   // Par 4/5 only, count by teeResult zone OBL→OBR.
-  // AMBER ECHO (v8.3.1) — bars are tap targets; data-zone drives selection.
-  // HORIZON DRIFT (v8.3.1) — sparkline below shows tee landing zone hole-by-hole
-  // for par 4/5 holes in numerical order. Same selection mechanic.
+  // VELVET LATTICE (v8.3.2) — bars route through statSelect('teeZone', zone).
+  // Tee-chart dimming carries over from AMBER ECHO (Mara's exception: bars and
+  // dots dim when teeZone is the active stat — the visual story matters here).
+  // CRIMSON COMPASS (v8.3.2) — sparkline below is now a vertical timeline:
+  // one row per played par-4/5 hole in numerical order, single dot per row
+  // positioned horizontally by landing zone (OBL = far left → OBR = far right).
   const teeHoles = holes.filter(h => h.par >= 4 && h.teeResult != null);
   const teeZones = ['OBL','LL','L','fairway','R','RR','OBR'];
   const teeLabels = ['OBL','LL','L','Fwy','R','RR','OBR'];
-  const teeColors = ['danger','','in-play','in-play','in-play','','danger'];
+  // CARDINAL TINT (v8.3.3) — 4-tier color hierarchy: red OB, orange far-rough,
+  // gold near-rough/missed-fairway, green fairway. Stoplight semantic. Same
+  // class names drive both bars (.det-tee-bar) and dots (.det-spark-dot).
+  const teeColors = ['danger','warn','gold','in-play','gold','warn','danger'];
   const teeCounts = teeZones.map(z => teeHoles.filter(h => h.teeResult === z).length);
   const teeMax = Math.max(1, ...teeCounts);
   const teeBars = teeZones.map((z, i) => {
@@ -3361,34 +3493,33 @@ function renderDetailV2(round) {
     const heightPct = c === 0 ? 0 : Math.round((c / teeMax) * 100);
     const cls = c === 0 ? 'zero' : teeColors[i];
     const heightStyle = c === 0 ? 'height:2px' : `height:${heightPct}%`;
-    return `<div class="det-tee-col" data-zone="${z}" onclick="teeZoneSelect('${z}')"><div class="det-tee-count">${c}</div><div class="det-tee-bar ${cls}" style="${heightStyle}"></div></div>`;
+    return `<div class="det-tee-col" data-zone="${z}" data-stat-key="teeZone" data-stat-param="${z}" onclick="statSelect('teeZone','${z}')"><div class="det-tee-count">${c}</div><div class="det-tee-bar ${cls}" style="${heightStyle}"></div></div>`;
   }).join('');
   const teeLabelsHtml = teeLabels.map(l => `<div class="det-tee-lbl">${l}</div>`).join('');
 
-  // HORIZON DRIFT — par-4/5 holes in original order; sparkline lanes top→bottom
-  // match teeZones order (OBL up to OBR down). Each played par-4/5 hole gets a
-  // dot in its zone's lane at left% = (idx / (n-1)) * 100, or centered if n==1.
-  const par45InOrder = (allHoles).filter(h => h.par >= 4 && h.score > 0 && h.teeResult != null);
+  // CRIMSON COMPASS — vertical timeline. Played par-4/5 holes in numerical order
+  // (top→bottom). Each row has a single dot whose horizontal position encodes
+  // the landing zone: zoneIdx 0 (OBL) = 0%, zoneIdx 6 (OBR) = 100%, evenly spaced.
+  const par45InOrder = allHoles.filter(h => h.par >= 4 && h.score > 0 && h.teeResult != null);
   const nSpark = par45InOrder.length;
-  const sparkLanesHtml = teeZones.map((z, zoneIdx) => {
-    const dots = par45InOrder.map((h, holeIdx) => {
-      if (h.teeResult !== z) return '';
-      const leftPct = nSpark <= 1 ? 50 : (holeIdx / (nSpark - 1)) * 100;
-      const colorCls = teeColors[zoneIdx];
-      return `<div class="det-spark-dot ${colorCls}" style="left:${leftPct.toFixed(1)}%" data-zone="${z}" data-hole="${h.number}" onclick="teeZoneSelect('${z}')" title="Hole ${h.number}"></div>`;
-    }).join('');
-    return `<div class="det-spark-row"><span class="det-spark-lane-lbl">${teeLabels[zoneIdx]}</span><div class="det-spark-lane">${dots}</div></div>`;
-  }).join('');
-  // Axis labels: hole numbers under each dot column. To avoid clutter on long
-  // lists, show every label up to 9 holes; every other for 10-14; every 3rd for 15+.
-  const axisStep = nSpark <= 9 ? 1 : nSpark <= 14 ? 2 : 3;
-  const axisHtml = par45InOrder.map((h, holeIdx) => {
-    if (holeIdx % axisStep !== 0 && holeIdx !== nSpark - 1) return '';
-    const leftPct = nSpark <= 1 ? 50 : (holeIdx / (nSpark - 1)) * 100;
-    return `<span style="left:${leftPct.toFixed(1)}%">${h.number}</span>`;
+  const sparkRowsHtml = par45InOrder.map(h => {
+    const zoneIdx = teeZones.indexOf(h.teeResult);
+    if (zoneIdx < 0) return '';
+    const leftPct = (zoneIdx / 6) * 100;
+    const colorCls = teeColors[zoneIdx];
+    return `<div class="det-spark-row">`
+         + `<span class="det-spark-hole-lbl">${h.number}</span>`
+         + `<div class="det-spark-track">`
+         +   `<div class="det-spark-dot ${colorCls}" style="left:${leftPct.toFixed(1)}%" data-zone="${h.teeResult}" data-stat-key="teeZone" data-stat-param="${h.teeResult}" onclick="statSelect('teeZone','${h.teeResult}')" title="Hole ${h.number} \u2014 ${teeLabels[zoneIdx]}"></div>`
+         + `</div>`
+         + `</div>`;
   }).join('');
   const sparkBlock = nSpark
-    ? `<div class="det-spark">${sparkLanesHtml}<div class="det-spark-axis"><span class="det-spark-axis-spacer"></span><div class="det-spark-axis-numbers">${axisHtml}</div></div></div>`
+    ? `<div class="det-spark">`
+    +   `<div class="det-spark-hdr">Tee Shot Sparkline</div>`
+    +   sparkRowsHtml
+    +   `<div class="det-spark-axis"><span>OBL</span><span>Fwy</span><span>OBR</span></div>`
+    + `</div>`
     : '';
 
   document.getElementById('det-tee-section').innerHTML = `
@@ -3397,7 +3528,6 @@ function renderDetailV2(round) {
       <div class="det-tee-chart">${teeBars}</div>
       <div class="det-tee-labels">${teeLabelsHtml}</div>
       ${sparkBlock}
-      <div class="det-tee-selection" id="det-tee-selection"></div>
     </div>`;
 
   // ── Approach Zone heat-maps (Missed | Hit) ──────────────────
@@ -3423,7 +3553,11 @@ function renderDetailV2(round) {
       const c = holesSet.filter(h => h.approachResult === z).length;
       const pct = total ? Math.round((c / total) * 100) : 0;
       const cls = zoneBucket(pct, isMissed, false);
-      return `<div class="det-zone-cell ${cls}">${pct}%</div>`;
+      // VELVET LATTICE — tappable only when at least one hole landed in this cell.
+      // Empty cells stay non-tappable (no holes to reveal).
+      const param = (isMissed ? 'm-' : 'h-') + z;
+      const tapAttrs = c > 0 ? ` data-stat-key="approachZone" data-stat-param="${param}" onclick="statSelect('approachZone','${param}')"` : '';
+      return `<div class="det-zone-cell ${cls}"${tapAttrs}>${pct}%</div>`;
     }).join('');
   };
   document.getElementById('det-zones-section').innerHTML = `
@@ -3440,16 +3574,21 @@ function renderDetailV2(round) {
     </div>`;
 
   // ── Score by Par Type tiles ─────────────────────────────────
+  // VELVET LATTICE — par-type tiles tap to reveal which holes contributed.
   const par3Holes = holes.filter(h => h.par === 3);
   const par4Holes = holes.filter(h => h.par === 4);
   const par5Holes = holes.filter(h => h.par === 5);
   const avgScore = arr => arr.length ? (arr.reduce((a,h)=>a+h.score,0) / arr.length).toFixed(1) : '\u2014';
+  const parTile = (p, list) => {
+    const tap = list.length ? ` data-stat-key="parType" data-stat-param="${p}" onclick="statSelect('parType','${p}')"` : '';
+    return `<div class="stat-tile"${tap}><div class="stat-val">${avgScore(list)}</div><div class="stat-lbl">Par ${p}</div><div class="stat-n">n=${list.length}</div></div>`;
+  };
   document.getElementById('det-par-section').innerHTML = `
     <span class="section-lbl">Score by Par Type</span>
     <div class="stat-strip" style="grid-template-columns:repeat(3,1fr);margin-bottom:6px">
-      <div class="stat-tile"><div class="stat-val">${avgScore(par3Holes)}</div><div class="stat-lbl">Par 3</div><div class="stat-n">n=${par3Holes.length}</div></div>
-      <div class="stat-tile"><div class="stat-val">${avgScore(par4Holes)}</div><div class="stat-lbl">Par 4</div><div class="stat-n">n=${par4Holes.length}</div></div>
-      <div class="stat-tile"><div class="stat-val">${avgScore(par5Holes)}</div><div class="stat-lbl">Par 5</div><div class="stat-n">n=${par5Holes.length}</div></div>
+      ${parTile(3, par3Holes)}
+      ${parTile(4, par4Holes)}
+      ${parTile(5, par5Holes)}
     </div>`;
 
   // ── Rate tiles: round-wide + short-range conversion ────────
@@ -3458,6 +3597,9 @@ function renderDetailV2(round) {
   // below: Hole-out ≤3 from ≤124y (restored — chart shows distribution, this
   // is the headline) + Bogey or Better at ≤124y (renamed from Bogey+ which
   // was misleading — the metric IS bogey-or-better, not bogey-or-worse).
+  // VELVET LATTICE (v8.3.2) — split renders into TWO sibling section divs so
+  // each sub-section gets its own panel anchor (det-panel-rate / det-panel-shortrange).
+  // All four tiles are tappable when their eligibility set is non-empty.
   const bogeyOrBetter = holes.filter(h => h.score - h.par <= 1).length;
   const bogeyPct = nPlayed ? Math.round((bogeyOrBetter / nPlayed) * 100) : 0;
   const par45Played = holes.filter(h => h.par >= 4);
@@ -3476,20 +3618,27 @@ function renderDetailV2(round) {
     return shotsBeforeApproach === (h.par - 2);
   });
   const item3Met = item3Eligible.filter(h => h.score - h.par <= 1).length;
+  const tapBog = nPlayed ? ` data-stat-key="bogeyOrBetter" onclick="statSelect('bogeyOrBetter')"` : '';
+  const tapInP = par45Played.length ? ` data-stat-key="teeInPlay" onclick="statSelect('teeInPlay')"` : '';
+  const tapHo  = item2Eligible.length ? ` data-stat-key="srHoleout" onclick="statSelect('srHoleout')"` : '';
+  const tapBs  = item3Eligible.length ? ` data-stat-key="srBogeyOrBetter" onclick="statSelect('srBogeyOrBetter')"` : '';
   document.getElementById('det-rate-section').innerHTML = `
     <div class="stat-strip-2" style="margin-bottom:14px">
-      <div class="stat-tile"><div class="stat-val">${nPlayed ? bogeyPct + '%' : '\u2014'}</div><div class="stat-lbl">Bogey or Better</div><div class="stat-n">n=${nPlayed}</div></div>
-      <div class="stat-tile"><div class="stat-val">${par45Played.length ? inPlayPct + '%' : '\u2014'}</div><div class="stat-lbl">Tee In-Play</div><div class="stat-n">n=${par45Played.length}</div></div>
-    </div>
+      <div class="stat-tile"${tapBog}><div class="stat-val">${nPlayed ? bogeyPct + '%' : '\u2014'}</div><div class="stat-lbl">Bogey or Better</div><div class="stat-n">n=${nPlayed}</div></div>
+      <div class="stat-tile"${tapInP}><div class="stat-val">${par45Played.length ? inPlayPct + '%' : '\u2014'}</div><div class="stat-lbl">Tee In-Play</div><div class="stat-n">n=${par45Played.length}</div></div>
+    </div>`;
+  document.getElementById('det-shortrange-section').innerHTML = `
     <span class="section-lbl">Short-Range Conversion</span>
     <div class="stat-strip-2">
-      <div class="stat-tile"><div class="stat-val">${item2Eligible.length ? item2Met + '/' + item2Eligible.length : '0/0'}</div><div class="stat-lbl">Hole-out ≤3 from ≤124y</div></div>
-      <div class="stat-tile"><div class="stat-val">${item3Eligible.length ? item3Met + '/' + item3Eligible.length : '0/0'}</div><div class="stat-lbl">Bogey or Better at ≤124y</div><div class="stat-n">n=${item3Eligible.length}</div></div>
+      <div class="stat-tile"${tapHo}><div class="stat-val">${item2Eligible.length ? item2Met + '/' + item2Eligible.length : '0/0'}</div><div class="stat-lbl">Hole-out ≤3 from ≤124y</div></div>
+      <div class="stat-tile"${tapBs}><div class="stat-val">${item3Eligible.length ? item3Met + '/' + item3Eligible.length : '0/0'}</div><div class="stat-lbl">Bogey or Better at ≤124y</div><div class="stat-n">n=${item3Eligible.length}</div></div>
     </div>`;
 
   // ── GIR by Yardage / Hole-out ≤3 by Yardage stacked bars ────
+  // VELVET LATTICE — each band row taps to its panel. statKey passed in so the
+  // same bandRows helper serves both GIR and Hole-out sections.
   const bands = ['50-74','75-99','100-124','125-149','150-174','175-199','200+'];
-  const bandRows = (metricFn, hitClass) => bands.map(b => {
+  const bandRows = (metricFn, hitClass, statKey) => bands.map(b => {
     const inBand = holes.filter(h => h.approachYards === b);
     const total = inBand.length;
     const hitCount = inBand.filter(metricFn).length;
@@ -3499,16 +3648,17 @@ function renderDetailV2(round) {
       ? `<div class="det-stack-miss" style="width:100%"></div>`
       : `<div class="det-stack-hit ${hitClass}" style="width:${hitPct}%"></div><div class="det-stack-miss" style="width:${missPct}%"></div>`;
     const numText = total ? `${hitCount}/${total}` : '0/0';
-    return `<div class="det-stack-row"><span class="det-stack-lbl">${b}</span><div class="det-stack-track">${trackInner}</div><span class="det-stack-num">${numText}</span></div>`;
+    const tap = total ? ` data-stat-key="${statKey}" data-stat-param="${b}" onclick="statSelect('${statKey}','${b}')"` : ' style="cursor:default"';
+    return `<div class="det-stack-row"${tap}><span class="det-stack-lbl">${b}</span><div class="det-stack-track">${trackInner}</div><span class="det-stack-num">${numText}</span></div>`;
   }).join('');
   document.getElementById('det-gir-section').innerHTML = `
     <span class="section-lbl">GIR by Yardage</span>
-    <div class="det-card">${bandRows(h => h.onGreen === true, '')}</div>`;
+    <div class="det-card">${bandRows(h => h.onGreen === true, '', 'girBand')}</div>`;
   // Hole-out ≤3: 1 (approach) + putts + (doubleChip ? 1 : 0) ≤ 3.
   // Equivalent: putts != null && (putts + (doubleChip ? 1 : 0)) <= 2.
   document.getElementById('det-holeout-section').innerHTML = `
     <span class="section-lbl">Hole-out ≤3 by Yardage</span>
-    <div class="det-card">${bandRows(h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2, 'alt')}</div>`;
+    <div class="det-card">${bandRows(h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2, 'alt', 'holeoutBand')}</div>`;
 
   // ── Putting plain-text inferences ───────────────────────────
   const fpInside6 = holes.filter(h => h.firstPuttDist === 'le6');
@@ -3551,11 +3701,23 @@ function renderDetailV2(round) {
 
   const holesEl = document.getElementById('det-holes');
   if (holesEl) {
+    // MARBLE NOTATION (v8.3.2) — golf-standard score notation. Each played hole
+    // renders a marker whose shape encodes score relative to par; the score
+    // number sits inside the marker. Eagle (-2 or better) = double circle;
+    // Birdie = single circle; Par = plain; Bogey = square; Double = double
+    // square; Triple+ = triple square (caps at +3 — Tiger's call).
+    const scoreMarkerCls = rel => {
+      if (rel == null) return '';
+      if (rel <= -2) return 'sm-eagle';
+      if (rel === -1) return 'sm-birdie';
+      if (rel === 0) return 'sm-par';
+      if (rel === 1) return 'sm-bogey';
+      if (rel === 2) return 'sm-double';
+      return 'sm-triple'; // +3 and worse — caps at triple square
+    };
     holesEl.innerHTML = allHoles.map((h, idx) => {
       const isPlayed = h.score > 0;
       const relH = isPlayed ? h.score - h.par : null;
-      const relCls = relH == null ? '' : relH < 0 ? 'c-under' : relH > 0 ? 'c-over' : 'c-even';
-      const relSym = relH == null ? '' : relH === 0 ? 'E' : relH > 0 ? '+'+relH : String(relH);
       const tags = [];
       if (h.teeResult && h.teeResult !== 'fairway') tags.push(`Tee ${h.teeResult}`);
       if (h.teeResult === 'fairway') tags.push('Fairway');
@@ -3571,8 +3733,7 @@ function renderDetailV2(round) {
       const rowOpacity = isPlayed ? '' : 'opacity:.5;';
       const warnPill = isMissingData(h) ? '<span class="det-warn-pill" title="Missing required data">!</span>' : '';
       const scoreCell = isPlayed
-        ? `<div class="rr-score ${relCls}" style="font-size:22px">${h.score}</div>
-           <div class="rr-rel ${relCls}">${relSym}</div>`
+        ? `<div class="score-marker ${scoreMarkerCls(relH)}">${h.score}</div>`
         : `<div class="rr-score" style="font-size:22px;color:var(--chalk3)">\u2014</div>`;
       return `<div class="round-row" style="${rowOpacity}" onclick="editHoleStart('${round.id}', ${idx})">
         ${warnPill}
@@ -3590,9 +3751,10 @@ function renderDetailV2(round) {
   // IVORY VEIL (v8.1.4) — Byron front-end removed. Backend (runByron,
   // prompts, cache) preserved for future revival.
 
-  // AMBER ECHO (v8.3.1) — restore the tee-zone selection visual after a
-  // re-render. If DET.teeZoneSel is null this is a no-op (all bright).
-  teeZoneApplySelection();
+  // VELVET LATTICE (v8.3.2) — restore the active stat selection (panel content
+  // + .selected highlight + tee-chart dimming if teeZone) after a re-render.
+  // If DET.statSel is null this is a no-op (all panels closed, all stats bright).
+  statApplySelection();
 
   // Delete button stays usable.
 }
@@ -4445,10 +4607,12 @@ async function runByron(pass) {
 // OBSIDIAN PURGE (v8.1.2) — DET.openHoles and DET.editHoles dropped (only the
 // deleted v1 detailHoleHTML/edit-hole flow used them). v2 Round Detail is a
 // flat read-only render, no per-hole state.
-// AMBER ECHO (v8.3.1) — teeZoneSel holds the currently-tapped tee zone so the
-// bar chart and sparkline can highlight it and show the matching hole list.
+// VELVET LATTICE (v8.3.2) — statSel = {key, param} or null. Universal selection
+// state for tappable stats; replaces AMBER ECHO's teeZoneSel (which was just
+// one special case of this pattern). Tee-bar/spark-dot dimming still fires
+// when key === 'teeZone' (Mara's exception — the bar chart's visual story).
 // Reset on showDetail entry (different round = no carry-over selection).
-const DET = { roundId: null, teeZoneSel: null };
+const DET = { roundId: null, statSel: null };
 
 // COBALT WINDOW (v8.2.0) — edit mode state. When EDIT.roundId is set, the
 // glacier-capture view reads/writes the saved round (pjc_rounds entry) at
