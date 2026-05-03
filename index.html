@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.15 · May 03, 2026 -->
+<!-- PJ Caddie v8.3.18 · May 03, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -28,11 +28,16 @@ body{display:flex;flex-direction:column}
 .safe-bot{height:calc(env(safe-area-inset-bottom,20px) + 8px);flex-shrink:0}
 .hdr{padding:12px max(28px,calc((100% - 460px)/2)) 14px;flex-shrink:0}
 .hdr-row{display:flex;align-items:center;gap:10px;margin-bottom:4px}
-.back-btn{background:none;border:none;color:var(--gold);font-family:'DM Sans',sans-serif;font-size:13px;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;opacity:.85}
-.back-btn::before{content:'←';font-size:15px}
-.back-btn:active{opacity:.5}
+/* TEAL ANCHOR (v8.3.16) — back-btn and hdr-action restyled from text-link
+   appearance to true button styling. Style B: both are visually buttons; the
+   ← prefix on back-btn is the only differentiator (signals navigation vs
+   contextual action). */
+.back-btn{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);color:var(--gold);font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.back-btn::before{content:'←';font-size:14px}
+.back-btn:active{opacity:.6}
+.hdr-action{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);color:var(--gold);font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 12px;cursor:pointer}
+.hdr-action:active{opacity:.6}
 .hdr-title{font-family:'DM Serif Display',serif;font-size:24px;color:var(--chalk);flex:1}
-.hdr-action{background:none;border:none;color:var(--gold);font-family:'DM Sans',sans-serif;font-size:13px;padding:0;cursor:pointer}
 .btn{border:none;border-radius:var(--rs);padding:15px 20px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;width:100%;transition:opacity .15s,transform .1s;display:block;text-align:center}
 .btn:active{opacity:.8;transform:scale(.99)}
 .btn+.btn{margin-top:9px}
@@ -195,12 +200,12 @@ body{display:flex;flex-direction:column}
    gold (the headline metric). */
 .dbag-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px 14px 12px;margin-bottom:14px}
 .dbag-hdr{display:flex;align-items:center;justify-content:space-around;padding-bottom:12px;border-bottom:1px solid var(--border2);margin-bottom:11px}
-.dbag-stat{text-align:center}
+.dbag-stat{text-align:center;padding:2px 8px;border-radius:6px}
 .dbag-stat-val{font-family:'DM Serif Display',serif;font-size:38px;color:var(--gold);line-height:1}
 .dbag-stat-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--chalk3);margin-top:5px}
 .dbag-pj5 .dbag-stat-val{color:var(--chalk)}
 .dbag-breakdown{display:flex;flex-direction:column;gap:6px}
-.dbag-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:baseline;font-size:12px}
+.dbag-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:baseline;font-size:12px;padding:3px 6px;border-radius:5px}
 .dbag-row-lbl{color:var(--chalk2)}
 .dbag-row-val{color:var(--chalk);font-family:'DM Serif Display',serif;font-size:14px;text-align:right;min-width:48px}
 .dbag-row-aux{color:var(--chalk3);font-size:10px;min-width:90px;text-align:right}
@@ -288,9 +293,9 @@ body{display:flex;flex-direction:column}
 /* VELVET LATTICE (v8.3.2) — universal tappable-stat panel pattern. Any element
    with [data-stat-key] is a tap target; tapping renders the matching panel
    beneath its section showing the holes that contribute. */
-.stat-tile[data-stat-key],.det-tee-col,.det-zone-cell[data-stat-key],.det-stack-row{cursor:pointer}
+.stat-tile[data-stat-key],.det-tee-col,.det-zone-cell[data-stat-key],.det-stack-row,.dbag-row[data-stat-key],.dbag-stat[data-stat-key]{cursor:pointer}
 .det-tee-bar{pointer-events:none}
-.stat-tile.selected,.det-tee-col.selected,.det-zone-cell.selected{box-shadow:inset 0 0 0 2px var(--gold)}
+.stat-tile.selected,.det-tee-col.selected,.det-zone-cell.selected,.dbag-row.selected,.dbag-stat.selected{box-shadow:inset 0 0 0 2px var(--gold)}
 .det-stack-row.selected .det-stack-track{box-shadow:inset 0 0 0 2px var(--gold)}
 .det-stat-panel{display:none;background:rgba(200,168,75,.04);border:1px solid rgba(200,168,75,.2);border-radius:var(--rs);padding:11px 13px;margin:-4px 0 16px}
 .det-stat-panel.on{display:block}
@@ -554,7 +559,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.15 · May 03, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.18 · May 03, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -575,10 +580,8 @@ body{display:flex;flex-direction:column}
 <div class="view" id="view-history">
   <div class="safe-top"></div>
   <div class="hdr">
-    <div class="hdr-row">
-      <div class="hdr-title">Rounds</div>
-      <button class="hdr-action" onclick="showView('home')">Home</button>
-    </div>
+    <div class="hdr-row"><button class="back-btn" onclick="showView('home')">Home</button></div>
+    <div class="hdr-title">Rounds</div>
   </div>
   <div class="scroll-body"><div class="pad pad-b" id="history-list"></div></div>
   <div class="safe-bot"></div>
@@ -678,7 +681,7 @@ body{display:flex;flex-direction:column}
   <div class="safe-top"></div>
   <div class="hdr" style="flex-shrink:0">
     <div class="hdr-row">
-      <button class="back-btn" id="gc-back-btn" onclick="glacierBackToHome()">⌂ Save &amp; Exit</button>
+      <button class="back-btn" id="gc-back-btn" onclick="glacierBackToHome()">Save &amp; Exit</button>
       <button class="hdr-action" id="gc-abandon-btn" onclick="glacierConfirmAbandon()" style="color:var(--red);opacity:.7">Abandon</button>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;gap:10px">
@@ -878,6 +881,7 @@ body{display:flex;flex-direction:column}
       <div id="det-par-section"></div>
       <div class="det-stat-panel" id="det-panel-par"></div>
       <div id="det-dbag-section"></div>
+      <div class="det-stat-panel" id="det-panel-dbag"></div>
       <div id="det-rate-section"></div>
       <div class="det-stat-panel" id="det-panel-rate"></div>
       <div id="det-shortrange-section"></div>
@@ -950,10 +954,8 @@ body{display:flex;flex-direction:column}
 <div class="view" id="view-settings">
   <div class="safe-top"></div>
   <div class="hdr">
-    <div class="hdr-row">
-      <div class="hdr-title">Settings</div>
-      <button class="hdr-action" onclick="showView('home')">Home</button>
-    </div>
+    <div class="hdr-row"><button class="back-btn" onclick="showView('home')">Home</button></div>
+    <div class="hdr-title">Settings</div>
   </div>
   <div class="scroll-body">
     <div class="pad pad-b">
@@ -1081,7 +1083,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.15 · Spec v2.1</span>
+        <span>v8.3.18 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -3092,11 +3094,38 @@ function resolveStatPanel(key, param, played) {
                hits: numsOf(elig.filter(isGirpy)),
                misses: numsOf(elig.filter(h => !isGirpy(h))) };
     }
+    // BIRCH SAFFRON (v8.3.17) — DBAG section tappability. dbagScore/pj5Score
+    // composites show all contributing miss holes; dbagTee/dbagPutt show their
+    // distinct decompositions. The other DBAG row taps reuse existing keys
+    // (girpy / srHoleout / penalties / doubleChips). Hole lists computed in the
+    // DBAG render block and stashed in window._dbagPanelData[round.id].
+    case 'dbagScore': {
+      const data = window._dbagPanelData && window._dbagPanelData[DET.roundId];
+      return { panelId:'det-panel-dbag', type:'list',
+               holes: data ? data.dbagAllMissHoles : [] };
+    }
+    case 'pj5Score': {
+      const data = window._dbagPanelData && window._dbagPanelData[DET.roundId];
+      return { panelId:'det-panel-dbag', type:'list',
+               holes: data ? data.pj5AllViolationHoles : [] };
+    }
+    case 'dbagTee': {
+      const data = window._dbagPanelData && window._dbagPanelData[DET.roundId];
+      return { panelId:'det-panel-dbag', type:'binary',
+               hitLabel:'NOT A DISASTER', missLabel:'DISASTER',
+               hits: data ? data.teeHits : [],
+               misses: data ? data.teeMisses : [] };
+    }
+    case 'dbagPutt': {
+      const data = window._dbagPanelData && window._dbagPanelData[DET.roundId];
+      return { panelId:'det-panel-dbag', type:'list',
+               holes: data ? data.puttEventHoles : [] };
+    }
     case 'srHoleout': {
       const elig = played.filter(h => lowBands.includes(h.approachYards));
       const succFn = h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2;
       return { panelId:'det-panel-shortrange', type:'binary',
-               hitLabel:'HOLED IN ≤3', missLabel:'MORE THAN 3',
+               hitLabel:'DOWN IN 3', missLabel:'MORE THAN 3',
                hits: numsOf(elig.filter(succFn)),
                misses: numsOf(elig.filter(h => !succFn(h))) };
     }
@@ -3124,7 +3153,7 @@ function resolveStatPanel(key, param, played) {
       const elig = played.filter(h => h.approachYards === param);
       const succFn = h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2;
       return { panelId:'det-panel-holeout', type:'binary',
-               hitLabel:'HOLED IN ≤3', missLabel:'MORE THAN 3',
+               hitLabel:'DOWN IN 3', missLabel:'MORE THAN 3',
                hits: numsOf(elig.filter(succFn)),
                misses: numsOf(elig.filter(h => !succFn(h))) };
     }
@@ -3423,37 +3452,48 @@ function renderDetailV2(round) {
   document.getElementById('det-shortrange-section').innerHTML = `
     <span class="section-lbl">Short-Range Conversion</span>
     <div class="stat-strip-2">
-      <div class="stat-tile"${tapHo}><div class="stat-val">${item2Eligible.length ? item2Met + '/' + item2Eligible.length : '0/0'}</div><div class="stat-lbl">Hole-out ≤3 from ≤124y</div></div>
+      <div class="stat-tile"${tapHo}><div class="stat-val">${item2Eligible.length ? item2Met + '/' + item2Eligible.length : '0/0'}</div><div class="stat-lbl">Down in 3 from ≤124y</div></div>
       <div class="stat-tile"${tapBs}><div class="stat-val">${item3Eligible.length ? item3Met + '/' + item3Eligible.length : '0/0'}</div><div class="stat-lbl">Bogey or Better at ≤124y</div><div class="stat-n">n=${item3Eligible.length}</div></div>
     </div>`;
 
-  // ── DBAG (Double Bogey Avoidance Grade) + PJ5 Violations ────
-  // AMBER LIGHTHOUSE BATCH (v8.3.14-15) — process-only round-quality score
-  // calibrated for an 18-hcp working toward single digits. All components
-  // measure double-bogey-causing failure modes; no score-derived inputs.
+  // ── DBAG Score + PJ5 Score (CINNAMON STARLING BATCH v8.3.18) ──
+  // Process-only round-quality score, calibrated severity-weighted for an 18-hcp
+  // working toward single digits. Weights are SEVERITY-DOMINANT (Path B): per-event
+  // catastrophic failures (penalties, double chips) weighted higher than their
+  // frequency would suggest, because at the breaking-90 level scoreboard arithmetic
+  // is dominated by round-killers, not consistent mediocrity.
   //
-  // Component weights (total 100):
-  //   1. Tee shot not a disaster   28 — par 4/5 in-play OR OOP-recovered-to-par,
-  //                                     par 5 weighted 1.5x in num + denom.
-  //   2. Putting (proximity-adj.)  23 — wasted-putt rules with budget discount
-  //                                     on first 2 3-putts (penalty halved).
-  //   3. Girpy                     22 — (score - putts) <= (par - 1).
-  //   4. Short-range conversion    12 — hole-out <=3 from <=124y (item2 reused).
-  //   5. Penalty avoidance         10 — start 10, -5 per penalty stroke.
-  //   6. No double chips            5 — start 5, -2 per double chip.
+  // Component base weights (sum 100, severity-weighted):
+  //   1. Tee not-a-disaster   27 — fixed weight
+  //   2. Putting              19 — fixed; deduction model (start 19, -X by event)
+  //   3. Girpy                18 — fixed
+  //   4. Down in 3 conv.      14 — FLOATS by opportunity (39% of holes played)
+  //   5. Penalty avoidance    11 — fixed; -4 per stroke, floor 0
+  //   6. No double chips      11 — FLOATS by opportunity (44% of holes played)
+  //
+  // Floating weight math: weight = base × max(1, min(1.5, actualOps/refOps)),
+  // i.e. weight floors at base and can scale UP to 1.5× when opportunity is high.
+  // Total raw weight then renormalizes to 100. This honors "more chip opportunities
+  // = chips matter more" without ever shrinking weight below base on quiet rounds.
+  //
+  // Path 2 (chip opportunity awareness): expected double-chip rate ≈ 0.12 per
+  // off-green hole. Component ratio compares actual to expected. A round with
+  // 1 double chip out of 2 off-green attempts = catastrophe (~0/component);
+  // a round with 0 double chips out of 0 off-green = full credit (no exposure);
+  // a round with 1 double chip out of 8 off-green ≈ full credit (met expectation).
   //
   // PJ5 violations (raw count, displayed alongside DBAG):
   //   1. Penalty strokes (1 per stroke).
   //   2. Double chips.
   //   3. 3-putts under 40 ft (le6/7-15/16-25/26-40), forgive floor(N/4).
-  //   4. Not hole-out in 3 from <=124y, forgive floor(N/4).
+  //   4. Not down in 3 from <=124y, forgive floor(N/4).
   //   5. No Girpy after OOP tee shot (par 4/5 only, no forgiveness).
 
   // OOP zones — used by both DBAG component 1 and PJ5 rule 5.
   const oopZones = ['LL','RR','OBL','OBR'];
   const inPlayZones = ['fairway','L','R'];
 
-  // --- Component 1: Tee shot not a disaster ---
+  // === Component 1: Tee not-a-disaster — performance ratio + decomposition ===
   const teeElig = holes.filter(h => h.par >= 4 && h.teeResult != null);
   const teeWeight = h => h.par === 5 ? 1.5 : 1.0;
   const teeNotDisaster = h => {
@@ -3463,33 +3503,30 @@ function renderDetailV2(round) {
   };
   const teeNumer = teeElig.reduce((a,h) => a + (teeNotDisaster(h) ? teeWeight(h) : 0), 0);
   const teeDenom = teeElig.reduce((a,h) => a + teeWeight(h), 0);
+  const teeRatio = teeDenom > 0 ? (teeNumer / teeDenom) : 0;
   const teeDisasters = teeElig.filter(h => !teeNotDisaster(h)).length;
-  const compTee = teeDenom > 0 ? Math.round((teeNumer / teeDenom) * 28) : 0;
 
-  // --- Component 2: Putting (proximity-adjusted, budget-discounted) ---
-  // One event per hole, priority: blowup > 3-putt > blown-makeable > bad-lag.
-  // Penalties: 3-putt by dist le6=5/7-15=4/16-25=3/26-40=2/40+=1; blowup = 2x;
-  // blown-makeable=2; bad-lag=1. First 2 3-putt events get penalty halved (ceil).
+  // === Component 2: Putting — wasted-putt deduction model ===
   const puttDist3 = { 'le6': 5, '7-15': 4, '16-25': 3, '26-40': 2, '40+': 1 };
-  const puttEvents = [];
+  const puttEvents = []; // { type, raw, holeNum }
   holes.forEach(h => {
     if (h.putts == null) return;
     if (h.putts >= 4) {
       const base = puttDist3[h.firstPuttDist];
-      if (base != null) puttEvents.push({ type: 'blowup', raw: base * 2 });
+      if (base != null) puttEvents.push({ type: 'blowup', raw: base * 2, holeNum: h.number });
       return;
     }
     if (h.putts === 3) {
       const base = puttDist3[h.firstPuttDist];
-      if (base != null) puttEvents.push({ type: '3putt', raw: base });
+      if (base != null) puttEvents.push({ type: '3putt', raw: base, holeNum: h.number });
       return;
     }
     if (h.firstPuttDist === 'le6' && (h.firstPuttResult === 'medium' || h.firstPuttResult === 'long')) {
-      puttEvents.push({ type: 'blownMakeable', raw: 2 });
+      puttEvents.push({ type: 'blownMakeable', raw: 2, holeNum: h.number });
       return;
     }
     if (h.firstPuttDist === '16-25' && h.firstPuttResult === 'long') {
-      puttEvents.push({ type: 'badLag', raw: 1 });
+      puttEvents.push({ type: 'badLag', raw: 1, holeNum: h.number });
       return;
     }
   });
@@ -3503,64 +3540,162 @@ function renderDetailV2(round) {
       totalPuttDeduction += e.raw;
     }
   });
-  const compPutt = Math.max(0, 23 - totalPuttDeduction);
   const wastedPuttCount = puttEvents.length;
+  // Putting ratio: deduction divided by base weight 19, clamped to [0,1]
+  const puttRatio = Math.max(0, 1 - totalPuttDeduction / 19);
 
-  // --- Component 3: Girpy --- (girpyElig/girpyHitsCount already computed above)
-  const compGirpy = girpyElig.length > 0 ? Math.round((girpyHitsCount / girpyElig.length) * 22) : 0;
+  // === Component 3: Girpy ===
+  // (girpyElig and girpyHitsCount already computed in rate section above.)
+  const girpyRatio = girpyElig.length > 0 ? (girpyHitsCount / girpyElig.length) : 0;
 
-  // --- Component 4: Short-range conversion --- (item2Eligible/item2Met reused)
-  const compShortRange = item2Eligible.length > 0 ? Math.round((item2Met / item2Eligible.length) * 12) : 0;
+  // === Component 4: Down in 3 conv. (≤124y) — floating weight ===
+  // (item2Eligible and item2Met reused from rate section.)
+  const srRatio = item2Eligible.length > 0 ? (item2Met / item2Eligible.length) : 0;
+  const srOps = item2Eligible.length;
 
-  // --- Component 5: Penalty avoidance ---
-  const compPenalty = Math.max(0, 10 - 5 * totalPenalties);
+  // === Component 5: Penalty avoidance ===
+  // Base 11, -4 per stroke (calibrated for 1-2 stroke avg, harsh at 3+)
+  const penaltyRatio = Math.max(0, 1 - (4 * totalPenalties) / 11);
 
-  // --- Component 6: No double chips ---
-  const compDblChip = Math.max(0, 5 - 2 * doubleChips);
+  // === Component 6: Double chips (Path 2 — opportunity-aware) ===
+  const offGreenHoles = holes.filter(h => h.onGreen === false);
+  const chipOps = offGreenHoles.length;
+  let chipRatio;
+  if (chipOps === 0) {
+    chipRatio = 1.0; // no exposure → full credit
+  } else {
+    const expectedDblChips = chipOps * 0.12;
+    const overage = Math.max(0, doubleChips - expectedDblChips);
+    chipRatio = Math.max(0, 1 - overage / Math.max(1, expectedDblChips * 2));
+  }
 
-  // --- DBAG composite ---
-  const dbagScore = compTee + compPutt + compGirpy + compShortRange + compPenalty + compDblChip;
+  // === Floating weights (only short-range and chips float) ===
+  const BASE_TEE = 27, BASE_PUTT = 19, BASE_GIRPY = 18;
+  const BASE_SHORT = 14, BASE_PENALTY = 11, BASE_CHIP = 11;
+  const SHORT_RATE_PER_HOLE = 0.39;
+  const CHIP_RATE_PER_HOLE = 0.44;
+  const WEIGHT_CAP_MULT = 1.5;
+  const refShort = nPlayed * SHORT_RATE_PER_HOLE;
+  const refChip = nPlayed * CHIP_RATE_PER_HOLE;
+  // Weight floors at base, can scale up to 1.5× when opportunity is high.
+  const weightShortRaw = BASE_SHORT * Math.max(1, Math.min(WEIGHT_CAP_MULT,
+    refShort > 0 ? srOps / refShort : 1));
+  const weightChipRaw = BASE_CHIP * Math.max(1, Math.min(WEIGHT_CAP_MULT,
+    refChip > 0 ? chipOps / refChip : 1));
+  const rawTotal = BASE_TEE + BASE_PUTT + BASE_GIRPY + weightShortRaw + BASE_PENALTY + weightChipRaw;
+  const norm = rawTotal > 0 ? (100 / rawTotal) : 1;
+  const wTee = BASE_TEE * norm;
+  const wPutt = BASE_PUTT * norm;
+  const wGirpy = BASE_GIRPY * norm;
+  const wShort = weightShortRaw * norm;
+  const wPenalty = BASE_PENALTY * norm;
+  const wChip = weightChipRaw * norm;
 
-  // --- PJ5 violations ---
+  // === Component contributions (final points, rounded for display) ===
+  const compTee = Math.round(wTee * teeRatio);
+  const compPutt = Math.round(wPutt * puttRatio);
+  const compGirpy = Math.round(wGirpy * girpyRatio);
+  const compShort = Math.round(wShort * srRatio);
+  const compPenalty = Math.round(wPenalty * penaltyRatio);
+  const compChip = Math.round(wChip * chipRatio);
+  const dbagScore = compTee + compPutt + compGirpy + compShort + compPenalty + compChip;
+
+  // === Display strings (show points / actual weight this round) ===
+  const compTeeDisplay = compTee + '/' + Math.round(wTee);
+  const compPuttDisplay = compPutt + '/' + Math.round(wPutt);
+  const compGirpyDisplay = compGirpy + '/' + Math.round(wGirpy);
+  const compShortRangeDisplay = compShort + '/' + Math.round(wShort);
+  const compPenaltyDisplay = compPenalty + '/' + Math.round(wPenalty);
+  const compDblChipDisplay = compChip + '/' + Math.round(wChip);
+
+  // === PJ5 violations ===
   const pj5Rule1 = totalPenalties; // penalty strokes
   const pj5Rule2 = doubleChips;
   // Rule 3: 3-putts under 40 ft, forgive floor(N/4)
   const r3DistSet = ['le6','7-15','16-25','26-40'];
   const r3Elig = holes.filter(h => r3DistSet.includes(h.firstPuttDist) && h.putts != null);
-  const r3Misses = r3Elig.filter(h => h.putts >= 3).length;
+  const r3MissHoles = r3Elig.filter(h => h.putts >= 3);
   const r3Allowed = Math.floor(r3Elig.length / 4);
-  const pj5Rule3 = Math.max(0, r3Misses - r3Allowed);
-  // Rule 4: not hole-out in 3 from ≤124y, forgive floor(N/4)
+  const pj5Rule3 = Math.max(0, r3MissHoles.length - r3Allowed);
+  // Rule 4: not down in 3 from ≤124y, forgive floor(N/4)
   const r4Elig = holes.filter(h => lowBands.includes(h.approachYards) && h.putts != null);
-  const r4Misses = r4Elig.filter(h => (h.putts + (h.doubleChip ? 1 : 0)) > 2).length;
+  const r4MissHoles = r4Elig.filter(h => (h.putts + (h.doubleChip ? 1 : 0)) > 2);
   const r4Allowed = Math.floor(r4Elig.length / 4);
-  const pj5Rule4 = Math.max(0, r4Misses - r4Allowed);
+  const pj5Rule4 = Math.max(0, r4MissHoles.length - r4Allowed);
   // Rule 5: no Girpy after OOP tee shot (par 4/5 only, no forgiveness)
   const r5Elig = holes.filter(h => h.par >= 4 && oopZones.includes(h.teeResult) && h.putts != null);
-  const pj5Rule5 = r5Elig.filter(h => (h.score - h.putts) > (h.par - 1)).length;
+  const r5MissHoles = r5Elig.filter(h => (h.score - h.putts) > (h.par - 1));
+  const pj5Rule5 = r5MissHoles.length;
   const pj5Total = pj5Rule1 + pj5Rule2 + pj5Rule3 + pj5Rule4 + pj5Rule5;
 
-  // --- Render ---
+  // === Stash hole lists for tappable panels (BIRCH SAFFRON) ===
+  // Stored on a module-scope object so resolveStatPanel can read them. Keyed by
+  // round id so multiple Round Detail visits don't cross-contaminate.
+  if (!window._dbagPanelData) window._dbagPanelData = {};
+  window._dbagPanelData[round.id] = {
+    teeHits: teeElig.filter(teeNotDisaster).map(h => h.number),
+    teeMisses: teeElig.filter(h => !teeNotDisaster(h)).map(h => h.number),
+    puttEventHoles: puttEvents.map(e => e.holeNum),
+    pj5R3Holes: r3MissHoles.map(h => h.number),
+    pj5R4Holes: r4MissHoles.map(h => h.number),
+    pj5R5Holes: r5MissHoles.map(h => h.number),
+    // Composite: holes that contributed to ANY DBAG miss.
+    dbagAllMissHoles: (() => {
+      const set = new Set();
+      teeElig.filter(h => !teeNotDisaster(h)).forEach(h => set.add(h.number));
+      puttEvents.forEach(e => set.add(e.holeNum));
+      girpyElig.filter(h => (h.score - h.putts) > (h.par - 1)).forEach(h => set.add(h.number));
+      item2Eligible.filter(h => !(h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2)).forEach(h => set.add(h.number));
+      holes.filter(h => (h.penalty || 0) > 0).forEach(h => set.add(h.number));
+      holes.filter(h => h.doubleChip).forEach(h => set.add(h.number));
+      return Array.from(set).sort((a,b) => a - b);
+    })(),
+    // Composite: holes that contributed to ANY PJ5 violation.
+    pj5AllViolationHoles: (() => {
+      const set = new Set();
+      holes.filter(h => (h.penalty || 0) > 0).forEach(h => set.add(h.number));
+      holes.filter(h => h.doubleChip).forEach(h => set.add(h.number));
+      r3MissHoles.forEach(h => set.add(h.number));
+      r4MissHoles.forEach(h => set.add(h.number));
+      r5MissHoles.forEach(h => set.add(h.number));
+      return Array.from(set).sort((a,b) => a - b);
+    })(),
+  };
+
+  // === Render ===
+  // BIRCH SAFFRON: every dbag-card element is tappable. Composites use new
+  // statKeys (dbagScore/pj5Score); tee and putting use new statKeys (dbagTee/
+  // dbagPutt) for their distinct decompositions; girpy/srHoleout/penalties/
+  // doubleChips reuse existing statKeys since the decomposition matches.
   const auxPenalty = totalPenalties === 1 ? '1 penalty' : (totalPenalties + ' penalties');
   const auxDisaster = teeDisasters === 1 ? '1 disaster' : (teeDisasters + ' disasters');
   const auxWasted = wastedPuttCount === 1 ? '1 wasted' : (wastedPuttCount + ' wasted');
   const auxDblChip = doubleChips === 1 ? '1 chip' : (doubleChips + ' chips');
   const girpyAux = girpyElig.length ? (girpyHitsCount + '/' + girpyElig.length) : 'n=0';
   const srAux = item2Eligible.length ? (item2Met + '/' + item2Eligible.length) : 'n=0';
+  // Tap attribute strings — only set when there's something to show.
+  const tapDbag = ` data-stat-key="dbagScore" onclick="statSelect('dbagScore')"`;
+  const tapPj5 = ` data-stat-key="pj5Score" onclick="statSelect('pj5Score')"`;
+  const tapTee = teeElig.length ? ` data-stat-key="dbagTee" onclick="statSelect('dbagTee')"` : '';
+  const tapPutt = wastedPuttCount ? ` data-stat-key="dbagPutt" onclick="statSelect('dbagPutt')"` : '';
+  const tapGirpyRow = girpyElig.length ? ` data-stat-key="girpy" onclick="statSelect('girpy')"` : '';
+  const tapShortRow = item2Eligible.length ? ` data-stat-key="srHoleout" onclick="statSelect('srHoleout')"` : '';
+  const tapPenRow = totalPenalties ? ` data-stat-key="penalties" onclick="statSelect('penalties')"` : '';
+  const tapChipRow = doubleChips ? ` data-stat-key="doubleChips" onclick="statSelect('doubleChips')"` : '';
   document.getElementById('det-dbag-section').innerHTML = `
     <span class="section-lbl">Double Bogey Avoidance Grade</span>
     <div class="dbag-card">
       <div class="dbag-hdr">
-        <div class="dbag-stat dbag-dbag"><div class="dbag-stat-val">${dbagScore}</div><div class="dbag-stat-lbl">DBAG</div></div>
-        <div class="dbag-stat dbag-pj5"><div class="dbag-stat-val">${pj5Total}</div><div class="dbag-stat-lbl">PJ5</div></div>
+        <div class="dbag-stat dbag-dbag"${tapDbag}><div class="dbag-stat-val">${dbagScore}</div><div class="dbag-stat-lbl">DBAG Score</div></div>
+        <div class="dbag-stat dbag-pj5"${tapPj5}><div class="dbag-stat-val">${pj5Total}</div><div class="dbag-stat-lbl">PJ5 Score</div></div>
       </div>
       <div class="dbag-breakdown">
-        <div class="dbag-row"><span class="dbag-row-lbl">Tee not-a-disaster</span><span class="dbag-row-val">${compTee}/28</span><span class="dbag-row-aux">${auxDisaster}</span></div>
-        <div class="dbag-row"><span class="dbag-row-lbl">Putting</span><span class="dbag-row-val">${compPutt}/23</span><span class="dbag-row-aux">${auxWasted}</span></div>
-        <div class="dbag-row"><span class="dbag-row-lbl">Girpy</span><span class="dbag-row-val">${compGirpy}/22</span><span class="dbag-row-aux">${girpyAux}</span></div>
-        <div class="dbag-row"><span class="dbag-row-lbl">Short-range conv.</span><span class="dbag-row-val">${compShortRange}/12</span><span class="dbag-row-aux">${srAux}</span></div>
-        <div class="dbag-row"><span class="dbag-row-lbl">Penalty avoidance</span><span class="dbag-row-val">${compPenalty}/10</span><span class="dbag-row-aux">${auxPenalty}</span></div>
-        <div class="dbag-row"><span class="dbag-row-lbl">No double chips</span><span class="dbag-row-val">${compDblChip}/5</span><span class="dbag-row-aux">${auxDblChip}</span></div>
+        <div class="dbag-row"${tapTee}><span class="dbag-row-lbl">Tee not-a-disaster</span><span class="dbag-row-val">${compTeeDisplay}</span><span class="dbag-row-aux">${auxDisaster}</span></div>
+        <div class="dbag-row"${tapPutt}><span class="dbag-row-lbl">Putting</span><span class="dbag-row-val">${compPuttDisplay}</span><span class="dbag-row-aux">${auxWasted}</span></div>
+        <div class="dbag-row"${tapGirpyRow}><span class="dbag-row-lbl">Girpy</span><span class="dbag-row-val">${compGirpyDisplay}</span><span class="dbag-row-aux">${girpyAux}</span></div>
+        <div class="dbag-row"${tapShortRow}><span class="dbag-row-lbl">Down in 3 conv.</span><span class="dbag-row-val">${compShortRangeDisplay}</span><span class="dbag-row-aux">${srAux}</span></div>
+        <div class="dbag-row"${tapPenRow}><span class="dbag-row-lbl">Penalty avoidance</span><span class="dbag-row-val">${compPenaltyDisplay}</span><span class="dbag-row-aux">${auxPenalty}</span></div>
+        <div class="dbag-row"${tapChipRow}><span class="dbag-row-lbl">No double chips</span><span class="dbag-row-val">${compDblChipDisplay}</span><span class="dbag-row-aux">${auxDblChip}</span></div>
       </div>
     </div>`;
 
@@ -3587,7 +3722,7 @@ function renderDetailV2(round) {
   // Hole-out ≤3: 1 (approach) + putts + (doubleChip ? 1 : 0) ≤ 3.
   // Equivalent: putts != null && (putts + (doubleChip ? 1 : 0)) <= 2.
   document.getElementById('det-holeout-section').innerHTML = `
-    <span class="section-lbl">Hole-out ≤3 by Yardage</span>
+    <span class="section-lbl">Down in 3 by Yardage</span>
     <div class="det-card">${bandRows(h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2, 'alt', 'holeoutBand')}</div>`;
 
   // ── Putting plain-text inferences ───────────────────────────
