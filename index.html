@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.12 · May 02, 2026 -->
+<!-- PJ Caddie v8.3.15 · May 03, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -188,6 +188,22 @@ body{display:flex;flex-direction:column}
 .stat-val{font-family:'DM Serif Display',serif;font-size:26px;color:var(--chalk);line-height:1}
 .stat-lbl{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--chalk3);margin-top:5px}
 .stat-n{font-size:9px;color:var(--chalk3);opacity:.65;margin-top:3px}
+/* AMBER LIGHTHOUSE BATCH (v8.3.14-15) — Double Bogey Avoidance Grade section.
+   Composite + PJ5 in header row, breakdown rows below. Card style matches
+   det-card pattern; values use DM Serif at 38px (between stat-tile 26px and
+   detail-score-big sizing). PJ5 uses chalk color (neutral count); DBAG uses
+   gold (the headline metric). */
+.dbag-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px 14px 12px;margin-bottom:14px}
+.dbag-hdr{display:flex;align-items:center;justify-content:space-around;padding-bottom:12px;border-bottom:1px solid var(--border2);margin-bottom:11px}
+.dbag-stat{text-align:center}
+.dbag-stat-val{font-family:'DM Serif Display',serif;font-size:38px;color:var(--gold);line-height:1}
+.dbag-stat-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--chalk3);margin-top:5px}
+.dbag-pj5 .dbag-stat-val{color:var(--chalk)}
+.dbag-breakdown{display:flex;flex-direction:column;gap:6px}
+.dbag-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:baseline;font-size:12px}
+.dbag-row-lbl{color:var(--chalk2)}
+.dbag-row-val{color:var(--chalk);font-family:'DM Serif Display',serif;font-size:14px;text-align:right;min-width:48px}
+.dbag-row-aux{color:var(--chalk3);font-size:10px;min-width:90px;text-align:right}
 /* MARBLE SENTENCE (v8.3.8) — per-hole row gets a flowing prose summary instead
    of dot-separated tag chips. Base text is muted (chalk3, 11px) so the BOLD
    key-term spans (chalk, 13px, weight 700) stand out for at-a-glance scanning. */
@@ -538,7 +554,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.12 · May 02, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.15 · May 03, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -861,6 +877,7 @@ body{display:flex;flex-direction:column}
       <div class="det-stat-panel" id="det-panel-zones"></div>
       <div id="det-par-section"></div>
       <div class="det-stat-panel" id="det-panel-par"></div>
+      <div id="det-dbag-section"></div>
       <div id="det-rate-section"></div>
       <div class="det-stat-panel" id="det-panel-rate"></div>
       <div id="det-shortrange-section"></div>
@@ -1064,7 +1081,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.12 · Spec v2.1</span>
+        <span>v8.3.15 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -3064,6 +3081,17 @@ function resolveStatPanel(key, param, played) {
                hits: numsOf(elig.filter(inPlayFn)),
                misses: numsOf(elig.filter(h => !inPlayFn(h))) };
     }
+    // MERIDIAN GIRPY (v8.3.13) — GIR+1: strokes-to-green ≤ par−1.
+    // Equivalent form: (score − putts) ≤ (par − 1). Eligibility: putts != null.
+    // Penalties and double-chips both push the metric off-target (correctly excluded).
+    case 'girpy': {
+      const elig = played.filter(h => h.putts != null);
+      const isGirpy = h => (h.score - h.putts) <= (h.par - 1);
+      return { panelId:'det-panel-rate', type:'binary',
+               hitLabel:'GIRPY', missLabel:'MISSED',
+               hits: numsOf(elig.filter(isGirpy)),
+               misses: numsOf(elig.filter(h => !isGirpy(h))) };
+    }
     case 'srHoleout': {
       const elig = played.filter(h => lowBands.includes(h.approachYards));
       const succFn = h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2;
@@ -3363,6 +3391,11 @@ function renderDetailV2(round) {
   const par45Played = holes.filter(h => h.par >= 4);
   const inPlay = par45Played.filter(h => h.teeResult === 'fairway' || h.teeResult === 'L' || h.teeResult === 'R').length;
   const inPlayPct = par45Played.length ? Math.round((inPlay / par45Played.length) * 100) : 0;
+  // MERIDIAN GIRPY (v8.3.13) — GIR+1 as third rate tile. Eligibility = holes with
+  // recorded putts (penalties/double-chips correctly fail the test via score side).
+  const girpyElig = holes.filter(h => h.putts != null);
+  const girpyHitsCount = girpyElig.filter(h => (h.score - h.putts) <= (h.par - 1)).length;
+  const girpyPct = girpyElig.length ? Math.round((girpyHitsCount / girpyElig.length) * 100) : 0;
   // Item #2 — Hole-out ≤3 from ≤124y (no score filter, just shots-from-approach ≤ 3).
   const lowBands = ['50-74','75-99','100-124'];
   const item2Eligible = holes.filter(h => lowBands.includes(h.approachYards));
@@ -3378,18 +3411,157 @@ function renderDetailV2(round) {
   const item3Met = item3Eligible.filter(h => h.score - h.par <= 1).length;
   const tapBog = nPlayed ? ` data-stat-key="bogeyOrBetter" onclick="statSelect('bogeyOrBetter')"` : '';
   const tapInP = par45Played.length ? ` data-stat-key="teeInPlay" onclick="statSelect('teeInPlay')"` : '';
+  const tapGpy = girpyElig.length ? ` data-stat-key="girpy" onclick="statSelect('girpy')"` : '';
   const tapHo  = item2Eligible.length ? ` data-stat-key="srHoleout" onclick="statSelect('srHoleout')"` : '';
   const tapBs  = item3Eligible.length ? ` data-stat-key="srBogeyOrBetter" onclick="statSelect('srBogeyOrBetter')"` : '';
   document.getElementById('det-rate-section').innerHTML = `
-    <div class="stat-strip-2" style="margin-bottom:14px">
+    <div class="stat-strip" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
       <div class="stat-tile"${tapBog}><div class="stat-val">${nPlayed ? bogeyPct + '%' : '\u2014'}</div><div class="stat-lbl">Bogey or Better</div><div class="stat-n">n=${nPlayed}</div></div>
       <div class="stat-tile"${tapInP}><div class="stat-val">${par45Played.length ? inPlayPct + '%' : '\u2014'}</div><div class="stat-lbl">Tee In-Play</div><div class="stat-n">n=${par45Played.length}</div></div>
+      <div class="stat-tile"${tapGpy}><div class="stat-val">${girpyElig.length ? girpyPct + '%' : '\u2014'}</div><div class="stat-lbl">Girpy</div><div class="stat-n">n=${girpyElig.length}</div></div>
     </div>`;
   document.getElementById('det-shortrange-section').innerHTML = `
     <span class="section-lbl">Short-Range Conversion</span>
     <div class="stat-strip-2">
       <div class="stat-tile"${tapHo}><div class="stat-val">${item2Eligible.length ? item2Met + '/' + item2Eligible.length : '0/0'}</div><div class="stat-lbl">Hole-out ≤3 from ≤124y</div></div>
       <div class="stat-tile"${tapBs}><div class="stat-val">${item3Eligible.length ? item3Met + '/' + item3Eligible.length : '0/0'}</div><div class="stat-lbl">Bogey or Better at ≤124y</div><div class="stat-n">n=${item3Eligible.length}</div></div>
+    </div>`;
+
+  // ── DBAG (Double Bogey Avoidance Grade) + PJ5 Violations ────
+  // AMBER LIGHTHOUSE BATCH (v8.3.14-15) — process-only round-quality score
+  // calibrated for an 18-hcp working toward single digits. All components
+  // measure double-bogey-causing failure modes; no score-derived inputs.
+  //
+  // Component weights (total 100):
+  //   1. Tee shot not a disaster   28 — par 4/5 in-play OR OOP-recovered-to-par,
+  //                                     par 5 weighted 1.5x in num + denom.
+  //   2. Putting (proximity-adj.)  23 — wasted-putt rules with budget discount
+  //                                     on first 2 3-putts (penalty halved).
+  //   3. Girpy                     22 — (score - putts) <= (par - 1).
+  //   4. Short-range conversion    12 — hole-out <=3 from <=124y (item2 reused).
+  //   5. Penalty avoidance         10 — start 10, -5 per penalty stroke.
+  //   6. No double chips            5 — start 5, -2 per double chip.
+  //
+  // PJ5 violations (raw count, displayed alongside DBAG):
+  //   1. Penalty strokes (1 per stroke).
+  //   2. Double chips.
+  //   3. 3-putts under 40 ft (le6/7-15/16-25/26-40), forgive floor(N/4).
+  //   4. Not hole-out in 3 from <=124y, forgive floor(N/4).
+  //   5. No Girpy after OOP tee shot (par 4/5 only, no forgiveness).
+
+  // OOP zones — used by both DBAG component 1 and PJ5 rule 5.
+  const oopZones = ['LL','RR','OBL','OBR'];
+  const inPlayZones = ['fairway','L','R'];
+
+  // --- Component 1: Tee shot not a disaster ---
+  const teeElig = holes.filter(h => h.par >= 4 && h.teeResult != null);
+  const teeWeight = h => h.par === 5 ? 1.5 : 1.0;
+  const teeNotDisaster = h => {
+    if (inPlayZones.includes(h.teeResult)) return true;
+    if (oopZones.includes(h.teeResult) && h.score <= h.par) return true;
+    return false;
+  };
+  const teeNumer = teeElig.reduce((a,h) => a + (teeNotDisaster(h) ? teeWeight(h) : 0), 0);
+  const teeDenom = teeElig.reduce((a,h) => a + teeWeight(h), 0);
+  const teeDisasters = teeElig.filter(h => !teeNotDisaster(h)).length;
+  const compTee = teeDenom > 0 ? Math.round((teeNumer / teeDenom) * 28) : 0;
+
+  // --- Component 2: Putting (proximity-adjusted, budget-discounted) ---
+  // One event per hole, priority: blowup > 3-putt > blown-makeable > bad-lag.
+  // Penalties: 3-putt by dist le6=5/7-15=4/16-25=3/26-40=2/40+=1; blowup = 2x;
+  // blown-makeable=2; bad-lag=1. First 2 3-putt events get penalty halved (ceil).
+  const puttDist3 = { 'le6': 5, '7-15': 4, '16-25': 3, '26-40': 2, '40+': 1 };
+  const puttEvents = [];
+  holes.forEach(h => {
+    if (h.putts == null) return;
+    if (h.putts >= 4) {
+      const base = puttDist3[h.firstPuttDist];
+      if (base != null) puttEvents.push({ type: 'blowup', raw: base * 2 });
+      return;
+    }
+    if (h.putts === 3) {
+      const base = puttDist3[h.firstPuttDist];
+      if (base != null) puttEvents.push({ type: '3putt', raw: base });
+      return;
+    }
+    if (h.firstPuttDist === 'le6' && (h.firstPuttResult === 'medium' || h.firstPuttResult === 'long')) {
+      puttEvents.push({ type: 'blownMakeable', raw: 2 });
+      return;
+    }
+    if (h.firstPuttDist === '16-25' && h.firstPuttResult === 'long') {
+      puttEvents.push({ type: 'badLag', raw: 1 });
+      return;
+    }
+  });
+  let threePuttDiscountUsed = 0;
+  let totalPuttDeduction = 0;
+  puttEvents.forEach(e => {
+    if (e.type === '3putt' && threePuttDiscountUsed < 2) {
+      totalPuttDeduction += Math.ceil(e.raw / 2);
+      threePuttDiscountUsed++;
+    } else {
+      totalPuttDeduction += e.raw;
+    }
+  });
+  const compPutt = Math.max(0, 23 - totalPuttDeduction);
+  const wastedPuttCount = puttEvents.length;
+
+  // --- Component 3: Girpy --- (girpyElig/girpyHitsCount already computed above)
+  const compGirpy = girpyElig.length > 0 ? Math.round((girpyHitsCount / girpyElig.length) * 22) : 0;
+
+  // --- Component 4: Short-range conversion --- (item2Eligible/item2Met reused)
+  const compShortRange = item2Eligible.length > 0 ? Math.round((item2Met / item2Eligible.length) * 12) : 0;
+
+  // --- Component 5: Penalty avoidance ---
+  const compPenalty = Math.max(0, 10 - 5 * totalPenalties);
+
+  // --- Component 6: No double chips ---
+  const compDblChip = Math.max(0, 5 - 2 * doubleChips);
+
+  // --- DBAG composite ---
+  const dbagScore = compTee + compPutt + compGirpy + compShortRange + compPenalty + compDblChip;
+
+  // --- PJ5 violations ---
+  const pj5Rule1 = totalPenalties; // penalty strokes
+  const pj5Rule2 = doubleChips;
+  // Rule 3: 3-putts under 40 ft, forgive floor(N/4)
+  const r3DistSet = ['le6','7-15','16-25','26-40'];
+  const r3Elig = holes.filter(h => r3DistSet.includes(h.firstPuttDist) && h.putts != null);
+  const r3Misses = r3Elig.filter(h => h.putts >= 3).length;
+  const r3Allowed = Math.floor(r3Elig.length / 4);
+  const pj5Rule3 = Math.max(0, r3Misses - r3Allowed);
+  // Rule 4: not hole-out in 3 from ≤124y, forgive floor(N/4)
+  const r4Elig = holes.filter(h => lowBands.includes(h.approachYards) && h.putts != null);
+  const r4Misses = r4Elig.filter(h => (h.putts + (h.doubleChip ? 1 : 0)) > 2).length;
+  const r4Allowed = Math.floor(r4Elig.length / 4);
+  const pj5Rule4 = Math.max(0, r4Misses - r4Allowed);
+  // Rule 5: no Girpy after OOP tee shot (par 4/5 only, no forgiveness)
+  const r5Elig = holes.filter(h => h.par >= 4 && oopZones.includes(h.teeResult) && h.putts != null);
+  const pj5Rule5 = r5Elig.filter(h => (h.score - h.putts) > (h.par - 1)).length;
+  const pj5Total = pj5Rule1 + pj5Rule2 + pj5Rule3 + pj5Rule4 + pj5Rule5;
+
+  // --- Render ---
+  const auxPenalty = totalPenalties === 1 ? '1 penalty' : (totalPenalties + ' penalties');
+  const auxDisaster = teeDisasters === 1 ? '1 disaster' : (teeDisasters + ' disasters');
+  const auxWasted = wastedPuttCount === 1 ? '1 wasted' : (wastedPuttCount + ' wasted');
+  const auxDblChip = doubleChips === 1 ? '1 chip' : (doubleChips + ' chips');
+  const girpyAux = girpyElig.length ? (girpyHitsCount + '/' + girpyElig.length) : 'n=0';
+  const srAux = item2Eligible.length ? (item2Met + '/' + item2Eligible.length) : 'n=0';
+  document.getElementById('det-dbag-section').innerHTML = `
+    <span class="section-lbl">Double Bogey Avoidance Grade</span>
+    <div class="dbag-card">
+      <div class="dbag-hdr">
+        <div class="dbag-stat dbag-dbag"><div class="dbag-stat-val">${dbagScore}</div><div class="dbag-stat-lbl">DBAG</div></div>
+        <div class="dbag-stat dbag-pj5"><div class="dbag-stat-val">${pj5Total}</div><div class="dbag-stat-lbl">PJ5</div></div>
+      </div>
+      <div class="dbag-breakdown">
+        <div class="dbag-row"><span class="dbag-row-lbl">Tee not-a-disaster</span><span class="dbag-row-val">${compTee}/28</span><span class="dbag-row-aux">${auxDisaster}</span></div>
+        <div class="dbag-row"><span class="dbag-row-lbl">Putting</span><span class="dbag-row-val">${compPutt}/23</span><span class="dbag-row-aux">${auxWasted}</span></div>
+        <div class="dbag-row"><span class="dbag-row-lbl">Girpy</span><span class="dbag-row-val">${compGirpy}/22</span><span class="dbag-row-aux">${girpyAux}</span></div>
+        <div class="dbag-row"><span class="dbag-row-lbl">Short-range conv.</span><span class="dbag-row-val">${compShortRange}/12</span><span class="dbag-row-aux">${srAux}</span></div>
+        <div class="dbag-row"><span class="dbag-row-lbl">Penalty avoidance</span><span class="dbag-row-val">${compPenalty}/10</span><span class="dbag-row-aux">${auxPenalty}</span></div>
+        <div class="dbag-row"><span class="dbag-row-lbl">No double chips</span><span class="dbag-row-val">${compDblChip}/5</span><span class="dbag-row-aux">${auxDblChip}</span></div>
+      </div>
     </div>`;
 
   // ── GIR by Yardage / Hole-out ≤3 by Yardage stacked bars ────
