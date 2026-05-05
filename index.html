@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.19 · May 03, 2026 -->
+<!-- PJ Caddie v8.3.28 · May 04, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -304,7 +304,40 @@ body{display:flex;flex-direction:column}
 .dsp-hdr{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--chalk3);margin-bottom:6px}
 .dsp-holes{font-family:'DM Serif Display',serif;font-size:22px;color:var(--gold);line-height:1.3;letter-spacing:.5px}
 .dsp-holes span{display:inline-block;margin-right:14px}
+/* TIDAL FERN (v8.3.24) — clickable hole numbers with bottom-anchored
+   expansion showing prose summary + plain-English failure list. */
+.dsp-num{cursor:pointer;padding:0 2px;border-radius:4px;transition:background .12s}
+.dsp-num.open{background:rgba(200,168,75,.18);outline:1px solid rgba(200,168,75,.5)}
+.dsp-expand{margin-top:10px;padding:10px 11px;background:rgba(200,168,75,.07);border-left:2px solid var(--gold);border-radius:4px}
+.dsp-expand-hdr{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--chalk3);margin-bottom:6px}
+.dsp-prose{font-size:12px;color:var(--chalk2);line-height:1.55;margin-bottom:8px}
+.dsp-prose b{font-size:14px;color:var(--chalk1);font-weight:600}
+.dsp-prose:last-child{margin-bottom:0}
+.dsp-fail{font-size:12px;color:var(--chalk2);line-height:1.55}
+.dsp-fail div{padding:2px 0}
 .dsp-empty{font-size:11px;color:var(--chalk3);font-style:italic}
+/* WIND CHIME (v8.3.28) — per-hole + round notes. Note icon on per-hole row,
+   inline edit textarea on tap, dedicated round-notes section. */
+.note-icon{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:transparent;border:1px solid var(--border);color:var(--gold);font-size:13px;cursor:pointer;flex-shrink:0;margin-right:8px;transition:opacity .12s}
+.note-icon.empty{opacity:.32}
+.note-icon.has-note{background:rgba(200,168,75,.12)}
+.rr-note-area{margin:8px 0 4px;padding:8px 10px;background:rgba(200,168,75,.06);border-left:2px solid var(--gold);border-radius:4px;font-size:12px;color:var(--chalk2);line-height:1.5}
+.rr-note-area .note-display{white-space:pre-wrap;word-wrap:break-word}
+.rr-note-area .note-empty-cta{font-style:italic;color:var(--chalk3);cursor:pointer;font-size:11.5px}
+.rr-note-area .note-edit-form textarea{width:100%;min-height:64px;background:var(--ink2);color:var(--chalk1);border:1px solid var(--border);border-radius:4px;padding:7px 9px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box}
+.rr-note-area .note-edit-form .note-btn-row{display:flex;gap:8px;margin-top:8px}
+.rr-note-area .note-edit-form .note-btn{padding:6px 14px;font-size:11px;letter-spacing:.5px;text-transform:uppercase;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--chalk2)}
+.rr-note-area .note-edit-form .note-btn-save{background:var(--gold);color:var(--ink1);border-color:var(--gold);font-weight:600}
+/* Round-notes section: same visual language as the hole-row note area but at
+   section scale; lives below hole-by-hole. */
+.det-round-notes-card{background:rgba(200,168,75,.05);border:1px solid rgba(200,168,75,.18);border-radius:var(--rs);padding:14px 14px 12px}
+.det-round-notes-card .note-display{white-space:pre-wrap;word-wrap:break-word;font-size:13px;color:var(--chalk1);line-height:1.55;cursor:pointer}
+.det-round-notes-card .note-empty-cta{font-style:italic;color:var(--chalk3);cursor:pointer;font-size:12px}
+.det-round-notes-card .note-edit-form textarea{width:100%;min-height:88px;background:var(--ink2);color:var(--chalk1);border:1px solid var(--border);border-radius:4px;padding:9px 11px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box}
+.det-round-notes-card .note-edit-form .note-btn-row{display:flex;gap:8px;margin-top:10px}
+.det-round-notes-card .note-edit-form .note-btn{padding:7px 16px;font-size:11px;letter-spacing:.5px;text-transform:uppercase;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--chalk2)}
+.det-round-notes-card .note-edit-form .note-btn-save{background:var(--gold);color:var(--ink1);border-color:var(--gold);font-weight:600}
+.dsp-note{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(200,168,75,.25);font-size:12px;color:var(--chalk2);line-height:1.5;font-style:italic;white-space:pre-wrap}
 /* AMBER ECHO carry-over (v8.3.2) — tee bar/dot dim only when teeZone is active */
 .det-tee-col.dim,.det-spark-dot.dim{opacity:.25}
 .det-tee-col{transition:opacity .15s}
@@ -542,6 +575,9 @@ body{display:flex;flex-direction:column}
 .gc-toggle{background:var(--ink3);border:1px solid var(--border2);color:var(--chalk2);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;padding:11px 12px;border-radius:8px;cursor:pointer;text-align:center}
 .gc-toggle.on{background:var(--green);color:var(--ink);border-color:var(--green)}
 .gc-bottom-row{display:flex;gap:8px;margin-top:14px}
+/* WIND CHIME (v8.3.28) — per-hole notes textarea in glacier capture. */
+.gc-notes-block{margin-top:8px}
+.gc-notes-input{width:100%;min-height:60px;background:var(--ink2);color:var(--chalk1);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box}
 .gc-toggle-bottom{flex:1;padding:14px 8px;background:var(--ink2);border:1px solid var(--border2);color:var(--chalk2);border-radius:var(--rs);cursor:pointer}
 .gc-toggle-bottom.on{background:var(--orange);color:var(--ink);border-color:var(--orange)}
 .gc-toggle-bottom .gc-toggle-lbl{font-size:12px;font-weight:700;letter-spacing:.6px}
@@ -559,7 +595,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.19 · May 03, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.28 · May 04, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -759,6 +795,7 @@ body{display:flex;flex-direction:column}
         <div id="gc-approach-yards-block">
           <div class="gc-mini-lbl" style="margin-bottom:8px">Approach Yardage</div>
           <div class="gc-yards-row">
+            <button class="gc-chip" data-yd="<50" onclick="glacierSetField('approachYards','<50')">&lt;50</button>
             <button class="gc-chip" data-yd="50-74" onclick="glacierSetField('approachYards','50-74')">50–74</button>
             <button class="gc-chip" data-yd="75-99" onclick="glacierSetField('approachYards','75-99')">75–99</button>
             <button class="gc-chip" data-yd="100-124" onclick="glacierSetField('approachYards','100-124')">100–124</button>
@@ -828,6 +865,15 @@ body{display:flex;flex-direction:column}
         </button>
       </div>
 
+      <!-- WIND CHIME (v8.3.28) — per-hole notes. Free-text field captured
+           during the glacier flow; persists to hole.notes via blur handler. -->
+      <div class="gc-notes-block">
+        <div class="gc-mini-lbl" style="margin:14px 0 6px">Notes</div>
+        <textarea class="gc-notes-input" id="gc-notes-input"
+                  placeholder="Optional note for this hole…"
+                  onblur="glacierSetField('notes', this.value.trim() || null)"></textarea>
+      </div>
+
       <!-- Bottom action button — kept in sync with top by glacierRenderHole. -->
       <button class="btn btn-gold" id="gc-action-btn" onclick="glacierActionTap()" style="margin-top:24px;width:100%">Next Hole →</button>
 
@@ -893,6 +939,9 @@ body{display:flex;flex-direction:column}
       <div id="det-putt-section"></div>
       <span class="section-lbl">Hole-by-Hole</span>
       <div id="det-holes"></div>
+      <!-- WIND CHIME (v8.3.28) — Round Notes section. Tap-to-edit inline. -->
+      <span class="section-lbl" style="margin-top:8px">Round Notes</span>
+      <div id="det-round-notes"></div>
       <button class="btn btn-danger" style="margin-top:20px" id="det-delete-btn" onclick="deleteRound()">Delete Round</button>
     </div>
   </div>
@@ -1083,7 +1132,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.19 · Spec v2.1</span>
+        <span>v8.3.28 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1348,7 +1397,8 @@ function createRound({ courseId, courseName, teeSet, date, holesPlayed, starting
     totalScore: null, source: source||'manual',
     importSessionId: null, photoRef: null,
     bagSnapshot,
-    holes: []
+    holes: [],
+    notes: null /* WIND CHIME (v8.3.28) — round-level free-text note */
   };
 }
 
@@ -1376,7 +1426,8 @@ function createHole({ number, par, score }) {
     doubleChip: false,
     sand: false,
     fwyBunker: false,
-    duffedApproach: false
+    duffedApproach: false,
+    notes: null /* WIND CHIME (v8.3.28) — per-hole free-text note */
   };
 }
 
@@ -2287,7 +2338,7 @@ function renderHistory() {
   el.innerHTML = rounds.map(roundRowHTML).join('');
 }
 
-function showDetail(id) { DET.roundId = id; DET.statSel = null; showView('detail'); }
+function showDetail(id) { DET.roundId = id; DET.statSel = null; DET.expandedHole = null; DET.editingNote = null; showView('detail'); }
 
 // ── COURSE SETUP ─────────────────────────────────────────────
 function initCourseSetup() {
@@ -2700,6 +2751,10 @@ function glacierRenderHole() {
   if (fbBtn) fbBtn.classList.toggle('on', !!hole.fwyBunker);
   if (duffBtn) duffBtn.classList.toggle('on', !!hole.duffedApproach);
 
+  // WIND CHIME (v8.3.28) — populate per-hole notes textarea from saved value.
+  const notesInput = document.getElementById('gc-notes-input');
+  if (notesInput) notesInput.value = hole.notes || '';
+
   // Action button labels (top + bottom kept in sync).
   const actionLbl = (GC.holeIdx === total - 1) ? '\u2713 Finish & Save Round' : 'Next Hole \u2192';
   const actionBtn = document.getElementById('gc-action-btn');
@@ -2977,10 +3032,207 @@ function glacierFinishRound() {
 //
 // Replaces AMBER ECHO + HORIZON DRIFT helpers (teeZoneSelect/teeZoneApplySelection)
 // — the tee-zone case is now just one stat-key among many.
+// TIDAL FERN (v8.3.24) — hoisted prose & failure builders at module scope so
+// stat panels can render per-hole expansions. buildHoleSentence + phrase
+// tables migrated from renderDetailV2 closure (originally MARBLE SENTENCE
+// v8.3.8). Two new builders — getDbagFailures and getPj5Failures — return
+// plain-English sentences for the failures fired on a given hole; predicates
+// re-evaluated per call to keep the panel renderer decoupled from the DBAG
+// render block.
+const TEE_PHRASE = {
+  fairway: 'in the <b>fairway</b>',
+  L:   'in the <b>left rough</b>',
+  R:   'in the <b>right rough</b>',
+  LL:  'in the <b>far left rough</b>',
+  RR:  'in the <b>far right rough</b>',
+  OBL: '<b>OB left</b>',
+  OBR: '<b>OB right</b>'
+};
+const ZONE_PHRASE = {
+  'pin': 'pin high',
+  'pin-l': 'pin high left',
+  'pin-r': 'pin high right',
+  'long': 'long',
+  'long-l': 'long left',
+  'long-r': 'long right',
+  'short': 'short',
+  'short-l': 'short left',
+  'short-r': 'short right'
+};
+function buildHoleSentence(h) {
+  const parts = [];
+  if (h.par >= 4 && h.teeResult) {
+    parts.push('Tee shot landed ' + (TEE_PHRASE[h.teeResult] || ('in <b>'+h.teeResult+'</b>')));
+  }
+  const approachClauses = [];
+  if (h.par >= 4 && h.approachYards) {
+    // EMBER WILLOW (v8.3.27) — <50 reads as "under 50 yard" in prose.
+    const ydsPhrase = h.approachYards === '<50' ? 'under 50 yard' : (h.approachYards + ' yard');
+    approachClauses.push('leaving a <b>' + ydsPhrase + '</b> approach');
+  }
+  if (h.approachResult || h.onGreen != null) {
+    const greenPrefix = h.onGreen ? 'on the green' : 'off the green';
+    const zonePart = h.approachResult ? (' ' + (ZONE_PHRASE[h.approachResult] || h.approachResult.replace(/-/g,' '))) : '';
+    const verb = h.par <= 3 ? 'Tee shot landed' : 'which landed';
+    approachClauses.push(verb + ' <b>' + greenPrefix + zonePart + '</b>');
+  }
+  if (approachClauses.length) parts.push(approachClauses.join(', '));
+  if (h.putts != null) {
+    const puttLabel = h.putts === 4 ? '4+ putt' : (h.putts + ' putt');
+    parts.push('finishing with a <b>' + puttLabel + '</b>');
+  }
+  let body = parts.length ? parts.join(', ') + '.' : '';
+  const trouble = [];
+  if (h.penalty) trouble.push(h.penalty > 1 ? (h.penalty + ' penalties') : 'Penalty');
+  if (h.doubleChip) trouble.push('Double chip');
+  if (h.sand) trouble.push('Greenside bunker');
+  if (h.fwyBunker) trouble.push('Fwy bunker');
+  if (h.duffedApproach) trouble.push('Duffed approach');
+  const troubleHtml = trouble.map(t => '<b>' + t + '</b>.').join(' ');
+  return [body, troubleHtml].filter(Boolean).join(' ');
+}
+const PUTT_DIST_PHRASE = {
+  'le6': 'inside 6 feet',
+  '7-15': '7-15 feet',
+  '16-25': '16-25 feet',
+  '26-40': '26-40 feet',
+  '40+': '40+ feet'
+};
+const _OOP_TEE_ZONES = ['LL','RR','OBL','OBR'];
+const _OB_TEE_ZONES = ['OBL','OBR'];
+const _LOW_BANDS = ['<50','50-74','75-99','100-124'];
+const _R3_DIST_BANDS = ['le6','7-15','16-25','26-40'];
+function getDbagFailures(h) {
+  const out = [];
+  if (h.par >= 4 && _OOP_TEE_ZONES.indexOf(h.teeResult) !== -1) {
+    let saved = false;
+    if (h.putts != null) {
+      const stg = h.score - h.putts;
+      if (stg <= h.par - 1) saved = true;
+      else if (stg === h.par && h.firstPuttDist === 'le6') saved = true;
+    }
+    if (!saved) {
+      const isOB = _OB_TEE_ZONES.indexOf(h.teeResult) !== -1;
+      out.push(isOB
+        ? "Your tee shot went OB and you didn't recover well enough to save bogey."
+        : "Your tee shot went out of position and you didn't recover well enough to save bogey.");
+    }
+  }
+  if (h.putts != null) {
+    const dPhrase = PUTT_DIST_PHRASE[h.firstPuttDist] || 'distance';
+    if (h.putts >= 4) {
+      const n = h.putts >= 5 ? '4+' : h.putts;
+      out.push("You " + n + "-putted from " + dPhrase + ".");
+    } else if (h.putts === 3) {
+      out.push("You 3-putted from " + dPhrase + ".");
+    } else if (h.firstPuttDist === 'le6' && h.firstPuttResult != null
+               && h.firstPuttResult !== 'holed' && h.firstPuttResult !== 'tap-in') {
+      out.push("You missed a makeable putt from inside 6 feet.");
+    } else if (h.firstPuttDist === '16-25' && h.firstPuttResult != null
+               && h.firstPuttResult !== 'holed' && h.firstPuttResult !== 'tap-in'
+               && h.firstPuttResult !== 'close') {
+      out.push("You left a long second putt from 16-25 feet.");
+    }
+  }
+  if (h.putts != null && (h.score - h.putts) > (h.par - 1)) {
+    out.push("You did not convert a Girpy.");
+  }
+  if (_LOW_BANDS.indexOf(h.approachYards) !== -1 && h.putts != null) {
+    if ((h.putts + (h.doubleChip ? 1 : 0)) > 2) {
+      const ydsPhrase = h.approachYards === '<50' ? 'under 50 yards' : (h.approachYards + ' yards');
+      out.push("You did not get down in 3 from " + ydsPhrase + ".");
+    }
+  }
+  if (h.penalty && h.penalty > 0) {
+    out.push(h.penalty === 1 ? "You took a penalty stroke." : "You took " + h.penalty + " penalty strokes.");
+  }
+  if (h.doubleChip) {
+    out.push("You had a double chip.");
+  }
+  return out;
+}
+function getPj5Failures(h) {
+  const out = [];
+  const dPhrase = PUTT_DIST_PHRASE[h.firstPuttDist] || 'distance';
+  if (h.penalty && h.penalty > 0) {
+    out.push(h.penalty === 1 ? "You took a penalty stroke." : "You took " + h.penalty + " penalty strokes.");
+  }
+  if (h.doubleChip) {
+    out.push("You had a double chip.");
+  }
+  if (_R3_DIST_BANDS.indexOf(h.firstPuttDist) !== -1 && h.putts != null && h.putts >= 3) {
+    out.push("You 3-putted from " + dPhrase + ".");
+  }
+  if (_LOW_BANDS.indexOf(h.approachYards) !== -1 && h.putts != null) {
+    if ((h.putts + (h.doubleChip ? 1 : 0)) > 2) {
+      const ydsPhrase = h.approachYards === '<50' ? 'under 50 yards' : (h.approachYards + ' yards');
+      out.push("You did not get down in 3 from " + ydsPhrase + ".");
+    }
+  }
+  if (h.par >= 4 && _OOP_TEE_ZONES.indexOf(h.teeResult) !== -1 && h.putts != null) {
+    if ((h.score - h.putts) > (h.par - 1)) {
+      out.push("Your tee shot went out of play and you did not convert a Girpy.");
+    }
+  }
+  return out;
+}
+function expandHole(num) {
+  DET.expandedHole = (DET.expandedHole === num) ? null : num;
+  statApplySelection();
+}
+// WIND CHIME (v8.3.28) — per-hole + round notes inline edit.
+//   editNote(target)   — open the inline edit form for a hole or the round.
+//                        target = {type:'hole', idx:N} | {type:'round'}
+//   saveNote(value)    — persist current target's value to the round, sync,
+//                        re-render. Empty string saves null (clears note).
+//   cancelNote()       — close the edit form without saving.
+function editNote(target) {
+  // Tap on icon/area while already editing same target → cancel (toggle off).
+  if (DET.editingNote
+      && DET.editingNote.type === target.type
+      && DET.editingNote.idx === target.idx) {
+    DET.editingNote = null;
+  } else {
+    DET.editingNote = target;
+  }
+  renderDetail();
+}
+function saveNote(value) {
+  const target = DET.editingNote;
+  if (!target || !DET.roundId) return;
+  const rounds = getRounds();
+  const round = rounds.find(r => r.id === DET.roundId);
+  if (!round) return;
+  const trimmed = (value || '').trim();
+  const stored = trimmed.length ? trimmed : null;
+  if (target.type === 'round') {
+    round.notes = stored;
+  } else if (target.type === 'hole' && round.holes && round.holes[target.idx]) {
+    round.holes[target.idx].notes = stored;
+  }
+  saveRounds(rounds);
+  // Mark rounds as locally-changed for sync (matches glacierFinishRound pattern).
+  const meta = getSyncMeta();
+  meta.roundsTs = Date.now();
+  saveSyncMeta(meta);
+  DET.editingNote = null;
+  renderDetail();
+}
+function cancelNote() {
+  DET.editingNote = null;
+  renderDetail();
+}
+// Helper invoked from inline form button. Pulls the current textarea value.
+function saveNoteFromInput() {
+  const ta = document.getElementById('wc-note-textarea');
+  saveNote(ta ? ta.value : '');
+}
 function statSelect(key, param) {
   param = (param == null) ? null : String(param);
   const same = DET.statSel && DET.statSel.key === key && DET.statSel.param === param;
   DET.statSel = same ? null : { key, param };
+  DET.expandedHole = null; // reset hole expansion when stat changes
+  DET.editingNote = null;  // WIND CHIME — don't persist a stale edit form
   statApplySelection();
 }
 function statApplySelection() {
@@ -3018,7 +3270,7 @@ function statApplySelection() {
   // Render panel content into the section's anchor.
   const panel = document.getElementById(result.panelId);
   if (!panel) return;
-  panel.innerHTML = renderStatPanelHtml(result);
+  panel.innerHTML = renderStatPanelHtml(result, allHoles, sel.key);
   panel.classList.add('on');
 }
 // resolveStatPanel — given a stat-key (and optional param), decompose the round
@@ -3026,14 +3278,18 @@ function statApplySelection() {
 // stats produce {holes}. Hole numbers are returned as integers in display order.
 function resolveStatPanel(key, param, played) {
   const numsOf = arr => arr.map(h => h.number);
-  const lowBands = ['50-74','75-99','100-124'];
+  // EMBER WILLOW (v8.3.27) — <50 added to approach yardage enum; lowBands
+  // extended for any panel that filters on "≤124y short-range" eligibility.
+  const lowBands = ['<50','50-74','75-99','100-124'];
   switch (key) {
     case 'gir': {
-      const elig = played.filter(h => h.onGreen != null);
+      // STORM BEACON (v8.3.25) — strict GIR predicate, matching girCount.
+      const elig = played.filter(h => h.onGreen != null && h.putts != null);
+      const isGIRstrict = h => h.onGreen === true && (h.score - h.putts) <= (h.par - 2);
       return { panelId:'det-panel-stats', type:'binary',
                hitLabel:'HIT', missLabel:'MISSED',
-               hits: numsOf(elig.filter(h => h.onGreen === true)),
-               misses: numsOf(elig.filter(h => h.onGreen === false)) };
+               hits: numsOf(elig.filter(isGIRstrict)),
+               misses: numsOf(elig.filter(h => !isGIRstrict(h))) };
     }
     case 'upDown': {
       const elig = played.filter(h => h.onGreen === false && h.score - h.par <= 1);
@@ -3076,10 +3332,12 @@ function resolveStatPanel(key, param, played) {
                hits: numsOf(played.filter(h => h.score - h.par <= 1)),
                misses: numsOf(played.filter(h => h.score - h.par > 1)) };
     case 'teeInPlay': {
+      // SLATE OWL (v8.3.22): missLabel now reflects that OOP includes deep
+      // rough and OB, not just "off fairway".
       const elig = played.filter(h => h.par >= 4);
       const inPlayFn = h => h.teeResult === 'fairway' || h.teeResult === 'L' || h.teeResult === 'R';
       return { panelId:'det-panel-rate', type:'binary',
-               hitLabel:'IN PLAY', missLabel:'OFF FAIRWAY',
+               hitLabel:'IN PLAY', missLabel:'OUT OF POSITION / OB',
                hits: numsOf(elig.filter(inPlayFn)),
                misses: numsOf(elig.filter(h => !inPlayFn(h))) };
     }
@@ -3121,6 +3379,34 @@ function resolveStatPanel(key, param, played) {
       return { panelId:'det-panel-dbag', type:'list',
                holes: data ? data.puttEventHoles : [] };
     }
+    // LANTERN MAGNOLIA (v8.3.23): four DBAG row taps reroute from their
+    // upstream panel anchors (rate / shortrange / stats) to det-panel-dbag so
+    // the panel opens directly under the DBAG card. Hole lists stashed on
+    // _dbagPanelData by the DBAG render block.
+    case 'dbagGirpy': {
+      const data = window._dbagPanelData && window._dbagPanelData[DET.roundId];
+      return { panelId:'det-panel-dbag', type:'binary',
+               hitLabel:'GIRPY', missLabel:'MISSED',
+               hits: data ? data.girpyHits : [],
+               misses: data ? data.girpyMisses : [] };
+    }
+    case 'dbagShortrange': {
+      const data = window._dbagPanelData && window._dbagPanelData[DET.roundId];
+      return { panelId:'det-panel-dbag', type:'binary',
+               hitLabel:'DOWN IN 3', missLabel:'MORE THAN 3',
+               hits: data ? data.srHits : [],
+               misses: data ? data.srMisses : [] };
+    }
+    case 'dbagPenalty': {
+      const data = window._dbagPanelData && window._dbagPanelData[DET.roundId];
+      return { panelId:'det-panel-dbag', type:'list',
+               holes: data ? data.penaltyHoles : [] };
+    }
+    case 'dbagDoubleChip': {
+      const data = window._dbagPanelData && window._dbagPanelData[DET.roundId];
+      return { panelId:'det-panel-dbag', type:'list',
+               holes: data ? data.doubleChipHoles : [] };
+    }
     case 'srHoleout': {
       const elig = played.filter(h => lowBands.includes(h.approachYards));
       const succFn = h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2;
@@ -3143,11 +3429,17 @@ function resolveStatPanel(key, param, played) {
                misses: numsOf(elig.filter(h => h.score - h.par > 1)) };
     }
     case 'girBand': {
-      const elig = played.filter(h => h.approachYards === param);
+      // FROST RAVEN (v8.3.26) — population excludes OOP/OB tee unless miracle
+      // strict-GIR was achieved; hit/miss uses strict GIR predicate.
+      const oopOrOb = h => ['LL','RR','OBL','OBR'].indexOf(h.teeResult) !== -1;
+      const isGIRstrict = h => h.onGreen === true && (h.score - h.putts) <= (h.par - 2);
+      const elig = played.filter(h => h.approachYards === param
+                                    && h.putts != null
+                                    && (!oopOrOb(h) || isGIRstrict(h)));
       return { panelId:'det-panel-gir', type:'binary',
                hitLabel:'HIT', missLabel:'MISSED',
-               hits: numsOf(elig.filter(h => h.onGreen === true)),
-               misses: numsOf(elig.filter(h => h.onGreen === false)) };
+               hits: numsOf(elig.filter(isGIRstrict)),
+               misses: numsOf(elig.filter(h => !isGIRstrict(h))) };
     }
     case 'holeoutBand': {
       const elig = played.filter(h => h.approachYards === param);
@@ -3160,17 +3452,58 @@ function resolveStatPanel(key, param, played) {
   }
   return null;
 }
-function renderStatPanelHtml(r) {
-  const numsHtml = arr => arr.length
-    ? '<div class="dsp-holes">' + arr.map(n => '<span>' + n + '</span>').join('') + '</div>'
-    : '<div class="dsp-empty">None.</div>';
+// TIDAL FERN (v8.3.24) — hole-number spans are clickable. A single expansion
+// area renders below the groups, showing prose for the currently expanded
+// hole (DET.expandedHole). For dbagScore / pj5Score composites, the expansion
+// also includes plain-English failure sentences. Toggle off by re-tapping the
+// same number; auto-cleared when stat selection changes.
+function renderStatPanelHtml(r, allHoles, statKey) {
+  const ex = DET.expandedHole;
+  const numsHtml = arr => {
+    if (!arr.length) return '<div class="dsp-empty">None.</div>';
+    return '<div class="dsp-holes">' + arr.map(n => {
+      const cls = (ex === n) ? 'dsp-num open' : 'dsp-num';
+      return '<span class="' + cls + '" onclick="expandHole(' + n + ')">' + n + '</span>';
+    }).join('') + '</div>';
+  };
+  let html = '';
+  let allShown = [];
   if (r.type === 'list') {
     if (!r.holes.length) return '<div class="dsp-empty">No matching holes.</div>';
-    return `<div class="dsp-group"><div class="dsp-hdr">HOLES (${r.holes.length})</div>${numsHtml(r.holes)}</div>`;
+    html = `<div class="dsp-group"><div class="dsp-hdr">HOLES (${r.holes.length})</div>${numsHtml(r.holes)}</div>`;
+    allShown = r.holes;
+  } else {
+    html = `<div class="dsp-group"><div class="dsp-hdr">${r.hitLabel} (${r.hits.length})</div>${numsHtml(r.hits)}</div>`
+         + `<div class="dsp-group"><div class="dsp-hdr">${r.missLabel} (${r.misses.length})</div>${numsHtml(r.misses)}</div>`;
+    allShown = r.hits.concat(r.misses);
   }
-  // binary
-  return `<div class="dsp-group"><div class="dsp-hdr">${r.hitLabel} (${r.hits.length})</div>${numsHtml(r.hits)}</div>`
-       + `<div class="dsp-group"><div class="dsp-hdr">${r.missLabel} (${r.misses.length})</div>${numsHtml(r.misses)}</div>`;
+  // Expansion area — only render if expandedHole is in the current panel.
+  if (ex != null && allShown.indexOf(ex) !== -1 && allHoles) {
+    const h = allHoles.find(x => x.number === ex);
+    if (h) {
+      const prose = buildHoleSentence(h);
+      let failuresHtml = '';
+      let failures = null;
+      if (statKey === 'dbagScore') failures = getDbagFailures(h);
+      else if (statKey === 'pj5Score') failures = getPj5Failures(h);
+      if (failures && failures.length) {
+        failuresHtml = '<div class="dsp-fail">' + failures.map(s => '<div>' + s + '</div>').join('') + '</div>';
+      }
+      // WIND CHIME (v8.3.28) — append per-hole note if present.
+      let noteHtml = '';
+      if (h.notes && h.notes.length) {
+        const safe = h.notes.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        noteHtml = '<div class="dsp-note">\u270e ' + safe + '</div>';
+      }
+      html += '<div class="dsp-expand">'
+            + '<div class="dsp-expand-hdr">HOLE ' + ex + '</div>'
+            + (prose ? '<div class="dsp-prose">' + prose + '</div>' : '')
+            + failuresHtml
+            + noteHtml
+            + '</div>';
+    }
+  }
+  return html;
 }
 
 // renderDetailV2 — Round Detail for schemaVersion: 2 rounds.
@@ -3212,7 +3545,15 @@ function renderDetailV2(round) {
   const upDownEligible = holes.filter(h => !h.onGreen);
   const upDowns = upDownEligible.filter(h => h.putts === 1 && !h.doubleChip).length;
 
-  const girCount = holes.filter(h => h.onGreen === true).length;
+  // STORM BEACON (v8.3.25) — strict GIR predicate. Approach must have found
+  // the green AND total strokes to green (including penalties, since penalty
+  // strokes are part of `score`) must be ≤ par-2. A hero recovery that finds
+  // the green from OOP no-penalty in par-2 strokes still counts (miracle case).
+  // OB tee shots structurally fail because penalty stroke pushes score-putts
+  // past par-2. Replaces the loose `onGreen === true` filter that mislabeled
+  // post-recovery green-finds as GIRs.
+  const isGIR = h => h.onGreen === true && (h.score - h.putts) <= (h.par - 2);
+  const girCount = holes.filter(isGIR).length;
   const totalPenalties = holes.reduce((a,h)=>a+(h.penalty||0),0);
   const puttsTotal = holes.reduce((a,h)=>a+(h.putts||0),0);
   const threePutts = holes.filter(h => h.putts === 3).length;
@@ -3426,7 +3767,8 @@ function renderDetailV2(round) {
   const girpyHitsCount = girpyElig.filter(h => (h.score - h.putts) <= (h.par - 1)).length;
   const girpyPct = girpyElig.length ? Math.round((girpyHitsCount / girpyElig.length) * 100) : 0;
   // Item #2 — Hole-out ≤3 from ≤124y (no score filter, just shots-from-approach ≤ 3).
-  const lowBands = ['50-74','75-99','100-124'];
+  // EMBER WILLOW (v8.3.27) — <50 included as scoring-zone wedge yardage.
+  const lowBands = ['<50','50-74','75-99','100-124'];
   const item2Eligible = holes.filter(h => lowBands.includes(h.approachYards));
   const item2Met = item2Eligible.filter(h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2).length;
   // Item #3 — Bogey or Better at ≤124y after 1 stroke par 4 / 2 strokes par 5.
@@ -3523,28 +3865,47 @@ function renderDetailV2(round) {
   const teeDisasters = teeElig.filter(h => !teeNotDisaster(h)).length;
 
   // === Component 2: Putting — wasted-putt deduction model ===
+  // IRON OPAL (v8.3.21): two changes.
+  //   (1) Tightened predicates. From ≤6 ft, anything other than holed/tap-in
+  //       is a blown makeable (added 'close' to the trigger set). From 16-25 ft,
+  //       anything other than holed/tap-in/close is a bad lag (added 'medium').
+  //   (2) Option C severity modulation. Each event's deduction is full when
+  //       the first putt could have caused a double bogey (first putt for par
+  //       or bogey), and halved (rounded up) otherwise. Derives firstPuttFor
+  //       from shotsToGreen vs par. Internal-consistency match with components
+  //       5/6 retained — putts are still bad regardless, just less DBAG-relevant
+  //       when they couldn't have caused the double.
   const puttDist3 = { 'le6': 5, '7-15': 4, '16-25': 3, '26-40': 2, '40+': 1 };
-  const puttEvents = []; // { type, raw, holeNum }
+  const puttEvents = []; // { type, raw, holeNum, dbagRelevant }
   holes.forEach(h => {
     if (h.putts == null) return;
+    let event = null;
     if (h.putts >= 4) {
       const base = puttDist3[h.firstPuttDist];
-      if (base != null) puttEvents.push({ type: 'blowup', raw: base * 2, holeNum: h.number });
-      return;
-    }
-    if (h.putts === 3) {
+      if (base != null) event = { type: 'blowup', raw: base * 2 };
+    } else if (h.putts === 3) {
       const base = puttDist3[h.firstPuttDist];
-      if (base != null) puttEvents.push({ type: '3putt', raw: base, holeNum: h.number });
-      return;
+      if (base != null) event = { type: '3putt', raw: base };
+    } else if (h.firstPuttDist === 'le6' && h.firstPuttResult != null
+               && h.firstPuttResult !== 'holed' && h.firstPuttResult !== 'tap-in') {
+      event = { type: 'blownMakeable', raw: 2 };
+    } else if (h.firstPuttDist === '16-25' && h.firstPuttResult != null
+               && h.firstPuttResult !== 'holed' && h.firstPuttResult !== 'tap-in'
+               && h.firstPuttResult !== 'close') {
+      event = { type: 'badLag', raw: 1 };
     }
-    if (h.firstPuttDist === 'le6' && (h.firstPuttResult === 'medium' || h.firstPuttResult === 'long')) {
-      puttEvents.push({ type: 'blownMakeable', raw: 2, holeNum: h.number });
-      return;
-    }
-    if (h.firstPuttDist === '16-25' && h.firstPuttResult === 'long') {
-      puttEvents.push({ type: 'badLag', raw: 1, holeNum: h.number });
-      return;
-    }
+    if (!event) return;
+    // Severity modulation per Option C.
+    const stg = h.score - h.putts;
+    const firstPuttFor = stg < (h.par - 1) ? 'birdie'
+                       : stg === (h.par - 1) ? 'par'
+                       : stg === h.par ? 'bogey'
+                       : 'lost';
+    const dbagRelevant = (firstPuttFor === 'par' || firstPuttFor === 'bogey');
+    if (!dbagRelevant) event.raw = Math.ceil(event.raw / 2);
+    event.holeNum = h.number;
+    event.dbagRelevant = dbagRelevant;
+    puttEvents.push(event);
   });
   let threePuttDiscountUsed = 0;
   let totalPuttDeduction = 0;
@@ -3573,17 +3934,15 @@ function renderDetailV2(round) {
   // Base 11, -4 per stroke (calibrated for 1-2 stroke avg, harsh at 3+)
   const penaltyRatio = Math.max(0, 1 - (4 * totalPenalties) / 11);
 
-  // === Component 6: Double chips (Path 2 — opportunity-aware) ===
+  // === Component 6: Double chips (flat per-chip deduction) ===
+  // MOSS WIDGEON (v8.3.20): replaced Path 2 baseline-overage model with flat
+  // per-chip deduction. Each double chip ≈ guaranteed double bogey on an
+  // off-green hole; ratio deducts linearly, structurally matching component 5
+  // (penalty avoidance). Floating weight by chipOps (off-green exposure) is
+  // retained — exposure-handled rounds still get more weight.
   const offGreenHoles = holes.filter(h => h.onGreen === false);
   const chipOps = offGreenHoles.length;
-  let chipRatio;
-  if (chipOps === 0) {
-    chipRatio = 1.0; // no exposure → full credit
-  } else {
-    const expectedDblChips = chipOps * 0.12;
-    const overage = Math.max(0, doubleChips - expectedDblChips);
-    chipRatio = Math.max(0, 1 - overage / Math.max(1, expectedDblChips * 2));
-  }
+  const chipRatio = Math.max(0, 1 - (4 * doubleChips) / 11);
 
   // === Floating weights (only short-range and chips float) ===
   const BASE_TEE = 27, BASE_PUTT = 19, BASE_GIRPY = 18;
@@ -3652,6 +4011,15 @@ function renderDetailV2(round) {
     teeHits: teeElig.filter(teeNotDisaster).map(h => h.number),
     teeMisses: teeElig.filter(h => !teeNotDisaster(h)).map(h => h.number),
     puttEventHoles: puttEvents.map(e => e.holeNum),
+    // LANTERN MAGNOLIA (v8.3.23): per-component hole lists for the four DBAG
+    // rows that previously routed to non-dbag panel anchors. Re-derived from
+    // the same predicates used by the metric calculations above.
+    girpyHits: girpyElig.filter(h => (h.score - h.putts) <= (h.par - 1)).map(h => h.number),
+    girpyMisses: girpyElig.filter(h => (h.score - h.putts) > (h.par - 1)).map(h => h.number),
+    srHits: item2Eligible.filter(h => (h.putts + (h.doubleChip ? 1 : 0)) <= 2).map(h => h.number),
+    srMisses: item2Eligible.filter(h => (h.putts + (h.doubleChip ? 1 : 0)) > 2).map(h => h.number),
+    penaltyHoles: holes.filter(h => (h.penalty || 0) > 0).map(h => h.number),
+    doubleChipHoles: holes.filter(h => h.doubleChip).map(h => h.number),
     pj5R3Holes: r3MissHoles.map(h => h.number),
     pj5R4Holes: r4MissHoles.map(h => h.number),
     pj5R5Holes: r5MissHoles.map(h => h.number),
@@ -3679,10 +4047,10 @@ function renderDetailV2(round) {
   };
 
   // === Render ===
-  // BIRCH SAFFRON: every dbag-card element is tappable. Composites use new
-  // statKeys (dbagScore/pj5Score); tee and putting use new statKeys (dbagTee/
-  // dbagPutt) for their distinct decompositions; girpy/srHoleout/penalties/
-  // doubleChips reuse existing statKeys since the decomposition matches.
+  // BIRCH SAFFRON: every dbag-card element is tappable.
+  // LANTERN MAGNOLIA (v8.3.23): all six rows now use dbag-prefixed statKeys so
+  // the panel opens at det-panel-dbag (directly under the DBAG card) instead
+  // of upstream anchors that put the panel out of view.
   const auxPenalty = totalPenalties === 1 ? '1 penalty' : (totalPenalties + ' penalties');
   const auxDisaster = teeDisasters === 1 ? '1 disaster' : (teeDisasters + ' disasters');
   const auxWasted = wastedPuttCount === 1 ? '1 wasted' : (wastedPuttCount + ' wasted');
@@ -3694,10 +4062,10 @@ function renderDetailV2(round) {
   const tapPj5 = ` data-stat-key="pj5Score" onclick="statSelect('pj5Score')"`;
   const tapTee = teeElig.length ? ` data-stat-key="dbagTee" onclick="statSelect('dbagTee')"` : '';
   const tapPutt = wastedPuttCount ? ` data-stat-key="dbagPutt" onclick="statSelect('dbagPutt')"` : '';
-  const tapGirpyRow = girpyElig.length ? ` data-stat-key="girpy" onclick="statSelect('girpy')"` : '';
-  const tapShortRow = item2Eligible.length ? ` data-stat-key="srHoleout" onclick="statSelect('srHoleout')"` : '';
-  const tapPenRow = totalPenalties ? ` data-stat-key="penalties" onclick="statSelect('penalties')"` : '';
-  const tapChipRow = doubleChips ? ` data-stat-key="doubleChips" onclick="statSelect('doubleChips')"` : '';
+  const tapGirpyRow = girpyElig.length ? ` data-stat-key="dbagGirpy" onclick="statSelect('dbagGirpy')"` : '';
+  const tapShortRow = item2Eligible.length ? ` data-stat-key="dbagShortrange" onclick="statSelect('dbagShortrange')"` : '';
+  const tapPenRow = totalPenalties ? ` data-stat-key="dbagPenalty" onclick="statSelect('dbagPenalty')"` : '';
+  const tapChipRow = doubleChips ? ` data-stat-key="dbagDoubleChip" onclick="statSelect('dbagDoubleChip')"` : '';
   document.getElementById('det-dbag-section').innerHTML = `
     <span class="section-lbl">Double Bogey Avoidance Grade</span>
     <div class="dbag-card">
@@ -3718,9 +4086,15 @@ function renderDetailV2(round) {
   // ── GIR by Yardage / Hole-out ≤3 by Yardage stacked bars ────
   // VELVET LATTICE — each band row taps to its panel. statKey passed in so the
   // same bandRows helper serves both GIR and Hole-out sections.
-  const bands = ['50-74','75-99','100-124','125-149','150-174','175-199','200+'];
-  const bandRows = (metricFn, hitClass, statKey) => bands.map(b => {
-    const inBand = holes.filter(h => h.approachYards === b);
+  // FROST RAVEN (v8.3.26) — bandRows accepts optional populationFn to filter
+  // which holes belong in a band's population at all. GIR-by-yardage uses this
+  // to exclude OOP/OB tee holes (no real GIR opportunity), with a miracle-case
+  // override that lets strict GIR holes back in regardless of tee result.
+  // EMBER WILLOW (v8.3.27) — <50 added to bar bands.
+  const bands = ['<50','50-74','75-99','100-124','125-149','150-174','175-199','200+'];
+  const bandRows = (metricFn, hitClass, statKey, populationFn) => bands.map(b => {
+    let inBand = holes.filter(h => h.approachYards === b);
+    if (populationFn) inBand = inBand.filter(populationFn);
     const total = inBand.length;
     const hitCount = inBand.filter(metricFn).length;
     const hitPct = total ? Math.round((hitCount / total) * 100) : 0;
@@ -3732,9 +4106,12 @@ function renderDetailV2(round) {
     const tap = total ? ` data-stat-key="${statKey}" data-stat-param="${b}" onclick="statSelect('${statKey}','${b}')"` : ' style="cursor:default"';
     return `<div class="det-stack-row"${tap}><span class="det-stack-lbl">${b}</span><div class="det-stack-track">${trackInner}</div><span class="det-stack-num">${numText}</span></div>`;
   }).join('');
+  // FROST RAVEN: GIR-by-yardage population filter and strict GIR predicate.
+  const _oopOrOb = h => ['LL','RR','OBL','OBR'].indexOf(h.teeResult) !== -1;
+  const _girByYardageEligible = h => !_oopOrOb(h) || isGIR(h);
   document.getElementById('det-gir-section').innerHTML = `
     <span class="section-lbl">GIR by Yardage</span>
-    <div class="det-card">${bandRows(h => h.onGreen === true, '', 'girBand')}</div>`;
+    <div class="det-card">${bandRows(isGIR, '', 'girBand', _girByYardageEligible)}</div>`;
   // Hole-out ≤3: 1 (approach) + putts + (doubleChip ? 1 : 0) ≤ 3.
   // Equivalent: putts != null && (putts + (doubleChip ? 1 : 0)) <= 2.
   document.getElementById('det-holeout-section').innerHTML = `
@@ -3796,68 +4173,21 @@ function renderDetailV2(round) {
       if (rel === 2) return 'sm-double';
       return 'sm-triple'; // +3 and worse — caps at triple square
     };
-    // MARBLE SENTENCE (v8.3.8) — flowing prose summary of the hole. Key terms
-    // bold + 2px larger than surrounding muted text. Builder splits the sentence
-    // into 5 segments: tee shot, approach, on/off green + zone, putts, trailing
-    // trouble flags. Empty segments collapse cleanly; sentence-final period
-    // attaches to the last non-empty segment. Par 3 holes have no separate tee
-    // shot — first stroke is the approach.
-    const TEE_PHRASE = {
-      fairway: 'in the <b>fairway</b>',
-      L:   'in the <b>left rough</b>',
-      R:   'in the <b>right rough</b>',
-      LL:  'in the <b>far left rough</b>',
-      RR:  'in the <b>far right rough</b>',
-      OBL: '<b>OB left</b>',
-      OBR: '<b>OB right</b>'
-    };
-    const ZONE_PHRASE = {
-      'pin': 'pin high',
-      'pin-l': 'pin high left',
-      'pin-r': 'pin high right',
-      'long': 'long',
-      'long-l': 'long left',
-      'long-r': 'long right',
-      'short': 'short',
-      'short-l': 'short left',
-      'short-r': 'short right'
-    };
-    const buildHoleSentence = h => {
-      const parts = [];
-      // Tee shot — par 4/5 only; par 3 first shot is the approach.
-      if (h.par >= 4 && h.teeResult) {
-        parts.push('Tee shot landed ' + (TEE_PHRASE[h.teeResult] || ('in <b>'+h.teeResult+'</b>')));
-      }
-      // Approach yardage + result
-      const approachClauses = [];
-      if (h.par >= 4 && h.approachYards) {
-        approachClauses.push('leaving a <b>' + h.approachYards + ' yard</b> approach');
-      }
-      if (h.approachResult || h.onGreen != null) {
-        const greenPrefix = h.onGreen ? 'on the green' : 'off the green';
-        const zonePart = h.approachResult ? (' ' + (ZONE_PHRASE[h.approachResult] || h.approachResult.replace(/-/g,' '))) : '';
-        // Verb depends on whether par 3 (tee shot landed) vs par 4/5 (approach landed).
-        const verb = h.par <= 3 ? 'Tee shot landed' : 'which landed';
-        approachClauses.push(verb + ' <b>' + greenPrefix + zonePart + '</b>');
-      }
-      if (approachClauses.length) parts.push(approachClauses.join(', '));
-      // Putts
-      if (h.putts != null) {
-        const puttLabel = h.putts === 4 ? '4+ putt' : (h.putts + ' putt');
-        parts.push('finishing with a <b>' + puttLabel + '</b>');
-      }
-      // Trailing trouble flags as separate sentences (each capitalized, period
-      // appended). Penalties first (most consequential), then double chip,
-      // greenside bunker, fwy bunker, duffed approach.
-      let body = parts.length ? parts.join(', ') + '.' : '';
-      const trouble = [];
-      if (h.penalty) trouble.push(h.penalty > 1 ? (h.penalty + ' penalties') : 'Penalty');
-      if (h.doubleChip) trouble.push('Double chip');
-      if (h.sand) trouble.push('Greenside bunker');
-      if (h.fwyBunker) trouble.push('Fwy bunker');
-      if (h.duffedApproach) trouble.push('Duffed approach');
-      const troubleHtml = trouble.map(t => '<b>' + t + '</b>.').join(' ');
-      return [body, troubleHtml].filter(Boolean).join(' ');
+    // MARBLE SENTENCE (v8.3.8) — prose builder. Hoisted to module scope by
+    // TIDAL FERN (v8.3.24); see buildHoleSentence/TEE_PHRASE/ZONE_PHRASE above.
+    // WIND CHIME (v8.3.28) — per-hole note icon + inline edit form helper.
+    const renderNoteEditForm = (currentValue, target) => {
+      const safe = (currentValue || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      // textarea content uses raw value (not html-escaped) since textarea
+      // body is treated as text; but apostrophes/etc still need escape via
+      // the &lt;/&gt; pass for safety.
+      return `<div class="rr-note-area"><div class="note-edit-form">
+        <textarea id="wc-note-textarea" placeholder="Optional note…">${safe}</textarea>
+        <div class="note-btn-row">
+          <button class="note-btn note-btn-save" onclick="event.stopPropagation(); saveNoteFromInput()">Save</button>
+          <button class="note-btn" onclick="event.stopPropagation(); cancelNote()">Cancel</button>
+        </div>
+      </div></div>`;
     };
     holesEl.innerHTML = allHoles.map((h, idx) => {
       const isPlayed = h.score > 0;
@@ -3871,17 +4201,53 @@ function renderDetailV2(round) {
       const scoreCell = isPlayed
         ? `<div class="score-marker ${scoreMarkerCls(relH)}">${h.score}</div>`
         : `<div class="rr-score" style="font-size:22px;color:var(--chalk3)">\u2014</div>`;
-      return `<div class="round-row" style="${rowOpacity}" onclick="editHoleStart('${round.id}', ${idx})">
+      // WIND CHIME: note icon. Faint when empty, normal when populated.
+      // stopPropagation prevents the row's editHoleStart click handler from firing.
+      const hasNote = !!(h.notes && h.notes.length);
+      const noteIconCls = hasNote ? 'note-icon has-note' : 'note-icon empty';
+      const noteIconHtml = `<button class="${noteIconCls}" onclick="event.stopPropagation(); editNote({type:'hole', idx:${idx}})" title="${hasNote ? 'Edit note' : 'Add note'}">\u270e</button>`;
+      // Edit form expansion (only if this hole is the one being edited).
+      const isEditingThis = DET.editingNote && DET.editingNote.type === 'hole' && DET.editingNote.idx === idx;
+      const noteFormHtml = isEditingThis ? renderNoteEditForm(h.notes || '', {type:'hole', idx}) : '';
+      return `<div><div class="round-row" style="${rowOpacity}" onclick="editHoleStart('${round.id}', ${idx})">
         ${warnPill}
         <div class="rr-info">
           <div class="rr-course" style="font-size:14px">Hole ${h.number} \xb7 Par ${h.par}</div>
           ${sentenceHtml}
         </div>
+        ${noteIconHtml}
         <div class="rr-score-block">
           ${scoreCell}
         </div>
-      </div>`;
+      </div>${noteFormHtml}</div>`;
     }).join('');
+  }
+
+  // ── Round Notes section (WIND CHIME v8.3.28) ────────────────
+  // Tap to expand into inline edit form. Empty state shows "+ add note".
+  // Populated state shows the note text and tap to edit.
+  const roundNotesEl = document.getElementById('det-round-notes');
+  if (roundNotesEl) {
+    const isEditingRound = DET.editingNote && DET.editingNote.type === 'round';
+    if (isEditingRound) {
+      const safe = (round.notes || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      roundNotesEl.innerHTML = `<div class="det-round-notes-card"><div class="note-edit-form">
+        <textarea id="wc-note-textarea" placeholder="Add notes about this round…">${safe}</textarea>
+        <div class="note-btn-row">
+          <button class="note-btn note-btn-save" onclick="saveNoteFromInput()">Save</button>
+          <button class="note-btn" onclick="cancelNote()">Cancel</button>
+        </div>
+      </div></div>`;
+    } else if (round.notes && round.notes.length) {
+      const safe = round.notes.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      roundNotesEl.innerHTML = `<div class="det-round-notes-card">
+        <div class="note-display" onclick="editNote({type:'round'})">${safe}</div>
+      </div>`;
+    } else {
+      roundNotesEl.innerHTML = `<div class="det-round-notes-card">
+        <div class="note-empty-cta" onclick="editNote({type:'round'})">+ add a note about this round</div>
+      </div>`;
+    }
   }
 
   // VELVET LATTICE (v8.3.2) — restore the active stat selection (panel content
@@ -4650,7 +5016,7 @@ function bgsSaveNewBag() {
 // one special case of this pattern). Tee-bar/spark-dot dimming still fires
 // when key === 'teeZone' (Mara's exception — the bar chart's visual story).
 // Reset on showDetail entry (different round = no carry-over selection).
-const DET = { roundId: null, statSel: null };
+const DET = { roundId: null, statSel: null, expandedHole: null, editingNote: null };
 
 // COBALT WINDOW (v8.2.0) — edit mode state. When EDIT.roundId is set, the
 // glacier-capture view reads/writes the saved round (pjc_rounds entry) at
