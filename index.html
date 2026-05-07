@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.31 · May 06, 2026 -->
+<!-- PJ Caddie v8.3.37 · May 07, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -557,19 +557,52 @@ body{display:flex;flex-direction:column}
 /* Tee result chips: glyph-only (skull + arrows). Larger glyph for readability. */
 .gc-tee-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
 .gc-chip-arrow{font-size:18px;letter-spacing:-1px;padding:0 4px;font-weight:700;min-height:46px}
+/* CINNABAR DRAKE (v8.3.35) — visual 7-zone fairway picker. Replaces the
+   gc-tee-grid + gc-chip-fairway (above; kept for any legacy reference).
+   Layout: 4-col CSS grid, 2 rows.
+     Row 1: OBL OOP-L OOP-R OBR (each col 25%)
+     Row 2: L  FW(spans cols 2-3)  R
+   Color tiers map to severity: red OB / amber OOP / tan rough / green FW.
+   Selected zone gets a gold ring; pre-existing teeResult schema codes used. */
+.gc-fwy-picker{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;background:#1a3a1a;border:1px solid var(--border2);border-radius:10px;padding:8px}
+.gc-fwy-zone{min-height:48px;border:1px solid var(--border2);border-radius:6px;font-size:13px;font-weight:600;color:var(--chalk);font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 4px;transition:box-shadow 100ms ease}
+.gc-fwy-ob{background:rgba(201,64,64,0.55);border-color:rgba(201,64,64,0.8)}
+.gc-fwy-oop{background:rgba(232,153,74,0.45);border-color:rgba(232,153,74,0.7)}
+.gc-fwy-rgh{background:rgba(180,160,110,0.28);border-color:rgba(180,160,110,0.5)}
+.gc-fwy-fw{background:#3a6b3a;border-color:rgba(58,107,58,0.9);grid-column:2 / 4}
+.gc-fwy-zone.on{box-shadow:0 0 0 2px var(--gold);border-color:var(--gold)}
 /* Yardage: explicit 4-per-row → 7 chips wraps as 4+3 with row 2 centered. */
 .gc-yards-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
 .gc-yards-row .gc-chip{flex:0 0 calc((100% - 18px) / 4);min-height:48px;font-size:14px;padding:0 6px}
+/* VELLUM ASTER (v8.3.33) — gc-numeric-input replaces the old yards-row chips for
+   approach yardage entry. .gc-yards-row above is no longer rendered but left in
+   place in case a future numeric-band UI wants to reuse it. */
+.gc-numeric-input{width:100%;background:var(--ink2);color:var(--chalk);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:18px;font-family:'DM Serif Display',serif;font-weight:700;text-align:center;box-sizing:border-box}
+.gc-numeric-input::placeholder{color:var(--chalk3);font-weight:400;font-size:14px}
+.gc-numeric-input:focus{outline:none;border-color:var(--gold)}
+.gc-numeric-input::-webkit-outer-spin-button,.gc-numeric-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.gc-numeric-input[type="number"]{-moz-appearance:textfield}
 /* Tee club chips: auto-fill grid so each chip has readable min-width regardless
    of bag count. 70px min works for "PW", "GW", "5I" through "Driver" labels. */
 .gc-club-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:5px}
 .gc-club-grid .gc-chip{font-size:13px;padding:0 6px;min-height:42px}
+/* PEWTER FALCON (v8.3.34) — 4-button category row replaces the bag-driven club
+   grid above. .gc-club-grid is no longer rendered but kept in case a future
+   bag-aware UI needs it. */
+.gc-tee-cat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.gc-tee-cat-row .gc-chip{min-height:48px;font-size:14px;font-weight:600}
+/* CINDER MEADOW (v8.3.36) — gc-zone-grid (9-cell 3×3) and gc-zone-pin/
+   gc-pin-disabled (Pin auto-onGreen state machine) are no longer used in
+   the capture screen; kept for any legacy reference. The new direction-only
+   row uses gc-dir-row below. */
 .gc-zone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .gc-zone-cell{min-height:50px;background:var(--ink3);border:1px solid var(--border2);color:var(--chalk2);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;padding:0 4px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1.1;white-space:nowrap}
 .gc-zone-cell.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
 .gc-zone-pin{border:1.5px dashed var(--green);color:var(--green);background:transparent}
 .gc-zone-pin.on{background:var(--green);color:var(--ink);border-style:solid;border-color:var(--green)}
 .gc-zone-pin.gc-pin-disabled{opacity:.35;border-style:dashed}
+.gc-dir-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.gc-dir-row .gc-chip{min-height:50px;font-size:16px;font-weight:700}
 .gc-toggle{background:var(--ink3);border:1px solid var(--border2);color:var(--chalk2);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;padding:11px 12px;border-radius:8px;cursor:pointer;text-align:center}
 .gc-toggle.on{background:var(--green);color:var(--ink);border-color:var(--green)}
 .gc-bottom-row{display:flex;gap:8px;margin-top:14px}
@@ -593,7 +626,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.31 · May 06, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.37 · May 07, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -768,18 +801,32 @@ body{display:flex;flex-direction:column}
       <div class="gc-section gc-section-tee">
         <div class="gc-section-lbl">Tee Shot</div>
         <div class="gc-mini-lbl" style="margin-bottom:8px">Tee Club</div>
-        <div id="gc-tee-club-chips" class="gc-club-grid"></div>
+        <!-- PEWTER FALCON (v8.3.34) — 4-button category picker replaces the
+             bag-driven chip grid. New schema stores 'driver'|'fwy'|'hyb'|'iron'.
+             Legacy club-id values resolve to category via teeClubCategory(). -->
+        <div id="gc-tee-club-buttons" class="gc-tee-cat-row">
+          <button class="gc-chip" data-cat="driver" onclick="glacierSetField('teeClub','driver')">Drv</button>
+          <button class="gc-chip" data-cat="fwy" onclick="glacierSetField('teeClub','fwy')">Fwy</button>
+          <button class="gc-chip" data-cat="hyb" onclick="glacierSetField('teeClub','hyb')">Hyb</button>
+          <button class="gc-chip" data-cat="iron" onclick="glacierSetField('teeClub','iron')">Iron</button>
+        </div>
         <div id="gc-tee-result-block">
           <div class="gc-mini-lbl" style="margin:14px 0 8px">Tee Result</div>
-          <div class="gc-tee-grid">
-            <button class="gc-chip gc-chip-arrow" data-tee="OBL" onclick="glacierSetField('teeResult','OBL')" aria-label="Out of bounds left">💀‹</button>
-            <button class="gc-chip gc-chip-arrow" data-tee="LL" onclick="glacierSetField('teeResult','LL')" aria-label="Far left">‹‹</button>
-            <button class="gc-chip gc-chip-arrow" data-tee="L" onclick="glacierSetField('teeResult','L')" aria-label="Left">‹</button>
-            <button class="gc-chip gc-chip-arrow" data-tee="R" onclick="glacierSetField('teeResult','R')" aria-label="Right">›</button>
-            <button class="gc-chip gc-chip-arrow" data-tee="RR" onclick="glacierSetField('teeResult','RR')" aria-label="Far right">››</button>
-            <button class="gc-chip gc-chip-arrow" data-tee="OBR" onclick="glacierSetField('teeResult','OBR')" aria-label="Out of bounds right">›💀</button>
+          <!-- CINNABAR DRAKE (v8.3.35) — visual 7-zone fairway picker. Top-down
+               view of the fairway from the tee: OB at the corners (red), OOP
+               wings just inside (amber), L/R rough flanking the FW strip (tan),
+               FW the brighter green center (spans 2 cols of the 4-col grid).
+               Schema codes (OBL/LL/L/fairway/R/RR/OBR) unchanged — only the
+               UI representation. Display labels updated to OOP per SLATE OWL. -->
+          <div class="gc-fwy-picker" id="gc-fwy-picker">
+            <button class="gc-fwy-zone gc-fwy-ob"   data-tee="OBL"     onclick="glacierSetField('teeResult','OBL')"     aria-label="Out of bounds left">OB-L</button>
+            <button class="gc-fwy-zone gc-fwy-oop"  data-tee="LL"      onclick="glacierSetField('teeResult','LL')"      aria-label="Out of position left">OOP-L</button>
+            <button class="gc-fwy-zone gc-fwy-oop"  data-tee="RR"      onclick="glacierSetField('teeResult','RR')"      aria-label="Out of position right">OOP-R</button>
+            <button class="gc-fwy-zone gc-fwy-ob"   data-tee="OBR"     onclick="glacierSetField('teeResult','OBR')"     aria-label="Out of bounds right">OB-R</button>
+            <button class="gc-fwy-zone gc-fwy-rgh"  data-tee="L"       onclick="glacierSetField('teeResult','L')"       aria-label="Left rough">L</button>
+            <button class="gc-fwy-zone gc-fwy-fw"   data-tee="fairway" onclick="glacierSetField('teeResult','fairway')" aria-label="Fairway">FW</button>
+            <button class="gc-fwy-zone gc-fwy-rgh"  data-tee="R"       onclick="glacierSetField('teeResult','R')"       aria-label="Right rough">R</button>
           </div>
-          <button class="gc-chip gc-chip-fairway" data-tee="fairway" onclick="glacierSetField('teeResult','fairway')" style="margin-top:6px;width:100%">Fairway</button>
         </div>
       </div>
 
@@ -788,28 +835,23 @@ body{display:flex;flex-direction:column}
         <div class="gc-section-lbl">Approach</div>
         <div id="gc-approach-yards-block">
           <div class="gc-mini-lbl" style="margin-bottom:8px">Approach Yardage</div>
-          <div class="gc-yards-row">
-            <button class="gc-chip" data-yd="<50" onclick="glacierSetField('approachYards','<50')">&lt;50</button>
-            <button class="gc-chip" data-yd="50-74" onclick="glacierSetField('approachYards','50-74')">50–74</button>
-            <button class="gc-chip" data-yd="75-99" onclick="glacierSetField('approachYards','75-99')">75–99</button>
-            <button class="gc-chip" data-yd="100-124" onclick="glacierSetField('approachYards','100-124')">100–124</button>
-            <button class="gc-chip" data-yd="125-149" onclick="glacierSetField('approachYards','125-149')">125–149</button>
-            <button class="gc-chip" data-yd="150-174" onclick="glacierSetField('approachYards','150-174')">150–174</button>
-            <button class="gc-chip" data-yd="175-199" onclick="glacierSetField('approachYards','175-199')">175–199</button>
-            <button class="gc-chip" data-yd="200+" onclick="glacierSetField('approachYards','200+')">200+</button>
-          </div>
+          <!-- VELLUM ASTER (v8.3.33) — numeric input replaces the 8-band chip
+               row. Strict 1-350 validation lives in glacierSetApproachYards. -->
+          <input type="number" id="gc-approach-yards-input" class="gc-numeric-input"
+                 inputmode="numeric" min="1" max="350" step="1" placeholder="Yards"
+                 onchange="glacierSetApproachYards(this.value)">
         </div>
         <div class="gc-mini-lbl" style="margin:14px 0 8px">Approach Result</div>
-        <div class="gc-zone-grid">
-          <button class="gc-zone-cell" data-zone="long-l" onclick="glacierZoneTap('long-l')">Long-L</button>
-          <button class="gc-zone-cell" data-zone="long" onclick="glacierZoneTap('long')">Long</button>
-          <button class="gc-zone-cell" data-zone="long-r" onclick="glacierZoneTap('long-r')">Long-R</button>
-          <button class="gc-zone-cell" data-zone="pin-l" onclick="glacierZoneTap('pin-l')">Pin-L</button>
-          <button class="gc-zone-cell gc-zone-pin" data-zone="pin" onclick="glacierZoneTap('pin')">Pin</button>
-          <button class="gc-zone-cell" data-zone="pin-r" onclick="glacierZoneTap('pin-r')">Pin-R</button>
-          <button class="gc-zone-cell" data-zone="short-l" onclick="glacierZoneTap('short-l')">Short-L</button>
-          <button class="gc-zone-cell" data-zone="short" onclick="glacierZoneTap('short')">Short</button>
-          <button class="gc-zone-cell" data-zone="short-r" onclick="glacierZoneTap('short-r')">Short-R</button>
+        <!-- CINDER MEADOW (v8.3.36) — direction-only picker. The 9-zone 3×3
+             grid (long/pin/short × L/C/R) collapsed to 3 buttons. Schema codes
+             are 'L'/'C'/'R'; legacy 9-zone values still render correctly via
+             approachResultDirection() at read time. The Pin auto-onGreen state
+             machine (glacierZoneTap) is dropped — onGreen is set explicitly
+             via the toggle below. -->
+        <div class="gc-dir-row" id="gc-dir-row">
+          <button class="gc-chip" data-dir="L" onclick="glacierSetField('approachResult','L')" aria-label="Approach left">L</button>
+          <button class="gc-chip" data-dir="C" onclick="glacierSetField('approachResult','C')" aria-label="Approach center">C</button>
+          <button class="gc-chip" data-dir="R" onclick="glacierSetField('approachResult','R')" aria-label="Approach right">R</button>
         </div>
         <button class="gc-toggle" id="gc-on-green-toggle" onclick="glacierToggleOnGreen()" style="margin-top:12px;width:100%">On the green</button>
       </div>
@@ -825,13 +867,12 @@ body{display:flex;flex-direction:column}
           <button class="gc-chip" data-putts="4" onclick="glacierSetPutts(4)">4+</button>
         </div>
         <div class="gc-mini-lbl" style="margin:14px 0 8px">First putt distance</div>
-        <div class="gc-chip-row gc-chip-row-wrap">
-          <button class="gc-chip" data-fpd="le6" onclick="glacierSetField('firstPuttDist','le6')">≤6 ft</button>
-          <button class="gc-chip" data-fpd="7-15" onclick="glacierSetField('firstPuttDist','7-15')">7–15 ft</button>
-          <button class="gc-chip" data-fpd="16-25" onclick="glacierSetField('firstPuttDist','16-25')">16–25 ft</button>
-          <button class="gc-chip" data-fpd="26-40" onclick="glacierSetField('firstPuttDist','26-40')">26–40 ft</button>
-          <button class="gc-chip" data-fpd="40+" onclick="glacierSetField('firstPuttDist','40+')">40+ ft</button>
-        </div>
+        <!-- OPAL CASCADE (v8.3.37) — numeric input replaces the 5-band chip row.
+             Strict 0-99 validation lives in glacierSetFirstPuttDist (0 = inside
+             1 foot / tap-in). Pattern mirrors VELLUM ASTER's approach yards. -->
+        <input type="number" id="gc-first-putt-dist-input" class="gc-numeric-input"
+               inputmode="numeric" min="0" max="99" step="1" placeholder="Feet"
+               onchange="glacierSetFirstPuttDist(this.value)">
         <!-- COBALT MARROW (v8.3.30) — First putt result row removed (firstPuttResult field dropped). -->
       </div>
 
@@ -1119,7 +1160,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.31 · Spec v2.1</span>
+        <span>v8.3.37 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -2066,6 +2107,61 @@ function migrateEntityIds() {
   localStorage.setItem('pjc_ids_migrated', '1');
 }
 
+// ── FIRST PUTT DISTANCE MIGRATION (OPAL CASCADE v8.3.37) ─────
+// firstPuttDist value type changes from string enum (le6 / 7-15 / 16-25 /
+// 26-40 / 40+) to integer feet (0-99 inclusive). Migration walks pjc_rounds
+// AND pjc_wip, normalizing band strings to their midpoint+round-up values:
+//   le6 → 3, 7-15 → 11, 16-25 → 21, 26-40 → 33, 40+ → 45.
+// Idempotent: integer values are left untouched; only known band strings are
+// converted. On the first run, a backup snapshot of pjc_rounds is saved to
+// pjc_rounds_pre_opal_cascade for safety. Subsequent runs re-normalize any
+// band strings that may arrive via cross-device sync from a non-upgraded
+// device, but do not re-take the backup.
+function migrateFirstPuttDistV1() {
+  // First-run backup — saved once, before any mutation.
+  if (localStorage.getItem('pjc_opal_cascade_migration_v1') !== 'true') {
+    try {
+      const snapshot = localStorage.getItem('pjc_rounds');
+      if (snapshot) localStorage.setItem('pjc_rounds_pre_opal_cascade', snapshot);
+    } catch {}
+    localStorage.setItem('pjc_opal_cascade_migration_v1', 'true');
+  }
+  // Idempotent normalization — runs every boot. Mutates band strings only;
+  // integers, null, and unknown shapes pass through.
+  const normalize = h => {
+    const v = h.firstPuttDist;
+    if (typeof v === 'string' && FIRST_PUTT_DIST_BAND_TO_FT[v] != null) {
+      h.firstPuttDist = FIRST_PUTT_DIST_BAND_TO_FT[v];
+      return true;
+    }
+    return false;
+  };
+  // Rounds list
+  try {
+    const rounds = JSON.parse(localStorage.getItem('pjc_rounds') || '[]');
+    let mutated = false;
+    if (Array.isArray(rounds)) {
+      rounds.forEach(r => {
+        if (r && Array.isArray(r.holes)) r.holes.forEach(h => { if (normalize(h)) mutated = true; });
+      });
+    }
+    if (mutated) localStorage.setItem('pjc_rounds', JSON.stringify(rounds));
+  } catch (err) {
+    console.error('migrateFirstPuttDistV1 (rounds) failed:', err);
+  }
+  // WIP (in-progress round)
+  try {
+    const wip = JSON.parse(localStorage.getItem('pjc_wip') || 'null');
+    if (wip && Array.isArray(wip.holes)) {
+      let mutated = false;
+      wip.holes.forEach(h => { if (normalize(h)) mutated = true; });
+      if (mutated) localStorage.setItem('pjc_wip', JSON.stringify(wip));
+    }
+  } catch (err) {
+    console.error('migrateFirstPuttDistV1 (wip) failed:', err);
+  }
+}
+
 // ── MISS PROFILE MIGRATION (IVORY PELICAN) ───────────────────
 // Legacy pjc_player had a single primaryMiss field ('L'|'C'|'R'|undefined).
 // v7.13.0 expands to two-axis (lat + long) with inferred/manual mode per axis.
@@ -2424,8 +2520,11 @@ function renderCourseList() {
     return;
   }
   el.innerHTML = courses.map(c=>{
-    const teeNames = c.tees.map(t=>t.name).join(' / ');
-    const parRange = [...new Set(c.tees.map(t=>teePar(t)))].join('/');
+    // QUARTZ FERN (v8.3.32) — tee names rendered longest-to-shortest, mirroring
+    // the chip row below. parRange is order-invariant (uses Set).
+    const sortedTees = sortTeesForHub(c.tees, c.holes);
+    const teeNames = sortedTees.map(t=>t.name).join(' / ');
+    const parRange = [...new Set(sortedTees.map(t=>teePar(t)))].join('/');
     const sel = S.selectedCourseId===c.id;
     return `<div class="course-row${sel?' selected':''}" onclick="selectCourseForRound('${c.id}')">
       <div class="cr-check">${sel?'✓':''}</div>
@@ -2455,10 +2554,19 @@ function selectCourseForRound(id) {
 }
 
 function renderTeeChips(course) {
-  document.getElementById('rs-tee-chips').innerHTML = course.tees.map((t,i)=>`
+  // QUARTZ FERN (v8.3.32) — chips rendered longest-to-shortest. The onclick
+  // passes the ORIGINAL course.tees index (via indexOf on the same object
+  // reference — sortTeesForHub returns shallow copies of the array, not the
+  // tee objects), so S.selectedTeeIdx and downstream readers continue to
+  // work unchanged.
+  const sortedTees = sortTeesForHub(course.tees, course.holes);
+  document.getElementById('rs-tee-chips').innerHTML = sortedTees.map(t => {
+    const i = course.tees.indexOf(t);
+    return `
     <button class="tee-chip${S.selectedTeeIdx===i?' on':''}" onclick="selectTee(${i})">
       ${t.name} \xb7 Par ${teePar(t)} \xb7 ${teeYards(t)} yds
-    </button>`).join('');
+    </button>`;
+  }).join('');
 }
 
 function selectTee(idx) {
@@ -2666,59 +2774,73 @@ function glacierRenderHole() {
   const penEl = document.getElementById('gc-penalty-val');
   if (penEl) penEl.textContent = hole.penalty != null ? hole.penalty : 0;
 
-  // Tee shot section: club chips (rendered from bagSnapshot) + tee result.
-  // GLACIER REFINE (v8.1.2) — CRITICAL FIX: clubs use c.abbr (with c.name fallback).
-  // Prior versions read c.name which DEFAULT_BAGS doesn't define → empty chips.
+  // Tee shot section: club category buttons + tee result.
+  // PEWTER FALCON (v8.3.34) — tee club is now a fixed 4-button category picker
+  // (Drv/Fwy/Hyb/Iron); legacy club-id values are resolved to category at
+  // render time. Preserves the GLACIER REFINE (v8.1.2) c.abbr lookup pattern
+  // for legacy data via the teeClubCategory helper.
   const isPar3 = hole.par === 3;
   const teeResultBlock = document.getElementById('gc-tee-result-block');
   if (teeResultBlock) teeResultBlock.style.display = isPar3 ? 'none' : '';
-  const teeClubsEl = document.getElementById('gc-tee-club-chips');
-  if (teeClubsEl) {
-    const clubs = (wip.bagSnapshot && wip.bagSnapshot.clubs) || [];
-    teeClubsEl.innerHTML = clubs.map(c => {
-      const isOn = c.id === hole.teeClub ? ' on' : '';
-      const label = (c.abbr || c.name || '').toString();
-      const safeLabel = label.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-      const safeId = (c.id||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-      return `<button class="gc-chip${isOn}" data-club="${safeId}" onclick="glacierSetField('teeClub','${safeId}')">${safeLabel}</button>`;
-    }).join('');
-  }
+  // PEWTER FALCON (v8.3.34) — highlight whichever of the 4 category buttons
+  // matches the resolved category. Resolves legacy club-id values via
+  // bagSnapshot lookup, so editing pre-v8.3.34 rounds shows the correct
+  // category highlighted (e.g., legacy teeClub='ba-7i' → 'iron' button on).
+  const teeClubCat = teeClubCategory(hole.teeClub, wip.bagSnapshot);
+  document.querySelectorAll('#view-glacier-capture #gc-tee-club-buttons [data-cat]').forEach(b => {
+    b.classList.toggle('on', b.dataset.cat === teeClubCat);
+  });
   if (!isPar3) {
-    document.querySelectorAll('#view-glacier-capture .gc-tee-grid .gc-chip-arrow').forEach(c => {
-      c.classList.toggle('on', c.dataset.tee === hole.teeResult);
+    // CINNABAR DRAKE (v8.3.35) — single selector for the visual 7-zone picker
+    // covers all teeResult codes (OBL/LL/L/fairway/R/RR/OBR). The two prior
+    // selectors (.gc-tee-grid .gc-chip-arrow and .gc-chip-fairway) collapse
+    // into one .gc-fwy-zone toggle.
+    document.querySelectorAll('#view-glacier-capture .gc-fwy-picker .gc-fwy-zone').forEach(z => {
+      z.classList.toggle('on', z.dataset.tee === hole.teeResult);
     });
-    const fwy = document.querySelector('#view-glacier-capture .gc-chip-fairway');
-    if (fwy) fwy.classList.toggle('on', hole.teeResult === 'fairway');
   }
 
   // Approach section
   const yardsBlock = document.getElementById('gc-approach-yards-block');
   if (yardsBlock) yardsBlock.style.display = isPar3 ? 'none' : '';
+  // VELLUM ASTER (v8.3.33) — populate numeric input from the field. Numeric
+  // values display verbatim; legacy band strings can't render in a number
+  // input, so they show empty (the underlying band string in localStorage
+  // is preserved unless the user actively edits and overwrites).
   if (!isPar3) {
-    document.querySelectorAll('#view-glacier-capture .gc-yards-row .gc-chip').forEach(c => {
-      c.classList.toggle('on', c.dataset.yd === hole.approachYards);
-    });
+    const yardsInput = document.getElementById('gc-approach-yards-input');
+    if (yardsInput) {
+      const v = hole.approachYards;
+      yardsInput.value = (typeof v === 'number') ? String(v) : '';
+    }
   }
-  // 9-zone grid
-  document.querySelectorAll('#view-glacier-capture .gc-zone-cell').forEach(c => {
-    c.classList.toggle('on', c.dataset.zone === hole.approachResult);
+  // CINDER MEADOW (v8.3.36) — 3-button direction picker. Helper resolves
+  // legacy 9-zone codes to L/C/R so editing pre-v8.3.36 rounds shows the
+  // correct button highlighted. Pin-disabled state machine removed (no
+  // more pin zone).
+  const apprDir = approachResultDirection(hole.approachResult);
+  document.querySelectorAll('#view-glacier-capture #gc-dir-row [data-dir]').forEach(b => {
+    b.classList.toggle('on', b.dataset.dir === apprDir);
   });
-  // On-green toggle + Pin cell disabled state
+  // On-green toggle
   const ogBtn = document.getElementById('gc-on-green-toggle');
   if (ogBtn) {
     ogBtn.classList.toggle('on', !!hole.onGreen);
     ogBtn.textContent = hole.onGreen ? '\u2713 On the green' : 'On the green';
   }
-  const pinCell = document.querySelector('#view-glacier-capture .gc-zone-pin');
-  if (pinCell) pinCell.classList.toggle('gc-pin-disabled', !hole.onGreen);
 
   // Putts section
   document.querySelectorAll('#view-glacier-capture [data-putts]').forEach(c => {
     c.classList.toggle('on', String(hole.putts) === c.dataset.putts);
   });
-  document.querySelectorAll('#view-glacier-capture [data-fpd]').forEach(c => {
-    c.classList.toggle('on', c.dataset.fpd === hole.firstPuttDist);
-  });
+  // OPAL CASCADE (v8.3.37) — populate numeric input from firstPuttDist. Numeric
+  // values display verbatim; legacy band strings (defensive — should be migrated)
+  // can't render in a number input, so they show empty until the user re-enters.
+  const fpdInput = document.getElementById('gc-first-putt-dist-input');
+  if (fpdInput) {
+    const v = hole.firstPuttDist;
+    fpdInput.value = (typeof v === 'number') ? String(v) : '';
+  }
   // COBALT MARROW (v8.3.30) — firstPuttResult field dropped; fpr row visibility
   // and chip-toggle render block removed.
 
@@ -2804,39 +2926,19 @@ function glacierSetField(field, value) {
   glacierPersistAndRender(wip);
 }
 
-// glacierZoneTap — applies the Pin/On-green state machine per locked v10 spec:
-//   Rule 1: Selecting "Pin" auto-sets onGreen = true.
-//   Rule 2: Toggling onGreen off when Pin is selected clears the grid (handled in glacierToggleOnGreen).
-//   Rule 3: Pin cell disabled when onGreen is false (visually) — but tapping it
-//           still triggers Rule 1 (auto-enables onGreen + selects Pin in one tap).
-function glacierZoneTap(zone) {
-  const wip = glacierGetWIP();
-  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
-  const hole = wip.holes[GC.holeIdx];
-  // Tap-to-toggle for re-tap.
-  if (hole.approachResult === zone) {
-    hole.approachResult = null;
-    // If we just deselected Pin, do not auto-clear onGreen (user may want to
-    // pick another on-green zone). onGreen is the user's separate decision.
-  } else {
-    hole.approachResult = zone;
-    if (zone === 'pin') {
-      // Rule 1: selecting Pin auto-sets onGreen = true.
-      hole.onGreen = true;
-    }
-  }
-  glacierPersistAndRender(wip);
-}
+// CINDER MEADOW (v8.3.36) — glacierZoneTap removed. The Pin/onGreen state
+// machine had three rules (Pin auto-onGreen, onGreen-off clears Pin, Pin
+// cell disabled when off-green). All three are obsolete now that the Pin
+// zone is gone — direction-only schema (L/C/R) doesn't carry depth info.
+// Direction buttons use plain glacierSetField('approachResult', dir) onclicks.
 
 function glacierToggleOnGreen() {
   const wip = glacierGetWIP();
   if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
   const hole = wip.holes[GC.holeIdx];
   hole.onGreen = !hole.onGreen;
-  // Rule 2: if Pin is selected and onGreen just turned off, clear the grid.
-  if (!hole.onGreen && hole.approachResult === 'pin') {
-    hole.approachResult = null;
-  }
+  // CINDER MEADOW (v8.3.36) — the Pin auto-clear rule (Rule 2 of the old
+  // state machine) no longer applies; direction is independent of onGreen.
   glacierPersistAndRender(wip);
 }
 
@@ -2845,6 +2947,57 @@ function glacierToggleField(field) {
   if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
   const hole = wip.holes[GC.holeIdx];
   hole[field] = !hole[field];
+  glacierPersistAndRender(wip);
+}
+
+// VELLUM ASTER (v8.3.33) — numeric-yards writer. Strict validation:
+//   - Empty input or whitespace → null
+//   - Non-numeric / non-finite → null (rejects the entry)
+//   - Integer in [1, 350] → store as Number
+//   - Out-of-range (0, negative, > 350, decimal) → null (rejects the entry)
+// Legacy band strings already in localStorage are NOT touched here; they
+// only get overwritten when the user actively types into the input.
+function glacierSetApproachYards(rawValue) {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
+  const hole = wip.holes[GC.holeIdx];
+  const trimmed = String(rawValue == null ? '' : rawValue).trim();
+  if (trimmed === '') {
+    hole.approachYards = null;
+  } else {
+    const n = Number(trimmed);
+    if (!Number.isFinite(n) || !Number.isInteger(n) || n < 1 || n > 350) {
+      hole.approachYards = null;
+    } else {
+      hole.approachYards = n;
+    }
+  }
+  glacierPersistAndRender(wip);
+}
+
+// OPAL CASCADE (v8.3.37) — numeric-feet writer for first putt distance. Strict
+// validation:
+//   - Empty input or whitespace → null
+//   - Non-numeric / non-finite → null (rejects the entry)
+//   - Integer in [0, 99] → store as Number (0 = inside 1 foot / tap-in range)
+//   - Out-of-range (negative, > 99, decimal) → null (rejects the entry)
+// Legacy band strings are normalized at boot by migrateFirstPuttDistV1; this
+// writer only ever stores Number or null.
+function glacierSetFirstPuttDist(rawValue) {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
+  const hole = wip.holes[GC.holeIdx];
+  const trimmed = String(rawValue == null ? '' : rawValue).trim();
+  if (trimmed === '') {
+    hole.firstPuttDist = null;
+  } else {
+    const n = Number(trimmed);
+    if (!Number.isFinite(n) || !Number.isInteger(n) || n < 0 || n > 99) {
+      hole.firstPuttDist = null;
+    } else {
+      hole.firstPuttDist = n;
+    }
+  }
   glacierPersistAndRender(wip);
 }
 
@@ -3013,21 +3166,22 @@ const TEE_PHRASE = {
   fairway: 'in the <b>fairway</b>',
   L:   'in the <b>left rough</b>',
   R:   'in the <b>right rough</b>',
-  LL:  'in the <b>far left rough</b>',
-  RR:  'in the <b>far right rough</b>',
+  // CINNABAR DRAKE (v8.3.35) — LL/RR are "Out of Position" per SLATE OWL,
+  // not "far rough". "in the" prefix dropped because "in the out of position"
+  // doesn't read; the surrounding prose is "Tee shot landed <phrase>".
+  LL:  '<b>out of position left</b>',
+  RR:  '<b>out of position right</b>',
   OBL: '<b>OB left</b>',
   OBR: '<b>OB right</b>'
 };
+// CINDER MEADOW (v8.3.36) — direction-only phrase table. Legacy 9-zone
+// values are normalized via approachResultDirection() before lookup, so
+// e.g. 'long-l' from a pre-v8.3.36 round still renders correctly (as
+// "left", losing the "long" depth qualifier per the redesign intent).
 const ZONE_PHRASE = {
-  'pin': 'pin high',
-  'pin-l': 'pin high left',
-  'pin-r': 'pin high right',
-  'long': 'long',
-  'long-l': 'long left',
-  'long-r': 'long right',
-  'short': 'short',
-  'short-l': 'short left',
-  'short-r': 'short right'
+  'L': 'left',
+  'C': 'center',
+  'R': 'right'
 };
 function buildHoleSentence(h) {
   const parts = [];
@@ -3035,15 +3189,39 @@ function buildHoleSentence(h) {
     parts.push('Tee shot landed ' + (TEE_PHRASE[h.teeResult] || ('in <b>'+h.teeResult+'</b>')));
   }
   const approachClauses = [];
-  if (h.par >= 4 && h.approachYards) {
-    // EMBER WILLOW (v8.3.27) — <50 reads as "under 50 yard" in prose.
-    const ydsPhrase = h.approachYards === '<50' ? 'under 50 yard' : (h.approachYards + ' yard');
-    approachClauses.push('leaving a <b>' + ydsPhrase + '</b> approach');
+  // VELLUM ASTER + PEAT IRIS (v8.3.33) — yardage phrase via helper (numeric or
+  // legacy band shape, both handled). When yardage is null on par 4/5, render
+  // a red "approach yardage not logged" callout instead of silently omitting,
+  // so missing data is visible. The verb on the next clause shifts from
+  // "which landed" → "landed" when there's no real yardage referent before
+  // it (par 3, or par 4/5 with the missing-yardage callout).
+  let hasRealYardageClause = false;
+  if (h.par >= 4) {
+    // Build the singular-"yard" label inline (the surrounding phrase is
+    // "leaving a 150 yard approach", which uses "yard" as an adjective and
+    // takes the singular). Helpers approachYardsPhrase/Bin return
+    // plural-yards forms suited to "from X yards" callers.
+    let ydsLabel = null;
+    if (typeof h.approachYards === 'number') ydsLabel = h.approachYards + ' yard';
+    else if (h.approachYards === '<50') ydsLabel = 'under 50 yard';
+    else if (typeof h.approachYards === 'string') ydsLabel = h.approachYards + ' yard';
+    if (ydsLabel) {
+      approachClauses.push('leaving a <b>' + ydsLabel + '</b> approach');
+      hasRealYardageClause = true;
+    } else {
+      approachClauses.push('<span style="color:var(--red)">approach yardage not logged</span>');
+    }
   }
   if (h.approachResult || h.onGreen != null) {
     const greenPrefix = h.onGreen ? 'on the green' : 'off the green';
-    const zonePart = h.approachResult ? (' ' + (ZONE_PHRASE[h.approachResult] || h.approachResult.replace(/-/g,' '))) : '';
-    const verb = h.par <= 3 ? 'Tee shot landed' : 'which landed';
+    // CINDER MEADOW (v8.3.36) — direction via helper handles legacy 9-zone
+    // codes (long-l/pin/short-r/etc) by collapsing to L/C/R.
+    const apprDir = approachResultDirection(h.approachResult);
+    const zonePart = apprDir ? (' ' + ZONE_PHRASE[apprDir]) : '';
+    let verb;
+    if (h.par <= 3) verb = 'Tee shot landed';
+    else if (hasRealYardageClause) verb = 'which landed';
+    else verb = 'landed';
     approachClauses.push(verb + ' <b>' + greenPrefix + zonePart + '</b>');
   }
   if (approachClauses.length) parts.push(approachClauses.join(', '));
@@ -3071,7 +3249,155 @@ const PUTT_DIST_PHRASE = {
 const _OOP_TEE_ZONES = ['LL','RR','OBL','OBR'];
 const _OB_TEE_ZONES = ['OBL','OBR'];
 const _LOW_BANDS = ['<50','50-74','75-99','100-124'];
-const _R3_DIST_BANDS = ['le6','7-15','16-25','26-40'];
+// OPAL CASCADE (v8.3.37) — _R3_DIST_BANDS removed; PJ5 Rule 3 and getPj5Failures
+// now use firstPuttDistCategory() membership tests.
+
+// OPAL CASCADE (v8.3.37) — firstPuttDist legacy band → integer feet midpoints
+// (rounded up). Used by the one-time migration AND defensively by the helpers
+// below if any unmigrated band string survives a cross-device sync.
+//   le6   → 3   (midpoint of 0-6)
+//   7-15  → 11
+//   16-25 → 21  (midpoint 20.5 rounded up)
+//   26-40 → 33
+//   40+   → 45  (no upper bound; conservative midpoint)
+const FIRST_PUTT_DIST_BAND_TO_FT = { 'le6':3, '7-15':11, '16-25':21, '26-40':33, '40+':45 };
+
+// OPAL CASCADE (v8.3.37) — bucket helper for SLATE PRISM and AMBER WICK.
+// Boundaries 10/25/40 align with Arccos's published putting bands so 10-hcp
+// benchmarks can be cited directly from public Stagner tables. Returns
+// 'short' | 'mid' | 'long' | 'vlong' | null. Handles numeric (post-migration)
+// and legacy band strings (defensive). Negative or out-of-range → null.
+function firstPuttDistCategory(value) {
+  if (value == null) return null;
+  let n;
+  if (typeof value === 'number') {
+    if (!Number.isFinite(n = value)) return null;
+  } else if (typeof value === 'string' && FIRST_PUTT_DIST_BAND_TO_FT[value] != null) {
+    n = FIRST_PUTT_DIST_BAND_TO_FT[value];
+  } else {
+    return null;
+  }
+  if (n < 0 || n > 99) return null;
+  if (n < 10) return 'short';
+  if (n < 25) return 'mid';
+  if (n < 40) return 'long';
+  return 'vlong';
+}
+
+// OPAL CASCADE (v8.3.37) — prose phrase for first-putt distance. Numeric
+// values render as "N feet" (singular at 1, "inside 1 foot" at 0). Legacy
+// band strings fall through to PUTT_DIST_PHRASE for defensive parity.
+function firstPuttDistPhrase(value) {
+  if (value == null) return null;
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value) || value < 0 || value > 99) return null;
+    if (value === 0) return 'inside 1 foot';
+    if (value === 1) return '1 foot';
+    return value + ' feet';
+  }
+  if (typeof value === 'string') return PUTT_DIST_PHRASE[value] || null;
+  return null;
+}
+
+// OPAL CASCADE (v8.3.37) — DBAG c2 putt-distance weight. Preserves the
+// original 5-band weighting at integer granularity (the new 4-bucket scheme
+// is for SLATE PRISM display; weighting needs finer steps). Closer first
+// putts → higher weight (a 3-putt from inside 6 ft is worse than from 40+).
+function firstPuttDistWeight(value) {
+  if (value == null) return null;
+  let n;
+  if (typeof value === 'number') {
+    if (!Number.isFinite(n = value)) return null;
+  } else if (typeof value === 'string' && FIRST_PUTT_DIST_BAND_TO_FT[value] != null) {
+    n = FIRST_PUTT_DIST_BAND_TO_FT[value];
+  } else {
+    return null;
+  }
+  if (n < 0 || n > 99) return null;
+  if (n <= 6) return 5;
+  if (n <= 15) return 4;
+  if (n <= 25) return 3;
+  if (n <= 40) return 2;
+  return 1;
+}
+
+// VELLUM ASTER (v8.3.33) — approachYards is now numeric (integer yards) for
+// new entries, but legacy rounds saved before v8.3.33 contain band strings
+// ('<50', '50-74', ..., '200+'). This helper normalizes either shape to the
+// canonical band string used by all band-based readers (DBAG GIR-by-yardage,
+// Down-in-3, _LOW_BANDS membership tests). Returns null if no data.
+function approachYardsBin(yards) {
+  if (yards == null) return null;
+  if (typeof yards === 'string') return yards;       // legacy band shape
+  if (typeof yards !== 'number') return null;
+  if (!Number.isFinite(yards) || yards < 1) return null;
+  if (yards < 50) return '<50';
+  if (yards < 75) return '50-74';
+  if (yards < 100) return '75-99';
+  if (yards < 125) return '100-124';
+  if (yards < 150) return '125-149';
+  if (yards < 175) return '150-174';
+  if (yards < 200) return '175-199';
+  return '200+';
+}
+
+// VELLUM ASTER (v8.3.33) — render-friendly phrase for the prose generator.
+// Numeric values render verbatim ("147 yards"); legacy band strings keep
+// their existing prose form ("under 50 yards" / "50-74 yards"). Returns
+// null if no data — caller decides what to render in the missing case.
+function approachYardsPhrase(yards) {
+  if (yards == null) return null;
+  if (typeof yards === 'string') {
+    return yards === '<50' ? 'under 50 yards' : (yards + ' yards');
+  }
+  if (typeof yards !== 'number') return null;
+  return yards + ' yards';
+}
+
+// CINDER MEADOW (v8.3.36) — approachResult is now a 3-direction value
+// ('L'|'C'|'R') for new entries, but legacy rounds saved before v8.3.36
+// contain 9-zone codes ('long-l', 'pin', 'short-r', etc). This helper
+// collapses either shape to direction. The depth dimension (long/pin-high/
+// short) is dropped per the redesign — at 18 hcp the coachable axis is
+// miss direction, not depth. Returns null if no data.
+function approachResultDirection(code) {
+  if (!code) return null;
+  if (code === 'L' || code === 'C' || code === 'R') return code;
+  if (code === 'long-l' || code === 'pin-l' || code === 'short-l') return 'L';
+  if (code === 'long-r' || code === 'pin-r' || code === 'short-r') return 'R';
+  if (code === 'long' || code === 'pin' || code === 'short') return 'C';
+  return null;
+}
+
+// PEWTER FALCON (v8.3.34) — categorize a club abbreviation into one of four
+// tee-club categories. Wedges (PW/GW/SW/LW) bucket into 'iron' since they
+// are mechanically irons and the redesign locked at 4 categories. Putter
+// (PT) and Texas Wedge (TW) return null — neither is a valid tee club.
+function abbrToCategory(abbr) {
+  if (!abbr) return null;
+  const a = String(abbr).toLowerCase().trim();
+  if (a === 'dr') return 'driver';
+  if (/^\d+w$/.test(a)) return 'fwy';     // 3w, 5w, 7w
+  if (/^\d+h$/.test(a)) return 'hyb';     // 2h, 3h, 4h, 5h
+  if (/^\d+i$/.test(a)) return 'iron';    // 3i, 4i, ..., 9i
+  if (['pw','gw','sw','lw'].indexOf(a) !== -1) return 'iron';
+  return null;
+}
+
+// PEWTER FALCON (v8.3.34) — resolve hole.teeClub to a category. Handles
+// both shapes:
+//   - New shape: value is already 'driver'|'fwy'|'hyb'|'iron'
+//   - Legacy shape: value is a club id (e.g. 'ba-7i') → look up the abbr in
+//     the round's bagSnapshot and classify
+// Returns null if value is missing or unresolvable.
+function teeClubCategory(value, bagSnapshot) {
+  if (!value) return null;
+  const CATS = ['driver', 'fwy', 'hyb', 'iron'];
+  if (CATS.indexOf(value) !== -1) return value;
+  const clubs = (bagSnapshot && bagSnapshot.clubs) || [];
+  const club = clubs.find(c => c.id === value);
+  return club ? abbrToCategory(club.abbr) : null;
+}
 function getDbagFailures(h) {
   const out = [];
   if (h.par >= 4 && _OOP_TEE_ZONES.indexOf(h.teeResult) !== -1) {
@@ -3079,7 +3405,7 @@ function getDbagFailures(h) {
     if (h.putts != null) {
       const stg = h.score - h.putts;
       if (stg <= h.par - 1) saved = true;
-      else if (stg === h.par && h.firstPuttDist === 'le6') saved = true;
+      else if (stg === h.par && firstPuttDistCategory(h.firstPuttDist) === 'short') saved = true;
     }
     if (!saved) {
       const isOB = _OB_TEE_ZONES.indexOf(h.teeResult) !== -1;
@@ -3089,7 +3415,8 @@ function getDbagFailures(h) {
     }
   }
   if (h.putts != null) {
-    const dPhrase = PUTT_DIST_PHRASE[h.firstPuttDist] || 'distance';
+    // OPAL CASCADE (v8.3.37) — phrase via helper handles numeric and legacy band.
+    const dPhrase = firstPuttDistPhrase(h.firstPuttDist) || 'distance';
     if (h.putts >= 4) {
       const n = h.putts >= 5 ? '4+' : h.putts;
       out.push("You " + n + "-putted from " + dPhrase + ".");
@@ -3102,9 +3429,10 @@ function getDbagFailures(h) {
   if (h.putts != null && (h.score - h.putts) > (h.par - 1)) {
     out.push("You did not convert a Girpy.");
   }
-  if (_LOW_BANDS.indexOf(h.approachYards) !== -1 && h.putts != null) {
+  if (_LOW_BANDS.indexOf(approachYardsBin(h.approachYards)) !== -1 && h.putts != null) {
     if ((h.putts + (h.doubleChip ? 1 : 0)) > 2) {
-      const ydsPhrase = h.approachYards === '<50' ? 'under 50 yards' : (h.approachYards + ' yards');
+      // VELLUM ASTER (v8.3.33) — phrase via helper handles numeric and legacy band.
+      const ydsPhrase = approachYardsPhrase(h.approachYards) || 'approach yardage';
       out.push("You did not get down in 3 from " + ydsPhrase + ".");
     }
   }
@@ -3118,19 +3446,25 @@ function getDbagFailures(h) {
 }
 function getPj5Failures(h) {
   const out = [];
-  const dPhrase = PUTT_DIST_PHRASE[h.firstPuttDist] || 'distance';
+  // OPAL CASCADE (v8.3.37) — phrase via helper handles numeric and legacy band.
+  const dPhrase = firstPuttDistPhrase(h.firstPuttDist) || 'distance';
   if (h.penalty && h.penalty > 0) {
     out.push(h.penalty === 1 ? "You took a penalty stroke." : "You took " + h.penalty + " penalty strokes.");
   }
   if (h.doubleChip) {
     out.push("You had a double chip.");
   }
-  if (_R3_DIST_BANDS.indexOf(h.firstPuttDist) !== -1 && h.putts != null && h.putts >= 3) {
-    out.push("You 3-putted from " + dPhrase + ".");
+  // OPAL CASCADE (v8.3.37) — 3-putts under 40 ft = short/mid/long buckets.
+  if (h.putts != null && h.putts >= 3) {
+    const fpdCat = firstPuttDistCategory(h.firstPuttDist);
+    if (fpdCat === 'short' || fpdCat === 'mid' || fpdCat === 'long') {
+      out.push("You 3-putted from " + dPhrase + ".");
+    }
   }
-  if (_LOW_BANDS.indexOf(h.approachYards) !== -1 && h.putts != null) {
+  if (_LOW_BANDS.indexOf(approachYardsBin(h.approachYards)) !== -1 && h.putts != null) {
     if ((h.putts + (h.doubleChip ? 1 : 0)) > 2) {
-      const ydsPhrase = h.approachYards === '<50' ? 'under 50 yards' : (h.approachYards + ' yards');
+      // VELLUM ASTER (v8.3.33) — phrase via helper handles numeric and legacy band.
+      const ydsPhrase = approachYardsPhrase(h.approachYards) || 'approach yardage';
       out.push("You did not get down in 3 from " + ydsPhrase + ".");
     }
   }
@@ -3282,11 +3616,14 @@ function resolveStatPanel(key, param, played) {
       return { panelId:'det-panel-tee', type:'list',
                holes: numsOf(played.filter(h => h.par >= 4 && h.teeResult === param)) };
     case 'approachZone': {
-      // param format: 'h-pin', 'm-long-l', etc. First char marks hit/miss.
+      // CINDER MEADOW (v8.3.36) — param format is now 'h-L'/'h-C'/'h-R'/'m-L'/
+      // 'm-C'/'m-R'. Comparison goes through approachResultDirection so legacy
+      // 9-zone codes on pre-v8.3.36 holes are collapsed to direction at filter
+      // time and the panel still finds the right holes.
       const isHit = param.startsWith('h-');
-      const zone = param.substring(2);
+      const dir = param.substring(2);
       return { panelId:'det-panel-zones', type:'list',
-               holes: numsOf(played.filter(h => h.approachResult === zone && h.onGreen === isHit)) };
+               holes: numsOf(played.filter(h => approachResultDirection(h.approachResult) === dir && h.onGreen === isHit)) };
     }
     case 'parType':
       return { panelId:'det-panel-par', type:'list',
@@ -3373,7 +3710,8 @@ function resolveStatPanel(key, param, played) {
                holes: data ? data.doubleChipHoles : [] };
     }
     case 'srHoleout': {
-      const elig = played.filter(h => lowBands.includes(h.approachYards));
+      // VELLUM ASTER (v8.3.33) — band match via approachYardsBin (numeric + legacy).
+      const elig = played.filter(h => lowBands.includes(approachYardsBin(h.approachYards)));
       const succFn = h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2;
       return { panelId:'det-panel-shortrange', type:'binary',
                hitLabel:'DOWN IN 3', missLabel:'MORE THAN 3',
@@ -3383,7 +3721,8 @@ function resolveStatPanel(key, param, played) {
     case 'srBogeyOrBetter': {
       const elig = played.filter(h => {
         if (h.par < 4) return false;
-        if (!lowBands.includes(h.approachYards)) return false;
+        // VELLUM ASTER (v8.3.33) — band match via approachYardsBin.
+        if (!lowBands.includes(approachYardsBin(h.approachYards))) return false;
         if (h.putts == null) return false;
         const shotsBeforeApproach = h.score - 1 - h.putts - (h.doubleChip ? 1 : 0);
         return shotsBeforeApproach === (h.par - 2);
@@ -3396,9 +3735,10 @@ function resolveStatPanel(key, param, played) {
     case 'girBand': {
       // FROST RAVEN (v8.3.26) — population excludes OOP/OB tee unless miracle
       // strict-GIR was achieved; hit/miss uses strict GIR predicate.
+      // VELLUM ASTER (v8.3.33) — band match via approachYardsBin.
       const oopOrOb = h => ['LL','RR','OBL','OBR'].indexOf(h.teeResult) !== -1;
       const isGIRstrict = h => h.onGreen === true && (h.score - h.putts) <= (h.par - 2);
-      const elig = played.filter(h => h.approachYards === param
+      const elig = played.filter(h => approachYardsBin(h.approachYards) === param
                                     && h.putts != null
                                     && (!oopOrOb(h) || isGIRstrict(h)));
       return { panelId:'det-panel-gir', type:'binary',
@@ -3407,7 +3747,8 @@ function resolveStatPanel(key, param, played) {
                misses: numsOf(elig.filter(h => !isGIRstrict(h))) };
     }
     case 'holeoutBand': {
-      const elig = played.filter(h => h.approachYards === param);
+      // VELLUM ASTER (v8.3.33) — band match via approachYardsBin.
+      const elig = played.filter(h => approachYardsBin(h.approachYards) === param);
       const succFn = h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2;
       return { panelId:'det-panel-holeout', type:'binary',
                hitLabel:'DOWN IN 3', missLabel:'MORE THAN 3',
@@ -3651,13 +3992,16 @@ function renderDetailV2(round) {
       ${sparkBlock}
     </div>`;
 
-  // ── Approach Zone heat-maps (Missed | Hit) ──────────────────
-  // 9 zones: long-l, long, long-r / pin-l, pin, pin-r / short-l, short, short-r
-  const zoneOrder = ['long-l','long','long-r','pin-l','pin','pin-r','short-l','short','short-r'];
+  // ── Approach Direction heat-maps (Missed | Hit) ──────────────
+  // CINDER MEADOW (v8.3.36) — collapsed from 9-zone 3×3 grids to 3-direction
+  // 1×3 rows (L / C / R). Legacy 9-zone data on pre-v8.3.36 holes collapses
+  // to direction via approachResultDirection() at filter time, so the heat-
+  // map is consistent across legacy and new rounds (depth dimension dropped).
+  const dirOrder = ['L', 'C', 'R'];
+  const dirLabel = { L: 'Left', C: 'Center', R: 'Right' };
   const missed = holes.filter(h => h.onGreen === false && h.approachResult != null);
   const hit = holes.filter(h => h.onGreen === true && h.approachResult != null);
-  const zoneBucket = (pct, isMissed, isLockedCell) => {
-    if (isLockedCell) return 'locked';
+  const dirBucket = (pct, isMissed) => {
     if (pct === 0) return 'empty';
     const prefix = isMissed ? 'm-' : 'h-';
     if (pct <= 7) return prefix + '1';
@@ -3665,32 +4009,27 @@ function renderDetailV2(round) {
     if (pct <= 22) return prefix + '3';
     return prefix + '4';
   };
-  const renderZoneCells = (holesSet, isMissed) => {
+  const renderDirCells = (holesSet, isMissed) => {
     const total = holesSet.length;
-    return zoneOrder.map(z => {
-      const isPin = z === 'pin';
-      const isLocked = isMissed && isPin; // missed-grid pin cell blacked out
-      if (isLocked) return `<div class="det-zone-cell locked">\u2014</div>`;
-      const c = holesSet.filter(h => h.approachResult === z).length;
+    return dirOrder.map(d => {
+      const c = holesSet.filter(h => approachResultDirection(h.approachResult) === d).length;
       const pct = total ? Math.round((c / total) * 100) : 0;
-      const cls = zoneBucket(pct, isMissed, false);
-      // VELVET LATTICE — tappable only when at least one hole landed in this cell.
-      // Empty cells stay non-tappable (no holes to reveal).
-      const param = (isMissed ? 'm-' : 'h-') + z;
+      const cls = dirBucket(pct, isMissed);
+      const param = (isMissed ? 'm-' : 'h-') + d;
       const tapAttrs = c > 0 ? ` data-stat-key="approachZone" data-stat-param="${param}" onclick="statSelect('approachZone','${param}')"` : '';
-      return `<div class="det-zone-cell ${cls}"${tapAttrs}>${pct}%</div>`;
+      return `<div class="det-zone-cell ${cls}"${tapAttrs}>${dirLabel[d]}<br>${pct}%</div>`;
     }).join('');
   };
   document.getElementById('det-zones-section').innerHTML = `
-    <span class="section-lbl">Approach Zones</span>
+    <span class="section-lbl">Approach Direction</span>
     <div class="det-grids">
       <div class="det-grid-card">
         <div class="det-grid-hdr"><span class="det-grid-name">Missed</span><span class="det-grid-n">n=${missed.length}</span></div>
-        <div class="det-zone-grid">${renderZoneCells(missed, true)}</div>
+        <div class="det-zone-grid">${renderDirCells(missed, true)}</div>
       </div>
       <div class="det-grid-card">
         <div class="det-grid-hdr"><span class="det-grid-name">Hit</span><span class="det-grid-n">n=${hit.length}</span></div>
-        <div class="det-zone-grid">${renderZoneCells(hit, false)}</div>
+        <div class="det-zone-grid">${renderDirCells(hit, false)}</div>
       </div>
     </div>`;
 
@@ -3733,13 +4072,14 @@ function renderDetailV2(round) {
   const girpyPct = girpyElig.length ? Math.round((girpyHitsCount / girpyElig.length) * 100) : 0;
   // Item #2 — Hole-out ≤3 from ≤124y (no score filter, just shots-from-approach ≤ 3).
   // EMBER WILLOW (v8.3.27) — <50 included as scoring-zone wedge yardage.
+  // VELLUM ASTER (v8.3.33) — band match via approachYardsBin (numeric + legacy).
   const lowBands = ['<50','50-74','75-99','100-124'];
-  const item2Eligible = holes.filter(h => lowBands.includes(h.approachYards));
+  const item2Eligible = holes.filter(h => lowBands.includes(approachYardsBin(h.approachYards)));
   const item2Met = item2Eligible.filter(h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2).length;
   // Item #3 — Bogey or Better at ≤124y after 1 stroke par 4 / 2 strokes par 5.
   const item3Eligible = holes.filter(h => {
     if (h.par < 4) return false;
-    if (!lowBands.includes(h.approachYards)) return false;
+    if (!lowBands.includes(approachYardsBin(h.approachYards))) return false;
     if (h.putts == null) return false;
     const shotsBeforeApproach = h.score - 1 - h.putts - (h.doubleChip ? 1 : 0);
     return shotsBeforeApproach === (h.par - 2);
@@ -3806,8 +4146,10 @@ function renderDetailV2(round) {
   //   In-play (fairway/L/R)         : always saves.
   //   OOP (LL/RR/OBL/OBR) saves iff:
   //     a) Girpy — shotsToGreen <= par-1 (2-putt = bogey, 1-putt = par), OR
-  //     b) shotsToGreen === par AND firstPuttDist === 'le6'
+  //     b) shotsToGreen === par AND firstPuttDist is in 'short' bucket (0-9 ft)
   //        (on green in par strokes WITH a realistic 1-putt for bogey).
+  // OPAL CASCADE (v8.3.37) — was firstPuttDist === 'le6' (0-6 ft); now uses
+  // category helper which widens to 0-9 ft per the new 10/25/40 bucket scheme.
   // Penalty strokes are already in `score`, so shotsToGreen = score - putts
   // includes them naturally — no double-count with component 5. If putts is
   // null the OOP branch can't be evaluated and falls to "not saved".
@@ -3819,7 +4161,7 @@ function renderDetailV2(round) {
       if (h.putts == null) return false;
       const shotsToGreen = h.score - h.putts;
       if (shotsToGreen <= h.par - 1) return true;
-      if (shotsToGreen === h.par && h.firstPuttDist === 'le6') return true;
+      if (shotsToGreen === h.par && firstPuttDistCategory(h.firstPuttDist) === 'short') return true;
       return false;
     }
     return false;
@@ -3840,16 +4182,18 @@ function renderDetailV2(round) {
   //       from shotsToGreen vs par. Internal-consistency match with components
   //       5/6 retained — putts are still bad regardless, just less DBAG-relevant
   //       when they couldn't have caused the double.
-  const puttDist3 = { 'le6': 5, '7-15': 4, '16-25': 3, '26-40': 2, '40+': 1 };
+  // OPAL CASCADE (v8.3.37) — puttDist3 lookup table replaced by firstPuttDistWeight()
+  // helper, which preserves the original 5-band weighting at integer granularity
+  // and accepts both numeric (post-migration) and legacy band-string values.
   const puttEvents = []; // { type, raw, holeNum, dbagRelevant }
   holes.forEach(h => {
     if (h.putts == null) return;
     let event = null;
     if (h.putts >= 4) {
-      const base = puttDist3[h.firstPuttDist];
+      const base = firstPuttDistWeight(h.firstPuttDist);
       if (base != null) event = { type: 'blowup', raw: base * 2 };
     } else if (h.putts === 3) {
-      const base = puttDist3[h.firstPuttDist];
+      const base = firstPuttDistWeight(h.firstPuttDist);
       if (base != null) event = { type: '3putt', raw: base };
     }
     // COBALT MARROW (v8.3.30) — 'blownMakeable' and 'badLag' event types removed;
@@ -3948,13 +4292,17 @@ function renderDetailV2(round) {
   const pj5Rule1 = totalPenalties; // penalty strokes
   const pj5Rule2 = doubleChips;
   // Rule 3: 3-putts under 40 ft, forgive floor(N/4)
-  const r3DistSet = ['le6','7-15','16-25','26-40'];
-  const r3Elig = holes.filter(h => r3DistSet.includes(h.firstPuttDist) && h.putts != null);
+  // OPAL CASCADE (v8.3.37) — under 40 ft = short/mid/long buckets; vlong (40+) excluded.
+  const r3Elig = holes.filter(h => {
+    const c = firstPuttDistCategory(h.firstPuttDist);
+    return (c === 'short' || c === 'mid' || c === 'long') && h.putts != null;
+  });
   const r3MissHoles = r3Elig.filter(h => h.putts >= 3);
   const r3Allowed = Math.floor(r3Elig.length / 4);
   const pj5Rule3 = Math.max(0, r3MissHoles.length - r3Allowed);
   // Rule 4: not down in 3 from ≤124y, forgive floor(N/4)
-  const r4Elig = holes.filter(h => lowBands.includes(h.approachYards) && h.putts != null);
+  // VELLUM ASTER (v8.3.33) — band match via approachYardsBin.
+  const r4Elig = holes.filter(h => lowBands.includes(approachYardsBin(h.approachYards)) && h.putts != null);
   const r4MissHoles = r4Elig.filter(h => (h.putts + (h.doubleChip ? 1 : 0)) > 2);
   const r4Allowed = Math.floor(r4Elig.length / 4);
   const pj5Rule4 = Math.max(0, r4MissHoles.length - r4Allowed);
@@ -4054,7 +4402,8 @@ function renderDetailV2(round) {
   // EMBER WILLOW (v8.3.27) — <50 added to bar bands.
   const bands = ['<50','50-74','75-99','100-124','125-149','150-174','175-199','200+'];
   const bandRows = (metricFn, hitClass, statKey, populationFn) => bands.map(b => {
-    let inBand = holes.filter(h => h.approachYards === b);
+    // VELLUM ASTER (v8.3.33) — band match via approachYardsBin (numeric + legacy).
+    let inBand = holes.filter(h => approachYardsBin(h.approachYards) === b);
     if (populationFn) inBand = inBand.filter(populationFn);
     const total = inBand.length;
     const hitCount = inBand.filter(metricFn).length;
@@ -4080,17 +4429,20 @@ function renderDetailV2(round) {
     <div class="det-card">${bandRows(h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2, 'alt', 'holeoutBand')}</div>`;
 
   // ── Putting plain-text inferences ───────────────────────────
-  // COBALT MARROW (v8.3.30) — firstPuttResult dropped. Inside-6 holed-rate and
-  // long-putt close/far counts removed (both required firstPuttResult). Lines
-  // now report distance-category exposure and 3-putt/4+ putt counts; SLATE
-  // PRISM (Wave 2) replaces this block with category vs 10-hcp benchmarks.
-  const fpInside6 = holes.filter(h => h.firstPuttDist === 'le6');
-  const fpLong = holes.filter(h => h.firstPuttDist === '16-25' || h.firstPuttDist === '26-40' || h.firstPuttDist === '40+');
+  // COBALT MARROW (v8.3.30) — firstPuttResult dropped.
+  // OPAL CASCADE (v8.3.37) — band filters replaced with firstPuttDistCategory()
+  // membership using new 10/25/40 boundaries. SLATE PRISM (next ship) replaces
+  // this block entirely with 4-bucket vs 10-hcp benchmark grid.
+  const fpShort = holes.filter(h => firstPuttDistCategory(h.firstPuttDist) === 'short');
+  const fpLongPlus = holes.filter(h => {
+    const c = firstPuttDistCategory(h.firstPuttDist);
+    return c === 'long' || c === 'vlong';
+  });
   const threePuttHoles = holes.filter(h => h.putts === 3).map(h => 'H' + h.number);
   const fourPuttHoles = holes.filter(h => h.putts === 4).map(h => 'H' + h.number);
   const puttLines = [];
-  if (fpInside6.length) puttLines.push(`Inside 6 ft: ${fpInside6.length} hole${fpInside6.length === 1 ? '' : 's'}`);
-  if (fpLong.length) puttLines.push(`From 16+ ft: ${fpLong.length} hole${fpLong.length === 1 ? '' : 's'}`);
+  if (fpShort.length) puttLines.push(`Inside 10 ft: ${fpShort.length} hole${fpShort.length === 1 ? '' : 's'}`);
+  if (fpLongPlus.length) puttLines.push(`From 25+ ft: ${fpLongPlus.length} hole${fpLongPlus.length === 1 ? '' : 's'}`);
   if (threePuttHoles.length) puttLines.push(`3-putts on ${threePuttHoles.join(', ')}`);
   if (fourPuttHoles.length) puttLines.push(`4+ putts on ${fourPuttHoles.join(', ')}`);
   const puttBody = puttLines.length
@@ -4652,6 +5004,10 @@ async function ghPullRounds() {
     // here so old-shape rounds never reach the round detail / Byron paths. Surfaced
     // by flushGlacierToasts (re-invoked below post-pull) if anything was dropped.
     validateRoundsShape();
+    // OPAL CASCADE (v8.3.37) — pulled rounds may carry legacy band-string firstPuttDist
+    // from a non-upgraded device. Normalize to integer feet so all downstream readers
+    // see a consistent shape. Idempotent.
+    migrateFirstPuttDistV1();
     const meta = getSyncMeta();
     meta.lastPull = Date.now();
     // TIMESTAMP PARITY — record per-section pull + observed remote ts for Rounds
@@ -6469,6 +6825,11 @@ function saveCourseEdit() {
   // schemaVersion === 2 (e.g. pre-v8 rounds pulled from a non-upgraded device).
   // Idempotent. Runs on every boot and post-pull.
   validateRoundsShape();
+  // OPAL CASCADE (v8.3.37) — firstPuttDist legacy band → integer feet. Runs
+  // after validateRoundsShape (which may drop pre-v8 rounds first). Idempotent;
+  // band strings normalized every boot, integers untouched. Backup snapshot
+  // saved to pjc_rounds_pre_opal_cascade on first run.
+  migrateFirstPuttDistV1();
   // AMBER BOOTSTRAP — fire player-profile migration eagerly on every boot.
   // getPlayerProfile() migrates-and-persists legacy records in place; on already
   // migrated records this is a cheap no-op read. Guarantees schemaVersion:2 lands
