@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.29 · May 06, 2026 -->
+<!-- PJ Caddie v8.3.30 · May 06, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -532,9 +532,7 @@ body{display:flex;flex-direction:column}
 .gc-pill-expand.on{background:var(--ink3);color:var(--gold);border-color:var(--border)}
 /* Pin (horizontal) + Penalty (compact stepper) — single row */
 .gc-pin-pen-row{display:flex;gap:8px;margin-bottom:14px;align-items:stretch}
-.gc-pin-h-row{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;flex:1;min-width:0}
-.gc-pin-chip-h{background:var(--ink2);border:1px solid var(--border2);color:var(--chalk2);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;padding:0 6px;border-radius:8px;cursor:pointer;min-height:42px;display:flex;align-items:center;justify-content:center;line-height:1.1}
-.gc-pin-chip-h.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+/* BRONZE EMBER (v8.3.30) — .gc-pin-h-row and .gc-pin-chip-h removed (pinPos field dropped). */
 .gc-penalty-card{background:var(--ink2);border:1px solid var(--border2);border-radius:8px;padding:0 8px;display:flex;align-items:center;gap:5px;flex-shrink:0;height:42px}
 .gc-penalty-lbl{font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--chalk3);font-weight:600;flex-shrink:0}
 .gc-stepper-btn{background:var(--ink3);border:1px solid var(--border);color:var(--chalk);width:30px;height:30px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;padding:0;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -595,7 +593,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.29 · May 06, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.30 · May 06, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -755,13 +753,9 @@ body{display:flex;flex-direction:column}
         </div>
       </div>
 
-      <!-- Pin (horizontal) + Penalty (compact stepper) — single row -->
+      <!-- BRONZE EMBER (v8.3.30) — Pin row removed (pinPos field dropped).
+           Penalty stepper stays in the wrapper row, alone. -->
       <div class="gc-pin-pen-row">
-        <div class="gc-pin-h-row">
-          <button class="gc-pin-chip-h" data-pin="front" onclick="glacierSetField('pinPos','front')">Front</button>
-          <button class="gc-pin-chip-h" data-pin="middle" onclick="glacierSetField('pinPos','middle')">Mid</button>
-          <button class="gc-pin-chip-h" data-pin="back" onclick="glacierSetField('pinPos','back')">Back</button>
-        </div>
         <div class="gc-penalty-card">
           <div class="gc-penalty-lbl">Pen</div>
           <button class="gc-stepper-btn" onclick="glacierAdjustPenalty(-1)" aria-label="Decrease penalty">−</button>
@@ -838,14 +832,7 @@ body{display:flex;flex-direction:column}
           <button class="gc-chip" data-fpd="26-40" onclick="glacierSetField('firstPuttDist','26-40')">26–40 ft</button>
           <button class="gc-chip" data-fpd="40+" onclick="glacierSetField('firstPuttDist','40+')">40+ ft</button>
         </div>
-        <div class="gc-mini-lbl" style="margin:14px 0 8px">First putt result</div>
-        <div id="gc-fp-result-row" class="gc-chip-row gc-chip-row-wrap">
-          <button class="gc-chip" data-fpr="holed" onclick="glacierSetField('firstPuttResult','holed')">Holed</button>
-          <button class="gc-chip" data-fpr="tap-in" onclick="glacierSetField('firstPuttResult','tap-in')">Tap-in</button>
-          <button class="gc-chip" data-fpr="close" onclick="glacierSetField('firstPuttResult','close')">Close</button>
-          <button class="gc-chip" data-fpr="medium" onclick="glacierSetField('firstPuttResult','medium')">Medium</button>
-          <button class="gc-chip" data-fpr="long" onclick="glacierSetField('firstPuttResult','long')">Long</button>
-        </div>
+        <!-- COBALT MARROW (v8.3.30) — First putt result row removed (firstPuttResult field dropped). -->
       </div>
 
       <!-- BUNKER QUARTET (v8.3.8) — 4-across trouble-flag toggles. Labels
@@ -1132,7 +1119,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.29 · Spec v2.1</span>
+        <span>v8.3.30 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1414,7 +1401,6 @@ function createHole({ number, par, score }) {
     number, par,
     score: (score!=null)?score:0,
     penalty: 0,
-    pinPos: null,
     teeClub: null,
     teeResult: null,
     approachYards: null,
@@ -1422,7 +1408,6 @@ function createHole({ number, par, score }) {
     onGreen: false,
     putts: null,
     firstPuttDist: null,
-    firstPuttResult: null,
     doubleChip: false,
     sand: false,
     fwyBunker: false,
@@ -2674,10 +2659,7 @@ function glacierRenderHole() {
     p.classList.toggle('on', String(scoreVal) === p.dataset.score);
   });
 
-  // Pin (horizontal) chips
-  document.querySelectorAll('#view-glacier-capture .gc-pin-chip-h').forEach(c => {
-    c.classList.toggle('on', c.dataset.pin === hole.pinPos);
-  });
+  // BRONZE EMBER (v8.3.30) — pinPos field dropped; pin chip render removed.
 
   // Penalty stepper value
   const penEl = document.getElementById('gc-penalty-val');
@@ -2736,15 +2718,8 @@ function glacierRenderHole() {
   document.querySelectorAll('#view-glacier-capture [data-fpd]').forEach(c => {
     c.classList.toggle('on', c.dataset.fpd === hole.firstPuttDist);
   });
-  // First putt result: hide "Holed" unless putts === 1
-  const fprRow = document.getElementById('gc-fp-result-row');
-  if (fprRow) {
-    const holedChip = fprRow.querySelector('[data-fpr="holed"]');
-    if (holedChip) holedChip.style.display = (hole.putts === 1) ? '' : 'none';
-  }
-  document.querySelectorAll('#view-glacier-capture [data-fpr]').forEach(c => {
-    c.classList.toggle('on', c.dataset.fpr === hole.firstPuttResult);
-  });
+  // COBALT MARROW (v8.3.30) — firstPuttResult field dropped; fpr row visibility
+  // and chip-toggle render block removed.
 
   // Bottom row toggles
   const dcBtn = document.getElementById('gc-double-chip-toggle');
@@ -2877,19 +2852,8 @@ function glacierSetPutts(n) {
   if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
   const hole = wip.holes[GC.holeIdx];
   // Tap-to-toggle: same value clears.
-  if (hole.putts === n) {
-    hole.putts = null;
-    // If we cleared putts and result was "holed", clear it too (no longer valid).
-    if (hole.firstPuttResult === 'holed') hole.firstPuttResult = null;
-  } else {
-    hole.putts = n;
-    // Putts === 1 implies first putt was holed. Auto-set per locked v10 spec.
-    if (n === 1) hole.firstPuttResult = 'holed';
-    else if (hole.firstPuttResult === 'holed') {
-      // Putts > 1: "holed" no longer makes sense, clear it.
-      hole.firstPuttResult = null;
-    }
-  }
+  // COBALT MARROW (v8.3.30) — firstPuttResult dropped; auto-set logic removed.
+  hole.putts = (hole.putts === n) ? null : n;
   glacierPersistAndRender(wip);
 }
 
@@ -3130,14 +3094,9 @@ function getDbagFailures(h) {
       out.push("You " + n + "-putted from " + dPhrase + ".");
     } else if (h.putts === 3) {
       out.push("You 3-putted from " + dPhrase + ".");
-    } else if (h.firstPuttDist === 'le6' && h.firstPuttResult != null
-               && h.firstPuttResult !== 'holed' && h.firstPuttResult !== 'tap-in') {
-      out.push("You missed a makeable putt from inside 6 feet.");
-    } else if (h.firstPuttDist === '16-25' && h.firstPuttResult != null
-               && h.firstPuttResult !== 'holed' && h.firstPuttResult !== 'tap-in'
-               && h.firstPuttResult !== 'close') {
-      out.push("You left a long second putt from 16-25 feet.");
     }
+    // COBALT MARROW (v8.3.30) — "missed makeable" / "long second putt" branches
+    // removed; both required firstPuttResult, which is dropped.
   }
   if (h.putts != null && (h.score - h.putts) > (h.par - 1)) {
     out.push("You did not convert a Girpy.");
@@ -3891,14 +3850,10 @@ function renderDetailV2(round) {
     } else if (h.putts === 3) {
       const base = puttDist3[h.firstPuttDist];
       if (base != null) event = { type: '3putt', raw: base };
-    } else if (h.firstPuttDist === 'le6' && h.firstPuttResult != null
-               && h.firstPuttResult !== 'holed' && h.firstPuttResult !== 'tap-in') {
-      event = { type: 'blownMakeable', raw: 2 };
-    } else if (h.firstPuttDist === '16-25' && h.firstPuttResult != null
-               && h.firstPuttResult !== 'holed' && h.firstPuttResult !== 'tap-in'
-               && h.firstPuttResult !== 'close') {
-      event = { type: 'badLag', raw: 1 };
     }
+    // COBALT MARROW (v8.3.30) — 'blownMakeable' and 'badLag' event types removed;
+    // both required firstPuttResult (now dropped). DBAG c2 retains 3-putt and
+    // blowup (4+ putt) events; severity modulation continues to apply.
     if (!event) return;
     // Severity modulation per Option C.
     const stg = h.score - h.putts;
@@ -4124,17 +4079,17 @@ function renderDetailV2(round) {
     <div class="det-card">${bandRows(h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2, 'alt', 'holeoutBand')}</div>`;
 
   // ── Putting plain-text inferences ───────────────────────────
+  // COBALT MARROW (v8.3.30) — firstPuttResult dropped. Inside-6 holed-rate and
+  // long-putt close/far counts removed (both required firstPuttResult). Lines
+  // now report distance-category exposure and 3-putt/4+ putt counts; SLATE
+  // PRISM (Wave 2) replaces this block with category vs 10-hcp benchmarks.
   const fpInside6 = holes.filter(h => h.firstPuttDist === 'le6');
-  const fpInside6Holed = fpInside6.filter(h => h.firstPuttResult === 'holed').length;
-  const fpInside6Pct = fpInside6.length ? Math.round((fpInside6Holed / fpInside6.length) * 100) : 0;
   const fpLong = holes.filter(h => h.firstPuttDist === '16-25' || h.firstPuttDist === '26-40' || h.firstPuttDist === '40+');
-  const fpLongClose = fpLong.filter(h => h.firstPuttResult === 'close' || h.firstPuttResult === 'tap-in' || h.firstPuttResult === 'holed').length;
-  const fpLongFar = fpLong.filter(h => h.firstPuttResult === 'medium' || h.firstPuttResult === 'long').length;
   const threePuttHoles = holes.filter(h => h.putts === 3).map(h => 'H' + h.number);
   const fourPuttHoles = holes.filter(h => h.putts === 4).map(h => 'H' + h.number);
   const puttLines = [];
-  if (fpInside6.length) puttLines.push(`Inside 6 ft: ${fpInside6Holed} of ${fpInside6.length} holed (${fpInside6Pct}%)`);
-  if (fpLong.length) puttLines.push(`From 16+ ft: ${fpLongClose} finished close or better; ${fpLongFar} medium or long`);
+  if (fpInside6.length) puttLines.push(`Inside 6 ft: ${fpInside6.length} hole${fpInside6.length === 1 ? '' : 's'}`);
+  if (fpLong.length) puttLines.push(`From 16+ ft: ${fpLong.length} hole${fpLong.length === 1 ? '' : 's'}`);
   if (threePuttHoles.length) puttLines.push(`3-putts on ${threePuttHoles.join(', ')}`);
   if (fourPuttHoles.length) puttLines.push(`4+ putts on ${fourPuttHoles.join(', ')}`);
   const puttBody = puttLines.length
@@ -4148,13 +4103,13 @@ function renderDetailV2(round) {
   // SUMMIT REDESIGN (v8.3.0) — required-field check on played holes.
   const isMissingData = h => {
     if (!(h.score > 0)) return false;
-    if (h.pinPos == null) return true;
+    // BRONZE EMBER (v8.3.30) — pinPos check removed (field dropped).
     if (h.approachYards == null) return true;
     if (h.approachResult == null) return true;
     if (h.onGreen == null) return true;
     if (h.putts == null) return true;
     if (h.firstPuttDist == null) return true;
-    if (h.firstPuttResult == null) return true;
+    // COBALT MARROW (v8.3.30) — firstPuttResult check removed (field dropped).
     if (h.par >= 4) {
       if (h.teeClub == null || !h.teeClub.abbr) return true;
       if (h.teeResult == null) return true;
