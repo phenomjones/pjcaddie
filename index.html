@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.30 · May 06, 2026 -->
+<!-- PJ Caddie v8.3.31 · May 06, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -593,7 +593,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.30 · May 06, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.31 · May 06, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1119,7 +1119,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.30 · Spec v2.1</span>
+        <span>v8.3.31 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -2416,7 +2416,8 @@ function initRoundSetup() {
 }
 
 function renderCourseList() {
-  const courses = getCourses();
+  // TIDAL JASMINE (v8.3.31) — courses sorted longest-to-shortest by max tee yardage.
+  const courses = sortCoursesByLength(getCourses());
   const el = document.getElementById('rs-course-list');
   if (!courses.length) {
     el.innerHTML = '<div class="empty-state" style="padding:20px 0"><div class="empty-msg">No courses. Tap <strong style="color:var(--gold)">+ Course</strong> above.</div></div>';
@@ -4101,20 +4102,25 @@ function renderDetailV2(round) {
 
   // ── Per-hole rows with missing-data warnings ────────────────
   // SUMMIT REDESIGN (v8.3.0) — required-field check on played holes.
-  const isMissingData = h => {
-    if (!(h.score > 0)) return false;
-    // BRONZE EMBER (v8.3.30) — pinPos check removed (field dropped).
-    if (h.approachYards == null) return true;
-    if (h.approachResult == null) return true;
-    if (h.onGreen == null) return true;
-    if (h.putts == null) return true;
-    if (h.firstPuttDist == null) return true;
-    // COBALT MARROW (v8.3.30) — firstPuttResult check removed (field dropped).
+  // AGATE WILLOW (v8.3.31) — refactored to return list of missing field names
+  // so the warn pill can show WHICH fields are missing. Also fixes two latent
+  // bugs: (1) teeClub is stored as a string ID, not an object — the old
+  // `!h.teeClub.abbr` check was always true on every par 4/5 hole; (2)
+  // approachYards entry is hidden by the UI on par 3, so requiring it
+  // unconditionally fired the warning on every par 3.
+  const missingFields = h => {
+    const out = [];
+    if (!(h.score > 0)) return out;
+    if (h.approachResult == null) out.push('approach result');
+    if (h.onGreen == null) out.push('on the green');
+    if (h.putts == null) out.push('putts');
+    if (h.firstPuttDist == null) out.push('first putt distance');
     if (h.par >= 4) {
-      if (h.teeClub == null || !h.teeClub.abbr) return true;
-      if (h.teeResult == null) return true;
+      if (!h.teeClub) out.push('tee club');
+      if (h.teeResult == null) out.push('tee result');
+      if (h.approachYards == null) out.push('approach yardage');
     }
-    return false;
+    return out;
   };
 
   const holesEl = document.getElementById('det-holes');
@@ -4157,7 +4163,11 @@ function renderDetailV2(round) {
         ? `<div class="rr-sentence">${sentence}</div>`
         : (isPlayed ? '' : '<div class="rr-sentence" style="opacity:.5;font-style:italic">Not played</div>');
       const rowOpacity = isPlayed ? '' : 'opacity:.5;';
-      const warnPill = isMissingData(h) ? '<span class="det-warn-pill" title="Missing required data">!</span>' : '';
+      // AGATE WILLOW (v8.3.31) — warn pill now lists which fields are missing.
+      const missing = missingFields(h);
+      const warnPill = missing.length
+        ? `<span class="det-warn-pill" title="Missing: ${missing.join(', ')}">!</span>`
+        : '';
       const scoreCell = isPlayed
         ? `<div class="score-marker ${scoreMarkerCls(relH)}">${h.score}</div>`
         : `<div class="rr-score" style="font-size:22px;color:var(--chalk3)">\u2014</div>`;
@@ -5245,6 +5255,29 @@ function sortTeesForHub(tees, holesCount) {
   });
 }
 
+// TIDAL JASMINE (v8.3.31) — sort courses by their longest-tee yardage,
+// descending. "Longest" = max getTeeTotalYards across the course's tees;
+// courses with no yardage data sort to the end. Mirrors sortTeesForHub's
+// null-safe pattern. Applied wherever a course list is rendered for
+// selection (Start Round picker, Course Hub <select>).
+function courseMaxYards(course) {
+  if (!course || !course.tees || !course.tees.length) return null;
+  const yards = course.tees
+    .map(t => getTeeTotalYards(t, course.holes))
+    .filter(y => y != null);
+  return yards.length ? Math.max.apply(null, yards) : null;
+}
+function sortCoursesByLength(courses) {
+  return [...courses].sort((a, b) => {
+    const ya = courseMaxYards(a);
+    const yb = courseMaxYards(b);
+    if (ya == null && yb == null) return 0;
+    if (ya == null) return 1;
+    if (yb == null) return -1;
+    return yb - ya;
+  });
+}
+
 // JADE FAIRWAY — id-based active tee lookup, falls back to first tee or null
 function getActiveTee(course) {
   if (!course?.tees?.length) return null;
@@ -5253,7 +5286,8 @@ function getActiveTee(course) {
 
 function initCourseHub() {
   migrateV6Notes();
-  const courses = getCourses();
+  // TIDAL JASMINE (v8.3.31) — courses sorted longest-to-shortest by max tee yardage.
+  const courses = sortCoursesByLength(getCourses());
   const sel = document.getElementById('ch-course-select');
   sel.innerHTML = courses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   CH.courseId = courses[0]?.id || null;
