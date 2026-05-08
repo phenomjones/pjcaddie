@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.42 · May 07, 2026 -->
+<!-- PJ Caddie v8.3.43 · May 07, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -653,6 +653,47 @@ body{display:flex;flex-direction:column}
 .gc-toggle-bottom{flex:1;padding:14px 8px;background:var(--ink2);border:1px solid var(--border2);color:var(--chalk2);border-radius:var(--rs);cursor:pointer}
 .gc-toggle-bottom.on{background:var(--orange);color:var(--ink);border-color:var(--orange)}
 .gc-toggle-bottom .gc-toggle-lbl{font-size:12px;font-weight:700;letter-spacing:.6px}
+
+/* ── AMBER VEIL (v8.3.43) — Wave 5 visual polish ──────────────────
+   CSS-only refinements. No layout changes, no logic. Adds depth via
+   inset highlights + soft drop shadows on cards; reinforces section
+   identity via color-matched bullet dots on labels; gives AMBER SIGIL
+   pills a subtle drop shadow so they sit on the row like physical chips.
+   The existing colored-left-edge section accents (Tee blue / Approach
+   gold / Putts green) and tinted gradient backgrounds are preserved
+   intact — they carry section identity (Matt's call-out) and were the
+   load-bearing visual element this polish is built to enhance, not
+   replace. */
+.gc-section,.det-card,.round-row{box-shadow:0 1px 0 rgba(242,237,216,0.04) inset,0 -1px 6px rgba(0,0,0,0.25)}
+
+/* Section-label bullet dots. Color matches the section's left-edge
+   accent for capture-screen sections; defaults to gold for round-detail
+   .section-lbl and any unscoped .gc-section-lbl. */
+.gc-section-lbl::before,.section-lbl::before{content:'\2022';margin-right:6px;opacity:.7;color:var(--gold)}
+.gc-section-tee .gc-section-lbl::before{color:var(--blue)}
+.gc-section-approach .gc-section-lbl::before{color:var(--gold)}
+.gc-section-putts .gc-section-lbl::before{color:var(--green)}
+
+/* Recessed wells — picker base, numeric inputs, bar tracks, H-link
+   pills, pen card. Inset shadow makes these elements look like they
+   sit inside the surrounding card rather than floating on top. */
+.gc-fwy-picker{box-shadow:inset 0 2px 5px rgba(0,0,0,0.45),inset 0 -1px 0 rgba(200,168,75,0.06)}
+.gc-numeric-input{box-shadow:inset 0 1px 3px rgba(0,0,0,0.4)}
+.det-stack-track{box-shadow:inset 0 1px 3px rgba(0,0,0,0.5)}
+.sp-h-link{box-shadow:inset 0 1px 2px rgba(0,0,0,0.25)}
+.gc-penalty-card{box-shadow:inset 0 1px 2px rgba(0,0,0,0.3)}
+
+/* AMBER SIGIL pills get a subtle drop shadow — feels like physical
+   chips sitting on the row, not painted on. */
+.rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.25)}
+
+/* Sun-mode parity. In light theme, depth flips polarity: highlights
+   become more pronounced and dark shadows are toned down so the polish
+   reads on a bright surface without looking muddy. */
+html.sun-mode .gc-section,html.sun-mode .det-card,html.sun-mode .round-row{box-shadow:0 1px 0 rgba(255,255,255,0.6) inset,0 -1px 4px rgba(0,0,0,0.06)}
+html.sun-mode .gc-fwy-picker{box-shadow:inset 0 2px 4px rgba(0,0,0,0.10)}
+html.sun-mode .gc-numeric-input,html.sun-mode .det-stack-track,html.sun-mode .sp-h-link,html.sun-mode .gc-penalty-card{box-shadow:inset 0 1px 2px rgba(0,0,0,0.08)}
+html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
 </style>
 </head>
 <body>
@@ -667,7 +708,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.42 · May 07, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.43 · May 07, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1214,7 +1255,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.42 · Spec v2.1</span>
+        <span>v8.3.43 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
