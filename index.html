@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.38 · May 07, 2026 -->
+<!-- PJ Caddie v8.3.39 · May 07, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -629,7 +629,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.38 · May 07, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.39 · May 07, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -864,7 +864,15 @@ body{display:flex;flex-direction:column}
           <button class="gc-chip" data-dir="C" onclick="glacierSetField('approachResult','C')" aria-label="On aim">C</button>
           <button class="gc-chip" data-dir="R" onclick="glacierSetField('approachResult','R')" aria-label="Pushed right of aim">R</button>
         </div>
-        <button class="gc-toggle" id="gc-on-green-toggle" onclick="glacierToggleOnGreen()" style="margin-top:12px;width:100%">On the green</button>
+        <!-- JADE TUMBLE (v8.3.39) — single On/Off toggle replaced with explicit
+             two-button picker. onGreen is now nullable (null = not captured),
+             so the UI must let the user explicitly say "hit" or "missed" or
+             leave it unset. Re-tap clears back to null, matching the L/C/R
+             direction-picker idiom. -->
+        <div class="gc-dir-row" id="gc-on-green-row" style="grid-template-columns:1fr 1fr;margin-top:12px">
+          <button class="gc-chip" data-on-green="true" onclick="glacierSetOnGreen(true)" aria-label="Hit the green">Hit Green</button>
+          <button class="gc-chip" data-on-green="false" onclick="glacierSetOnGreen(false)" aria-label="Missed the green">Missed Green</button>
+        </div>
       </div>
 
       <!-- Putts section (green accent) -->
@@ -1171,7 +1179,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.38 · Spec v2.1</span>
+        <span>v8.3.39 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1457,7 +1465,7 @@ function createHole({ number, par, score }) {
     teeResult: null,
     approachYards: null,
     approachResult: null,
-    onGreen: false,
+    onGreen: null,  // JADE TUMBLE (v8.3.39) — was `false`. Differentiates "not captured" from "explicitly off the green."
     putts: null,
     firstPuttDist: null,
     doubleChip: false,
@@ -2833,12 +2841,14 @@ function glacierRenderHole() {
   document.querySelectorAll('#view-glacier-capture #gc-dir-row [data-dir]').forEach(b => {
     b.classList.toggle('on', b.dataset.dir === apprDir);
   });
-  // On-green toggle
-  const ogBtn = document.getElementById('gc-on-green-toggle');
-  if (ogBtn) {
-    ogBtn.classList.toggle('on', !!hole.onGreen);
-    ogBtn.textContent = hole.onGreen ? '\u2713 On the green' : 'On the green';
-  }
+  // JADE TUMBLE (v8.3.39) — two-button picker render. Highlights "Hit Green"
+  // when onGreen === true, "Missed Green" when onGreen === false, neither
+  // when null (not captured). Strict equality is required because the dataset
+  // string is 'true'/'false' but onGreen is boolean — converting via String()
+  // gives the right comparison while letting null fall through unmatched.
+  document.querySelectorAll('#view-glacier-capture #gc-on-green-row [data-on-green]').forEach(b => {
+    b.classList.toggle('on', hole.onGreen != null && b.dataset.onGreen === String(hole.onGreen));
+  });
 
   // Putts section
   document.querySelectorAll('#view-glacier-capture [data-putts]').forEach(c => {
@@ -2943,13 +2953,18 @@ function glacierSetField(field, value) {
 // zone is gone — direction-only schema (L/C/R) doesn't carry depth info.
 // Direction buttons use plain glacierSetField('approachResult', dir) onclicks.
 
-function glacierToggleOnGreen() {
+// JADE TUMBLE (v8.3.39) — onGreen is now tristate (true / false / null).
+// glacierToggleOnGreen replaced by glacierSetOnGreen with re-tap-clear:
+// tapping the currently-selected button clears back to null (not captured),
+// matching the L/C/R direction-picker idiom. Approach-coupling rule (Pin
+// auto-onGreen, Rule 2 of the old state machine) was already dropped in
+// CINDER MEADOW; direction stays independent of onGreen.
+function glacierSetOnGreen(value) {
   const wip = glacierGetWIP();
   if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
   const hole = wip.holes[GC.holeIdx];
-  hole.onGreen = !hole.onGreen;
-  // CINDER MEADOW (v8.3.36) — the Pin auto-clear rule (Rule 2 of the old
-  // state machine) no longer applies; direction is independent of onGreen.
+  // Re-tap on the currently-selected button clears to null.
+  hole.onGreen = (hole.onGreen === value) ? null : value;
   glacierPersistAndRender(wip);
 }
 
@@ -3198,6 +3213,30 @@ const ZONE_PHRASE = {
   'C': 'on aim',
   'R': 'right of aim'
 };
+
+// IRON THICKET (v8.3.39) — infer non-tee, non-approach, non-putting swings
+// (layups, recoveries, extra chips) from score arithmetic.
+//   extraSwings = score - putts - penalty - (par - 2)
+// par - 2 represents the "regulation" non-putt strokes (1 to green on par 3,
+// 2 to green on par 4, 3 to green on par 5). Anything beyond that is a
+// recovery / layup / extra short-game swing. Returns null if score or putts
+// is missing (can't compute), or if the result clamps below zero (data
+// inconsistency — silent skip; the prose just won't add a recovery clause).
+function inferExtraSwings(h) {
+  if (h == null) return null;
+  if (h.score == null || h.putts == null) return null;
+  if (typeof h.par !== 'number') return null;
+  const penalty = h.penalty || 0;
+  const ev = h.score - h.putts - penalty - (h.par - 2);
+  if (!Number.isFinite(ev) || ev < 0) return null;
+  return ev;
+}
+function inferExtraSwingsPhrase(extras) {
+  if (extras == null || extras < 1) return null;
+  return extras === 1
+    ? 'needing <b>a recovery swing</b>'
+    : 'needing <b>' + extras + ' recovery swings</b>';
+}
 function buildHoleSentence(h) {
   const parts = [];
   if (h.par >= 4 && h.teeResult) {
@@ -3228,21 +3267,39 @@ function buildHoleSentence(h) {
     }
   }
   if (h.approachResult || h.onGreen != null) {
-    const greenPrefix = h.onGreen ? 'on the green' : 'off the green';
     // CINDER MEADOW (v8.3.36) — direction via helper handles legacy 9-zone
     // codes (long-l/pin/short-r/etc) by collapsing to L/C/R.
     // AURUM COMPASS (v8.3.38) — comma separator between green status and
     // aim-relative phrase, e.g. "landed on the green, left of aim". Bold
     // wraps both for visual cohesion.
+    // JADE TUMBLE (v8.3.39) — onGreen is nullable. When approachResult is
+    // captured but onGreen is null, render direction alone (no green status)
+    // rather than fabricating "off the green" via truthy-false coercion.
     const apprDir = approachResultDirection(h.approachResult);
-    const zonePart = apprDir ? (', ' + ZONE_PHRASE[apprDir]) : '';
-    let verb;
-    if (h.par <= 3) verb = 'Tee shot landed';
-    else if (hasRealYardageClause) verb = 'which landed';
-    else verb = 'landed';
-    approachClauses.push(verb + ' <b>' + greenPrefix + zonePart + '</b>');
+    let greenPrefix = null;
+    if (h.onGreen === true) greenPrefix = 'on the green';
+    else if (h.onGreen === false) greenPrefix = 'off the green';
+    const zonePart = apprDir ? ZONE_PHRASE[apprDir] : null;
+    let body;
+    if (greenPrefix && zonePart) body = greenPrefix + ', ' + zonePart;
+    else if (greenPrefix) body = greenPrefix;
+    else if (zonePart) body = zonePart;
+    else body = null;
+    if (body) {
+      let verb;
+      if (h.par <= 3) verb = 'Tee shot landed';
+      else if (hasRealYardageClause) verb = 'which landed';
+      else verb = 'landed';
+      approachClauses.push(verb + ' <b>' + body + '</b>');
+    }
   }
   if (approachClauses.length) parts.push(approachClauses.join(', '));
+  // IRON THICKET (v8.3.39) — recovery/layup clause inferred from score
+  // arithmetic. Inserted between the approach clause and the putts clause
+  // so the prose flows tee → approach → recovery → putts. Skipped silently
+  // when score or putts is missing (can't compute) or when extras === 0.
+  const extrasPhrase = inferExtraSwingsPhrase(inferExtraSwings(h));
+  if (extrasPhrase) parts.push(extrasPhrase);
   if (h.putts != null) {
     const puttLabel = h.putts === 4 ? '4+ putt' : (h.putts + ' putt');
     parts.push('finishing with a <b>' + puttLabel + '</b>');
@@ -3866,7 +3923,9 @@ function renderDetailV2(round) {
 
   // CARDINAL FIX (v8.3.0) — up & down requires NOT doubleChip. Two chips
   // and 1 putt is not up&down (definition: get up in 2 strokes).
-  const upDownEligible = holes.filter(h => !h.onGreen);
+  // JADE TUMBLE (v8.3.39) — strict `=== false` so null-onGreen (not captured)
+  // doesn't silently include unflagged holes in up&down stats.
+  const upDownEligible = holes.filter(h => h.onGreen === false);
   const upDowns = upDownEligible.filter(h => h.putts === 1 && !h.doubleChip).length;
 
   // STORM BEACON (v8.3.25) — strict GIR predicate. Approach must have found
