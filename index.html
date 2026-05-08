@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.37 · May 07, 2026 -->
+<!-- PJ Caddie v8.3.38 · May 07, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -524,16 +524,19 @@ body{display:flex;flex-direction:column}
 .gc-nav-arrow:active:not(:disabled){background:var(--ink3)}
 /* Score pill card — replaces v8.1.1 stepper. Row 1 = 2,3,4,5,6,7 + ▾ expand. */
 .gc-score-card{background:var(--ink2);border:1px solid var(--border2);border-radius:var(--rs);padding:8px;margin-bottom:8px}
-.gc-score-row{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
-.gc-score-row-2{grid-template-columns:repeat(6,1fr);margin-top:5px}
+.gc-score-row{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;align-items:stretch}
+.gc-score-row-2{grid-template-columns:repeat(8,1fr);margin-top:5px}
 .gc-pill{min-height:46px;background:var(--ink3);border:1px solid var(--border2);color:var(--chalk);font-size:18px;font-weight:700;font-family:'DM Serif Display',serif;padding:0;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
 .gc-pill.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
 .gc-pill-expand{font-family:'DM Sans',sans-serif;font-size:16px;color:var(--chalk3);font-weight:600}
 .gc-pill-expand.on{background:var(--ink3);color:var(--gold);border-color:var(--border)}
-/* Pin (horizontal) + Penalty (compact stepper) — single row */
-.gc-pin-pen-row{display:flex;gap:8px;margin-bottom:14px;align-items:stretch}
+/* CHESTNUT WHARF (v8.3.38) — gc-pin-pen-row wrapper removed (HOLLOW LANTERN
+   from BRONZE EMBER's Pin drop). Penalty card now lives inside the score row
+   itself, spanning 3 of the 8 grid columns; the 5 score-pill columns hold
+   3/4/5/6/▾ (the most common scores for an 18-hcp on par 70). The expanded
+   row 2 widens to 8 columns to absorb 1, 2, 7 alongside 8-12. */
 /* BRONZE EMBER (v8.3.30) — .gc-pin-h-row and .gc-pin-chip-h removed (pinPos field dropped). */
-.gc-penalty-card{background:var(--ink2);border:1px solid var(--border2);border-radius:8px;padding:0 8px;display:flex;align-items:center;gap:5px;flex-shrink:0;height:42px}
+.gc-penalty-card{background:var(--ink2);border:1px solid var(--border2);border-radius:8px;padding:0 6px;display:flex;align-items:center;gap:4px;justify-content:space-between;grid-column:span 3;min-height:46px}
 .gc-penalty-lbl{font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--chalk3);font-weight:600;flex-shrink:0}
 .gc-stepper-btn{background:var(--ink3);border:1px solid var(--border);color:var(--chalk);width:30px;height:30px;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;padding:0;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .gc-stepper-btn:active{background:var(--gold);color:var(--ink)}
@@ -626,7 +629,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.37 · May 07, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.38 · May 07, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -765,19 +768,28 @@ body{display:flex;flex-direction:column}
       <!-- TOP action button — Mara permanent UX rule: action buttons above scroll. -->
       <button class="btn btn-gold" id="gc-action-btn-top" onclick="glacierActionTap()" style="margin-bottom:14px;width:100%">Next Hole →</button>
 
-      <!-- SCORE pills (row 1: 2-7 + expand chevron). Re-tap clears. -->
+      <!-- SCORE pills + PENALTY stepper. Re-tap a score clears.
+           CHESTNUT WHARF (v8.3.38) — row 1 holds 3/4/5/6 (default scores for
+           an 18-hcp on par-70) + ▾ expand + integrated PEN stepper. Row 2
+           widens to 8 cols to absorb 1, 2, 7 alongside 8-12. -->
       <div class="gc-score-card">
         <div class="gc-score-row">
-          <button class="gc-pill" data-score="2" onclick="glacierSetScore(2)">2</button>
           <button class="gc-pill" data-score="3" onclick="glacierSetScore(3)">3</button>
           <button class="gc-pill" data-score="4" onclick="glacierSetScore(4)">4</button>
           <button class="gc-pill" data-score="5" onclick="glacierSetScore(5)">5</button>
           <button class="gc-pill" data-score="6" onclick="glacierSetScore(6)">6</button>
-          <button class="gc-pill" data-score="7" onclick="glacierSetScore(7)">7</button>
           <button class="gc-pill gc-pill-expand" id="gc-score-expand" onclick="glacierToggleScoreExpand()" aria-label="Show more scores">▾</button>
+          <div class="gc-penalty-card">
+            <div class="gc-penalty-lbl">Pen</div>
+            <button class="gc-stepper-btn" onclick="glacierAdjustPenalty(-1)" aria-label="Decrease penalty">−</button>
+            <div class="gc-stepper-val" id="gc-penalty-val">0</div>
+            <button class="gc-stepper-btn" onclick="glacierAdjustPenalty(1)" aria-label="Increase penalty">+</button>
+          </div>
         </div>
         <div class="gc-score-row gc-score-row-2" id="gc-score-row-2" style="display:none">
           <button class="gc-pill" data-score="1" onclick="glacierSetScore(1)">1</button>
+          <button class="gc-pill" data-score="2" onclick="glacierSetScore(2)">2</button>
+          <button class="gc-pill" data-score="7" onclick="glacierSetScore(7)">7</button>
           <button class="gc-pill" data-score="8" onclick="glacierSetScore(8)">8</button>
           <button class="gc-pill" data-score="9" onclick="glacierSetScore(9)">9</button>
           <button class="gc-pill" data-score="10" onclick="glacierSetScore(10)">10</button>
@@ -786,16 +798,8 @@ body{display:flex;flex-direction:column}
         </div>
       </div>
 
-      <!-- BRONZE EMBER (v8.3.30) — Pin row removed (pinPos field dropped).
-           Penalty stepper stays in the wrapper row, alone. -->
-      <div class="gc-pin-pen-row">
-        <div class="gc-penalty-card">
-          <div class="gc-penalty-lbl">Pen</div>
-          <button class="gc-stepper-btn" onclick="glacierAdjustPenalty(-1)" aria-label="Decrease penalty">−</button>
-          <div class="gc-stepper-val" id="gc-penalty-val">0</div>
-          <button class="gc-stepper-btn" onclick="glacierAdjustPenalty(1)" aria-label="Increase penalty">+</button>
-        </div>
-      </div>
+      <!-- CHESTNUT WHARF (v8.3.38) — .gc-pin-pen-row wrapper deleted; penalty
+           stepper relocated into the score row above. -->
 
       <!-- Tee shot section (blue accent) -->
       <div class="gc-section gc-section-tee">
@@ -841,17 +845,24 @@ body{display:flex;flex-direction:column}
                  inputmode="numeric" min="1" max="350" step="1" placeholder="Yards"
                  onchange="glacierSetApproachYards(this.value)">
         </div>
-        <div class="gc-mini-lbl" style="margin:14px 0 8px">Approach Result</div>
+        <div class="gc-mini-lbl" style="margin:14px 0 8px">Miss vs Aim</div>
         <!-- CINDER MEADOW (v8.3.36) — direction-only picker. The 9-zone 3×3
              grid (long/pin/short × L/C/R) collapsed to 3 buttons. Schema codes
              are 'L'/'C'/'R'; legacy 9-zone values still render correctly via
              approachResultDirection() at read time. The Pin auto-onGreen state
              machine (glacierZoneTap) is dropped — onGreen is set explicitly
-             via the toggle below. -->
+             via the toggle below.
+             AURUM COMPASS (v8.3.38) — the L/C/R frame is now aim-relative, not
+             green-absolute. L = pulled left of where you aimed; C = on aim line;
+             R = pushed right of aim line. DECADE/TourIQ-aligned: the data tells
+             you about your swing dispersion, not about your final position on
+             the green (which is captured by the onGreen toggle). Schema codes
+             unchanged; legacy data was implicitly absolute, new data is
+             aim-relative — documented semantic shift (no migration). -->
         <div class="gc-dir-row" id="gc-dir-row">
-          <button class="gc-chip" data-dir="L" onclick="glacierSetField('approachResult','L')" aria-label="Approach left">L</button>
-          <button class="gc-chip" data-dir="C" onclick="glacierSetField('approachResult','C')" aria-label="Approach center">C</button>
-          <button class="gc-chip" data-dir="R" onclick="glacierSetField('approachResult','R')" aria-label="Approach right">R</button>
+          <button class="gc-chip" data-dir="L" onclick="glacierSetField('approachResult','L')" aria-label="Pulled left of aim">L</button>
+          <button class="gc-chip" data-dir="C" onclick="glacierSetField('approachResult','C')" aria-label="On aim">C</button>
+          <button class="gc-chip" data-dir="R" onclick="glacierSetField('approachResult','R')" aria-label="Pushed right of aim">R</button>
         </div>
         <button class="gc-toggle" id="gc-on-green-toggle" onclick="glacierToggleOnGreen()" style="margin-top:12px;width:100%">On the green</button>
       </div>
@@ -1160,7 +1171,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.37 · Spec v2.1</span>
+        <span>v8.3.38 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -3178,10 +3189,14 @@ const TEE_PHRASE = {
 // values are normalized via approachResultDirection() before lookup, so
 // e.g. 'long-l' from a pre-v8.3.36 round still renders correctly (as
 // "left", losing the "long" depth qualifier per the redesign intent).
+// AURUM COMPASS (v8.3.38) — phrases reframed as aim-relative. The L/C/R
+// codes now describe miss vs intended line, not absolute green position.
+// Pre-CINDER MEADOW data was implicitly absolute; documented semantic
+// shift, no migration. See capture-screen comment for full context.
 const ZONE_PHRASE = {
-  'L': 'left',
-  'C': 'center',
-  'R': 'right'
+  'L': 'left of aim',
+  'C': 'on aim',
+  'R': 'right of aim'
 };
 function buildHoleSentence(h) {
   const parts = [];
@@ -3216,8 +3231,11 @@ function buildHoleSentence(h) {
     const greenPrefix = h.onGreen ? 'on the green' : 'off the green';
     // CINDER MEADOW (v8.3.36) — direction via helper handles legacy 9-zone
     // codes (long-l/pin/short-r/etc) by collapsing to L/C/R.
+    // AURUM COMPASS (v8.3.38) — comma separator between green status and
+    // aim-relative phrase, e.g. "landed on the green, left of aim". Bold
+    // wraps both for visual cohesion.
     const apprDir = approachResultDirection(h.approachResult);
-    const zonePart = apprDir ? (' ' + ZONE_PHRASE[apprDir]) : '';
+    const zonePart = apprDir ? (', ' + ZONE_PHRASE[apprDir]) : '';
     let verb;
     if (h.par <= 3) verb = 'Tee shot landed';
     else if (hasRealYardageClause) verb = 'which landed';
@@ -3997,8 +4015,10 @@ function renderDetailV2(round) {
   // 1×3 rows (L / C / R). Legacy 9-zone data on pre-v8.3.36 holes collapses
   // to direction via approachResultDirection() at filter time, so the heat-
   // map is consistent across legacy and new rounds (depth dimension dropped).
+  // AURUM COMPASS (v8.3.38) — section reframed as aim-relative. Labels updated
+  // to "Left" / "On Aim" / "Right" to make the frame explicit on the C cell.
   const dirOrder = ['L', 'C', 'R'];
-  const dirLabel = { L: 'Left', C: 'Center', R: 'Right' };
+  const dirLabel = { L: 'Left', C: 'On Aim', R: 'Right' };
   const missed = holes.filter(h => h.onGreen === false && h.approachResult != null);
   const hit = holes.filter(h => h.onGreen === true && h.approachResult != null);
   const dirBucket = (pct, isMissed) => {
@@ -4021,7 +4041,7 @@ function renderDetailV2(round) {
     }).join('');
   };
   document.getElementById('det-zones-section').innerHTML = `
-    <span class="section-lbl">Approach Direction</span>
+    <span class="section-lbl">Miss vs Aim</span>
     <div class="det-grids">
       <div class="det-grid-card">
         <div class="det-grid-hdr"><span class="det-grid-name">Missed</span><span class="det-grid-n">n=${missed.length}</span></div>
