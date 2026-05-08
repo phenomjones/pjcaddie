@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.39 · May 07, 2026 -->
+<!-- PJ Caddie v8.3.42 · May 07, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -214,6 +214,18 @@ body{display:flex;flex-direction:column}
    key-term spans (chalk, 13px, weight 700) stand out for at-a-glance scanning. */
 .rr-sentence{font-size:11px;color:var(--chalk3);line-height:1.55;margin-top:4px}
 .rr-sentence b{color:var(--chalk);font-weight:700;font-size:13px}
+/* AMBER SIGIL (v8.3.41) — per-hole row icons next to "Hole N · Par M".
+   Tee pill colors mirror CINNABAR DRAKE picker (red OB / amber OOP / tan
+   rough / green FW). GIR amber, Girpy blue. Pills sit on the dark .det-card
+   background so they use light fills with dark text for max contrast. */
+.rr-course-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:14px;font-weight:500;color:var(--chalk);min-width:0}
+.rr-pill{display:inline-flex;align-items:center;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;line-height:1.4;white-space:nowrap;font-family:'DM Sans',sans-serif;letter-spacing:.2px}
+.rr-pill-fw{background:#C0DD97;color:#173404}
+.rr-pill-rough{background:#D3D1C7;color:#2C2C2A}
+.rr-pill-oop{background:#FAC775;color:#412402}
+.rr-pill-ob{background:#F7C1C1;color:#501313}
+.rr-pill-gir{background:#EF9F27;color:#FFFFFF}
+.rr-pill-girpy{background:#85B7EB;color:#042C53}
 /* SUMMIT REDESIGN (v8.3.0) — tee shot vertical bar chart */
 .det-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px 12px;margin-bottom:14px}
 .det-tee-chart{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;height:120px;padding:0 4px}
@@ -252,11 +264,37 @@ body{display:flex;flex-direction:column}
 .det-stack-track{flex:1;height:10px;background:var(--ink);border-radius:2px;display:flex;overflow:hidden}
 .det-stack-hit{background:var(--green);height:100%}
 .det-stack-hit.alt{background:var(--gold)}
-.det-stack-miss{background:var(--ink3);height:100%}
+/* SCARLET BAND (v8.3.41) — miss segment now red so unconverted bands are
+   visible at a glance instead of blending into the dark card. det-stack-empty
+   is a separate class for the 0/0 (no opportunity) case so empty bands stay
+   neutral rather than screaming "miss" — no holes ≠ failure. */
+.det-stack-miss{background:var(--red);height:100%}
+.det-stack-empty{background:var(--ink3);height:100%}
 .det-stack-num{width:34px;color:var(--chalk3);font-size:10px}
 /* SUMMIT REDESIGN (v8.3.0) — putting analysis lines */
-.det-putt-line{font-size:12px;color:var(--chalk2);line-height:1.6;margin-bottom:6px}
-.det-putt-line:last-child{margin-bottom:0}
+/* SLATE PRISM (v8.3.42) — debucketed putting section. Replaces the
+   COBALT MARROW count list. Each row has a key/label + value column.
+   1-putt and 3-putt rows are visually highlighted (green / red tint);
+   2-putt and 4+ are neutral. The 3-putt row carries a benchmark line
+   computed from the user's actual first-putt distances today, summed
+   per-putt against the 10-hcp rate (no bucketing in the display). */
+.sp-line{display:flex;gap:10px;padding:6px 0;font-size:13px;align-items:baseline}
+.sp-line + .sp-line{border-top:0.5px solid var(--border2)}
+.sp-key{color:var(--chalk3);min-width:108px;flex-shrink:0;font-size:12px;letter-spacing:.3px}
+.sp-val{color:var(--chalk);flex:1;line-height:1.5;min-width:0}
+.sp-val .sp-count{font-weight:700;font-family:'DM Serif Display',serif;font-size:15px}
+.sp-line-1putt .sp-key,.sp-line-1putt .sp-count{color:var(--green)}
+.sp-line-3putt .sp-key,.sp-line-3putt .sp-count{color:var(--red)}
+.sp-h-list{margin-top:4px;display:flex;flex-wrap:wrap;gap:4px}
+.sp-h-link{display:inline-flex;align-items:center;background:rgba(242,237,216,0.06);border:1px solid var(--border2);padding:2px 8px;border-radius:4px;color:var(--chalk2);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;line-height:1.4;letter-spacing:.2px}
+.sp-h-link:active{background:rgba(242,237,216,0.12)}
+.sp-bench{font-size:11px;color:var(--chalk3);margin-top:6px;line-height:1.4}
+.sp-bench-better{color:var(--green)}
+.sp-bench-worse{color:var(--red)}
+.sp-bench-at{color:var(--chalk3)}
+.sp-empty{color:var(--chalk3);font-style:italic;font-size:12px}
+.sp-row-flash{animation:sp-flash 1.8s ease-out}
+@keyframes sp-flash{0%{box-shadow:0 0 0 2px var(--gold) inset}70%{box-shadow:0 0 0 2px var(--gold) inset}100%{box-shadow:0 0 0 0 transparent inset}}
 /* SUMMIT REDESIGN (v8.3.0) — missing-data warning pill on hole rows */
 .det-warn-pill{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:rgba(200,168,75,.18);border:1px solid rgba(200,168,75,.5);border-radius:50%;color:var(--gold);font-size:10px;font-weight:600;flex-shrink:0;margin-right:8px}
 /* CRIMSON COMPASS (v8.3.2) — vertical-timeline tee shot sparkline. One row per
@@ -629,7 +667,7 @@ body{display:flex;flex-direction:column}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.39 · May 07, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.42 · May 07, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -864,15 +902,12 @@ body{display:flex;flex-direction:column}
           <button class="gc-chip" data-dir="C" onclick="glacierSetField('approachResult','C')" aria-label="On aim">C</button>
           <button class="gc-chip" data-dir="R" onclick="glacierSetField('approachResult','R')" aria-label="Pushed right of aim">R</button>
         </div>
-        <!-- JADE TUMBLE (v8.3.39) — single On/Off toggle replaced with explicit
-             two-button picker. onGreen is now nullable (null = not captured),
-             so the UI must let the user explicitly say "hit" or "missed" or
-             leave it unset. Re-tap clears back to null, matching the L/C/R
-             direction-picker idiom. -->
-        <div class="gc-dir-row" id="gc-on-green-row" style="grid-template-columns:1fr 1fr;margin-top:12px">
-          <button class="gc-chip" data-on-green="true" onclick="glacierSetOnGreen(true)" aria-label="Hit the green">Hit Green</button>
-          <button class="gc-chip" data-on-green="false" onclick="glacierSetOnGreen(false)" aria-label="Missed the green">Missed Green</button>
-        </div>
+        <!-- CEDAR HEARTH (v8.3.40) — back to a single toggle button. JADE
+             TUMBLE's 2-button picker was overdesigned: forces an explicit
+             choice per hole when the boolean idiom (sand/fwyBunker/doubleChip
+             — all default-to-false flags) is the established pattern. Tap to
+             flag a hit; not flagged means missed. Re-tap clears back to false. -->
+        <button class="gc-toggle" id="gc-on-green-toggle" onclick="glacierToggleOnGreen()" style="margin-top:12px;width:100%">Hit Green</button>
       </div>
 
       <!-- Putts section (green accent) -->
@@ -1179,7 +1214,7 @@ body{display:flex;flex-direction:column}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.39 · Spec v2.1</span>
+        <span>v8.3.42 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1465,7 +1500,7 @@ function createHole({ number, par, score }) {
     teeResult: null,
     approachYards: null,
     approachResult: null,
-    onGreen: null,  // JADE TUMBLE (v8.3.39) — was `false`. Differentiates "not captured" from "explicitly off the green."
+    onGreen: false,  // CEDAR HEARTH (v8.3.40) — reverted from null. Default-to-miss matches the boolean idiom of sand/fwyBunker/doubleChip; absence-of-tap = miss.
     putts: null,
     firstPuttDist: null,
     doubleChip: false,
@@ -2444,6 +2479,18 @@ function renderHistory() {
 }
 
 function showDetail(id) { DET.roundId = id; DET.statSel = null; DET.expandedHole = null; DET.editingNote = null; showView('detail'); }
+// SLATE PRISM (v8.3.42) — tap-through from putting H-links to per-hole rows.
+// Scrolls smoothly into view and adds a brief gold-ring highlight so the user
+// can see which row they landed on. Idempotent: re-running clears any prior
+// highlight first.
+function scrollToHoleRow(idx) {
+  const el = document.getElementById('det-hole-row-' + idx);
+  if (!el) return;
+  document.querySelectorAll('.sp-row-flash').forEach(n => n.classList.remove('sp-row-flash'));
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.add('sp-row-flash');
+  setTimeout(() => el.classList.remove('sp-row-flash'), 1800);
+}
 
 // ── COURSE SETUP ─────────────────────────────────────────────
 function initCourseSetup() {
@@ -2841,14 +2888,13 @@ function glacierRenderHole() {
   document.querySelectorAll('#view-glacier-capture #gc-dir-row [data-dir]').forEach(b => {
     b.classList.toggle('on', b.dataset.dir === apprDir);
   });
-  // JADE TUMBLE (v8.3.39) — two-button picker render. Highlights "Hit Green"
-  // when onGreen === true, "Missed Green" when onGreen === false, neither
-  // when null (not captured). Strict equality is required because the dataset
-  // string is 'true'/'false' but onGreen is boolean — converting via String()
-  // gives the right comparison while letting null fall through unmatched.
-  document.querySelectorAll('#view-glacier-capture #gc-on-green-row [data-on-green]').forEach(b => {
-    b.classList.toggle('on', hole.onGreen != null && b.dataset.onGreen === String(hole.onGreen));
-  });
+  // CEDAR HEARTH (v8.3.40) — single toggle render. Highlights gold when
+  // hole.onGreen === true; otherwise dim (default).
+  const ogBtn = document.getElementById('gc-on-green-toggle');
+  if (ogBtn) {
+    ogBtn.classList.toggle('on', hole.onGreen === true);
+    ogBtn.textContent = hole.onGreen === true ? '\u2713 Hit Green' : 'Hit Green';
+  }
 
   // Putts section
   document.querySelectorAll('#view-glacier-capture [data-putts]').forEach(c => {
@@ -2953,18 +2999,17 @@ function glacierSetField(field, value) {
 // zone is gone — direction-only schema (L/C/R) doesn't carry depth info.
 // Direction buttons use plain glacierSetField('approachResult', dir) onclicks.
 
-// JADE TUMBLE (v8.3.39) — onGreen is now tristate (true / false / null).
-// glacierToggleOnGreen replaced by glacierSetOnGreen with re-tap-clear:
-// tapping the currently-selected button clears back to null (not captured),
-// matching the L/C/R direction-picker idiom. Approach-coupling rule (Pin
-// auto-onGreen, Rule 2 of the old state machine) was already dropped in
-// CINDER MEADOW; direction stays independent of onGreen.
-function glacierSetOnGreen(value) {
+// CEDAR HEARTH (v8.3.40) — back to a simple boolean toggle. JADE TUMBLE's
+// nullable tristate was reverted; default-to-miss is the established idiom
+// for capture flags (sand, fwyBunker, doubleChip, duffedApproach all default
+// to false). The Pin auto-clear coupling rule (Rule 2 of the old state
+// machine) was already dropped in CINDER MEADOW — direction stays
+// independent of onGreen.
+function glacierToggleOnGreen() {
   const wip = glacierGetWIP();
   if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
   const hole = wip.holes[GC.holeIdx];
-  // Re-tap on the currently-selected button clears to null.
-  hole.onGreen = (hole.onGreen === value) ? null : value;
+  hole.onGreen = !hole.onGreen;
   glacierPersistAndRender(wip);
 }
 
@@ -3237,6 +3282,85 @@ function inferExtraSwingsPhrase(extras) {
     ? 'needing <b>a recovery swing</b>'
     : 'needing <b>' + extras + ' recovery swings</b>';
 }
+
+// AMBER SIGIL (v8.3.41) — module-scope GIR / GIRPY predicates. Hoisted so
+// the per-hole row icons and existing stat panels share one source of truth
+// (Sandra). Local copies still live inside computeDbag and stat handlers
+// for now — those can collapse to these helpers in a future cleanup.
+//   GIR strict: ball reached the green AND total strokes-to-green ≤ par-2.
+//                Penalty strokes are part of `score`, so OB tees structurally
+//                fail by penalty arithmetic (STORM BEACON).
+//   GIRPY:      strokes-to-green ≤ par-1 (one stroke over GIR), regardless
+//                of onGreen — the "still salvageable" zone.
+function holeIsGIR(h) {
+  if (h == null || h.score == null || h.putts == null || typeof h.par !== 'number') return false;
+  if (h.onGreen !== true) return false;
+  return (h.score - h.putts) <= (h.par - 2);
+}
+function holeIsGIRPY(h) {
+  if (h == null || h.score == null || h.putts == null || typeof h.par !== 'number') return false;
+  return (h.score - h.putts) <= (h.par - 1);
+}
+// AMBER SIGIL (v8.3.41) — per-hole row icon HTML builders. Tee pill mirrors
+// the CINNABAR DRAKE color tier (red OB / amber OOP / tan rough / green FW).
+// GIR/Girpy badge is tri-state: GIR (amber, highest) / Girpy (blue, partial)
+// / hidden (neither — keeps the row tidy when there's no achievement).
+function holeTeePillHtml(h) {
+  if (h == null || h.teeResult == null) return '';
+  const code = h.teeResult;
+  const map = {
+    OBL:  { cls: 'rr-pill-ob',    label: 'OB-L'  },
+    OBR:  { cls: 'rr-pill-ob',    label: 'OB-R'  },
+    LL:   { cls: 'rr-pill-oop',   label: 'OOP-L' },
+    RR:   { cls: 'rr-pill-oop',   label: 'OOP-R' },
+    L:    { cls: 'rr-pill-rough', label: 'L'     },
+    R:    { cls: 'rr-pill-rough', label: 'R'     },
+    fairway: { cls: 'rr-pill-fw', label: 'FW'    }
+  };
+  const v = map[code];
+  if (!v) return '';
+  return '<span class="rr-pill ' + v.cls + '">' + v.label + '</span>';
+}
+function holeGirPillHtml(h) {
+  if (holeIsGIR(h)) return '<span class="rr-pill rr-pill-gir">GIR</span>';
+  if (holeIsGIRPY(h)) return '<span class="rr-pill rr-pill-girpy">Girpy</span>';
+  return '';
+}
+
+// SLATE PRISM (v8.3.42) — 10-handicap 3-putt rate by first-putt distance,
+// piecewise-derived from Arccos's published putting-stats bands. Used to
+// compute an expected 3-putt count for a single round based on the actual
+// distances of the user's first putts (not bucketed for display — the
+// numeric storage from OPAL CASCADE means we sum exact rates per putt).
+//   ≤4 ft: ~0.5%   (very low; tap-in range)
+//   5–9 ft: ~2%    (Arccos Short bucket)
+//   10–24 ft: ~9%  (Arccos Mid bucket — combines 10-14 and 15-24)
+//   25–39 ft: ~22% (Arccos Long bucket)
+//   40+ ft: ~38%   (10-hcp 36-40 ft cited from Stagner/Arccos data)
+function tenHcpThreePuttRate(feet) {
+  if (feet == null || !Number.isFinite(feet) || feet < 0 || feet > 99) return null;
+  if (feet <= 4) return 0.005;
+  if (feet <= 9) return 0.02;
+  if (feet <= 24) return 0.09;
+  if (feet <= 39) return 0.22;
+  return 0.38;
+}
+// Sum the per-distance 10-hcp 3-putt rate across the round's actual first
+// putts. Holes with null firstPuttDist are silently excluded (no expected
+// contribution). Returns a number rounded to 1 decimal, or null if no
+// distances were captured at all.
+function expectedThreePuttsToday(holes) {
+  if (!Array.isArray(holes) || !holes.length) return null;
+  let sum = 0;
+  let n = 0;
+  holes.forEach(h => {
+    const r = tenHcpThreePuttRate(h && typeof h.firstPuttDist === 'number' ? h.firstPuttDist : null);
+    if (r != null) { sum += r; n++; }
+  });
+  if (n === 0) return null;
+  return Math.round(sum * 10) / 10;
+}
+
 function buildHoleSentence(h) {
   const parts = [];
   if (h.par >= 4 && h.teeResult) {
@@ -3266,40 +3390,38 @@ function buildHoleSentence(h) {
       approachClauses.push('<span style="color:var(--red)">approach yardage not logged</span>');
     }
   }
-  if (h.approachResult || h.onGreen != null) {
+  if (h.approachResult || h.onGreen) {
     // CINDER MEADOW (v8.3.36) — direction via helper handles legacy 9-zone
     // codes (long-l/pin/short-r/etc) by collapsing to L/C/R.
     // AURUM COMPASS (v8.3.38) — comma separator between green status and
     // aim-relative phrase, e.g. "landed on the green, left of aim". Bold
     // wraps both for visual cohesion.
-    // JADE TUMBLE (v8.3.39) — onGreen is nullable. When approachResult is
-    // captured but onGreen is null, render direction alone (no green status)
-    // rather than fabricating "off the green" via truthy-false coercion.
+    // CEDAR HEARTH (v8.3.40) — onGreen is boolean again. Simple ternary; null
+    // values from any v8.3.39 captures coerce to 'off the green' (correct).
+    const greenPrefix = h.onGreen ? 'on the green' : 'off the green';
     const apprDir = approachResultDirection(h.approachResult);
-    let greenPrefix = null;
-    if (h.onGreen === true) greenPrefix = 'on the green';
-    else if (h.onGreen === false) greenPrefix = 'off the green';
-    const zonePart = apprDir ? ZONE_PHRASE[apprDir] : null;
-    let body;
-    if (greenPrefix && zonePart) body = greenPrefix + ', ' + zonePart;
-    else if (greenPrefix) body = greenPrefix;
-    else if (zonePart) body = zonePart;
-    else body = null;
-    if (body) {
-      let verb;
-      if (h.par <= 3) verb = 'Tee shot landed';
-      else if (hasRealYardageClause) verb = 'which landed';
-      else verb = 'landed';
-      approachClauses.push(verb + ' <b>' + body + '</b>');
-    }
+    const zonePart = apprDir ? (', ' + ZONE_PHRASE[apprDir]) : '';
+    let verb;
+    if (h.par <= 3) verb = 'Tee shot landed';
+    else if (hasRealYardageClause) verb = 'which landed';
+    else verb = 'landed';
+    approachClauses.push(verb + ' <b>' + greenPrefix + zonePart + '</b>');
   }
   if (approachClauses.length) parts.push(approachClauses.join(', '));
   // IRON THICKET (v8.3.39) — recovery/layup clause inferred from score
   // arithmetic. Inserted between the approach clause and the putts clause
   // so the prose flows tee → approach → recovery → putts. Skipped silently
   // when score or putts is missing (can't compute) or when extras === 0.
-  const extrasPhrase = inferExtraSwingsPhrase(inferExtraSwings(h));
-  if (extrasPhrase) parts.push(extrasPhrase);
+  // WALNUT TALON (v8.3.40) — gated on OOP tee result (LL or RR). The other
+  // extra-swing causes (duffedApproach, sand, fwyBunker, doubleChip, penalty)
+  // already have their own pill labels below the main prose; OOP recovery
+  // is the only unlabeled extras-cause. Without an OOP signal we'd be
+  // guessing whether extras are layup / duff / recovery / scramble.
+  const isOopTee = h.teeResult === 'LL' || h.teeResult === 'RR';
+  if (isOopTee) {
+    const extrasPhrase = inferExtraSwingsPhrase(inferExtraSwings(h));
+    if (extrasPhrase) parts.push(extrasPhrase);
+  }
   if (h.putts != null) {
     const puttLabel = h.putts === 4 ? '4+ putt' : (h.putts + ' putt');
     parts.push('finishing with a <b>' + puttLabel + '</b>');
@@ -3923,9 +4045,10 @@ function renderDetailV2(round) {
 
   // CARDINAL FIX (v8.3.0) — up & down requires NOT doubleChip. Two chips
   // and 1 putt is not up&down (definition: get up in 2 strokes).
-  // JADE TUMBLE (v8.3.39) — strict `=== false` so null-onGreen (not captured)
-  // doesn't silently include unflagged holes in up&down stats.
-  const upDownEligible = holes.filter(h => h.onGreen === false);
+  // CEDAR HEARTH (v8.3.40) — back to truthy-falsy (null from any v8.3.39
+  // captures coerces to falsy = off-green, which is correct under default-
+  // to-miss semantics).
+  const upDownEligible = holes.filter(h => !h.onGreen);
   const upDowns = upDownEligible.filter(h => h.putts === 1 && !h.doubleChip).length;
 
   // STORM BEACON (v8.3.25) — strict GIR predicate. Approach must have found
@@ -4489,7 +4612,7 @@ function renderDetailV2(round) {
     const hitPct = total ? Math.round((hitCount / total) * 100) : 0;
     const missPct = total ? 100 - hitPct : 0;
     const trackInner = total === 0
-      ? `<div class="det-stack-miss" style="width:100%"></div>`
+      ? `<div class="det-stack-empty" style="width:100%"></div>`
       : `<div class="det-stack-hit ${hitClass}" style="width:${hitPct}%"></div><div class="det-stack-miss" style="width:${missPct}%"></div>`;
     const numText = total ? `${hitCount}/${total}` : '0/0';
     const tap = total ? ` data-stat-key="${statKey}" data-stat-param="${b}" onclick="statSelect('${statKey}','${b}')"` : ' style="cursor:default"';
@@ -4507,29 +4630,81 @@ function renderDetailV2(round) {
     <span class="section-lbl">Down in 3 by Yardage</span>
     <div class="det-card">${bandRows(h => h.putts != null && (h.putts + (h.doubleChip ? 1 : 0)) <= 2, 'alt', 'holeoutBand')}</div>`;
 
-  // ── Putting plain-text inferences ───────────────────────────
-  // COBALT MARROW (v8.3.30) — firstPuttResult dropped.
-  // OPAL CASCADE (v8.3.37) — band filters replaced with firstPuttDistCategory()
-  // membership using new 10/25/40 boundaries. SLATE PRISM (next ship) replaces
-  // this block entirely with 4-bucket vs 10-hcp benchmark grid.
+  // ── Putting (SLATE PRISM v8.3.42) ───────────────────────────
+  // Replaces the COBALT MARROW count list. Debucketed: uses exact feet from
+  // OPAL CASCADE numeric storage, no display-side categorization. 1-putt and
+  // 3-putt rows are highlighted (green / red); 2-putt and 4+ are neutral.
+  // The 3-putt row carries a benchmark line: "10-hcp would 3-putt: X.X times"
+  // computed by summing tenHcpThreePuttRate(feet) per first putt this round.
+  // H-link pills tap-through to the per-hole row via scrollToHoleRow(idx).
   const fpShort = holes.filter(h => firstPuttDistCategory(h.firstPuttDist) === 'short');
-  const fpLongPlus = holes.filter(h => {
-    const c = firstPuttDistCategory(h.firstPuttDist);
-    return c === 'long' || c === 'vlong';
+  const onePuttHoles = [];
+  const twoPuttHoles = [];
+  const threePuttHoles = [];
+  const fourPlusPuttHoles = [];
+  let firstPuttDistSum = 0;
+  let firstPuttDistN = 0;
+  holes.forEach((h, idx) => {
+    if (h.putts === 1) onePuttHoles.push({ idx, num: h.number, feet: h.firstPuttDist });
+    else if (h.putts === 2) twoPuttHoles.push({ idx, num: h.number, feet: h.firstPuttDist });
+    else if (h.putts === 3) threePuttHoles.push({ idx, num: h.number, feet: h.firstPuttDist });
+    else if (h.putts != null && h.putts >= 4) fourPlusPuttHoles.push({ idx, num: h.number, feet: h.firstPuttDist });
+    if (typeof h.firstPuttDist === 'number') {
+      firstPuttDistSum += h.firstPuttDist;
+      firstPuttDistN++;
+    }
   });
-  const threePuttHoles = holes.filter(h => h.putts === 3).map(h => 'H' + h.number);
-  const fourPuttHoles = holes.filter(h => h.putts === 4).map(h => 'H' + h.number);
-  const puttLines = [];
-  if (fpShort.length) puttLines.push(`Inside 10 ft: ${fpShort.length} hole${fpShort.length === 1 ? '' : 's'}`);
-  if (fpLongPlus.length) puttLines.push(`From 25+ ft: ${fpLongPlus.length} hole${fpLongPlus.length === 1 ? '' : 's'}`);
-  if (threePuttHoles.length) puttLines.push(`3-putts on ${threePuttHoles.join(', ')}`);
-  if (fourPuttHoles.length) puttLines.push(`4+ putts on ${fourPuttHoles.join(', ')}`);
-  const puttBody = puttLines.length
-    ? puttLines.map(l => `<div class="det-putt-line">${l}</div>`).join('')
-    : '<div class="det-putt-line" style="opacity:.5">No putting data yet.</div>';
+  const avgFirstPutt = firstPuttDistN ? Math.round(firstPuttDistSum / firstPuttDistN) : null;
+  const expected3 = expectedThreePuttsToday(holes);
+  const renderHList = (arr) => arr.length
+    ? `<div class="sp-h-list">${arr.map(o => {
+        const feetTxt = (typeof o.feet === 'number')
+          ? (o.feet === 0 ? '<1 ft' : (o.feet === 1 ? '1 ft' : (o.feet + ' ft')))
+          : '— ft';
+        return `<button class="sp-h-link" onclick="scrollToHoleRow(${o.idx})">H${o.num} \xb7 ${feetTxt}</button>`;
+      }).join('')}</div>`
+    : '';
+  const fmtCount = (n) => `<span class="sp-count">${n}</span> hole${n === 1 ? '' : 's'}`;
+  // 3-putt benchmark line.
+  let benchHtml = '';
+  if (expected3 != null) {
+    const actual = threePuttHoles.length;
+    let cmp, cmpCls;
+    // Tolerance band: within 0.5 of expected = at-benchmark (single-round
+    // noise is wide; don't overstate "better/worse" on tiny deltas).
+    if (Math.abs(actual - expected3) <= 0.5) { cmp = 'at benchmark'; cmpCls = 'sp-bench-at'; }
+    else if (actual < expected3) { cmp = 'better than benchmark'; cmpCls = 'sp-bench-better'; }
+    else { cmp = 'worse than benchmark'; cmpCls = 'sp-bench-worse'; }
+    benchHtml = `<div class="sp-bench ${cmpCls}">10-hcp would 3-putt: ${expected3.toFixed(1)} times \u2014 ${cmp}</div>`;
+  }
+  const lines = [];
+  lines.push(`<div class="sp-line sp-line-1putt">
+    <div class="sp-key">1-putts</div>
+    <div class="sp-val">${onePuttHoles.length ? fmtCount(onePuttHoles.length) : '<span class="sp-empty">none</span>'}${renderHList(onePuttHoles)}</div>
+  </div>`);
+  lines.push(`<div class="sp-line">
+    <div class="sp-key">2-putts</div>
+    <div class="sp-val">${twoPuttHoles.length ? fmtCount(twoPuttHoles.length) : '<span class="sp-empty">none</span>'}</div>
+  </div>`);
+  lines.push(`<div class="sp-line sp-line-3putt">
+    <div class="sp-key">3-putts</div>
+    <div class="sp-val">${threePuttHoles.length ? fmtCount(threePuttHoles.length) : '<span class="sp-empty">none</span>'}${renderHList(threePuttHoles)}${benchHtml}</div>
+  </div>`);
+  lines.push(`<div class="sp-line">
+    <div class="sp-key">4+ putts</div>
+    <div class="sp-val">${fourPlusPuttHoles.length ? fmtCount(fourPlusPuttHoles.length) : '<span class="sp-empty">none</span>'}${renderHList(fourPlusPuttHoles)}</div>
+  </div>`);
+  lines.push(`<div class="sp-line">
+    <div class="sp-key">Avg first putt</div>
+    <div class="sp-val">${avgFirstPutt != null ? (avgFirstPutt + ' ft') : '<span class="sp-empty">no data</span>'}</div>
+  </div>`);
+  lines.push(`<div class="sp-line">
+    <div class="sp-key">Inside 10 ft</div>
+    <div class="sp-val">${fpShort.length ? fmtCount(fpShort.length) : '<span class="sp-empty">none</span>'}</div>
+  </div>`);
   document.getElementById('det-putt-section').innerHTML = `
     <span class="section-lbl">Putting</span>
-    <div class="det-card">${puttBody}</div>`;
+    <div class="det-card">${lines.join('')}</div>`;
 
   // ── Per-hole rows with missing-data warnings ────────────────
   // SUMMIT REDESIGN (v8.3.0) — required-field check on played holes.
@@ -4543,7 +4718,8 @@ function renderDetailV2(round) {
     const out = [];
     if (!(h.score > 0)) return out;
     if (h.approachResult == null) out.push('approach result');
-    if (h.onGreen == null) out.push('on the green');
+    // CEDAR HEARTH (v8.3.40) — onGreen validator entry removed. Default-to-miss
+    // means absence-of-tap = miss; not a missing-data concept anymore.
     if (h.putts == null) out.push('putts');
     if (h.firstPuttDist == null) out.push('first putt distance');
     if (h.par >= 4) {
@@ -4610,10 +4786,20 @@ function renderDetailV2(round) {
       // Edit form expansion (only if this hole is the one being edited).
       const isEditingThis = DET.editingNote && DET.editingNote.type === 'hole' && DET.editingNote.idx === idx;
       const noteFormHtml = isEditingThis ? renderNoteEditForm(h.notes || '', {type:'hole', idx}) : '';
-      return `<div><div class="round-row" style="${rowOpacity}" onclick="editHoleStart('${round.id}', ${idx})">
+      // AMBER SIGIL (v8.3.41) — tee result pill + GIR/Girpy badge inline
+      // with "Hole N · Par M". Each helper returns empty string when the
+      // condition isn't met (par 3 has no tee pill; not-GIR-not-Girpy = no
+      // badge). Pills only render for played holes.
+      const teePillHtml = isPlayed ? holeTeePillHtml(h) : '';
+      const girPillHtml = isPlayed ? holeGirPillHtml(h) : '';
+      return `<div id="det-hole-row-${idx}"><div class="round-row" style="${rowOpacity}" onclick="editHoleStart('${round.id}', ${idx})">
         ${warnPill}
         <div class="rr-info">
-          <div class="rr-course" style="font-size:14px">Hole ${h.number} \xb7 Par ${h.par}</div>
+          <div class="rr-course-line">
+            <span>Hole ${h.number} \xb7 Par ${h.par}</span>
+            ${teePillHtml}
+            ${girPillHtml}
+          </div>
           ${sentenceHtml}
         </div>
         ${noteIconHtml}
