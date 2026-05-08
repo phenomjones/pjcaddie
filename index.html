@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.43 · May 07, 2026 -->
+<!-- PJ Caddie v8.3.44 · May 07, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -226,6 +226,10 @@ body{display:flex;flex-direction:column}
 .rr-pill-ob{background:#F7C1C1;color:#501313}
 .rr-pill-gir{background:#EF9F27;color:#FFFFFF}
 .rr-pill-girpy{background:#85B7EB;color:#042C53}
+/* COPPER SIGIL (v8.3.44) — trouble flag pills (doubleChip, fwyBunker, sand,
+   duffedApproach). Uniform warning tier — they're all "this thing happened"
+   markers, severity-equivalent at the prose-display level. */
+.rr-pill-trouble{background:#E8994A;color:#3B1E04}
 /* SUMMIT REDESIGN (v8.3.0) — tee shot vertical bar chart */
 .det-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px 12px;margin-bottom:14px}
 .det-tee-chart{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;height:120px;padding:0 4px}
@@ -708,7 +712,7 @@ html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.43 · May 07, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.44 · May 07, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1255,7 +1259,7 @@ html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.43 · Spec v2.1</span>
+        <span>v8.3.44 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -3368,6 +3372,42 @@ function holeGirPillHtml(h) {
   return '';
 }
 
+// COPPER SIGIL (v8.3.44) — tee club prose phrases. Rendered as a parenthetical
+// after "Tee shot" in the per-hole sentence, e.g. "Tee shot (driver) landed
+// in the fairway". Uses noun-phrase form with article so the parenthetical
+// reads naturally for all four categories. Returns null for unrecognized
+// values (legacy abbreviations are routed through abbrToCategory first).
+const CLUB_PROSE = {
+  driver: 'driver',
+  fwy:    'a fairway wood',
+  hyb:    'a hybrid',
+  iron:   'an iron'
+};
+function clubProsePhrase(value) {
+  if (value == null || value === '') return null;
+  if (CLUB_PROSE[value]) return CLUB_PROSE[value];
+  // Legacy: try mapping abbreviation (Dr / 7i / PW / etc.) to category.
+  const cat = abbrToCategory(value);
+  return cat ? (CLUB_PROSE[cat] || null) : null;
+}
+
+// COPPER SIGIL (v8.3.44) — trouble flag header pills. Migrated from the
+// bottom-of-prose bold-period rendering to inline pills next to "Hole N · Par M",
+// alongside AMBER SIGIL's tee/GIR pills. Penalty stays in the bottom prose
+// (it's a stroke count, not a binary "happened" flag, and overlaps with the
+// OB tee result rendering). Compact labels keep the row from wrapping under
+// normal conditions; flex-wrap on .rr-course-line handles the rare case of
+// a hole with all four flags set.
+function holeTroublePillsHtml(h) {
+  if (h == null) return '';
+  const out = [];
+  if (h.doubleChip)     out.push('<span class="rr-pill rr-pill-trouble">Dbl chip</span>');
+  if (h.fwyBunker)      out.push('<span class="rr-pill rr-pill-trouble">Fwy bnk</span>');
+  if (h.sand)           out.push('<span class="rr-pill rr-pill-trouble">Grn bnk</span>');
+  if (h.duffedApproach) out.push('<span class="rr-pill rr-pill-trouble">Duff</span>');
+  return out.join('');
+}
+
 // SLATE PRISM (v8.3.42) — 10-handicap 3-putt rate by first-putt distance,
 // piecewise-derived from Arccos's published putting-stats bands. Used to
 // compute an expected 3-putt count for a single round based on the actual
@@ -3404,8 +3444,15 @@ function expectedThreePuttsToday(holes) {
 
 function buildHoleSentence(h) {
   const parts = [];
+  // COPPER SIGIL (v8.3.44) — tee club mentioned as a parenthetical. When
+  // teeClub is unset or unrecognized, the parenthetical is omitted and the
+  // prose reads identically to v8.3.43.
+  const clubPhrase = clubProsePhrase(h.teeClub);
   if (h.par >= 4 && h.teeResult) {
-    parts.push('Tee shot landed ' + (TEE_PHRASE[h.teeResult] || ('in <b>'+h.teeResult+'</b>')));
+    const teeLead = clubPhrase
+      ? ('Tee shot (' + clubPhrase + ') landed ')
+      : 'Tee shot landed ';
+    parts.push(teeLead + (TEE_PHRASE[h.teeResult] || ('in <b>'+h.teeResult+'</b>')));
   }
   const approachClauses = [];
   // VELLUM ASTER + PEAT IRIS (v8.3.33) — yardage phrase via helper (numeric or
@@ -3443,7 +3490,10 @@ function buildHoleSentence(h) {
     const apprDir = approachResultDirection(h.approachResult);
     const zonePart = apprDir ? (', ' + ZONE_PHRASE[apprDir]) : '';
     let verb;
-    if (h.par <= 3) verb = 'Tee shot landed';
+    if (h.par <= 3) {
+      // COPPER SIGIL (v8.3.44) — par 3 tee shot also gets the club parenthetical.
+      verb = clubPhrase ? ('Tee shot (' + clubPhrase + ') landed') : 'Tee shot landed';
+    }
     else if (hasRealYardageClause) verb = 'which landed';
     else verb = 'landed';
     approachClauses.push(verb + ' <b>' + greenPrefix + zonePart + '</b>');
@@ -3465,15 +3515,21 @@ function buildHoleSentence(h) {
   }
   if (h.putts != null) {
     const puttLabel = h.putts === 4 ? '4+ putt' : (h.putts + ' putt');
-    parts.push('finishing with a <b>' + puttLabel + '</b>');
+    // COPPER SIGIL (v8.3.44) — append "from X feet" when firstPuttDist is
+    // captured. Helper handles 0 ("inside 1 foot") and 1 ("1 foot") singular
+    // cases. Legacy band strings still render via PUTT_DIST_PHRASE fallback.
+    const fpdPhrase = firstPuttDistPhrase(h.firstPuttDist);
+    parts.push(fpdPhrase
+      ? 'finishing with a <b>' + puttLabel + '</b> from ' + fpdPhrase
+      : 'finishing with a <b>' + puttLabel + '</b>');
   }
   let body = parts.length ? parts.join(', ') + '.' : '';
+  // COPPER SIGIL (v8.3.44) — doubleChip / sand / fwyBunker / duffedApproach
+  // moved to header pills (holeTroublePillsHtml). Penalty stays here — it's
+  // a stroke count, not a binary "happened" flag, and the rendering pairs
+  // naturally with the OB/OOP tee result language already in the prose.
   const trouble = [];
   if (h.penalty) trouble.push(h.penalty > 1 ? (h.penalty + ' penalties') : 'Penalty');
-  if (h.doubleChip) trouble.push('Double chip');
-  if (h.sand) trouble.push('Greenside bunker');
-  if (h.fwyBunker) trouble.push('Fwy bunker');
-  if (h.duffedApproach) trouble.push('Duffed approach');
   const troubleHtml = trouble.map(t => '<b>' + t + '</b>.').join(' ');
   return [body, troubleHtml].filter(Boolean).join(' ');
 }
@@ -4831,8 +4887,11 @@ function renderDetailV2(round) {
       // with "Hole N · Par M". Each helper returns empty string when the
       // condition isn't met (par 3 has no tee pill; not-GIR-not-Girpy = no
       // badge). Pills only render for played holes.
+      // COPPER SIGIL (v8.3.44) — trouble pills (Dbl chip / Fwy bnk / Grn bnk
+      // / Duff) join the same row, migrated from the bottom-of-prose render.
       const teePillHtml = isPlayed ? holeTeePillHtml(h) : '';
       const girPillHtml = isPlayed ? holeGirPillHtml(h) : '';
+      const troublePillsHtml = isPlayed ? holeTroublePillsHtml(h) : '';
       return `<div id="det-hole-row-${idx}"><div class="round-row" style="${rowOpacity}" onclick="editHoleStart('${round.id}', ${idx})">
         ${warnPill}
         <div class="rr-info">
@@ -4840,6 +4899,7 @@ function renderDetailV2(round) {
             <span>Hole ${h.number} \xb7 Par ${h.par}</span>
             ${teePillHtml}
             ${girPillHtml}
+            ${troublePillsHtml}
           </div>
           ${sentenceHtml}
         </div>
