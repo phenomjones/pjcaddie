@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.53 · May 08, 2026 -->
+<!-- PJ Caddie v8.3.54 · May 08, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -722,6 +722,7 @@ html.sun-mode .det-tdisp-tile{background:var(--paper2);box-shadow:inset 0 1px 0 
 .det-tdisp-lbl{font-size:9px;color:var(--chalk3);letter-spacing:1.5px;text-transform:uppercase;margin-top:3px}
 .det-tdisp-n{font-size:9px;color:var(--chalk3);margin-top:1px;opacity:0.7}
 .det-tdisp-tile.fw .det-tdisp-val{color:var(--green)}
+.det-tdisp-tile.rough .det-tdisp-val{color:var(--gold)}
 .det-tdisp-tile.oop .det-tdisp-val{color:var(--amber)}
 .det-tdisp-tile.ob .det-tdisp-val{color:#F08585}
 .det-blowup-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--ink2);border-radius:8px;margin-bottom:6px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)}
@@ -770,7 +771,7 @@ html.sun-mode .det-streak-pill{background:var(--paper3);border-color:rgba(212,17
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.53 · May 08, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.54 · May 08, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1346,7 +1347,7 @@ html.sun-mode .det-streak-pill{background:var(--paper3);border-color:rgba(212,17
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.53 · Spec v2.1</span>
+        <span>v8.3.54 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -5154,6 +5155,8 @@ function renderRoundArcSection(holes) {
 }
 
 // LANTERN BIRCH (v8.3.47) — Tee dispersion text breakdown. Par 4/5 only.
+// SAFFRON THICKET (v8.3.54) — added Rough tile (L + R) so the four tiles
+// account for all 7 tee zones in severity order: fairway → rough → OOP → OB.
 function renderTeeDispersionSection(holes) {
   const el = document.getElementById('det-teedispersion-section');
   if (!el) return;
@@ -5161,15 +5164,18 @@ function renderTeeDispersionSection(holes) {
   if (!teed.length) { el.innerHTML = ''; return; }
   const n = teed.length;
   const fw = teed.filter(h => h.teeResult === 'fairway').length;
+  const rL = teed.filter(h => h.teeResult === 'L').length;
+  const rR = teed.filter(h => h.teeResult === 'R').length;
   const oopL = teed.filter(h => h.teeResult === 'LL').length;
   const oopR = teed.filter(h => h.teeResult === 'RR').length;
   const obL  = teed.filter(h => h.teeResult === 'OBL').length;
   const obR  = teed.filter(h => h.teeResult === 'OBR').length;
-  const oop = oopL + oopR, ob = obL + obR;
+  const rough = rL + rR, oop = oopL + oopR, ob = obL + obR;
   const pct = c => Math.round((c/n)*100);
   el.innerHTML = `<span class="section-lbl">Tee Dispersion</span>
-    <div class="det-tdisp">
+    <div class="det-tdisp" style="grid-template-columns:repeat(4,1fr)">
       <div class="det-tdisp-tile fw"><div class="det-tdisp-val">${pct(fw)}%</div><div class="det-tdisp-lbl">Fairway</div><div class="det-tdisp-n">${fw}/${n}</div></div>
+      <div class="det-tdisp-tile rough"><div class="det-tdisp-val">${pct(rough)}%</div><div class="det-tdisp-lbl">Rough</div><div class="det-tdisp-n">${rough}/${n}${rough?` (${rL}L / ${rR}R)`:''}</div></div>
       <div class="det-tdisp-tile oop"><div class="det-tdisp-val">${pct(oop)}%</div><div class="det-tdisp-lbl">Out of Pos</div><div class="det-tdisp-n">${oop}/${n}${oop?` (${oopL}L / ${oopR}R)`:''}</div></div>
       <div class="det-tdisp-tile ob"><div class="det-tdisp-val">${pct(ob)}%</div><div class="det-tdisp-lbl">OB</div><div class="det-tdisp-n">${ob}/${n}${ob?` (${obL}L / ${obR}R)`:''}</div></div>
     </div>`;
