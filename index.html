@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.45 · May 07, 2026 -->
+<!-- PJ Caddie v8.3.52 · May 08, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -702,6 +702,67 @@ html.sun-mode .gc-section,html.sun-mode .det-card,html.sun-mode .round-row{box-s
 html.sun-mode .gc-fwy-picker{box-shadow:inset 0 2px 4px rgba(0,0,0,0.10)}
 html.sun-mode .gc-numeric-input,html.sun-mode .det-stack-track,html.sun-mode .sp-h-link,html.sun-mode .gc-penalty-card{box-shadow:inset 0 1px 2px rgba(0,0,0,0.08)}
 html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
+
+/* JUNIPER QUARRY BATCH (v8.3.46-52) — post-round summary styling. Reuses
+   .det-card depth pattern, .section-lbl gold uppercase, .sp-h-link tap-pills.
+   New widgets: round-arc SVG sparkline, blow-up hole rows with attribution,
+   counterfactual scrubbed-scorecard tiles, comparison rows (label · today
+   number · baseline number · delta arrow). All sun-mode parity inherited. */
+.det-completeness{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;background:var(--ink2);border-radius:10px;border:1px solid rgba(255,255,255,0.05);cursor:pointer}
+.det-completeness.full{cursor:default}
+.det-completeness-icon{font-size:13px;line-height:1}
+.det-completeness-text{font-size:11px;color:var(--chalk2);flex:1;letter-spacing:0.3px}
+.det-completeness-text b{color:var(--chalk);font-weight:600}
+.det-completeness-chev{font-size:9px;color:var(--chalk3)}
+html.sun-mode .det-completeness{background:var(--paper2);border-color:rgba(0,0,0,0.06)}
+.det-arc-card{padding:14px 12px 10px;background:var(--ink2);border-radius:10px;margin-bottom:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04),0 1px 2px rgba(0,0,0,0.18)}
+html.sun-mode .det-arc-card{background:var(--paper2);box-shadow:inset 0 1px 0 rgba(255,255,255,0.6),0 1px 2px rgba(0,0,0,0.06)}
+.det-arc-svg{width:100%;height:54px;display:block}
+.det-arc-row{display:flex;justify-content:space-between;font-size:10px;color:var(--chalk3);letter-spacing:1.5px;text-transform:uppercase;margin-top:6px}
+.det-arc-half{display:flex;flex-direction:column;align-items:center;gap:2px}
+.det-arc-half-lbl{font-size:9px}
+.det-arc-half-val{font-size:13px;color:var(--chalk);font-weight:600;letter-spacing:0}
+.det-tdisp{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.det-tdisp-tile{padding:10px 6px 8px;background:var(--ink2);border-radius:8px;text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03),0 1px 2px rgba(0,0,0,0.14)}
+html.sun-mode .det-tdisp-tile{background:var(--paper2);box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),0 1px 2px rgba(0,0,0,0.05)}
+.det-tdisp-val{font-size:18px;color:var(--chalk);font-weight:700;line-height:1.1}
+.det-tdisp-lbl{font-size:9px;color:var(--chalk3);letter-spacing:1.5px;text-transform:uppercase;margin-top:3px}
+.det-tdisp-n{font-size:9px;color:var(--chalk3);margin-top:1px;opacity:0.7}
+.det-tdisp-tile.fw .det-tdisp-val{color:var(--green)}
+.det-tdisp-tile.oop .det-tdisp-val{color:var(--amber)}
+.det-tdisp-tile.ob .det-tdisp-val{color:#F08585}
+.det-blowup-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--ink2);border-radius:8px;margin-bottom:6px;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)}
+.det-blowup-row.selected{background:var(--ink3);box-shadow:inset 0 0 0 1px var(--gold)}
+html.sun-mode .det-blowup-row{background:var(--paper2)}
+html.sun-mode .det-blowup-row.selected{background:var(--paper3);box-shadow:inset 0 0 0 1px var(--gold)}
+.det-blowup-h{font-size:11px;color:var(--chalk2);font-weight:700;letter-spacing:0.5px;min-width:30px}
+.det-blowup-score{font-size:14px;font-weight:700;color:#F08585;min-width:24px;text-align:center}
+.det-blowup-cause{flex:1;font-size:11px;color:var(--chalk2);line-height:1.4}
+.det-blowup-empty{padding:12px;text-align:center;color:var(--chalk3);font-size:11px;font-style:italic;background:var(--ink2);border-radius:8px}
+html.sun-mode .det-blowup-empty{background:var(--paper2)}
+.det-scrub-tile{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--ink2);border-radius:8px;margin-bottom:5px;font-size:11px}
+.det-scrub-tile-lbl{flex:1;color:var(--chalk2)}
+.det-scrub-tile-val{font-weight:700;color:var(--chalk);font-size:13px}
+.det-scrub-tile-delta{color:var(--green);font-size:11px;font-weight:600;letter-spacing:0.5px}
+html.sun-mode .det-scrub-tile{background:var(--paper2)}
+.det-pbu-row,.det-stretch-row{display:flex;align-items:center;gap:10px;padding:7px 12px;background:var(--ink2);border-radius:8px;margin-bottom:5px;font-size:11px;color:var(--chalk2)}
+html.sun-mode .det-pbu-row,html.sun-mode .det-stretch-row{background:var(--paper2)}
+.det-pbu-recovered{color:var(--green);font-weight:600}
+.det-pbu-tilted{color:#F08585;font-weight:600}
+.det-cmp-row{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:baseline;padding:7px 12px;background:var(--ink2);border-radius:8px;margin-bottom:5px;font-size:11px}
+html.sun-mode .det-cmp-row{background:var(--paper2)}
+.det-cmp-lbl{color:var(--chalk2)}
+.det-cmp-today{font-size:14px;font-weight:700;color:var(--chalk);min-width:36px;text-align:right}
+.det-cmp-base{font-size:10px;color:var(--chalk3);min-width:64px;text-align:right;letter-spacing:0.3px}
+.det-cmp-arrow{font-size:10px;font-weight:700;min-width:18px;text-align:center;letter-spacing:0.5px}
+.det-cmp-arrow.up{color:var(--green)}
+.det-cmp-arrow.down{color:#F08585}
+.det-cmp-arrow.even{color:var(--chalk3)}
+.det-cmp-empty{padding:10px 12px;text-align:center;color:var(--chalk3);font-size:11px;font-style:italic;background:var(--ink2);border-radius:8px;margin-bottom:5px}
+html.sun-mode .det-cmp-empty{background:var(--paper2)}
+.det-streak-pill{display:inline-block;padding:3px 9px;background:var(--ink3);border:1px solid rgba(212,175,55,0.4);border-radius:14px;font-size:11px;color:var(--gold);margin-right:6px;margin-bottom:6px;font-weight:600;letter-spacing:0.3px}
+html.sun-mode .det-streak-pill{background:var(--paper3);border-color:rgba(212,175,55,0.5)}
+.det-prbreak-pill{display:inline-block;padding:3px 9px;background:rgba(212,175,55,0.18);border:1px solid var(--gold);border-radius:14px;font-size:11px;color:var(--gold);margin-right:6px;margin-bottom:6px;font-weight:700;letter-spacing:0.3px}
 </style>
 </head>
 <body>
@@ -716,7 +777,7 @@ html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.45 · May 07, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.52 · May 08, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -932,7 +993,7 @@ html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
                  inputmode="numeric" min="1" max="350" step="1" placeholder="Yards"
                  onchange="glacierSetApproachYards(this.value)">
         </div>
-        <div class="gc-mini-lbl" style="margin:14px 0 8px">Miss vs Aim</div>
+        <div class="gc-mini-lbl" style="margin:14px 0 8px">Miss vs Target</div>
         <!-- CINDER MEADOW (v8.3.36) — direction-only picker. The 9-zone 3×3
              grid (long/pin/short × L/C/R) collapsed to 3 buttons. Schema codes
              are 'L'/'C'/'R'; legacy 9-zone values still render correctly via
@@ -947,9 +1008,9 @@ html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
              unchanged; legacy data was implicitly absolute, new data is
              aim-relative — documented semantic shift (no migration). -->
         <div class="gc-dir-row" id="gc-dir-row">
-          <button class="gc-chip" data-dir="L" onclick="glacierSetField('approachResult','L')" aria-label="Pulled left of aim">L</button>
-          <button class="gc-chip" data-dir="C" onclick="glacierSetField('approachResult','C')" aria-label="On aim">C</button>
-          <button class="gc-chip" data-dir="R" onclick="glacierSetField('approachResult','R')" aria-label="Pushed right of aim">R</button>
+          <button class="gc-chip" data-dir="L" onclick="glacierSetField('approachResult','L')" aria-label="Pulled left of target">L</button>
+          <button class="gc-chip" data-dir="C" onclick="glacierSetField('approachResult','C')" aria-label="On target">C</button>
+          <button class="gc-chip" data-dir="R" onclick="glacierSetField('approachResult','R')" aria-label="Pushed right of target">R</button>
         </div>
         <!-- CEDAR HEARTH (v8.3.40) — back to a single toggle button. JADE
              TUMBLE's 2-button picker was overdesigned: forces an explicit
@@ -1042,6 +1103,11 @@ html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
     <div class="hdr-row">
       <button class="back-btn" onclick="showView('history')">History</button>
     </div>
+    <!-- IVORY CROWN (v8.3.46) — Round Summary screen title above the course
+         name. Reuses .section-lbl gold uppercase styling (10px, letter-spaced)
+         to read as a screen-purpose label, not metadata. Same title fires for
+         both SUMMIT MIRROR (just-saved) and History-tap entry paths. -->
+    <span class="section-lbl" style="margin-top:8px;margin-bottom:6px">Round Summary</span>
     <div id="det-course" class="hdr-title"></div>
     <div id="det-meta" style="font-size:12px;color:var(--chalk3);margin-top:2px"></div>
   </div>
@@ -1051,6 +1117,33 @@ html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
       <div class="stat-strip" id="det-stats"></div>
       <div class="stat-strip-2" id="det-stats2"></div>
       <div class="det-stat-panel" id="det-panel-stats"></div>
+      <!-- JUNIPER QUARRY BATCH (v8.3.46-52) — post-round summary surfaces.
+           Inserted between core stat strips and the existing detail flow so
+           the 18-hcp framing reads first. Existing detail sections (tee chart,
+           zones, par, DBAG, etc) continue below as the analytical tail. -->
+      <!-- COBALT TUSK (v8.3.49) — capture completeness pill + tap-expand drill-down -->
+      <div id="det-completeness-section"></div>
+      <div class="det-stat-panel" id="det-panel-completeness"></div>
+      <!-- LANTERN BIRCH (v8.3.47) — Round arc sparkline (18 dots, cumulative ± over par)
+           + Tee dispersion text summary (% FW / OOP / OB by side) -->
+      <div id="det-roundarc-section"></div>
+      <div id="det-teedispersion-section"></div>
+      <!-- LANTERN BIRCH (v8.3.47) + OAK SIGNAL (v8.3.48) — score-killer block:
+           blow-up holes with attribution (replaces "lost strokes by category"),
+           scrubbed scorecard, post-blow-up recovery, worst 3-hole stretch -->
+      <div id="det-blowups-section"></div>
+      <div class="det-stat-panel" id="det-panel-blowups"></div>
+      <div id="det-scrubbed-section"></div>
+      <div id="det-postblowup-section"></div>
+      <div id="det-worststretch-section"></div>
+      <!-- RIVER STONE (v8.3.50) + MIDNIGHT FERN (v8.3.51-52) — cross-round
+           comparisons. All consume DET.historyCache loaded once at renderDetailV2
+           entry. Each section gracefully empty when n<5 or no prior course-tee
+           rounds exist. -->
+      <div id="det-vsaverages-section"></div>
+      <div id="det-coursetee-pr-section"></div>
+      <div id="det-streaks-section"></div>
+      <div id="det-pr-breakdowns-section"></div>
       <div id="det-tee-section"></div>
       <div class="det-stat-panel" id="det-panel-tee"></div>
       <div id="det-zones-section"></div>
@@ -1263,7 +1356,7 @@ html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.45 · Spec v2.1</span>
+        <span>v8.3.52 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -3303,9 +3396,9 @@ const TEE_PHRASE = {
 // Pre-CINDER MEADOW data was implicitly absolute; documented semantic
 // shift, no migration. See capture-screen comment for full context.
 const ZONE_PHRASE = {
-  'L': 'left of aim',
-  'C': 'on aim',
-  'R': 'right of aim'
+  'L': 'left of target',
+  'C': 'on target',
+  'R': 'right of target'
 };
 
 // IRON THICKET (v8.3.39) — infer non-tee, non-approach, non-putting swings
@@ -4197,6 +4290,23 @@ function renderDetailV2(round) {
     {val: duffedApproaches || '0', lbl: 'Duffed', k: duffedApproaches ? 'duffedApproach' : null},
   ].map(statTileHtml).join('');
 
+  // ── JUNIPER QUARRY BATCH (v8.3.46-52) — post-round summary block ──
+  // Inserted between core stat strips and the existing detail flow.
+  // Each render function self-clears on insufficient data; total block
+  // is silent when all sections come back empty (e.g. an empty round).
+  ensureHistoryCache(round);
+  renderCompletenessSection(allHoles);
+  renderRoundArcSection(holes);
+  renderTeeDispersionSection(holes);
+  renderBlowupsSection(allHoles);
+  renderScrubbedScorecardSection(holes, round.totalScore);
+  renderPostBlowupSection(holes);
+  renderWorstStretchSection(holes, round.totalScore);
+  renderVsAveragesSection(round, holes);
+  renderCourseTeePrSection(round);
+  renderStreaksSection(round);
+  renderPrBreakdownsSection(round, holes);
+
   // ── Tee Shots vertical bar chart ────────────────────────────
   // Par 4/5 only, count by teeResult zone OBL→OBR.
   // VELVET LATTICE (v8.3.2) — bars route through statSelect('teeZone', zone).
@@ -4301,7 +4411,7 @@ function renderDetailV2(round) {
   // AURUM COMPASS (v8.3.38) — section reframed as aim-relative. Labels updated
   // to "Left" / "On Aim" / "Right" to make the frame explicit on the C cell.
   const dirOrder = ['L', 'C', 'R'];
-  const dirLabel = { L: 'Left', C: 'On Aim', R: 'Right' };
+  const dirLabel = { L: 'Left', C: 'On Target', R: 'Right' };
   const missed = holes.filter(h => h.onGreen === false && h.approachResult != null);
   const hit = holes.filter(h => h.onGreen === true && h.approachResult != null);
   const dirBucket = (pct, isMissed) => {
@@ -4324,7 +4434,7 @@ function renderDetailV2(round) {
     }).join('');
   };
   document.getElementById('det-zones-section').innerHTML = `
-    <span class="section-lbl">Miss vs Aim</span>
+    <span class="section-lbl">Miss vs Target</span>
     <div class="det-grids">
       <div class="det-grid-card">
         <div class="det-grid-hdr"><span class="det-grid-name">Missed</span><span class="det-grid-n">n=${missed.length}</span></div>
@@ -4948,6 +5058,438 @@ function renderDetailV2(round) {
   statApplySelection();
 
   // Delete button stays usable.
+}
+
+// ═════════════════════════════════════════════════════════════════════
+// JUNIPER QUARRY BATCH (v8.3.46-52) — post-round summary render helpers.
+// All called from renderDetailV2 between det-stats2 and the existing tee
+// section. Each function self-contained: takes (round, holes, ...) args
+// it needs, gracefully clears its own container when data insufficient.
+// Hole-number references use h.number (matches existing schema).
+// Tap-through to per-hole row uses scrollToHoleRow(idx) — idx is the
+// position in allHoles (the iteration index used by det-hole-row-${idx}).
+// ═════════════════════════════════════════════════════════════════════
+
+// COBALT TUSK (v8.3.49) — capture completeness. A hole is "fully captured"
+// when score+putts present, plus teeResult and approachYards on par 4/5.
+// Par 3 has no teeResult or approachYards in the capture flow.
+function holeMissingFields(h) {
+  const m = [];
+  if (h.score == null || h.score <= 0) m.push('score');
+  if (h.putts == null) m.push('putts');
+  if (h.par !== 3) {
+    if (h.teeResult == null) m.push('tee');
+    if (h.approachYards == null) m.push('approach yds');
+  }
+  return m;
+}
+function renderCompletenessSection(allHoles) {
+  const el = document.getElementById('det-completeness-section');
+  if (!el) return;
+  const played = allHoles.filter(h => h.score > 0);
+  if (!played.length) { el.innerHTML = ''; return; }
+  const incomplete = played.map((h, i) => ({ h, idx: allHoles.indexOf(h), missing: holeMissingFields(h) }))
+    .filter(x => x.missing.length > 0);
+  const n = played.length;
+  if (!incomplete.length) {
+    el.innerHTML = `<div class="det-completeness full">
+      <span class="det-completeness-icon">\u2713</span>
+      <span class="det-completeness-text"><b>${n} of ${n}</b> holes fully captured</span>
+    </div>`;
+  } else {
+    el.innerHTML = `<div class="det-completeness" onclick="toggleCompletenessDetail()">
+      <span class="det-completeness-icon">\u26a0</span>
+      <span class="det-completeness-text"><b>${n - incomplete.length} of ${n}</b> holes fully captured \u00b7 ${incomplete.length} need detail</span>
+      <span class="det-completeness-chev" id="det-completeness-chev">\u25be</span>
+    </div>`;
+  }
+  // Stash the data for the toggle handler
+  window._completenessIncomplete = incomplete;
+}
+function toggleCompletenessDetail() {
+  const panel = document.getElementById('det-panel-completeness');
+  const chev = document.getElementById('det-completeness-chev');
+  if (!panel) return;
+  if (panel.classList.contains('on')) {
+    panel.classList.remove('on'); panel.innerHTML = '';
+    if (chev) chev.textContent = '\u25be';
+    return;
+  }
+  const data = window._completenessIncomplete || [];
+  if (!data.length) return;
+  const rows = data.map(x => `<div style="font-size:11px;color:var(--chalk2);padding:5px 12px">
+    <b style="color:var(--chalk)">H${x.h.number}</b> \u00b7 missing: ${x.missing.join(', ')}
+    <button class="sp-h-link" style="margin-left:8px" onclick="scrollToHoleRow(${x.idx})">view</button>
+  </div>`).join('');
+  panel.innerHTML = rows;
+  panel.classList.add('on');
+  if (chev) chev.textContent = '\u25b4';
+}
+
+// LANTERN BIRCH (v8.3.47) — Round arc sparkline. 18 dots showing cumulative
+// strokes ± over par. Above zero = trending over par; below = under par.
+// Front-9 / Back-9 totals shown beneath as small labeled values.
+function renderRoundArcSection(holes) {
+  const el = document.getElementById('det-roundarc-section');
+  if (!el) return;
+  if (!holes.length) { el.innerHTML = ''; return; }
+  let cum = 0;
+  const points = holes.map(h => { cum += (h.score - h.par); return cum; });
+  const maxAbs = Math.max(2, ...points.map(p => Math.abs(p)));
+  const W = 320, H = 54, pad = 6;
+  const dx = (W - 2*pad) / Math.max(1, points.length - 1);
+  const yFor = v => H/2 - (v / maxAbs) * (H/2 - pad);
+  const dotsHtml = points.map((p, i) => {
+    const x = pad + i * dx, y = yFor(p);
+    const fill = p > 0 ? '#F08585' : p < 0 ? 'var(--green)' : 'var(--chalk3)';
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="${fill}"/>`;
+  }).join('');
+  const linePath = points.map((p,i) => {
+    const x = pad + i*dx, y = yFor(p);
+    return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1);
+  }).join(' ');
+  const zeroY = H/2;
+  const f9 = holes.slice(0,9).reduce((a,h)=>a+h.score,0);
+  const b9 = holes.slice(9,18).reduce((a,h)=>a+h.score,0);
+  const f9par = holes.slice(0,9).reduce((a,h)=>a+h.par,0);
+  const b9par = holes.slice(9,18).reduce((a,h)=>a+h.par,0);
+  const f9rel = f9 - f9par, b9rel = b9 - b9par;
+  const relStr = r => r === 0 ? 'E' : r > 0 ? '+'+r : String(r);
+  const hasBack = holes.length > 9;
+  el.innerHTML = `<span class="section-lbl">Round Arc</span>
+    <div class="det-arc-card">
+      <svg class="det-arc-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <line x1="${pad}" y1="${zeroY}" x2="${W-pad}" y2="${zeroY}" stroke="var(--chalk3)" stroke-width="0.5" stroke-dasharray="2 3" opacity="0.4"/>
+        <path d="${linePath}" fill="none" stroke="var(--chalk2)" stroke-width="1" opacity="0.55"/>
+        ${dotsHtml}
+      </svg>
+      <div class="det-arc-row">
+        <div class="det-arc-half"><span class="det-arc-half-lbl">Front 9</span><span class="det-arc-half-val">${f9 || '\u2014'} (${relStr(f9rel)})</span></div>
+        ${hasBack ? `<div class="det-arc-half"><span class="det-arc-half-lbl">Back 9</span><span class="det-arc-half-val">${b9} (${relStr(b9rel)})</span></div>` : ''}
+      </div>
+    </div>`;
+}
+
+// LANTERN BIRCH (v8.3.47) — Tee dispersion text breakdown. Par 4/5 only.
+function renderTeeDispersionSection(holes) {
+  const el = document.getElementById('det-teedispersion-section');
+  if (!el) return;
+  const teed = holes.filter(h => h.par !== 3 && h.teeResult != null);
+  if (!teed.length) { el.innerHTML = ''; return; }
+  const n = teed.length;
+  const fw = teed.filter(h => h.teeResult === 'fairway').length;
+  const oopL = teed.filter(h => h.teeResult === 'LL').length;
+  const oopR = teed.filter(h => h.teeResult === 'RR').length;
+  const obL  = teed.filter(h => h.teeResult === 'OBL').length;
+  const obR  = teed.filter(h => h.teeResult === 'OBR').length;
+  const oop = oopL + oopR, ob = obL + obR;
+  const pct = c => Math.round((c/n)*100);
+  el.innerHTML = `<span class="section-lbl">Tee Dispersion</span>
+    <div class="det-tdisp">
+      <div class="det-tdisp-tile fw"><div class="det-tdisp-val">${pct(fw)}%</div><div class="det-tdisp-lbl">Fairway</div><div class="det-tdisp-n">${fw}/${n}</div></div>
+      <div class="det-tdisp-tile oop"><div class="det-tdisp-val">${pct(oop)}%</div><div class="det-tdisp-lbl">Out of Pos</div><div class="det-tdisp-n">${oop}/${n}${oop?` (${oopL}L / ${oopR}R)`:''}</div></div>
+      <div class="det-tdisp-tile ob"><div class="det-tdisp-val">${pct(ob)}%</div><div class="det-tdisp-lbl">OB</div><div class="det-tdisp-n">${ob}/${n}${ob?` (${obL}L / ${obR}R)`:''}</div></div>
+    </div>`;
+}
+
+// LANTERN BIRCH (v8.3.47) — Blow-up holes with attribution. Replaces "lost
+// strokes by category" per Tiger's 18-hcp reframe (per Matt's pick of
+// option B in the LANTERN BIRCH reframe question). Tap-through scrolls
+// to the hole row + flashes it (reuses scrollToHoleRow).
+function blowupAttribution(h) {
+  const causes = [];
+  if (h.penalty > 0) causes.push(h.penalty > 1 ? `${h.penalty} penalties` : 'penalty');
+  if (h.teeResult === 'OBL' || h.teeResult === 'OBR') causes.push('OB tee shot');
+  if (h.putts >= 3) causes.push(h.putts + '-putt');
+  if (h.doubleChip) causes.push('double-chip');
+  if ((h.teeResult === 'LL' || h.teeResult === 'RR') && (h.penalty || 0) === 0) causes.push('OOP tee shot');
+  if (h.duffedApproach) causes.push('duffed approach');
+  if (!causes.length) causes.push('multiple swings');
+  return causes.join(' + ');
+}
+function renderBlowupsSection(allHoles) {
+  const el = document.getElementById('det-blowups-section');
+  if (!el) return;
+  const holes = allHoles.filter(h => h.score > 0);
+  if (!holes.length) { el.innerHTML = ''; return; }
+  const blowups = holes.filter(h => (h.score - h.par) >= 2);
+  if (!blowups.length) {
+    el.innerHTML = `<span class="section-lbl">Blow-up Holes</span>
+      <div class="det-blowup-empty">No doubles or worse \u2014 clean round.</div>`;
+    return;
+  }
+  const sumOver = blowups.reduce((a,h)=>a+(h.score-h.par),0);
+  const rows = blowups.map(h => {
+    const idx = allHoles.indexOf(h);
+    return `<div class="det-blowup-row" onclick="scrollToHoleRow(${idx})">
+      <span class="det-blowup-h">H${h.number}</span>
+      <span class="det-blowup-score">${h.score}</span>
+      <span class="det-blowup-cause">+${h.score-h.par} \u00b7 ${blowupAttribution(h)}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<span class="section-lbl">Blow-up Holes \u00b7 ${blowups.length} hole${blowups.length!==1?'s':''} \u00b7 +${sumOver} strokes</span>
+    ${rows}`;
+}
+
+// OAK SIGNAL (v8.3.48) — Scrubbed scorecard counterfactuals.
+function renderScrubbedScorecardSection(holes, totalScore) {
+  const el = document.getElementById('det-scrubbed-section');
+  if (!el) return;
+  if (holes.length < 3 || totalScore == null) { el.innerHTML = ''; return; }
+  const byOver = holes.slice().sort((a,b) => (b.score - b.par) - (a.score - a.par));
+  const worstOver = byOver[0].score - byOver[0].par;
+  const worst2Over = worstOver + (byOver[1].score - byOver[1].par);
+  const totalPen = holes.reduce((a,h)=>a+(h.penalty||0),0);
+  const tiles = [];
+  if (worstOver >= 1) {
+    tiles.push(`<div class="det-scrub-tile">
+      <span class="det-scrub-tile-lbl">Without your worst hole (H${byOver[0].number})</span>
+      <span class="det-scrub-tile-val">${totalScore - worstOver}</span>
+      <span class="det-scrub-tile-delta">\u2212${worstOver}</span>
+    </div>`);
+  }
+  if (worst2Over >= 2 && holes.length >= 5) {
+    tiles.push(`<div class="det-scrub-tile">
+      <span class="det-scrub-tile-lbl">Without your worst 2 holes</span>
+      <span class="det-scrub-tile-val">${totalScore - worst2Over}</span>
+      <span class="det-scrub-tile-delta">\u2212${worst2Over}</span>
+    </div>`);
+  }
+  if (totalPen > 0) {
+    tiles.push(`<div class="det-scrub-tile">
+      <span class="det-scrub-tile-lbl">Without penalty strokes</span>
+      <span class="det-scrub-tile-val">${totalScore - totalPen}</span>
+      <span class="det-scrub-tile-delta">\u2212${totalPen}</span>
+    </div>`);
+  }
+  if (!tiles.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<span class="section-lbl" style="margin-top:14px">Scrubbed Scorecard</span>
+    ${tiles.join('')}`;
+}
+
+// OAK SIGNAL (v8.3.48) — Post-blow-up recovery. Score on H+1 after a
+// double or worse. "Recovered well" = bogey or better. "Tilted" = double+.
+function renderPostBlowupSection(holes) {
+  const el = document.getElementById('det-postblowup-section');
+  if (!el) return;
+  const blowupIdx = [];
+  for (let i = 0; i < holes.length - 1; i++) {
+    if ((holes[i].score - holes[i].par) >= 2) blowupIdx.push(i);
+  }
+  if (!blowupIdx.length) { el.innerHTML = ''; return; }
+  const rows = blowupIdx.map(i => {
+    const bu = holes[i], nx = holes[i+1];
+    const nxOver = nx.score - nx.par;
+    let label, cls;
+    if (nxOver <= 1) { label = `bogey or better (${nx.score})`; cls = 'det-pbu-recovered'; }
+    else if (nxOver >= 2) { label = `double+ (${nx.score})`; cls = 'det-pbu-tilted'; }
+    else { label = `par (${nx.score})`; cls = 'det-pbu-recovered'; }
+    return `<div class="det-pbu-row">
+      After H${bu.number} (${bu.score}) \u00b7 <span class="${cls}">H${nx.number}: ${label}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<span class="section-lbl" style="margin-top:14px">Post-Blow-up Recovery</span>
+    ${rows}`;
+}
+
+// OAK SIGNAL (v8.3.48) — Worst 3-hole stretch. Sliding window over played
+// holes; reports highest sum of strokes-over-par.
+function renderWorstStretchSection(holes, totalScore) {
+  const el = document.getElementById('det-worststretch-section');
+  if (!el) return;
+  if (holes.length < 3 || totalScore == null) { el.innerHTML = ''; return; }
+  const totalPar = holes.reduce((a,h)=>a+h.par,0);
+  const totalOver = totalScore - totalPar;
+  if (totalOver <= 0) { el.innerHTML = ''; return; }
+  let bestStart = 0, bestOver = -Infinity;
+  for (let i = 0; i + 3 <= holes.length; i++) {
+    const over = (holes[i].score-holes[i].par) + (holes[i+1].score-holes[i+1].par) + (holes[i+2].score-holes[i+2].par);
+    if (over > bestOver) { bestOver = over; bestStart = i; }
+  }
+  if (bestOver <= 0) { el.innerHTML = ''; return; }
+  el.innerHTML = `<span class="section-lbl" style="margin-top:14px">Worst 3-Hole Stretch</span>
+    <div class="det-stretch-row">
+      H${holes[bestStart].number}\u2013H${holes[bestStart+2].number} cost you <b style="color:#F08585">+${bestOver}</b> of your +${totalOver}
+    </div>`;
+}
+
+// RIVER STONE (v8.3.50) — round-history cache scoped to detail-screen
+// lifecycle. Cleared and rebuilt at every renderDetailV2 entry. Filters
+// past rounds to same course + tee, excludes today's round.
+function ensureHistoryCache(round) {
+  const allRounds = (typeof getRounds === 'function' ? getRounds() : []) || [];
+  const sameCT = allRounds
+    .filter(r => r && r.id !== round.id && r.course === round.course && r.tees === round.tees && r.totalScore != null)
+    .sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+  DET.historyCache = { sameCT };
+}
+
+// Comparison-arrow helper. Priya's ±0.5 tolerance: deltas within 0.5 read
+// "even". lowerIsBetter=true for strokes/3-putts; false for GIR.
+function cmpArrowHtml(today, baseline, lowerIsBetter) {
+  if (today == null || baseline == null) return `<span class="det-cmp-arrow even">\u2014</span>`;
+  const diff = today - baseline;
+  if (Math.abs(diff) <= 0.5) return `<span class="det-cmp-arrow even">\u2022</span>`;
+  const better = lowerIsBetter ? diff < 0 : diff > 0;
+  return better ? `<span class="det-cmp-arrow up">\u25b2</span>` : `<span class="det-cmp-arrow down">\u25bc</span>`;
+}
+
+// RIVER STONE (v8.3.50) — Vs personal averages last 5 / last 10 same
+// course-tee. Gated on n>=5; shows "n more rounds needed" when below.
+function renderVsAveragesSection(round, holes) {
+  const el = document.getElementById('det-vsaverages-section');
+  if (!el) return;
+  const cache = DET.historyCache;
+  if (!cache || !holes.length) { el.innerHTML = ''; return; }
+  const past = cache.sameCT;
+  if (past.length < 5) {
+    const need = 5 - past.length;
+    el.innerHTML = `<span class="section-lbl" style="margin-top:14px">Vs Your Averages</span>
+      <div class="det-cmp-empty">${need} more round${need!==1?'s':''} at this course \u00b7 tee needed for averages.</div>`;
+    return;
+  }
+  const isGIR = h => h.onGreen === true && (h.score - h.putts) <= (h.par - 2);
+  const tStrokes = round.totalScore;
+  const tGIR = holes.filter(isGIR).length;
+  const tThreePutts = holes.filter(h => (h.putts||0) >= 3).length;
+  const meanOver = (arr, fn) => arr.length ? arr.reduce((a,r)=>a+fn(r),0)/arr.length : null;
+  const roundGIR = r => (r.holes||[]).filter(h => h.score > 0 && isGIR(h)).length;
+  const roundTP = r => (r.holes||[]).filter(h => h.score > 0 && (h.putts||0) >= 3).length;
+  const window5 = past.slice(0, 5);
+  const window10 = past.slice(0, 10);
+  const has10 = window10.length >= 10;
+  const fmt1 = v => v == null ? '\u2014' : v.toFixed(1);
+  const cell = (today, b5, b10, lowerBetter) => {
+    const baseStr = has10 ? `${fmt1(b5)} \u00b7 ${fmt1(b10)}` : fmt1(b5);
+    return `<span class="det-cmp-today">${today}</span>
+      <span class="det-cmp-base">${baseStr}</span>
+      ${cmpArrowHtml(today, b5, lowerBetter)}`;
+  };
+  const a5S = meanOver(window5, r => r.totalScore);
+  const a10S = has10 ? meanOver(window10, r => r.totalScore) : null;
+  const a5G = meanOver(window5, roundGIR);
+  const a10G = has10 ? meanOver(window10, roundGIR) : null;
+  const a5T = meanOver(window5, roundTP);
+  const a10T = has10 ? meanOver(window10, roundTP) : null;
+  const baseLbl = has10 ? 'last 5 \u00b7 last 10' : 'last 5';
+  el.innerHTML = `<span class="section-lbl" style="margin-top:14px">Vs Your Averages \u00b7 ${baseLbl}</span>
+    <div class="det-cmp-row"><span class="det-cmp-lbl">Strokes</span>${cell(tStrokes, a5S, a10S, true)}</div>
+    <div class="det-cmp-row"><span class="det-cmp-lbl">GIR</span>${cell(tGIR, a5G, a10G, false)}</div>
+    <div class="det-cmp-row"><span class="det-cmp-lbl">3-putts</span>${cell(tThreePutts, a5T, a10T, true)}</div>`;
+}
+
+// MIDNIGHT FERN (v8.3.51) — Vs course-tee history (best/worst/median).
+// Gated on n>=2 prior rounds at the combo.
+function renderCourseTeePrSection(round) {
+  const el = document.getElementById('det-coursetee-pr-section');
+  if (!el) return;
+  const cache = DET.historyCache;
+  if (!cache) { el.innerHTML = ''; return; }
+  const past = cache.sameCT;
+  if (past.length < 2) { el.innerHTML = ''; return; }
+  const all = past.concat([round]).filter(r => r.totalScore != null).map(r => r.totalScore).sort((a,b)=>a-b);
+  const best = all[0], worst = all[all.length-1];
+  const median = all[Math.floor(all.length/2)];
+  const today = round.totalScore;
+  let frame;
+  if (today === best) frame = `<b style="color:var(--green)">today is your best</b> at this course \u00b7 tee`;
+  else if (today === worst) frame = `<b style="color:#F08585">today is your worst</b> at this course \u00b7 tee`;
+  else if (today < median) frame = `today (${today}) was <b style="color:var(--green)">better than your median</b> (${median})`;
+  else if (today > median) frame = `today (${today}) was <b style="color:#F08585">above your median</b> (${median})`;
+  else frame = `today (${today}) <b>matched your median</b>`;
+  el.innerHTML = `<span class="section-lbl" style="margin-top:14px">Vs Course \u00b7 Tee History</span>
+    <div class="det-cmp-row" style="grid-template-columns:1fr">
+      <span class="det-cmp-lbl">${frame} \u00b7 best ${best} / median ${median} / worst ${worst} (n=${all.length})</span>
+    </div>`;
+}
+
+// MIDNIGHT FERN (v8.3.51) — Streak indicators. Hcp-derived thresholds:
+// par+20 / par+15 / par+10. "N in a row sub-X" when consecutive past
+// rounds all crossed; "first sub-X in 10+ rounds" when no recent prior.
+function renderStreaksSection(round) {
+  const el = document.getElementById('det-streaks-section');
+  if (!el) return;
+  const cache = DET.historyCache;
+  if (!cache) { el.innerHTML = ''; return; }
+  const past = cache.sameCT;
+  if (past.length < 2) { el.innerHTML = ''; return; }
+  const par = (round.playedPar != null) ? round.playedPar : round.par;
+  if (par == null || round.totalScore == null) { el.innerHTML = ''; return; }
+  const thresholds = [
+    { cap: par + 20 },
+    { cap: par + 15 },
+    { cap: par + 10 }
+  ];
+  const todayCrossed = thresholds.filter(t => round.totalScore < t.cap);
+  if (!todayCrossed.length) { el.innerHTML = ''; return; }
+  const pills = [];
+  todayCrossed.forEach(t => {
+    let streak = 1;
+    for (const r of past) {
+      if (r.totalScore != null && r.totalScore < t.cap) streak++;
+      else break;
+    }
+    if (streak >= 2) {
+      pills.push(`<span class="det-streak-pill">${streak} in a row sub-${t.cap}</span>`);
+    } else {
+      const last10 = past.slice(0, 10);
+      const anyPriorCross = last10.some(r => r.totalScore != null && r.totalScore < t.cap);
+      if (!anyPriorCross && last10.length >= 3) {
+        pills.push(`<span class="det-streak-pill">first sub-${t.cap} in 10+ rounds</span>`);
+      }
+    }
+  });
+  if (!pills.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<span class="section-lbl" style="margin-top:14px">Streaks</span>
+    <div>${pills.join('')}</div>`;
+}
+
+// MIDNIGHT FERN (v8.3.51) — Course-tee PR breakdowns. Front-9, back-9,
+// per-hole bests at same course-tee. ONLY fires when broken today.
+function renderPrBreakdownsSection(round, holes) {
+  const el = document.getElementById('det-pr-breakdowns-section');
+  if (!el) return;
+  const cache = DET.historyCache;
+  if (!cache || !holes.length) { el.innerHTML = ''; return; }
+  const past = cache.sameCT;
+  if (!past.length) { el.innerHTML = ''; return; }
+  const todayF9 = holes.slice(0,9).reduce((a,h)=>a+h.score,0);
+  const todayB9 = holes.slice(9,18).reduce((a,h)=>a+h.score,0);
+  const hasFront = holes.length >= 9;
+  const hasBack = holes.length >= 18;
+  let priorF9 = Infinity, priorB9 = Infinity;
+  const priorHoleBest = {};
+  past.forEach(r => {
+    const ph = (r.holes||[]).filter(h => h.score > 0);
+    if (ph.length >= 9) {
+      const f9 = ph.slice(0,9).reduce((a,h)=>a+h.score,0);
+      if (f9 < priorF9) priorF9 = f9;
+    }
+    if (ph.length >= 18) {
+      const b9 = ph.slice(9,18).reduce((a,h)=>a+h.score,0);
+      if (b9 < priorB9) priorB9 = b9;
+    }
+    ph.forEach(h => {
+      const hn = h.number;
+      if (priorHoleBest[hn] == null || h.score < priorHoleBest[hn]) priorHoleBest[hn] = h.score;
+    });
+  });
+  const pills = [];
+  if (hasFront && priorF9 < Infinity && todayF9 < priorF9) {
+    pills.push(`<span class="det-prbreak-pill">Front-9 PR \u00b7 ${todayF9} (was ${priorF9})</span>`);
+  }
+  if (hasBack && priorB9 < Infinity && todayB9 < priorB9) {
+    pills.push(`<span class="det-prbreak-pill">Back-9 PR \u00b7 ${todayB9} (was ${priorB9})</span>`);
+  }
+  holes.forEach(h => {
+    const prior = priorHoleBest[h.number];
+    if (prior != null && h.score < prior) {
+      pills.push(`<span class="det-prbreak-pill">H${h.number} PR \u00b7 ${h.score} (was ${prior})</span>`);
+    }
+  });
+  if (!pills.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `<span class="section-lbl" style="margin-top:14px">PRs Broken Today</span>
+    <div>${pills.join('')}</div>`;
 }
 
 // ── SETTINGS ─────────────────────────────────────────────────
@@ -6123,7 +6665,7 @@ function renderCourseHubPJI(course) {
     </div>
     <div id="cht-tip-cmr" style="display:none;background:var(--ink3);border-left:2px solid var(--gold);border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:6px;font-size:12px;color:var(--chalk2);line-height:1.5">
       <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:3px">Course Manager Rating</div>
-      Your average decision + execution quality across ${n} round${n!==1?'s':''} at this course and tee. Measures tee strategy, aim point selection, and approach execution. 100% = every decision correct and well-executed.
+      Your average decision + execution quality across ${n} round${n!==1?'s':''} at this course and tee. Measures tee strategy, target point selection, and approach execution. 100% = every decision correct and well-executed.
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
       <div style="width:36px;font-size:12px;color:var(--chalk2);font-weight:600">DCI</div>
@@ -6206,14 +6748,14 @@ function renderCourseHubHoles(course) {
         ${par !== 3 ? `<div class="hub-field">
           <span class="hub-field-lbl">&#127948; Tee</span>
           <textarea class="hub-note" rows="1"
-            placeholder="Aim point, shape, avoid\u2026"
+            placeholder="Target point, shape, avoid\u2026"
             onblur="saveCourseHubField(${i},'tee',this.value)"
             oninput="autoGrowNote(this)">${esc(n.tee)}</textarea>
         </div>` : ''}
         <div class="hub-field">
           <span class="hub-field-lbl">${par === 3 ? '&#127919; Tee / Approach' : '&#127919; Approach'}</span>
           <textarea class="hub-note" rows="1"
-            placeholder="${par === 3 ? 'Club, aim, miss side\u2026' : 'Yardage, miss side, pin zones\u2026'}"
+            placeholder="${par === 3 ? 'Club, target, miss side\u2026' : 'Yardage, miss side, pin zones\u2026'}"
             onblur="saveCourseHubField(${i},'approach',this.value)"
             oninput="autoGrowNote(this)">${esc(n.approach)}</textarea>
         </div>
