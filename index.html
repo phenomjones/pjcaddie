@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.52 · May 08, 2026 -->
+<!-- PJ Caddie v8.3.53 · May 08, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -705,7 +705,7 @@ html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
 
 /* JUNIPER QUARRY BATCH (v8.3.46-52) — post-round summary styling. Reuses
    .det-card depth pattern, .section-lbl gold uppercase, .sp-h-link tap-pills.
-   New widgets: round-arc SVG sparkline, blow-up hole rows with attribution,
+   New widgets: F9/B9 score tile (RAVEN COMPASS), blow-up hole rows with attribution,
    counterfactual scrubbed-scorecard tiles, comparison rows (label · today
    number · baseline number · delta arrow). All sun-mode parity inherited. */
 .det-completeness{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;background:var(--ink2);border-radius:10px;border:1px solid rgba(255,255,255,0.05);cursor:pointer}
@@ -715,13 +715,6 @@ html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
 .det-completeness-text b{color:var(--chalk);font-weight:600}
 .det-completeness-chev{font-size:9px;color:var(--chalk3)}
 html.sun-mode .det-completeness{background:var(--paper2);border-color:rgba(0,0,0,0.06)}
-.det-arc-card{padding:14px 12px 10px;background:var(--ink2);border-radius:10px;margin-bottom:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04),0 1px 2px rgba(0,0,0,0.18)}
-html.sun-mode .det-arc-card{background:var(--paper2);box-shadow:inset 0 1px 0 rgba(255,255,255,0.6),0 1px 2px rgba(0,0,0,0.06)}
-.det-arc-svg{width:100%;height:54px;display:block}
-.det-arc-row{display:flex;justify-content:space-between;font-size:10px;color:var(--chalk3);letter-spacing:1.5px;text-transform:uppercase;margin-top:6px}
-.det-arc-half{display:flex;flex-direction:column;align-items:center;gap:2px}
-.det-arc-half-lbl{font-size:9px}
-.det-arc-half-val{font-size:13px;color:var(--chalk);font-weight:600;letter-spacing:0}
 .det-tdisp{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
 .det-tdisp-tile{padding:10px 6px 8px;background:var(--ink2);border-radius:8px;text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03),0 1px 2px rgba(0,0,0,0.14)}
 html.sun-mode .det-tdisp-tile{background:var(--paper2);box-shadow:inset 0 1px 0 rgba(255,255,255,0.5),0 1px 2px rgba(0,0,0,0.05)}
@@ -777,7 +770,7 @@ html.sun-mode .det-streak-pill{background:var(--paper3);border-color:rgba(212,17
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.52 · May 08, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.53 · May 08, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1118,34 +1111,22 @@ html.sun-mode .det-streak-pill{background:var(--paper3);border-color:rgba(212,17
       <div class="stat-strip-2" id="det-stats2"></div>
       <div class="det-stat-panel" id="det-panel-stats"></div>
       <!-- JUNIPER QUARRY BATCH (v8.3.46-52) — post-round summary surfaces.
-           Inserted between core stat strips and the existing detail flow so
-           the 18-hcp framing reads first. Existing detail sections (tee chart,
-           zones, par, DBAG, etc) continue below as the analytical tail. -->
-      <!-- COBALT TUSK (v8.3.49) — capture completeness pill + tap-expand drill-down -->
+           RAVEN COMPASS (v8.3.53) — reorganized after Matt's first review.
+           HIGH (above existing detail): Completeness pill, F9/B9 tile,
+           Scrubbed scorecard, then existing tee chart / Miss vs Target /
+           Score by Par Type. LOW (below existing detail): Blow-ups,
+           Post-blow-up, Worst stretch, Vs averages, Vs course-tee history,
+           Streaks, PR breakdowns. Round Arc sparkline removed (monotone-up
+           for bogey golf — Tiger silence failure logged). -->
+      <!-- HIGH: at-a-glance summary tiles -->
       <div id="det-completeness-section"></div>
       <div class="det-stat-panel" id="det-panel-completeness"></div>
-      <!-- LANTERN BIRCH (v8.3.47) — Round arc sparkline (18 dots, cumulative ± over par)
-           + Tee dispersion text summary (% FW / OOP / OB by side) -->
       <div id="det-roundarc-section"></div>
-      <div id="det-teedispersion-section"></div>
-      <!-- LANTERN BIRCH (v8.3.47) + OAK SIGNAL (v8.3.48) — score-killer block:
-           blow-up holes with attribution (replaces "lost strokes by category"),
-           scrubbed scorecard, post-blow-up recovery, worst 3-hole stretch -->
-      <div id="det-blowups-section"></div>
-      <div class="det-stat-panel" id="det-panel-blowups"></div>
       <div id="det-scrubbed-section"></div>
-      <div id="det-postblowup-section"></div>
-      <div id="det-worststretch-section"></div>
-      <!-- RIVER STONE (v8.3.50) + MIDNIGHT FERN (v8.3.51-52) — cross-round
-           comparisons. All consume DET.historyCache loaded once at renderDetailV2
-           entry. Each section gracefully empty when n<5 or no prior course-tee
-           rounds exist. -->
-      <div id="det-vsaverages-section"></div>
-      <div id="det-coursetee-pr-section"></div>
-      <div id="det-streaks-section"></div>
-      <div id="det-pr-breakdowns-section"></div>
+      <!-- HIGH: existing analytical sections, restored to their familiar position -->
       <div id="det-tee-section"></div>
       <div class="det-stat-panel" id="det-panel-tee"></div>
+      <div id="det-teedispersion-section"></div>
       <div id="det-zones-section"></div>
       <div class="det-stat-panel" id="det-panel-zones"></div>
       <div id="det-par-section"></div>
@@ -1161,6 +1142,15 @@ html.sun-mode .det-streak-pill{background:var(--paper3);border-color:rgba(212,17
       <div id="det-holeout-section"></div>
       <div class="det-stat-panel" id="det-panel-holeout"></div>
       <div id="det-putt-section"></div>
+      <!-- LOW: score-killer detail + cross-round comparisons -->
+      <div id="det-blowups-section"></div>
+      <div class="det-stat-panel" id="det-panel-blowups"></div>
+      <div id="det-postblowup-section"></div>
+      <div id="det-worststretch-section"></div>
+      <div id="det-vsaverages-section"></div>
+      <div id="det-coursetee-pr-section"></div>
+      <div id="det-streaks-section"></div>
+      <div id="det-pr-breakdowns-section"></div>
       <span class="section-lbl">Hole-by-Hole</span>
       <div id="det-holes"></div>
       <!-- WIND CHIME (v8.3.28) — Round Notes section. Tap-to-edit inline. -->
@@ -1356,7 +1346,7 @@ html.sun-mode .det-streak-pill{background:var(--paper3);border-color:rgba(212,17
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.52 · Spec v2.1</span>
+        <span>v8.3.53 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -5126,48 +5116,41 @@ function toggleCompletenessDetail() {
   if (chev) chev.textContent = '\u25b4';
 }
 
-// LANTERN BIRCH (v8.3.47) — Round arc sparkline. 18 dots showing cumulative
-// strokes ± over par. Above zero = trending over par; below = under par.
-// Front-9 / Back-9 totals shown beneath as small labeled values.
+// LANTERN BIRCH (v8.3.47) → RAVEN COMPASS (v8.3.53) — Round Arc replaced.
+// Sparkline (cumulative ± over par) was monotone-up for bogey golf and
+// gave no useful signal. Replaced with Front 9 / Back 9 number tiles —
+// Mara's original Option A, which Tiger should have backed at viz-format
+// time. Tile reuses the .det-tdisp-tile CSS pattern for visual consistency
+// with the Tee Dispersion 3-tile that lives below the tee chart.
 function renderRoundArcSection(holes) {
   const el = document.getElementById('det-roundarc-section');
   if (!el) return;
   if (!holes.length) { el.innerHTML = ''; return; }
-  let cum = 0;
-  const points = holes.map(h => { cum += (h.score - h.par); return cum; });
-  const maxAbs = Math.max(2, ...points.map(p => Math.abs(p)));
-  const W = 320, H = 54, pad = 6;
-  const dx = (W - 2*pad) / Math.max(1, points.length - 1);
-  const yFor = v => H/2 - (v / maxAbs) * (H/2 - pad);
-  const dotsHtml = points.map((p, i) => {
-    const x = pad + i * dx, y = yFor(p);
-    const fill = p > 0 ? '#F08585' : p < 0 ? 'var(--green)' : 'var(--chalk3)';
-    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="${fill}"/>`;
-  }).join('');
-  const linePath = points.map((p,i) => {
-    const x = pad + i*dx, y = yFor(p);
-    return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1);
-  }).join(' ');
-  const zeroY = H/2;
-  const f9 = holes.slice(0,9).reduce((a,h)=>a+h.score,0);
-  const b9 = holes.slice(9,18).reduce((a,h)=>a+h.score,0);
-  const f9par = holes.slice(0,9).reduce((a,h)=>a+h.par,0);
-  const b9par = holes.slice(9,18).reduce((a,h)=>a+h.par,0);
+  const f9holes = holes.slice(0,9);
+  const b9holes = holes.slice(9,18);
+  const f9 = f9holes.reduce((a,h)=>a+h.score,0);
+  const f9par = f9holes.reduce((a,h)=>a+h.par,0);
+  const b9 = b9holes.reduce((a,h)=>a+h.score,0);
+  const b9par = b9holes.reduce((a,h)=>a+h.par,0);
   const f9rel = f9 - f9par, b9rel = b9 - b9par;
   const relStr = r => r === 0 ? 'E' : r > 0 ? '+'+r : String(r);
-  const hasBack = holes.length > 9;
-  el.innerHTML = `<span class="section-lbl">Round Arc</span>
-    <div class="det-arc-card">
-      <svg class="det-arc-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
-        <line x1="${pad}" y1="${zeroY}" x2="${W-pad}" y2="${zeroY}" stroke="var(--chalk3)" stroke-width="0.5" stroke-dasharray="2 3" opacity="0.4"/>
-        <path d="${linePath}" fill="none" stroke="var(--chalk2)" stroke-width="1" opacity="0.55"/>
-        ${dotsHtml}
-      </svg>
-      <div class="det-arc-row">
-        <div class="det-arc-half"><span class="det-arc-half-lbl">Front 9</span><span class="det-arc-half-val">${f9 || '\u2014'} (${relStr(f9rel)})</span></div>
-        ${hasBack ? `<div class="det-arc-half"><span class="det-arc-half-lbl">Back 9</span><span class="det-arc-half-val">${b9} (${relStr(b9rel)})</span></div>` : ''}
-      </div>
-    </div>`;
+  const relCls = r => r > 0 ? 'ob' : r < 0 ? 'fw' : '';  // reuse tdisp color tiers
+  const f9tile = `<div class="det-tdisp-tile ${relCls(f9rel)}">
+    <div class="det-tdisp-val">${f9}</div>
+    <div class="det-tdisp-lbl">Front 9</div>
+    <div class="det-tdisp-n">${relStr(f9rel)}</div>
+  </div>`;
+  const hasBack = b9holes.length > 0;
+  const b9tile = hasBack ? `<div class="det-tdisp-tile ${relCls(b9rel)}">
+    <div class="det-tdisp-val">${b9}</div>
+    <div class="det-tdisp-lbl">Back 9</div>
+    <div class="det-tdisp-n">${relStr(b9rel)}</div>
+  </div>` : '';
+  // Use a 2-column grid (override the 3-column default of .det-tdisp). For
+  // 9-hole rounds, single tile takes full width.
+  const grid = hasBack ? 'grid-template-columns:1fr 1fr' : 'grid-template-columns:1fr';
+  el.innerHTML = `<span class="section-lbl">Front · Back</span>
+    <div class="det-tdisp" style="${grid}">${f9tile}${b9tile}</div>`;
 }
 
 // LANTERN BIRCH (v8.3.47) — Tee dispersion text breakdown. Par 4/5 only.
