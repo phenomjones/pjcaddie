@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.59 · May 11, 2026 -->
+<!-- PJ Caddie v8.3.60 · May 12, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -28,10 +28,7 @@ body{display:flex;flex-direction:column}
 .safe-bot{height:calc(env(safe-area-inset-bottom,20px) + 8px);flex-shrink:0}
 .hdr{padding:12px max(28px,calc((100% - 460px)/2)) 14px;flex-shrink:0}
 .hdr-row{display:flex;align-items:center;gap:10px;margin-bottom:4px}
-/* TEAL ANCHOR (v8.3.16) — back-btn and hdr-action restyled from text-link
-   appearance to true button styling. Style B: both are visually buttons; the
-   ← prefix on back-btn is the only differentiator (signals navigation vs
-   contextual action). */
+/* TEAL ANCHOR (v8.3.16) — back-btn and hdr-action restyled from text-link appearance to true button styling. Style B: both are visually buttons; the ← prefix on back-btn is the only differentiator (signals */
 .back-btn{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);color:var(--gold);font-family:'DM Sans',sans-serif;font-size:13px;padding:6px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
 .back-btn::before{content:'←';font-size:14px}
 .back-btn:active{opacity:.6}
@@ -97,14 +94,12 @@ body{display:flex;flex-direction:column}
 /* VERMILION ATELIER — sync rows: name + Push/Pull buttons left, ts trails right */
 .va-sync-row{padding:9px 0;border-bottom:1px solid var(--border2)}
 .va-sync-row:last-child{border-bottom:none}
-/* VERMILION REPRISE — grid columns lock Push/Pull buttons into the same X
-   position across all 4 rows. Timestamp lives in the trailing 1fr column. */
+/* VERMILION REPRISE — grid columns lock Push/Pull buttons into the same X position across all 4 rows. Timestamp lives in the trailing 1fr column */
 .va-sync-cluster{display:grid;grid-template-columns:72px auto auto 1fr;align-items:center;gap:10px}
 .va-sync-name{font-size:14px;color:var(--chalk);font-weight:500}
 .va-sync-name.stale{color:var(--orange)}
 .va-sync-cluster .btn-sm{padding:6px 12px;font-size:12px;width:auto;display:inline-block}
-/* VERMILION REPRISE.2 — global .btn+.btn rule adds 9px margin-top, which in a
-   grid context shifts cell content and drifts row alignment. Zero it. */
+/* VERMILION REPRISE.2 — global .btn+.btn rule adds 9px margin-top, which in a grid context shifts cell content and drifts row alignment. Zero it */
 .va-sync-cluster .btn+.btn{margin-top:0}
 .va-sync-ts{font-size:10px;color:var(--chalk3);letter-spacing:.2px;text-align:right;line-height:1.4;min-width:0;padding-left:8px}
 .va-sync-ts.stale{color:var(--orange)}
@@ -163,22 +158,13 @@ body{display:flex;flex-direction:column}
 .pi-thumb-meta{padding:8px 12px;font-size:11px;color:var(--chalk3)}
 .pi-status{font-size:12px;color:var(--chalk3);text-align:center;margin-bottom:12px;min-height:18px}
 .pi-status.error{color:var(--red)}
-.rc{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden;border-left-width:4px}
-.rc.clean{border-left-color:var(--green)}
-.rc.flagged{border-left-color:var(--red)}
-.rc.resolved{border-left-color:var(--gold)}
 .rc-head{display:flex;align-items:center;gap:8px;padding:12px 14px 10px}
-.rc-hnum{font-family:'DM Serif Display',serif;font-size:20px;color:var(--gold);min-width:36px}
-.rc-hinfo{flex:1}
-.rc-hpar{font-size:12px;color:var(--chalk2);font-weight:500}
 .rc-score-block{text-align:right}
 .rc-score-num{font-family:'DM Serif Display',serif;font-size:24px;line-height:1}
 .rc-score-lbl{font-size:10px;letter-spacing:.5px;margin-top:1px;text-transform:uppercase}
 .rc-edit-btn{background:none;border:1px solid var(--border);border-radius:var(--rs);padding:6px 12px;font-size:12px;color:var(--chalk2);cursor:pointer;margin-left:8px;white-space:nowrap;flex-shrink:0}
 .rc-edit-btn:active{opacity:.6}
 .rc-flag-row{padding:8px 14px;background:rgba(201,64,64,.07);border-top:1px solid rgba(201,64,64,.15);font-size:12px;color:var(--red);line-height:1.5;display:flex;gap:7px;align-items:flex-start}
-.rc-summary{padding:8px 14px 11px;font-size:12px;color:var(--chalk2);line-height:1.85;border-top:1px solid var(--border2)}
-.rc-fix{padding:10px 14px 12px;border-top:1px solid var(--border2);background:var(--ink)}
 .fix-lbl{font-size:11px;color:var(--chalk3);margin-bottom:8px}
 .fix-btn-row{display:flex;gap:7px;flex-wrap:wrap}
 .fix-btn{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:9px 18px;font-size:15px;font-family:'DM Serif Display',serif;color:var(--chalk);cursor:pointer;transition:all .15s}
@@ -193,11 +179,7 @@ body{display:flex;flex-direction:column}
 .stat-val{font-family:'DM Serif Display',serif;font-size:26px;color:var(--chalk);line-height:1}
 .stat-lbl{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--chalk3);margin-top:5px}
 .stat-n{font-size:9px;color:var(--chalk3);opacity:.65;margin-top:3px}
-/* AMBER LIGHTHOUSE BATCH (v8.3.14-15) — Double Bogey Avoidance Grade section.
-   Composite + PJ5 in header row, breakdown rows below. Card style matches
-   det-card pattern; values use DM Serif at 38px (between stat-tile 26px and
-   detail-score-big sizing). PJ5 uses chalk color (neutral count); DBAG uses
-   gold (the headline metric). */
+/* AMBER LIGHTHOUSE BATCH (v8.3.14-15) — Double Bogey Avoidance Grade section. Composite + PJ5 in header row, breakdown rows below. Card style matches det-card pattern */
 .dbag-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px 14px 12px;margin-bottom:14px}
 .dbag-hdr{display:flex;align-items:center;justify-content:space-around;padding-bottom:12px;border-bottom:1px solid var(--border2);margin-bottom:11px}
 .dbag-stat{text-align:center;padding:2px 8px;border-radius:6px}
@@ -209,15 +191,10 @@ body{display:flex;flex-direction:column}
 .dbag-row-lbl{color:var(--chalk2)}
 .dbag-row-val{color:var(--chalk);font-family:'DM Serif Display',serif;font-size:14px;text-align:right;min-width:48px}
 .dbag-row-aux{color:var(--chalk3);font-size:10px;min-width:90px;text-align:right}
-/* MARBLE SENTENCE (v8.3.8) — per-hole row gets a flowing prose summary instead
-   of dot-separated tag chips. Base text is muted (chalk3, 11px) so the BOLD
-   key-term spans (chalk, 13px, weight 700) stand out for at-a-glance scanning. */
+/* MARBLE SENTENCE (v8.3.8) — per-hole row gets a flowing prose summary instead of dot-separated tag chips. Base text is muted (chalk3, 11px) so the BOLD key-term spans (chalk, 13px */
 .rr-sentence{font-size:11px;color:var(--chalk3);line-height:1.55;margin-top:4px}
 .rr-sentence b{color:var(--chalk);font-weight:700;font-size:13px}
-/* AMBER SIGIL (v8.3.41) — per-hole row icons next to "Hole N · Par M".
-   Tee pill colors mirror CINNABAR DRAKE picker (red OB / amber OOP / tan
-   rough / green FW). GIR amber, Girpy blue. Pills sit on the dark .det-card
-   background so they use light fills with dark text for max contrast. */
+/* AMBER SIGIL (v8.3.41) — per-hole row icons next to "Hole N · Par M". Tee pill colors mirror CINNABAR DRAKE picker (red OB / amber OOP / tan rough / green FW). GIR amber, Girpy blue. */
 .rr-course-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:14px;font-weight:500;color:var(--chalk);min-width:0}
 .rr-pill{display:inline-flex;align-items:center;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;line-height:1.4;white-space:nowrap;font-family:'DM Sans',sans-serif;letter-spacing:.2px}
 .rr-pill-fw{background:#C0DD97;color:#173404}
@@ -272,20 +249,12 @@ body{display:flex;flex-direction:column}
 .det-stack-track{flex:1;height:10px;background:var(--ink);border-radius:2px;display:flex;overflow:hidden}
 .det-stack-hit{background:var(--green);height:100%}
 .det-stack-hit.alt{background:var(--gold)}
-/* SCARLET BAND (v8.3.41) — miss segment now red so unconverted bands are
-   visible at a glance instead of blending into the dark card. det-stack-empty
-   is a separate class for the 0/0 (no opportunity) case so empty bands stay
-   neutral rather than screaming "miss" — no holes ≠ failure. */
+/* SCARLET BAND (v8.3.41) — miss segment now red so unconverted bands are visible at a glance instead of blending into the dark card. det-stack-empty is a separate class for the 0/0 (no opportunity) case so e */
 .det-stack-miss{background:var(--red);height:100%}
 .det-stack-empty{background:var(--ink3);height:100%}
 .det-stack-num{width:34px;color:var(--chalk3);font-size:10px}
 /* SUMMIT REDESIGN (v8.3.0) — putting analysis lines */
-/* SLATE PRISM (v8.3.42) — debucketed putting section. Replaces the
-   COBALT MARROW count list. Each row has a key/label + value column.
-   1-putt and 3-putt rows are visually highlighted (green / red tint);
-   2-putt and 4+ are neutral. The 3-putt row carries a benchmark line
-   computed from the user's actual first-putt distances today, summed
-   per-putt against the 10-hcp rate (no bucketing in the display). */
+/* SLATE PRISM (v8.3.42) — debucketed putting section. Replaces the COBALT MARROW count list. Each row has a key/label + value column. 1-putt and 3-putt rows are visually highlighted (green / red tint) */
 .sp-line{display:flex;gap:10px;padding:6px 0;font-size:13px;align-items:baseline}
 .sp-line + .sp-line{border-top:0.5px solid var(--border2)}
 .sp-key{color:var(--chalk3);min-width:108px;flex-shrink:0;font-size:12px;letter-spacing:.3px}
@@ -305,9 +274,7 @@ body{display:flex;flex-direction:column}
 @keyframes sp-flash{0%{box-shadow:0 0 0 2px var(--gold) inset}70%{box-shadow:0 0 0 2px var(--gold) inset}100%{box-shadow:0 0 0 0 transparent inset}}
 /* SUMMIT REDESIGN (v8.3.0) — missing-data warning pill on hole rows */
 .det-warn-pill{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:rgba(200,168,75,.18);border:1px solid rgba(200,168,75,.5);border-radius:50%;color:var(--gold);font-size:10px;font-weight:600;flex-shrink:0;margin-right:8px}
-/* CRIMSON COMPASS (v8.3.2) — vertical-timeline tee shot sparkline. One row per
-   par-4/5 hole in numerical order. Single dot per row, positioned horizontally
-   by landing zone (OBL=far left … OBR=far right). Same color scheme as bars. */
+/* CRIMSON COMPASS (v8.3.2) — vertical-timeline tee shot sparkline. One row per par-4/5 hole in numerical order. Single dot per row, positioned horizontally by landing zone (OBL=far left … OBR=far right). */
 .det-spark{margin-top:14px;border-top:1px solid var(--border2);padding-top:12px}
 .det-spark-hdr{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--chalk3);margin-bottom:10px;text-align:center}
 .det-spark-row{display:flex;align-items:center;gap:8px;height:18px;margin-bottom:1px}
@@ -336,9 +303,7 @@ body{display:flex;flex-direction:column}
    Don't drop it — line will collapse to leftmost ~100px again. */
 .det-spark-rows{position:relative}
 .det-spark-lines{position:absolute;left:0;right:0;top:0;overflow:visible;pointer-events:none}
-/* VELVET LATTICE (v8.3.2) — universal tappable-stat panel pattern. Any element
-   with [data-stat-key] is a tap target; tapping renders the matching panel
-   beneath its section showing the holes that contribute. */
+/* VELVET LATTICE (v8.3.2) — universal tappable-stat panel pattern. Any element with [data-stat-key] is a tap target; tapping renders the matching panel beneath its section showing the holes that contribute */
 .stat-tile[data-stat-key],.det-tee-col,.det-zone-cell[data-stat-key],.det-stack-row,.dbag-row[data-stat-key],.dbag-stat[data-stat-key]{cursor:pointer}
 .det-tee-bar{pointer-events:none}
 .stat-tile.selected,.det-tee-col.selected,.det-zone-cell.selected,.dbag-row.selected,.dbag-stat.selected{box-shadow:inset 0 0 0 2px var(--gold)}
@@ -387,9 +352,7 @@ body{display:flex;flex-direction:column}
 /* AMBER ECHO carry-over (v8.3.2) — tee bar/dot dim only when teeZone is active */
 .det-tee-col.dim,.det-spark-dot.dim{opacity:.25}
 .det-tee-col{transition:opacity .15s}
-/* MARBLE NOTATION (v8.3.2) — golf-standard score markers in per-hole rows.
-   Eagle: double circle (green). Birdie: single circle (green). Par: plain.
-   Bogey: square (red). Double: double square. Triple+: triple square (caps). */
+/* MARBLE NOTATION (v8.3.2) — golf-standard score markers in per-hole rows. Eagle: double circle (green). Birdie: single circle (green). Par: plain. Bogey: square (red). Double: double square. */
 .score-marker{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;font-family:'DM Serif Display',serif;font-weight:700;font-size:16px;background:transparent;line-height:1;margin:11px}
 .score-marker.sm-eagle{border-radius:50%;box-shadow:0 0 0 2px var(--green),0 0 0 4px var(--ink2),0 0 0 6px var(--green);color:var(--green)}
 .score-marker.sm-birdie{border-radius:50%;box-shadow:0 0 0 2px var(--green);color:var(--green)}
@@ -398,31 +361,17 @@ body{display:flex;flex-direction:column}
 .score-marker.sm-double{border-radius:3px;box-shadow:0 0 0 2px var(--red),0 0 0 4px var(--ink2),0 0 0 6px var(--red);color:var(--red)}
 .score-marker.sm-triple{border-radius:3px;box-shadow:0 0 0 2px var(--red),0 0 0 4px var(--ink2),0 0 0 6px var(--red),0 0 0 8px var(--ink2),0 0 0 10px var(--red);color:var(--red)}
 .miss-strip{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:12px}
-.miss-cross{display:grid;grid-template-columns:1fr 80px 1fr;grid-template-rows:72px 72px 72px;gap:6px;max-width:280px;margin:0 auto}
-.miss-box{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--border);background:var(--ink3)}
-.miss-box.miss-active{border-color:var(--gold);background:rgba(200,168,75,.07)}
-.miss-box.miss-dominant{border-color:var(--gold);background:rgba(200,168,75,.07)}
-.miss-box.miss-zero{background:var(--ink3);border-color:var(--border2);opacity:.4}
 .miss-pin-cell{border-radius:10px;border:1px solid var(--border);background:var(--ink2);display:flex;align-items:center;justify-content:center}
-.miss-spacer{background:transparent;border:none}
 .miss-num{font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk);line-height:1}
-.miss-dir{font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:var(--chalk3);margin-top:3px}
-.miss-dir.active{color:var(--gold)}
 .tee-strip{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:20px}
 .tee-strip-row{display:flex;align-items:center}
 .tee-strip-cell{flex:1;text-align:center}
 .tee-strip-num{font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk);line-height:1}
 .tee-strip-lbl{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--chalk3);margin-top:3px}
 .tee-strip-div{width:1px;background:var(--border);height:32px}
-.dhc{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden}
 .dhc-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;transition:background .12s;user-select:none}
 .dhc-head:active{background:var(--ink3)}
-.dhc-hnum{font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);min-width:30px}
-.dhc-hinfo{flex:1}
-.dhc-hpar{font-size:12px;color:var(--chalk2)}
 .dhc-score{text-align:right;margin-right:6px}
-.dhc-snum{font-family:'DM Serif Display',serif;font-size:20px;line-height:1}
-.dhc-slbl{font-size:10px;letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
 .gir-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .gir-dot.hit{background:var(--green)}
 .gir-dot.miss{background:var(--border);border:1px solid var(--chalk3)}
@@ -432,7 +381,6 @@ body{display:flex;flex-direction:column}
 .dhc-edit-panel{padding:2px 0 4px}
 .dhc-edit-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .dhc-edit-lbl{font-size:12px;color:var(--chalk2);min-width:52px}
-.dhc-stepper{display:flex;align-items:center;gap:10px}
 .step-btn{width:34px;height:34px;border-radius:50%;background:var(--ink3);border:1px solid var(--border);color:var(--chalk);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;padding:0;line-height:1;flex-shrink:0}
 .step-btn:active{background:var(--gold);border-color:var(--gold);color:var(--ink)}
 .step-val{background:var(--ink3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--chalk);font-size:16px;font-family:'DM Serif Display',serif;text-align:center;width:50px}
@@ -456,9 +404,6 @@ body{display:flex;flex-direction:column}
 .putt-btn.sel{background:var(--gold);border-color:var(--gold);color:var(--ink)}
 .pd-inp{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:9px 10px;color:var(--chalk);font-family:'DM Mono',monospace;font-size:14px;width:72px;outline:none;text-align:center}
 .pd-inp:focus{border-color:var(--gold)}
-.zone-grid{display:grid;grid-template-columns:40px repeat(3,1fr);gap:5px;margin-bottom:4px}
-.zone-rlbl{font-size:10px;color:var(--chalk3);display:flex;align-items:center;letter-spacing:.3px;padding-right:4px}
-.zone-clbl{font-size:10px;color:var(--chalk3);text-align:center;letter-spacing:.5px;padding-bottom:2px}
 .zone-btn{background:var(--ink3);border:1px solid var(--border);border-radius:8px;padding:14px 4px;font-family:'DM Serif Display',serif;font-size:15px;color:var(--chalk);cursor:pointer;text-align:center;transition:all .12s}
 .zone-btn:active{opacity:.6}
 .zone-btn.sel{background:var(--fairway);border-color:var(--green);color:#fff;font-weight:700}
@@ -470,8 +415,6 @@ body{display:flex;flex-direction:column}
 .lie-btn{flex:1;background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:9px 4px;font-size:12px;color:var(--chalk2);cursor:pointer;text-align:center;transition:all .15s}
 .lie-btn:active{opacity:.6}
 .lie-btn.sel{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
-.club-scroll{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;margin-top:4px}
-.club-scroll::-webkit-scrollbar{display:none}
 .club-chip{background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:7px 13px;font-size:12px;color:var(--chalk2);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s}
 .club-chip:active{opacity:.6}
 .club-chip.sel{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
@@ -485,16 +428,8 @@ body{display:flex;flex-direction:column}
 .wiz-hole-num{font-family:'DM Serif Display',serif;font-size:36px;color:var(--gold);line-height:1;flex-shrink:0}
 .wiz-hole-info{font-size:14px;color:var(--chalk2);font-weight:500;flex:1}
 .wiz-step-lbl{font-size:11px;color:var(--chalk3);letter-spacing:.5px;flex-shrink:0}
-.wiz-nav{display:flex;gap:10px;padding:12px max(28px,calc((100% - 460px)/2));border-top:1px solid var(--border2);background:var(--ink);flex-shrink:0}
-.wiz-back{background:none;border:1px solid var(--border);border-radius:var(--rs);padding:13px 20px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--chalk2);cursor:pointer;flex-shrink:0}
-.wiz-back:active{opacity:.6}
-.wiz-next{flex:1;background:var(--gold);border:none;border-radius:var(--rs);padding:13px 20px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;transition:opacity .15s}
-.wiz-skip{flex:0 0 auto;padding:13px 28px;background:var(--ink3);color:var(--chalk3);border:1px solid var(--border);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .15s}
-.wiz-next:disabled{opacity:.35;cursor:not-allowed}
-.wiz-next:active:not(:disabled){opacity:.8}
 .calc-display{font-family:'DM Serif Display',serif;font-size:52px;color:var(--chalk);text-align:center;padding:16px 0 20px;letter-spacing:2px;min-height:90px;display:flex;align-items:center;justify-content:center}
 .calc-display.empty{color:var(--chalk3);font-size:28px}
-.calc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .calc-btn{background:var(--ink3);border:1px solid var(--border);border-radius:var(--rs);padding:22px 4px;font-family:'DM Serif Display',serif;font-size:22px;color:var(--chalk);cursor:pointer;text-align:center;transition:all .1s}
 .calc-btn:active{background:var(--ink2);transform:scale(.97)}
 .calc-btn.back{font-size:18px;color:var(--chalk2)}
@@ -507,7 +442,6 @@ body{display:flex;flex-direction:column}
 .big-choice-btn:active{background:var(--ink3)}
 .big-choice-btn.sel{border-color:var(--gold);background:rgba(200,168,75,.08)}
 .big-choice-icon{font-size:22px;flex-shrink:0}
-.club-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
 .club-tile{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px 4px 10px;cursor:pointer;text-align:center;transition:all .15s}
 .club-tile:active{opacity:.6}
 .club-tile.sel{border-color:var(--gold);box-shadow:0 0 0 2px rgba(200,168,75,.25)}
@@ -518,16 +452,12 @@ body{display:flex;flex-direction:column}
 .club-tile.iron{background:var(--ink2)}
 .club-tile.wedge{background:rgba(232,153,74,.08);border-color:rgba(232,153,74,.2)}
 .club-tile.wedge.sel{background:rgba(232,153,74,.25)}
-.club-tile.putter{background:rgba(180,142,240,.08);border-color:rgba(180,142,240,.2)}
-.club-tile.putter.sel{background:rgba(180,142,240,.25)}
 .club-tile-abbr{font-family:'DM Serif Display',serif;font-size:18px;color:var(--chalk);line-height:1}
 .club-tile-desc{font-size:9px;color:var(--chalk3);margin-top:3px;line-height:1.3;word-break:break-word}
 .club-tile-head{font-size:11px;font-weight:700;color:var(--gold);margin-top:4px;line-height:1.25;word-break:break-word;text-align:center}
-.club-tile-shaft{font-size:11px;font-weight:400;color:#b0ccc0;line-height:1.25;word-break:break-word;text-align:center}
 .wiz-overview-row{display:flex;align-items:center;gap:12px;padding:13px 14px;background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;cursor:pointer;transition:background .12s}
 .wiz-overview-row:active{background:var(--ink3)}
 .wiz-overview-row.done{border-left:4px solid var(--green)}
-.wiz-overview-row.pending{border-left:4px solid transparent}
 .bag-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
 .bag-card-head{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer}
 .bag-card-head:active{background:var(--ink3)}
@@ -549,22 +479,11 @@ body{display:flex;flex-direction:column}
 .toggle-row:active{opacity:.8}
 .toggle-label{font-size:15px;font-weight:500;color:var(--chalk2);transition:color .15s}
 .toggle-row.on .toggle-label{color:var(--gold)}
-.toggle-switch{width:51px;height:31px;border-radius:100px;background:var(--ink3);border:1px solid var(--border);position:relative;flex-shrink:0;transition:background .2s,border-color .2s}
-.toggle-row.on .toggle-switch{background:var(--gold);border-color:var(--gold)}
-.toggle-knob{position:absolute;top:3px;left:3px;width:23px;height:23px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3);transition:left .2s}
-.toggle-row.on .toggle-knob{left:23px}
-.inline-nav{display:flex;gap:10px;margin-top:20px;padding-bottom:8px}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 #toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,20px) + 70px);left:50%;transform:translateX(-50%) translateY(14px);background:var(--ink3);border:1px solid var(--border);border-radius:100px;padding:10px 20px;font-size:13px;color:var(--chalk);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:999;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* GLACIER CAPTURE (v8.1.0) — per-hole capture screen.
-   GLACIER POLISH (v8.1.1) — club grid, yardage centered, top section tightened.
-   GLACIER REFINE (v8.1.2) — score pills (replaces stepper), pin/penalty row,
-   tee result chips with skull/arrow glyphs only (no text), yardage 4+3 layout
-   with bigger chips. PIN mini-label dropped (Matt knows what they are).
-   Three color-zoned sections per locked v10 spec: tee=blue, approach=gold, putts=green.
-   All chips use 44px+ tap targets. Selected state inverts to gold-on-ink. */
+/* GLACIER REFINE (v8.1.2) — score pills (replaces stepper), pin/penalty row, tee result chips with skull/arrow glyphs only (no text), yardage 4+3 layout with bigger chips. */
 .gc-nav-arrow{background:var(--ink2);border:1px solid var(--border);color:var(--gold);width:42px;height:42px;border-radius:50%;font-size:24px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;line-height:1}
 .gc-nav-arrow:disabled{opacity:.3;cursor:default}
 .gc-nav-arrow:active:not(:disabled){background:var(--ink3)}
@@ -576,11 +495,7 @@ body{display:flex;flex-direction:column}
 .gc-pill.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
 .gc-pill-expand{font-family:'DM Sans',sans-serif;font-size:16px;color:var(--chalk3);font-weight:600}
 .gc-pill-expand.on{background:var(--ink3);color:var(--gold);border-color:var(--border)}
-/* CHESTNUT WHARF (v8.3.38) — gc-pin-pen-row wrapper removed (HOLLOW LANTERN
-   from BRONZE EMBER's Pin drop). Penalty card now lives inside the score row
-   itself, spanning 3 of the 8 grid columns; the 5 score-pill columns hold
-   3/4/5/6/▾ (the most common scores for an 18-hcp on par 70). The expanded
-   row 2 widens to 8 columns to absorb 1, 2, 7 alongside 8-12. */
+/* CHESTNUT WHARF (v8.3.38) — gc-pin-pen-row wrapper removed (HOLLOW LANTERN from BRONZE EMBER's Pin drop). Penalty card now lives inside the score row itself, spanning 3 of the 8 grid columns */
 /* BRONZE EMBER (v8.3.30) — .gc-pin-h-row and .gc-pin-chip-h removed (pinPos field dropped). */
 .gc-penalty-card{background:var(--ink2);border:1px solid var(--border2);border-radius:8px;padding:0 6px;display:flex;align-items:center;gap:4px;justify-content:space-between;grid-column:span 3;min-height:46px}
 .gc-penalty-lbl{font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--chalk3);font-weight:600;flex-shrink:0}
@@ -606,13 +521,7 @@ body{display:flex;flex-direction:column}
 /* Tee result chips: glyph-only (skull + arrows). Larger glyph for readability. */
 .gc-tee-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
 .gc-chip-arrow{font-size:18px;letter-spacing:-1px;padding:0 4px;font-weight:700;min-height:46px}
-/* CINNABAR DRAKE (v8.3.35) — visual 7-zone fairway picker. Replaces the
-   gc-tee-grid + gc-chip-fairway (above; kept for any legacy reference).
-   Layout: 4-col CSS grid, 2 rows.
-     Row 1: OBL OOP-L OOP-R OBR (each col 25%)
-     Row 2: L  FW(spans cols 2-3)  R
-   Color tiers map to severity: red OB / amber OOP / tan rough / green FW.
-   Selected zone gets a gold ring; pre-existing teeResult schema codes used. */
+/* CINNABAR DRAKE (v8.3.35) — visual 7-zone fairway picker. Replaces the gc-tee-grid + gc-chip-fairway (above; kept for any legacy reference). Layout: 4-col CSS grid, 2 rows. */
 .gc-fwy-picker{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;background:#1a3a1a;border:1px solid var(--border2);border-radius:10px;padding:8px}
 .gc-fwy-zone{min-height:48px;border:1px solid var(--border2);border-radius:6px;font-size:13px;font-weight:600;color:var(--chalk);font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0 4px;transition:box-shadow 100ms ease}
 .gc-fwy-ob{background:rgba(201,64,64,0.55);border-color:rgba(201,64,64,0.8)}
@@ -623,40 +532,26 @@ body{display:flex;flex-direction:column}
 /* Yardage: explicit 4-per-row → 7 chips wraps as 4+3 with row 2 centered. */
 .gc-yards-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}
 .gc-yards-row .gc-chip{flex:0 0 calc((100% - 18px) / 4);min-height:48px;font-size:14px;padding:0 6px}
-/* VELLUM ASTER (v8.3.33) — gc-numeric-input replaces the old yards-row chips for
-   approach yardage entry. .gc-yards-row above is no longer rendered but left in
-   place in case a future numeric-band UI wants to reuse it. */
+/* VELLUM ASTER (v8.3.33) — gc-numeric-input replaces the old yards-row chips for approach yardage entry. .gc-yards-row above is no longer rendered but left in place in case a future numeric-band UI wants to */
 .gc-numeric-input{width:100%;background:var(--ink2);color:var(--chalk);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:18px;font-family:'DM Serif Display',serif;font-weight:700;text-align:center;box-sizing:border-box}
 .gc-numeric-input::placeholder{color:var(--chalk3);font-weight:400;font-size:14px}
 .gc-numeric-input:focus{outline:none;border-color:var(--gold)}
 .gc-numeric-input::-webkit-outer-spin-button,.gc-numeric-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .gc-numeric-input[type="number"]{-moz-appearance:textfield}
-/* Tee club chips: auto-fill grid so each chip has readable min-width regardless
-   of bag count. 70px min works for "PW", "GW", "5I" through "Driver" labels. */
+/* Tee club chips: auto-fill grid so each chip has readable min-width regardless of bag count. 70px min works for "PW", "GW", "5I" through "Driver" labels */
 .gc-club-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:5px}
 .gc-club-grid .gc-chip{font-size:13px;padding:0 6px;min-height:42px}
-/* PEWTER FALCON (v8.3.34) — 4-button category row replaces the bag-driven club
-   grid above. .gc-club-grid is no longer rendered but kept in case a future
-   bag-aware UI needs it. */
+/* PEWTER FALCON (v8.3.34) — 4-button category row replaces the bag-driven club grid above. .gc-club-grid is no longer rendered but kept in case a future bag-aware UI needs it */
 .gc-tee-cat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .gc-tee-cat-row .gc-chip{min-height:48px;font-size:14px;font-weight:600}
-/* CINDER MEADOW (v8.3.36) — gc-zone-grid (9-cell 3×3) and gc-zone-pin/
-   gc-pin-disabled (Pin auto-onGreen state machine) are no longer used in
-   the capture screen; kept for any legacy reference.
-   CARDINAL TINT (v8.3.59) — gc-dir-row also retired (was direction picker
-   referenced by the comment below). All approach-direction capture removed. */
+/* CARDINAL TINT (v8.3.59) — gc-dir-row also retired (was direction picker referenced by the comment below). All approach-direction capture removed */
 .gc-zone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .gc-zone-cell{min-height:50px;background:var(--ink3);border:1px solid var(--border2);color:var(--chalk2);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;padding:0 4px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1.1;white-space:nowrap}
 .gc-zone-cell.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
 .gc-zone-pin{border:1.5px dashed var(--green);color:var(--green);background:transparent}
 .gc-zone-pin.on{background:var(--green);color:var(--ink);border-style:solid;border-color:var(--green)}
 .gc-zone-pin.gc-pin-disabled{opacity:.35;border-style:dashed}
-/* CARDINAL TINT (v8.3.59) — gc-dir-row, gc-bottom-row, gc-toggle, gc-toggle-bottom
-   CSS rules removed. The L/C/R direction picker, the single Hit Green toggle,
-   the bottom 4-flag row, and the gc-toggle-bottom flag pills are all gone from
-   the capture HTML. New rules (gc-tee-inplay, gc-tee-trouble, gc-fwy-bunker-pill,
-   gc-approach-result-row, gc-miss-row, gc-inline-flags, gc-flag-pill, gc-section-scoring)
-   are defined above near the top of the stylesheet block. */
+/* CARDINAL TINT (v8.3.59) — gc-dir-row, gc-bottom-row, gc-toggle, gc-toggle-bottom CSS rules removed. The L/C/R direction picker, the single Hit Green toggle, the bottom 4-flag row */
 /* WIND CHIME (v8.3.28) — per-hole notes textarea in glacier capture. */
 .gc-notes-block{margin-top:8px}
 .gc-notes-input{width:100%;min-height:60px;background:var(--ink2);color:var(--chalk1);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box}
@@ -673,17 +568,13 @@ body{display:flex;flex-direction:column}
    replace. */
 .gc-section,.det-card,.round-row{box-shadow:0 1px 0 rgba(242,237,216,0.04) inset,0 -1px 6px rgba(0,0,0,0.25)}
 
-/* Section-label bullet dots. Color matches the section's left-edge
-   accent for capture-screen sections; defaults to gold for round-detail
-   .section-lbl and any unscoped .gc-section-lbl. */
+/* Section-label bullet dots. Color matches the section's left-edge accent for capture-screen sections; defaults to gold for round-detail .section-lbl and any unscoped .gc-section-lbl */
 .gc-section-lbl::before,.section-lbl::before{content:'\2022';margin-right:6px;opacity:.7;color:var(--gold)}
 .gc-section-tee .gc-section-lbl::before{color:var(--blue)}
 .gc-section-approach .gc-section-lbl::before{color:var(--gold)}
 .gc-section-putts .gc-section-lbl::before{color:var(--green)}
 
-/* Recessed wells — picker base, numeric inputs, bar tracks, H-link
-   pills, pen card. Inset shadow makes these elements look like they
-   sit inside the surrounding card rather than floating on top. */
+/* Recessed wells — picker base, numeric inputs, bar tracks, H-link pills, pen card. Inset shadow makes these elements look like they sit inside the surrounding card rather than floating on top */
 .gc-fwy-picker{box-shadow:inset 0 2px 5px rgba(0,0,0,0.45),inset 0 -1px 0 rgba(200,168,75,0.06)}
 .gc-numeric-input{box-shadow:inset 0 1px 3px rgba(0,0,0,0.4)}
 .det-stack-track{box-shadow:inset 0 1px 3px rgba(0,0,0,0.5)}
@@ -694,20 +585,13 @@ body{display:flex;flex-direction:column}
    chips sitting on the row, not painted on. */
 .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.25)}
 
-/* Sun-mode parity. In light theme, depth flips polarity: highlights
-   become more pronounced and dark shadows are toned down so the polish
-   reads on a bright surface without looking muddy. */
+/* Sun-mode parity. In light theme, depth flips polarity: highlights become more pronounced and dark shadows are toned down so the polish reads on a bright surface without looking muddy */
 html.sun-mode .gc-section,html.sun-mode .det-card,html.sun-mode .round-row{box-shadow:0 1px 0 rgba(255,255,255,0.6) inset,0 -1px 4px rgba(0,0,0,0.06)}
 html.sun-mode .gc-fwy-picker{box-shadow:inset 0 2px 4px rgba(0,0,0,0.10)}
 html.sun-mode .gc-numeric-input,html.sun-mode .det-stack-track,html.sun-mode .sp-h-link,html.sun-mode .gc-penalty-card{box-shadow:inset 0 1px 2px rgba(0,0,0,0.08)}
 html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
 
-/* CARDINAL TINT (v8.3.59) — capture-screen schema rebuild styling. New
-   surfaces: 2-row tee result (in-play row + trouble row with Fwy Bunker pill
-   inline), scoring shot section (copper accent), Approach Miss opt-in picker
-   (re-tap-clear behavior), inline flag pairs (Sand/Duff on Approach,
-   Chunk/Blade on Scoring Shot). Trouble-pink shared with existing
-   .rr-pill-trouble. All sun-mode parity handled in dedicated block below. */
+/* CARDINAL TINT (v8.3.59) — capture-screen schema rebuild styling. New surfaces: 2-row tee result (in-play row + trouble row with Fwy Bunker pill inline), scoring shot section (copper accent) */
 .gc-tee-inplay{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
 .gc-tee-inplay .gc-fwy-zone{min-height:54px;font-size:14px;font-weight:700}
 .gc-tee-trouble{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:6px;margin-top:6px;align-items:stretch}
@@ -730,11 +614,7 @@ html.sun-mode .gc-fwy-bunker-pill.on{background:rgba(220,120,120,0.18);border-co
 html.sun-mode .gc-flag-pill{background:var(--paper);border-color:var(--border-light)}
 html.sun-mode .gc-flag-pill.on{background:rgba(220,120,120,0.18);border-color:#C46A6A;color:#A04444}
 
-/* JUNIPER QUARRY BATCH (v8.3.46-52) — post-round summary styling. Reuses
-   .det-card depth pattern, .section-lbl gold uppercase, .sp-h-link tap-pills.
-   New widgets: F9/B9 score tile (RAVEN COMPASS), blow-up hole rows with attribution,
-   counterfactual scrubbed-scorecard tiles, comparison rows (label · today
-   number · baseline number · delta arrow). All sun-mode parity inherited. */
+/* JUNIPER QUARRY BATCH (v8.3.46-52) — post-round summary styling. Reuses .det-card depth pattern, .section-lbl gold uppercase, .sp-h-link tap-pills. */
 .det-completeness{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;background:var(--ink2);border-radius:10px;border:1px solid rgba(255,255,255,0.05);cursor:pointer}
 .det-completeness.full{cursor:default}
 .det-completeness-icon{font-size:13px;line-height:1}
@@ -785,24 +665,13 @@ html.sun-mode .det-cmp-empty{background:var(--paper2)}
 html.sun-mode .det-streak-pill{background:var(--paper3);border-color:rgba(212,175,55,0.5)}
 .det-prbreak-pill{display:inline-block;padding:3px 9px;background:rgba(212,175,55,0.18);border:1px solid var(--gold);border-radius:14px;font-size:11px;color:var(--gold);margin-right:6px;margin-bottom:6px;font-weight:700;letter-spacing:0.3px}
 
-/* MARSH LANTERN (v8.3.55) — section grouping. Wraps related sections of
-   the post-round summary into 6 named cards so the screen reads as chunks
-   instead of a wall of stats. Card pattern parallels AMBER VEIL depth:
-   inset highlight top + soft bottom shadow. Group label bigger and bolder
-   than .section-lbl (12px vs 10px, 700 vs default) with a thin gold rule
-   beneath to separate the label from the group contents. Sun-mode flips
-   to paper tier and lightens the rule. */
+/* MARSH LANTERN (v8.3.55) — section grouping. Wraps related sections of the post-round summary into 6 named cards so the screen reads as chunks instead of a wall of stats. */
 .det-group{background:var(--ink2);border-radius:12px;border-top:1px solid rgba(255,255,255,0.05);padding:14px 12px 10px;margin-bottom:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03),0 1px 3px rgba(0,0,0,0.16)}
 .det-group-label{display:block;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);opacity:0.9;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(212,175,55,0.18)}
 html.sun-mode .det-group{background:var(--paper2);border-top-color:rgba(0,0,0,0.06);box-shadow:inset 0 1px 0 rgba(255,255,255,0.55),0 1px 3px rgba(0,0,0,0.06)}
 html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
 
-/* HEARTH GRANITE (v8.3.58) — desktop font-size bump for the post-round summary
-   classes added across JUNIPER QUARRY BATCH. Mobile sizing (10-14px) reads fine
-   on a 393px phone screen but cramps at 1440px desktop width. This bumps the
-   small-text rules in the summary surfaces only — leaving .section-lbl and
-   other app-wide classes alone since they appear on every screen and need a
-   broader scope decision. Breakpoint matches typical tablet/desktop boundary. */
+/* HEARTH GRANITE (v8.3.58) — desktop font-size bump for the post-round summary classes added across JUNIPER QUARRY BATCH. Mobile sizing (10-14px) reads fine on a 393px phone screen but cramps at 1440px desktop */
 @media (min-width: 768px) {
   .det-completeness-text{font-size:13px}
   .det-tdisp-val{font-size:22px}
@@ -838,7 +707,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.59 · May 11, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.60 · May 12, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1454,7 +1323,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.59 · Spec v2.1</span>
+        <span>v8.3.60 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1725,8 +1594,6 @@ function createRound({ courseId, courseName, teeSet, date, holesPlayed, starting
 }
 
 function createHole({ number, par, score }) {
-  // GLACIER CAPTURE (v8.1.0) — defaults the 13-field shape per locked v10 spec.
-  // GLACIER POLISH (v8.1.1) — score default changes to 0 (v10.1 spec).
   // OBSIDIAN PURGE (v8.1.2) — legacy v1 fields (pinZone, gir, girPlusOne,
   // notation, flagHistory, shots, puttsLegacy) dropped. Byron and PJ INDEX
   // helpers that historically read those fields use `||[]` / `||{}` defaults,
@@ -1747,7 +1614,6 @@ function createHole({ number, par, score }) {
     // is opt-in (null = neutral by default), with re-tap-clear behavior in
     // the picker. scoringShot* fields are populated only when onGreen=false.
     // chunk + blade replace doubleChip on new captures (more diagnostic
-    // signal); doubleChip stays on the hole object for legacy display.
     missQuality: null,        // null | 'fatSide' | 'shortSide'
     scoringShotClub: null,    // null | 'iron' | 'wedge' | 'other'
     scoringShotYards: null,   // null | integer (yards)
@@ -1769,8 +1635,6 @@ function createHole({ number, par, score }) {
 // GLACIER REFINE (v8.1.2) — CRITICAL BUG FIX: prior versions mapped to
 // {id, name, type} but clubs in DEFAULT_BAGS / pjc_bags use {id, abbr, desc}
 // (no `name` field). Result: every chip rendered with an empty label. Now we
-// spread the full club object so abbr+desc+anything else are preserved.
-// Renderer reads c.abbr (with c.name fallback for any custom-shaped data).
 function snapshotActiveBag() {
   try {
     const bags = getBags();
@@ -1839,13 +1703,6 @@ function saveRounds(r, opts) {
   // New rounds and modified rounds get a fresh ms-since-epoch timestamp;
   // unchanged rounds preserve theirs. mergeRounds uses this for last-write-wins
   // conflict resolution on same-id collisions across devices.
-  //
-  // opts.skipTimestampBump=true is used by the sync merge save path
-  // (ghPullRounds), where merged rounds already carry their authoritative
-  // timestamps from each side and must not be re-stamped on the local side.
-  //
-  // Legacy rounds without updatedAt default to 0, so on first edit they receive
-  // a fresh timestamp and start propagating correctly. No migration required.
   if (!opts || !opts.skipTimestampBump) {
     let prev = [];
     try { prev = JSON.parse(localStorage.getItem('pjc_rounds') || '[]'); }
@@ -1923,8 +1780,6 @@ function setMasterTeeId(courseId, teeId) {
 // setCourseBag + onCourseDefaultBagChange retained because they're still wired
 // to the #ch-default-bag-select DOM element in Course Hub. The select is
 // hidden by default (display:none) and never shown post-TUNDRA, so this is
-// a dormant write path. Future cleanup: delete the DOM element, the handler,
-// and setCourseBag together as one batch (FUTURE: COURSE BAG UI PURGE).
 function setCourseBag(courseId, bagId) {
   try {
     const all = JSON.parse(localStorage.getItem('pjc_course_bags') || '{}');
@@ -1946,8 +1801,6 @@ function getMasterTee(courseId) {
 //   pjc_course_coords = { [courseId_teeId_holeIdx]: {tee:{lat,lng}} }              per-tee
 //   pjc_hole_pins     = { [courseId_holeIdx]:        {landing:{lat,lng}, green:{lat,lng}} }   per-hole
 //   pjc_elevation     = { [courseId_teeId_holeIdx]: elevationFt }  (per-tee; depends on tee position)
-// getHoleCoords/setHoleCoords transparently read/write the combined shape so callers
-// see the same {tee, landing, green} object they always have.
 function coordKey(courseId, teeId, holeIdx) { return courseId+'_'+teeId+'_'+holeIdx; }
 function holeKey(courseId, holeIdx) { return courseId+'_'+holeIdx; }
 function getHolePins(courseId, holeIdx) {
@@ -2978,8 +2831,6 @@ function updateRoundButtons() {
 }
 
 function startRoundSetup() {
-  // GLACIER CAPTURE (v8.1.0) — Round Setup feeds the new per-hole capture flow
-  // directly. No bag-select intermediate step (bag is snapshotted from pjc_bags).
   // GLACIER POLISH (v8.1.1) — dropped the explicit hasUsableBag() precondition
   // (dead code: getBags() falls back to DEFAULT_BAGS, and bag-settings refuses
   // to delete the last bag). Keep one defensive snapshot null check.
@@ -3016,10 +2867,6 @@ function startRoundSetup() {
   showView('glacier-capture');
 }
 
-// ── GLACIER CAPTURE (v8.1.0) ─────────────────────────────────
-// Per-hole capture screen for schemaVersion: 2 rounds. State lives in pjc_wip
-// (the active round). GC tracks UI state only — currently displayed hole index
-// and the score-expand state for the score-pills second row.
 // GLACIER REFINE (v8.1.2) — score is captured via pills, not a stepper.
 // scoreExpand controls whether row 2 (1, 8-12) is visible. Resets on hole nav.
 const GC = { holeIdx: 0, scoreExpand: false };
@@ -3045,9 +2892,6 @@ function initGlacierCapture() {
   glacierRenderHole();
 }
 
-// COBALT WINDOW (v8.2.0) — target-aware getter. In edit mode (EDIT.roundId
-// set), returns the saved round being edited. In capture mode, returns the
-// active WIP.
 // SAVE COMMIT (v8.3.0) — in edit mode now synthesizes a target object whose
 // holes[EDIT.holeIdx] IS EDIT.workingHole (a stable reference in EDIT state).
 // Handler mutations on target.holes[GC.holeIdx][field] therefore land on
@@ -3065,8 +2909,6 @@ function glacierGetWIP() {
   return getWIP();
 }
 
-// glacierPersistAndRender — single chokepoint for "field changed" actions.
-// COBALT WINDOW (v8.2.0) — was target-aware persistence.
 // SAVE COMMIT (v8.3.0) — in edit mode this no longer writes to pjc_rounds.
 // The handler has already mutated EDIT.workingHole (because glacierGetWIP
 // synthesized a target whose holes[GC.holeIdx] IS workingHole). Persistence
@@ -3147,11 +2989,8 @@ function glacierRenderHole() {
   const penEl = document.getElementById('gc-penalty-val');
   if (penEl) penEl.textContent = hole.penalty != null ? hole.penalty : 0;
 
-  // Tee shot section: club category buttons + tee result.
   // PEWTER FALCON (v8.3.34) — tee club is now a fixed 4-button category picker
   // (Drv/Fwy/Hyb/Iron); legacy club-id values are resolved to category at
-  // render time. Preserves the GLACIER REFINE (v8.1.2) c.abbr lookup pattern
-  // for legacy data via the teeClubCategory helper.
   const isPar3 = hole.par === 3;
   const teeResultBlock = document.getElementById('gc-tee-result-block');
   if (teeResultBlock) teeResultBlock.style.display = isPar3 ? 'none' : '';
@@ -3265,9 +3104,6 @@ function glacierRenderHole() {
   if (actionBtn) actionBtn.textContent = actionLbl;
   if (actionBtnTop) actionBtnTop.textContent = actionLbl;
 
-  // COBALT WINDOW (v8.2.0) — mode-aware UI. In edit mode: hide hole nav
-  // arrows (single-hole edit, no "next"), hide both action buttons (no
-  // Next/Finish concept).
   // SAVE COMMIT (v8.3.0) — header buttons in edit mode are now Save (left,
   // gold-highlighted when dirty, muted when clean) and Cancel (right,
   // chalk2 instead of red). Onclick handlers are swapped per mode.
@@ -3380,8 +3216,6 @@ function glacierSetOnGreen(isOn) {
 // current selection and sets the new one (mutex), and tapping the SAME
 // button clears it (back to null = neutral). This is the opt-in pattern
 // required because missQuality is optional — most missed greens for a
-// bogey golfer are neutral (no tap), only notable misses get flagged.
-// Allowed values: 'fatSide' | 'shortSide' | null.
 function glacierToggleMissQuality(value) {
   const wip = glacierGetWIP();
   if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
@@ -3606,29 +3440,14 @@ function glacierFinishRound() {
   // making the most rewarding moment of the round invisible. Setting
   // DET.roundId before showView('detail') primes renderDetail to find the
   // freshly-pushed round in pjc_rounds. Back button on view-detail still
-  // routes to History (acceptable; revisit if the flow feels off).
   DET.roundId = wip.id;
   showView('detail');
 }
 
-// VELVET LATTICE (v8.3.2) — universal tappable-stat machinery. Every stat with
-// a hole-level decomposition becomes a tap target. Tapping renders a panel
-// beneath the section showing the matching holes as bold numbers — no prose.
-//
 // Pattern: each tap target carries data-stat-key and (optionally) data-stat-param.
 // statSelect toggles DET.statSel; statApplySelection rebuilds DOM (panel + .selected
 // highlight + tee-chart dimming for the teeZone case) without re-rendering the
 // whole detail screen. Called once after every renderDetailV2 to restore state.
-//
-// Replaces AMBER ECHO + HORIZON DRIFT helpers (teeZoneSelect/teeZoneApplySelection)
-// — the tee-zone case is now just one stat-key among many.
-// TIDAL FERN (v8.3.24) — hoisted prose & failure builders at module scope so
-// stat panels can render per-hole expansions. buildHoleSentence + phrase
-// tables migrated from renderDetailV2 closure (originally MARBLE SENTENCE
-// v8.3.8). Two new builders — getDbagFailures and getPj5Failures — return
-// plain-English sentences for the failures fired on a given hole; predicates
-// re-evaluated per call to keep the panel renderer decoupled from the DBAG
-// render block.
 const TEE_PHRASE = {
   fairway: 'in the <b>fairway</b>',
   L:   'in the <b>left rough</b>',
@@ -3641,10 +3460,6 @@ const TEE_PHRASE = {
   OBL: '<b>OB left</b>',
   OBR: '<b>OB right</b>'
 };
-// CINDER MEADOW (v8.3.36) — direction-only phrase table. Legacy 9-zone
-// values are normalized via approachResultDirection() before lookup, so
-// e.g. 'long-l' from a pre-v8.3.36 round still renders correctly (as
-// "left", losing the "long" depth qualifier per the redesign intent).
 // AURUM COMPASS (v8.3.38) — phrases reframed as aim-relative. The L/C/R
 // codes now describe miss vs intended line, not absolute green position.
 // Pre-CINDER MEADOW data was implicitly absolute; documented semantic
@@ -3661,8 +3476,6 @@ const ZONE_PHRASE = {
 // par - 2 represents the "regulation" non-putt strokes (1 to green on par 3,
 // 2 to green on par 4, 3 to green on par 5). Anything beyond that is a
 // recovery / layup / extra short-game swing. Returns null if score or putts
-// is missing (can't compute), or if the result clamps below zero (data
-// inconsistency — silent skip; the prose just won't add a recovery clause).
 function inferExtraSwings(h) {
   if (h == null) return null;
   if (h.score == null || h.putts == null) return null;
@@ -3748,7 +3561,6 @@ function clubProsePhrase(value) {
 // (it's a stroke count, not a binary "happened" flag, and overlaps with the
 // OB tee result rendering). Compact labels keep the row from wrapping under
 // normal conditions; flex-wrap on .rr-course-line handles the rare case of
-// a hole with all four flags set.
 function holeTroublePillsHtml(h) {
   if (h == null) return '';
   const out = [];
@@ -3834,13 +3646,6 @@ function buildHoleSentence(h) {
     }
   }
   if (h.approachResult || h.onGreen != null) {
-    // CINDER MEADOW (v8.3.36) — direction via helper handles legacy 9-zone
-    // codes (long-l/pin/short-r/etc) by collapsing to L/C/R.
-    // AURUM COMPASS (v8.3.38) — comma separator between green status and
-    // aim-relative phrase, e.g. "landed on the green, left of aim". Bold
-    // wraps both for visual cohesion.
-    // CEDAR HEARTH (v8.3.40) — onGreen is boolean again. Simple ternary; null
-    // values from any v8.3.39 captures coerce to 'off the green' (correct).
     // CARDINAL TINT (v8.3.59) — direction phrase suppressed for new captures
     // (approachResult is no longer written). Legacy rounds with L/C/R data
     // still render the direction phrase. NEW: missQuality phrase ("fat side"
@@ -4519,11 +4324,6 @@ function renderDetailV2(round) {
   const holes = allHoles.filter(h => h.score > 0);
   const nPlayed = holes.length;
 
-  // CARDINAL FIX (v8.3.0) — up & down requires NOT doubleChip. Two chips
-  // and 1 putt is not up&down (definition: get up in 2 strokes).
-  // CEDAR HEARTH (v8.3.40) — back to truthy-falsy (null from any v8.3.39
-  // captures coerces to falsy = off-green, which is correct under default-
-  // to-miss semantics).
   // CARDINAL TINT (v8.3.59) — extended predicate to exclude chunk/blade
   // for new captures (doubleChip is no longer written; chunk+blade replace
   // it as the scoring-zone failure signal). All three flags exclude the
@@ -4650,8 +4450,6 @@ function renderDetailV2(round) {
     // subsequent rows. Each row pitch is 19px (18px track height + 1px row
     // margin-bottom); dot centers sit at y = rowIdx*19 + 9 in track-relative
     // pixel space. SVG height spans the first track plus full pitches for
-    // each additional row, so the last dot center lands exactly at the SVG's
-    // last pixel (no overflow needed beyond what overflow:visible permits).
     let linesSvg = '';
     if (rowIdx === 0 && nSpark >= 2) {
       const ROW_PITCH = 19;
@@ -5140,11 +4938,6 @@ function renderDetailV2(round) {
   // ── GIR by Yardage / Hole-out ≤3 by Yardage stacked bars ────
   // VELVET LATTICE — each band row taps to its panel. statKey passed in so the
   // same bandRows helper serves both GIR and Hole-out sections.
-  // FROST RAVEN (v8.3.26) — bandRows accepts optional populationFn to filter
-  // which holes belong in a band's population at all. GIR-by-yardage uses this
-  // to exclude OOP/OB tee holes (no real GIR opportunity), with a miracle-case
-  // override that lets strict GIR holes back in regardless of tee result.
-  // EMBER WILLOW (v8.3.27) — <50 added to bar bands.
   const bands = ['<50','50-74','75-99','100-124','125-149','150-174','175-199','200+'];
   const bandRows = (metricFn, hitClass, statKey, populationFn) => bands.map(b => {
     // VELLUM ASTER (v8.3.33) — band match via approachYardsBin (numeric + legacy).
@@ -5179,7 +4972,6 @@ function renderDetailV2(round) {
   // 3-putt rows are highlighted (green / red); 2-putt and 4+ are neutral.
   // The 3-putt row carries a benchmark line: "10-hcp would 3-putt: X.X times"
   // computed by summing tenHcpThreePuttRate(feet) per first putt this round.
-  // H-link pills tap-through to the per-hole row via scrollToHoleRow(idx).
   const fpShort = holes.filter(h => firstPuttDistCategory(h.firstPuttDist) === 'short');
   const onePuttHoles = [];
   const twoPuttHoles = [];
@@ -5249,8 +5041,6 @@ function renderDetailV2(round) {
     <span class="section-lbl">Putting</span>
     <div class="det-card">${lines.join('')}</div>`;
 
-  // ── Per-hole rows with missing-data warnings ────────────────
-  // SUMMIT REDESIGN (v8.3.0) — required-field check on played holes.
   // AGATE WILLOW (v8.3.31) — refactored to return list of missing field names
   // so the warn pill can show WHICH fields are missing. Also fixes two latent
   // bugs: (1) teeClub is stored as a string ID, not an object — the old
@@ -5329,10 +5119,6 @@ function renderDetailV2(round) {
       // Edit form expansion (only if this hole is the one being edited).
       const isEditingThis = DET.editingNote && DET.editingNote.type === 'hole' && DET.editingNote.idx === idx;
       const noteFormHtml = isEditingThis ? renderNoteEditForm(h.notes || '', {type:'hole', idx}) : '';
-      // AMBER SIGIL (v8.3.41) — tee result pill + GIR/Girpy badge inline
-      // with "Hole N · Par M". Each helper returns empty string when the
-      // condition isn't met (par 3 has no tee pill; not-GIR-not-Girpy = no
-      // badge). Pills only render for played holes.
       // COPPER SIGIL (v8.3.44) — trouble pills (Dbl chip / Fwy bnk / Grn bnk
       // / Duff) join the same row, migrated from the bottom-of-prose render.
       const teePillHtml = isPlayed ? holeTeePillHtml(h) : '';
@@ -5398,9 +5184,6 @@ function renderDetailV2(round) {
 // section. Each function self-contained: takes (round, holes, ...) args
 // it needs, gracefully clears its own container when data insufficient.
 // Hole-number references use h.number (matches existing schema).
-// Tap-through to per-hole row uses scrollToHoleRow(idx) — idx is the
-// position in allHoles (the iteration index used by det-hole-row-${idx}).
-// ═════════════════════════════════════════════════════════════════════
 
 // COBALT TUSK (v8.3.49) — capture completeness. A hole is "fully captured"
 // when score+putts present, plus teeResult and approachYards on par 4/5.
@@ -6214,11 +5997,6 @@ function ghPushCourses() {
   // HOLE PIN MODEL — also include pjc_hole_pins (per-hole landing/green) so the
   // new shape propagates between devices alongside the per-tee pjc_course_coords.
   // GLACIER REDESIGN \u2014 courseBags removed from the payload. v8.0.0 retires the
-  // per-course default bag in favor of the lite global bag (pjc_bags only).
-  // TIDAL ICEBERG (v8.0.1) \u2014 explicit `courseBags: undefined` triggers the
-  // strip-undefined pass in ghPushSection, which deletes the field from the
-  // remote file. Without the explicit undefined, the prior value would persist
-  // (spread merge doesn't delete absent keys).
   return ghPushSection('Courses', 'gh-push-courses-btn', now => ({
     fields: { courses: JSON.parse(localStorage.getItem('pjc_courses')||'[]'), courseNotes: JSON.parse(localStorage.getItem('pjc_course_notes')||'{}'), masterTees: JSON.parse(localStorage.getItem('pjc_master_tees')||'{}'), courseBags: undefined, courseCoords: JSON.parse(localStorage.getItem('pjc_course_coords')||'{}'), holePins: JSON.parse(localStorage.getItem('pjc_hole_pins')||'{}'), elevation: JSON.parse(localStorage.getItem('pjc_elevation')||'{}'), elevationSegments: JSON.parse(localStorage.getItem('pjc_elevation_segments')||'{}'), notesTs: now },
     metaFields: { notesTs: now }
@@ -6592,10 +6370,6 @@ function bgsSaveNewBag() {
   toast('Bag added \u2713');
 }
 
-// ── ROUND DETAIL ─────────────────────────────────────────────
-// OBSIDIAN PURGE (v8.1.2) — DET.openHoles and DET.editHoles dropped (only the
-// deleted v1 detailHoleHTML/edit-hole flow used them). v2 Round Detail is a
-// flat read-only render, no per-hole state.
 // VELVET LATTICE (v8.3.2) — statSel = {key, param} or null. Universal selection
 // state for tappable stats; replaces AMBER ECHO's teeZoneSel (which was just
 // one special case of this pattern). Tee-bar/spark-dot dimming still fires
@@ -6603,9 +6377,6 @@ function bgsSaveNewBag() {
 // Reset on showDetail entry (different round = no carry-over selection).
 const DET = { roundId: null, statSel: null, expandedHole: null, editingNote: null };
 
-// COBALT WINDOW (v8.2.0) — edit mode state. When EDIT.roundId is set, the
-// glacier-capture view reads/writes the saved round (pjc_rounds entry) at
-// holes[EDIT.holeIdx], rather than the in-progress WIP.
 // SAVE COMMIT (v8.3.0) — added workingHole + originalHole. Mutations now
 // happen on workingHole (a structured-clone of the saved hole, set on
 // editHoleStart). Save commits workingHole into pjc_rounds; Cancel discards
