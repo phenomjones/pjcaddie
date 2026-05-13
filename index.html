@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.55 · May 11, 2026 -->
+<!-- PJ Caddie v8.3.59 · May 11, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -254,7 +254,7 @@ body{display:flex;flex-direction:column}
 .det-grid-name{font-size:11px;color:var(--chalk2)}
 .det-grid-n{font-size:10px;color:var(--chalk3);opacity:.65}
 .det-zone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
-.det-zone-cell{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--chalk);font-weight:500}
+.det-zone-cell{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11px;color:var(--chalk);font-weight:500}
 .det-zone-cell.empty{background:var(--ink);color:var(--chalk3);opacity:.4}
 .det-zone-cell.locked{background:#0A0907;color:var(--chalk3);opacity:.4;font-size:14px}
 .det-zone-cell.m-1{background:rgba(201,85,72,0.18);color:#F0D5CF}
@@ -642,25 +642,24 @@ body{display:flex;flex-direction:column}
 .gc-tee-cat-row .gc-chip{min-height:48px;font-size:14px;font-weight:600}
 /* CINDER MEADOW (v8.3.36) — gc-zone-grid (9-cell 3×3) and gc-zone-pin/
    gc-pin-disabled (Pin auto-onGreen state machine) are no longer used in
-   the capture screen; kept for any legacy reference. The new direction-only
-   row uses gc-dir-row below. */
+   the capture screen; kept for any legacy reference.
+   CARDINAL TINT (v8.3.59) — gc-dir-row also retired (was direction picker
+   referenced by the comment below). All approach-direction capture removed. */
 .gc-zone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .gc-zone-cell{min-height:50px;background:var(--ink3);border:1px solid var(--border2);color:var(--chalk2);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;padding:0 4px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1.1;white-space:nowrap}
 .gc-zone-cell.on{background:var(--gold);color:var(--ink);border-color:var(--gold)}
 .gc-zone-pin{border:1.5px dashed var(--green);color:var(--green);background:transparent}
 .gc-zone-pin.on{background:var(--green);color:var(--ink);border-style:solid;border-color:var(--green)}
 .gc-zone-pin.gc-pin-disabled{opacity:.35;border-style:dashed}
-.gc-dir-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.gc-dir-row .gc-chip{min-height:50px;font-size:16px;font-weight:700}
-.gc-toggle{background:var(--ink3);border:1px solid var(--border2);color:var(--chalk2);font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;padding:11px 12px;border-radius:8px;cursor:pointer;text-align:center}
-.gc-toggle.on{background:var(--green);color:var(--ink);border-color:var(--green)}
-.gc-bottom-row{display:flex;gap:8px;margin-top:14px}
+/* CARDINAL TINT (v8.3.59) — gc-dir-row, gc-bottom-row, gc-toggle, gc-toggle-bottom
+   CSS rules removed. The L/C/R direction picker, the single Hit Green toggle,
+   the bottom 4-flag row, and the gc-toggle-bottom flag pills are all gone from
+   the capture HTML. New rules (gc-tee-inplay, gc-tee-trouble, gc-fwy-bunker-pill,
+   gc-approach-result-row, gc-miss-row, gc-inline-flags, gc-flag-pill, gc-section-scoring)
+   are defined above near the top of the stylesheet block. */
 /* WIND CHIME (v8.3.28) — per-hole notes textarea in glacier capture. */
 .gc-notes-block{margin-top:8px}
 .gc-notes-input{width:100%;min-height:60px;background:var(--ink2);color:var(--chalk1);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box}
-.gc-toggle-bottom{flex:1;padding:14px 8px;background:var(--ink2);border:1px solid var(--border2);color:var(--chalk2);border-radius:var(--rs);cursor:pointer}
-.gc-toggle-bottom.on{background:var(--orange);color:var(--ink);border-color:var(--orange)}
-.gc-toggle-bottom .gc-toggle-lbl{font-size:12px;font-weight:700;letter-spacing:.6px}
 
 /* ── AMBER VEIL (v8.3.43) — Wave 5 visual polish ──────────────────
    CSS-only refinements. No layout changes, no logic. Adds depth via
@@ -702,6 +701,34 @@ html.sun-mode .gc-section,html.sun-mode .det-card,html.sun-mode .round-row{box-s
 html.sun-mode .gc-fwy-picker{box-shadow:inset 0 2px 4px rgba(0,0,0,0.10)}
 html.sun-mode .gc-numeric-input,html.sun-mode .det-stack-track,html.sun-mode .sp-h-link,html.sun-mode .gc-penalty-card{box-shadow:inset 0 1px 2px rgba(0,0,0,0.08)}
 html.sun-mode .rr-pill{box-shadow:0 1px 2px rgba(0,0,0,0.08)}
+
+/* CARDINAL TINT (v8.3.59) — capture-screen schema rebuild styling. New
+   surfaces: 2-row tee result (in-play row + trouble row with Fwy Bunker pill
+   inline), scoring shot section (copper accent), Approach Miss opt-in picker
+   (re-tap-clear behavior), inline flag pairs (Sand/Duff on Approach,
+   Chunk/Blade on Scoring Shot). Trouble-pink shared with existing
+   .rr-pill-trouble. All sun-mode parity handled in dedicated block below. */
+.gc-tee-inplay{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.gc-tee-inplay .gc-fwy-zone{min-height:54px;font-size:14px;font-weight:700}
+.gc-tee-trouble{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:6px;margin-top:6px;align-items:stretch}
+.gc-tee-trouble .gc-fwy-zone{min-height:42px;font-size:11px;padding:0 2px}
+.gc-fwy-bunker-pill{min-height:42px;padding:0 12px;background:var(--ink3);border:1px solid var(--border2);color:var(--chalk2);border-radius:6px;font-size:11px;font-weight:600;letter-spacing:.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;white-space:nowrap}
+.gc-fwy-bunker-pill.on{background:rgba(245,168,168,0.22);border-color:#F5A8A8;color:#F5A8A8}
+.gc-section-scoring{border-left-color:var(--orange);background:linear-gradient(90deg,rgba(205,133,63,.06) 0%,var(--ink2) 100%)}
+.gc-section-scoring .gc-section-lbl{color:var(--orange)}
+.gc-section-scoring .gc-section-lbl::before{color:var(--orange)}
+.gc-section-scoring .gc-chip.on{background:var(--orange);color:var(--ink);border-color:var(--orange)}
+.gc-approach-result-row{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.gc-miss-row{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.gc-inline-flags{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px}
+.gc-flag-pill{min-height:44px;background:var(--ink3);border:1px solid var(--border2);color:var(--chalk2);border-radius:8px;font-size:12px;font-weight:600;letter-spacing:.4px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.gc-flag-pill.on{background:rgba(245,168,168,0.22);border-color:#F5A8A8;color:#F5A8A8}
+.gc-conditional-hidden{display:none}
+/* sun-mode parity */
+html.sun-mode .gc-fwy-bunker-pill{background:var(--paper);border-color:var(--border-light)}
+html.sun-mode .gc-fwy-bunker-pill.on{background:rgba(220,120,120,0.18);border-color:#C46A6A;color:#A04444}
+html.sun-mode .gc-flag-pill{background:var(--paper);border-color:var(--border-light)}
+html.sun-mode .gc-flag-pill.on{background:rgba(220,120,120,0.18);border-color:#C46A6A;color:#A04444}
 
 /* JUNIPER QUARRY BATCH (v8.3.46-52) — post-round summary styling. Reuses
    .det-card depth pattern, .section-lbl gold uppercase, .sp-h-link tap-pills.
@@ -769,6 +796,34 @@ html.sun-mode .det-streak-pill{background:var(--paper3);border-color:rgba(212,17
 .det-group-label{display:block;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);opacity:0.9;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(212,175,55,0.18)}
 html.sun-mode .det-group{background:var(--paper2);border-top-color:rgba(0,0,0,0.06);box-shadow:inset 0 1px 0 rgba(255,255,255,0.55),0 1px 3px rgba(0,0,0,0.06)}
 html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
+
+/* HEARTH GRANITE (v8.3.58) — desktop font-size bump for the post-round summary
+   classes added across JUNIPER QUARRY BATCH. Mobile sizing (10-14px) reads fine
+   on a 393px phone screen but cramps at 1440px desktop width. This bumps the
+   small-text rules in the summary surfaces only — leaving .section-lbl and
+   other app-wide classes alone since they appear on every screen and need a
+   broader scope decision. Breakpoint matches typical tablet/desktop boundary. */
+@media (min-width: 768px) {
+  .det-completeness-text{font-size:13px}
+  .det-tdisp-val{font-size:22px}
+  .det-tdisp-lbl{font-size:11px}
+  .det-tdisp-n{font-size:11px}
+  .det-scrub-tile{font-size:13px}
+  .det-scrub-tile-val{font-size:17px}
+  .det-scrub-tile-delta{font-size:13px}
+  .det-blowup-row,.det-blowup-cause{font-size:13px}
+  .det-blowup-h{font-size:13px}
+  .det-blowup-score{font-size:17px}
+  .det-blowup-empty{font-size:13px}
+  .det-pbu-row,.det-stretch-row{font-size:13px}
+  .det-cmp-row,.det-cmp-lbl{font-size:13px}
+  .det-cmp-today{font-size:17px}
+  .det-cmp-base{font-size:12px}
+  .det-cmp-arrow{font-size:12px}
+  .det-cmp-empty{font-size:13px}
+  .det-streak-pill,.det-prbreak-pill{font-size:13px;padding:4px 11px}
+  .det-group-label{font-size:14px}
+}
 </style>
 </head>
 <body>
@@ -783,7 +838,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.55 · May 11, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.59 · May 11, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -970,20 +1025,24 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         </div>
         <div id="gc-tee-result-block">
           <div class="gc-mini-lbl" style="margin:14px 0 8px">Tee Result</div>
-          <!-- CINNABAR DRAKE (v8.3.35) — visual 7-zone fairway picker. Top-down
-               view of the fairway from the tee: OB at the corners (red), OOP
-               wings just inside (amber), L/R rough flanking the FW strip (tan),
-               FW the brighter green center (spans 2 cols of the 4-col grid).
-               Schema codes (OBL/LL/L/fairway/R/RR/OBR) unchanged — only the
-               UI representation. Display labels updated to OOP per SLATE OWL. -->
-          <div class="gc-fwy-picker" id="gc-fwy-picker">
-            <button class="gc-fwy-zone gc-fwy-ob"   data-tee="OBL"     onclick="glacierSetField('teeResult','OBL')"     aria-label="Out of bounds left">OB-L</button>
-            <button class="gc-fwy-zone gc-fwy-oop"  data-tee="LL"      onclick="glacierSetField('teeResult','LL')"      aria-label="Out of position left">OOP-L</button>
-            <button class="gc-fwy-zone gc-fwy-oop"  data-tee="RR"      onclick="glacierSetField('teeResult','RR')"      aria-label="Out of position right">OOP-R</button>
-            <button class="gc-fwy-zone gc-fwy-ob"   data-tee="OBR"     onclick="glacierSetField('teeResult','OBR')"     aria-label="Out of bounds right">OB-R</button>
-            <button class="gc-fwy-zone gc-fwy-rgh"  data-tee="L"       onclick="glacierSetField('teeResult','L')"       aria-label="Left rough">L</button>
-            <button class="gc-fwy-zone gc-fwy-fw"   data-tee="fairway" onclick="glacierSetField('teeResult','fairway')" aria-label="Fairway">FW</button>
-            <button class="gc-fwy-zone gc-fwy-rgh"  data-tee="R"       onclick="glacierSetField('teeResult','R')"       aria-label="Right rough">R</button>
+          <!-- CARDINAL TINT (v8.3.59) — 2-row tee result layout. Top row
+               (in-play: L / FW / R, taller cells) emphasizes the DECADE
+               in-play binary. Bottom row (trouble: OBL / LL / RR / OBR
+               + Fwy Bunker flag pill) collapses the trouble outcomes onto
+               one row. Schema codes unchanged (OBL/LL/L/fairway/R/RR/OBR);
+               only layout changed. Fwy Bunker is an independent boolean
+               (trouble-pink) on the trouble row, not a mutex sibling. -->
+          <div class="gc-tee-inplay">
+            <button class="gc-fwy-zone gc-fwy-rgh" data-tee="L"       onclick="glacierSetField('teeResult','L')"       aria-label="Left rough">L</button>
+            <button class="gc-fwy-zone gc-fwy-fw"  data-tee="fairway" onclick="glacierSetField('teeResult','fairway')" aria-label="Fairway" style="grid-column:auto">FW</button>
+            <button class="gc-fwy-zone gc-fwy-rgh" data-tee="R"       onclick="glacierSetField('teeResult','R')"       aria-label="Right rough">R</button>
+          </div>
+          <div class="gc-tee-trouble">
+            <button class="gc-fwy-zone gc-fwy-ob"  data-tee="OBL"     onclick="glacierSetField('teeResult','OBL')"     aria-label="Out of bounds left">OB</button>
+            <button class="gc-fwy-zone gc-fwy-oop" data-tee="LL"      onclick="glacierSetField('teeResult','LL')"      aria-label="Out of position left">LL</button>
+            <button class="gc-fwy-zone gc-fwy-oop" data-tee="RR"      onclick="glacierSetField('teeResult','RR')"      aria-label="Out of position right">RR</button>
+            <button class="gc-fwy-zone gc-fwy-ob"  data-tee="OBR"     onclick="glacierSetField('teeResult','OBR')"     aria-label="Out of bounds right">OB</button>
+            <button class="gc-fwy-bunker-pill" id="gc-fwy-bunker-pill" onclick="glacierToggleField('fwyBunker')" aria-label="Fairway bunker">Fwy Bunker</button>
           </div>
         </div>
       </div>
@@ -999,31 +1058,54 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
                  inputmode="numeric" min="1" max="350" step="1" placeholder="Yards"
                  onchange="glacierSetApproachYards(this.value)">
         </div>
-        <div class="gc-mini-lbl" style="margin:14px 0 8px">Miss vs Target</div>
-        <!-- CINDER MEADOW (v8.3.36) — direction-only picker. The 9-zone 3×3
-             grid (long/pin/short × L/C/R) collapsed to 3 buttons. Schema codes
-             are 'L'/'C'/'R'; legacy 9-zone values still render correctly via
-             approachResultDirection() at read time. The Pin auto-onGreen state
-             machine (glacierZoneTap) is dropped — onGreen is set explicitly
-             via the toggle below.
-             AURUM COMPASS (v8.3.38) — the L/C/R frame is now aim-relative, not
-             green-absolute. L = pulled left of where you aimed; C = on aim line;
-             R = pushed right of aim line. DECADE/TourIQ-aligned: the data tells
-             you about your swing dispersion, not about your final position on
-             the green (which is captured by the onGreen toggle). Schema codes
-             unchanged; legacy data was implicitly absolute, new data is
-             aim-relative — documented semantic shift (no migration). -->
-        <div class="gc-dir-row" id="gc-dir-row">
-          <button class="gc-chip" data-dir="L" onclick="glacierSetField('approachResult','L')" aria-label="Pulled left of target">L</button>
-          <button class="gc-chip" data-dir="C" onclick="glacierSetField('approachResult','C')" aria-label="On target">C</button>
-          <button class="gc-chip" data-dir="R" onclick="glacierSetField('approachResult','R')" aria-label="Pushed right of target">R</button>
+        <!-- CARDINAL TINT (v8.3.59) — Approach Result. 2-button On/Off picker
+             replaces the old Hit Green toggle + L/C/R direction picker.
+             onGreen drives the conditional block below (Approach Miss picker
+             + Sand/Duff flags); the legacy approachResult field is no longer
+             written on new captures (kept for legacy display only). -->
+        <div class="gc-mini-lbl" style="margin:14px 0 8px">Approach Result</div>
+        <div class="gc-approach-result-row">
+          <button class="gc-chip" id="gc-on-green-btn" onclick="glacierSetOnGreen(true)" aria-label="Approach landed on green">On Green</button>
+          <button class="gc-chip" id="gc-off-green-btn" onclick="glacierSetOnGreen(false)" aria-label="Approach missed green">Off Green</button>
         </div>
-        <!-- CEDAR HEARTH (v8.3.40) — back to a single toggle button. JADE
-             TUMBLE's 2-button picker was overdesigned: forces an explicit
-             choice per hole when the boolean idiom (sand/fwyBunker/doubleChip
-             — all default-to-false flags) is the established pattern. Tap to
-             flag a hit; not flagged means missed. Re-tap clears back to false. -->
-        <button class="gc-toggle" id="gc-on-green-toggle" onclick="glacierToggleOnGreen()" style="margin-top:12px;width:100%">Hit Green</button>
+        <!-- CARDINAL TINT — Conditional block: shown only when onGreen=false.
+             Houses the Approach Miss opt-in picker (Fat side / Short side
+             with re-tap-clear) and the inline Sand/Duff flags (moved from
+             the deleted bottom row). Mutex enforced by glacierToggleMissQuality. -->
+        <div id="gc-approach-miss-block">
+          <div class="gc-mini-lbl" style="margin:14px 0 8px">Approach Miss</div>
+          <div class="gc-miss-row">
+            <button class="gc-chip" id="gc-miss-fat-btn" onclick="glacierToggleMissQuality('fatSide')" aria-label="Missed to the fat side">Fat side</button>
+            <button class="gc-chip" id="gc-miss-short-btn" onclick="glacierToggleMissQuality('shortSide')" aria-label="Short-sided yourself">Short side</button>
+          </div>
+          <div class="gc-inline-flags">
+            <button class="gc-flag-pill" id="gc-sand-flag" onclick="glacierToggleField('sand')" aria-label="Greenside bunker">Sand</button>
+            <button class="gc-flag-pill" id="gc-duff-flag" onclick="glacierToggleField('duffedApproach')" aria-label="Duffed approach">Duff</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARDINAL TINT — Scoring Shot section (copper accent). Shown only
+           when onGreen=false. Captures the shot that actually landed on the
+           green (the chip / pitch / wedge after the approach missed) plus
+           the chunk/blade diagnostic flags (replacing the old doubleChip
+           flag for new captures). -->
+      <div class="gc-section gc-section-scoring" id="gc-section-scoring">
+        <div class="gc-section-lbl">Scoring Shot</div>
+        <div class="gc-mini-lbl" style="margin-bottom:8px">Scoring Club</div>
+        <div class="gc-chip-row">
+          <button class="gc-chip" id="gc-scoring-iron-btn" onclick="glacierSetField('scoringShotClub','iron')">Iron</button>
+          <button class="gc-chip" id="gc-scoring-wedge-btn" onclick="glacierSetField('scoringShotClub','wedge')">Wedge</button>
+          <button class="gc-chip" id="gc-scoring-other-btn" onclick="glacierSetField('scoringShotClub','other')">Other</button>
+        </div>
+        <div class="gc-mini-lbl" style="margin:14px 0 8px">Scoring Yardage</div>
+        <input type="number" id="gc-scoring-yards-input" class="gc-numeric-input"
+               inputmode="numeric" min="1" max="200" step="1" placeholder="Yards"
+               onchange="glacierSetScoringYards(this.value)">
+        <div class="gc-inline-flags">
+          <button class="gc-flag-pill" id="gc-chunk-flag" onclick="glacierToggleField('chunk')" aria-label="Chunked a scoring shot">Chunk</button>
+          <button class="gc-flag-pill" id="gc-blade-flag" onclick="glacierToggleField('blade')" aria-label="Bladed a scoring shot">Blade</button>
+        </div>
       </div>
 
       <!-- Putts section (green accent) -->
@@ -1046,22 +1128,13 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <!-- COBALT MARROW (v8.3.30) — First putt result row removed (firstPuttResult field dropped). -->
       </div>
 
-      <!-- BUNKER QUARTET (v8.3.8) — 4-across trouble-flag toggles. Labels
-           shortened to fit 380px width. Handlers reuse glacierToggleField. -->
-      <div class="gc-bottom-row">
-        <button class="gc-toggle gc-toggle-bottom" id="gc-double-chip-toggle" onclick="glacierToggleField('doubleChip')">
-          <div class="gc-toggle-lbl">Dbl chip</div>
-        </button>
-        <button class="gc-toggle gc-toggle-bottom" id="gc-sand-toggle" onclick="glacierToggleField('sand')">
-          <div class="gc-toggle-lbl">Grn bunker</div>
-        </button>
-        <button class="gc-toggle gc-toggle-bottom" id="gc-fwy-bunker-toggle" onclick="glacierToggleField('fwyBunker')">
-          <div class="gc-toggle-lbl">Fwy bunker</div>
-        </button>
-        <button class="gc-toggle gc-toggle-bottom" id="gc-duffed-toggle" onclick="glacierToggleField('duffedApproach')">
-          <div class="gc-toggle-lbl">Duffed</div>
-        </button>
-      </div>
+      <!-- CARDINAL TINT (v8.3.59) — bottom Bunker Quartet row removed.
+           Flags now live inline with their owning shot:
+             Fwy Bunker → Tee Result trouble row
+             Sand + Duff → Approach Result conditional block
+             Chunk + Blade (new, replacing Double Chip) → Scoring Shot section
+           Legacy hole.doubleChip stays on the hole object for legacy display
+           but is not written on new captures. -->
 
       <!-- WIND CHIME (v8.3.28) — per-hole notes. Free-text field captured
            during the glacier flow; persists to hole.notes via blur handler. -->
@@ -1381,7 +1454,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.55 · Spec v2.1</span>
+        <span>v8.3.59 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1668,6 +1741,18 @@ function createHole({ number, par, score }) {
     approachYards: null,
     approachResult: null,
     onGreen: false,  // CEDAR HEARTH (v8.3.40) — reverted from null. Default-to-miss matches the boolean idiom of sand/fwyBunker/doubleChip; absence-of-tap = miss.
+    // CARDINAL TINT (v8.3.59) — new approach/scoring schema. approachResult
+    // (L/C/R direction) is no longer written on new captures; the field
+    // remains on the hole object for legacy round display only. missQuality
+    // is opt-in (null = neutral by default), with re-tap-clear behavior in
+    // the picker. scoringShot* fields are populated only when onGreen=false.
+    // chunk + blade replace doubleChip on new captures (more diagnostic
+    // signal); doubleChip stays on the hole object for legacy display.
+    missQuality: null,        // null | 'fatSide' | 'shortSide'
+    scoringShotClub: null,    // null | 'iron' | 'wedge' | 'other'
+    scoringShotYards: null,   // null | integer (yards)
+    chunk: false,             // boolean — chunked a scoring-zone shot
+    blade: false,             // boolean — bladed/sailed a scoring-zone shot
     putts: null,
     firstPuttDist: null,
     doubleChip: false,
@@ -1748,7 +1833,40 @@ function getRounds() {
   try { return JSON.parse(localStorage.getItem('pjc_rounds')||'[]'); }
   catch { return []; }
 }
-function saveRounds(r) {
+function saveRounds(r, opts) {
+  // SLATE BEACON (v8.3.56) — auto-bump updatedAt for any round whose content
+  // (excluding updatedAt itself) differs from what's currently in localStorage.
+  // New rounds and modified rounds get a fresh ms-since-epoch timestamp;
+  // unchanged rounds preserve theirs. mergeRounds uses this for last-write-wins
+  // conflict resolution on same-id collisions across devices.
+  //
+  // opts.skipTimestampBump=true is used by the sync merge save path
+  // (ghPullRounds), where merged rounds already carry their authoritative
+  // timestamps from each side and must not be re-stamped on the local side.
+  //
+  // Legacy rounds without updatedAt default to 0, so on first edit they receive
+  // a fresh timestamp and start propagating correctly. No migration required.
+  if (!opts || !opts.skipTimestampBump) {
+    let prev = [];
+    try { prev = JSON.parse(localStorage.getItem('pjc_rounds') || '[]'); }
+    catch { prev = []; }
+    const prevById = {};
+    if (Array.isArray(prev)) prev.forEach(p => { if (p && p.id) prevById[p.id] = p; });
+    const now = Date.now();
+    (r || []).forEach(round => {
+      if (!round || !round.id) return;
+      const old = prevById[round.id];
+      if (!old) { round.updatedAt = now; return; }
+      // Compare content excluding updatedAt itself
+      const oldClone = Object.assign({}, old); delete oldClone.updatedAt;
+      const newClone = Object.assign({}, round); delete newClone.updatedAt;
+      if (JSON.stringify(oldClone) !== JSON.stringify(newClone)) {
+        round.updatedAt = now;
+      } else if (round.updatedAt == null) {
+        round.updatedAt = old.updatedAt || 0;
+      }
+    });
+  }
   localStorage.setItem('pjc_rounds',JSON.stringify(r));
   // NEBULA ORCHID — rounds changed, profile inference may be stale. Fires after
   // new round commit, hole edit, delete, and sync merge. Safe if profile missing.
@@ -2956,6 +3074,28 @@ function glacierGetWIP() {
 // here in edit mode is re-render so the UI reflects the working copy.
 function glacierPersistAndRender(target) {
   if (!target) { glacierRenderHole(); return; }
+  // CARDINAL TINT (v8.3.59) — backwards-compat shim. Many existing
+  // aggregations (computeDbag, stat handlers, expected-3-putts, etc.) read
+  // hole.doubleChip as the binary "scoring-zone failure happened" signal.
+  // New captures only write chunk/blade (the diagnostic split). We derive
+  // doubleChip = true when chunk || blade is true so existing call sites
+  // keep working without per-site changes.
+  //
+  // Trade-off (intentional): this is set-only, never clears doubleChip.
+  // Rationale: legacy rounds with doubleChip=true must preserve that flag
+  // when edited in the new capture screen (which has no doubleChip UI).
+  // A bidirectional shim would erase legacy doubleChip on first edit of
+  // any field. The set-only direction prefers data preservation over
+  // perfect toggle-on-then-off symmetry. The edge case (user taps Chunk
+  // accidentally then untaps it) leaves doubleChip stuck at true; the
+  // user-visible chunk/blade flags read correctly from their own fields
+  // (the stickiness only affects internal shot-count aggregations,
+  // off by one for that single hole — acceptable).
+  if (target.holes && Array.isArray(target.holes)) {
+    target.holes.forEach(h => {
+      if (h && (h.chunk || h.blade)) h.doubleChip = true;
+    });
+  }
   if (EDIT.roundId == null) {
     saveWIP(target);
   }
@@ -3024,13 +3164,17 @@ function glacierRenderHole() {
     b.classList.toggle('on', b.dataset.cat === teeClubCat);
   });
   if (!isPar3) {
-    // CINNABAR DRAKE (v8.3.35) — single selector for the visual 7-zone picker
-    // covers all teeResult codes (OBL/LL/L/fairway/R/RR/OBR). The two prior
-    // selectors (.gc-tee-grid .gc-chip-arrow and .gc-chip-fairway) collapse
-    // into one .gc-fwy-zone toggle.
-    document.querySelectorAll('#view-glacier-capture .gc-fwy-picker .gc-fwy-zone').forEach(z => {
+    // CARDINAL TINT (v8.3.59) — selector updated for 2-row layout.
+    // Previously .gc-fwy-picker was a single grid; now .gc-tee-inplay +
+    // .gc-tee-trouble carry the .gc-fwy-zone buttons. Single selector with
+    // both class roots; the Fwy Bunker pill on the trouble row has its own
+    // class (gc-fwy-bunker-pill) so it's not picked up here.
+    document.querySelectorAll('#view-glacier-capture .gc-tee-inplay .gc-fwy-zone, #view-glacier-capture .gc-tee-trouble .gc-fwy-zone').forEach(z => {
       z.classList.toggle('on', z.dataset.tee === hole.teeResult);
     });
+    // Fwy Bunker pill (independent boolean) — on the trouble row but mutex-free.
+    const fbPill = document.getElementById('gc-fwy-bunker-pill');
+    if (fbPill) fbPill.classList.toggle('on', !!hole.fwyBunker);
   }
 
   // Approach section
@@ -3047,21 +3191,47 @@ function glacierRenderHole() {
       yardsInput.value = (typeof v === 'number') ? String(v) : '';
     }
   }
-  // CINDER MEADOW (v8.3.36) — 3-button direction picker. Helper resolves
-  // legacy 9-zone codes to L/C/R so editing pre-v8.3.36 rounds shows the
-  // correct button highlighted. Pin-disabled state machine removed (no
-  // more pin zone).
-  const apprDir = approachResultDirection(hole.approachResult);
-  document.querySelectorAll('#view-glacier-capture #gc-dir-row [data-dir]').forEach(b => {
-    b.classList.toggle('on', b.dataset.dir === apprDir);
-  });
-  // CEDAR HEARTH (v8.3.40) — single toggle render. Highlights gold when
-  // hole.onGreen === true; otherwise dim (default).
-  const ogBtn = document.getElementById('gc-on-green-toggle');
-  if (ogBtn) {
-    ogBtn.classList.toggle('on', hole.onGreen === true);
-    ogBtn.textContent = hole.onGreen === true ? '\u2713 Hit Green' : 'Hit Green';
+  // CARDINAL TINT (v8.3.59) — approach result + miss quality + scoring shot
+  // conditional rendering. On Green button highlights when hole.onGreen === true;
+  // Off Green button highlights when hole.onGreen === false (default state).
+  // The approach-miss block and scoring-shot section are hidden when on green.
+  const onGreenBtn = document.getElementById('gc-on-green-btn');
+  const offGreenBtn = document.getElementById('gc-off-green-btn');
+  if (onGreenBtn) onGreenBtn.classList.toggle('on', hole.onGreen === true);
+  if (offGreenBtn) offGreenBtn.classList.toggle('on', hole.onGreen === false);
+  const missBlock = document.getElementById('gc-approach-miss-block');
+  const scoringSection = document.getElementById('gc-section-scoring');
+  const showOffGreenChildren = hole.onGreen === false;
+  if (missBlock) missBlock.classList.toggle('gc-conditional-hidden', !showOffGreenChildren);
+  if (scoringSection) scoringSection.classList.toggle('gc-conditional-hidden', !showOffGreenChildren);
+  // Miss Quality picker (opt-in, re-tap-clear). Only one of the two pills
+  // can be highlighted at a time; both unhighlighted = neutral (null) default.
+  const missFatBtn = document.getElementById('gc-miss-fat-btn');
+  const missShortBtn = document.getElementById('gc-miss-short-btn');
+  if (missFatBtn) missFatBtn.classList.toggle('on', hole.missQuality === 'fatSide');
+  if (missShortBtn) missShortBtn.classList.toggle('on', hole.missQuality === 'shortSide');
+  // Sand + Duff inline flags on the approach card.
+  const sandFlag = document.getElementById('gc-sand-flag');
+  const duffFlag = document.getElementById('gc-duff-flag');
+  if (sandFlag) sandFlag.classList.toggle('on', !!hole.sand);
+  if (duffFlag) duffFlag.classList.toggle('on', !!hole.duffedApproach);
+  // Scoring Shot section fields.
+  const scoringIronBtn = document.getElementById('gc-scoring-iron-btn');
+  const scoringWedgeBtn = document.getElementById('gc-scoring-wedge-btn');
+  const scoringOtherBtn = document.getElementById('gc-scoring-other-btn');
+  if (scoringIronBtn) scoringIronBtn.classList.toggle('on', hole.scoringShotClub === 'iron');
+  if (scoringWedgeBtn) scoringWedgeBtn.classList.toggle('on', hole.scoringShotClub === 'wedge');
+  if (scoringOtherBtn) scoringOtherBtn.classList.toggle('on', hole.scoringShotClub === 'other');
+  const scoringYdsInput = document.getElementById('gc-scoring-yards-input');
+  if (scoringYdsInput) {
+    const v = hole.scoringShotYards;
+    scoringYdsInput.value = (typeof v === 'number') ? String(v) : '';
   }
+  // Chunk + Blade inline flags on the scoring shot card.
+  const chunkFlag = document.getElementById('gc-chunk-flag');
+  const bladeFlag = document.getElementById('gc-blade-flag');
+  if (chunkFlag) chunkFlag.classList.toggle('on', !!hole.chunk);
+  if (bladeFlag) bladeFlag.classList.toggle('on', !!hole.blade);
 
   // Putts section
   document.querySelectorAll('#view-glacier-capture [data-putts]').forEach(c => {
@@ -3078,15 +3248,11 @@ function glacierRenderHole() {
   // COBALT MARROW (v8.3.30) — firstPuttResult field dropped; fpr row visibility
   // and chip-toggle render block removed.
 
-  // Bottom row toggles
-  const dcBtn = document.getElementById('gc-double-chip-toggle');
-  const sandBtn = document.getElementById('gc-sand-toggle');
-  const fbBtn = document.getElementById('gc-fwy-bunker-toggle');
-  const duffBtn = document.getElementById('gc-duffed-toggle');
-  if (dcBtn) dcBtn.classList.toggle('on', !!hole.doubleChip);
-  if (sandBtn) sandBtn.classList.toggle('on', !!hole.sand);
-  if (fbBtn) fbBtn.classList.toggle('on', !!hole.fwyBunker);
-  if (duffBtn) duffBtn.classList.toggle('on', !!hole.duffedApproach);
+  // CARDINAL TINT (v8.3.59) — bottom-row toggle block removed entirely.
+  // doubleChip/sand/fwyBunker/duffedApproach are now rendered inline with
+  // their owning shot sections (above). chunk/blade replace doubleChip on
+  // new captures. Legacy hole.doubleChip is read by display code but no
+  // longer touched here.
 
   // WIND CHIME (v8.3.28) — populate per-hole notes textarea from saved value.
   const notesInput = document.getElementById('gc-notes-input');
@@ -3185,6 +3351,69 @@ function glacierToggleField(field) {
   if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
   const hole = wip.holes[GC.holeIdx];
   hole[field] = !hole[field];
+  glacierPersistAndRender(wip);
+}
+
+// CARDINAL TINT (v8.3.59) — explicit On/Off setter replacing glacierToggleOnGreen.
+// The capture screen now has 2 buttons (On Green / Off Green) instead of a
+// single toggle. Tapping On sets onGreen=true; tapping Off sets onGreen=false
+// AND clears any missQuality flag (since miss quality is undefined when on
+// green). Scoring-shot fields are NOT cleared automatically on toggle — if
+// the user accidentally taps On then back to Off, prior scoring-shot input
+// is preserved (no destructive UI behavior). This matches the established
+// pattern from VELLUM ASTER (yardage preserved on Off→On→Off toggle cycles).
+function glacierSetOnGreen(isOn) {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
+  const hole = wip.holes[GC.holeIdx];
+  hole.onGreen = !!isOn;
+  if (isOn) {
+    // Miss quality only meaningful when off green. Clear it on on-green.
+    hole.missQuality = null;
+  }
+  glacierPersistAndRender(wip);
+}
+
+// CARDINAL TINT (v8.3.59) — missQuality toggle with mutex + re-tap-clear.
+// Diverges from standard glacierSetField behavior (which uses tap-to-clear
+// only against the same value): here, tapping the OTHER button clears the
+// current selection and sets the new one (mutex), and tapping the SAME
+// button clears it (back to null = neutral). This is the opt-in pattern
+// required because missQuality is optional — most missed greens for a
+// bogey golfer are neutral (no tap), only notable misses get flagged.
+// Allowed values: 'fatSide' | 'shortSide' | null.
+function glacierToggleMissQuality(value) {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
+  const hole = wip.holes[GC.holeIdx];
+  if (hole.missQuality === value) {
+    hole.missQuality = null;  // re-tap clears
+  } else {
+    hole.missQuality = value; // mutex: replaces any prior value
+  }
+  glacierPersistAndRender(wip);
+}
+
+// CARDINAL TINT (v8.3.59) — numeric yards writer for scoring shot. Same
+// pattern as glacierSetApproachYards (VELLUM ASTER) and glacierSetFirstPuttDist
+// (OPAL CASCADE): strict integer validation, null on empty/invalid. Upper
+// bound 200 (scoring shots above 200yd are rare and likely a data entry
+// error; 350 felt too permissive for what's conceptually a sub-green shot).
+function glacierSetScoringYards(rawValue) {
+  const wip = glacierGetWIP();
+  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
+  const hole = wip.holes[GC.holeIdx];
+  const trimmed = String(rawValue == null ? '' : rawValue).trim();
+  if (trimmed === '') {
+    hole.scoringShotYards = null;
+  } else {
+    const n = Number(trimmed);
+    if (!Number.isFinite(n) || !Number.isInteger(n) || n < 1 || n > 200) {
+      hole.scoringShotYards = null;
+    } else {
+      hole.scoringShotYards = n;
+    }
+  }
   glacierPersistAndRender(wip);
 }
 
@@ -3523,6 +3752,10 @@ function clubProsePhrase(value) {
 function holeTroublePillsHtml(h) {
   if (h == null) return '';
   const out = [];
+  // CARDINAL TINT (v8.3.59) — chunk/blade pills added (preferred over doubleChip
+  // for new captures). doubleChip kept for legacy rounds that wrote the old flag.
+  if (h.chunk)          out.push('<span class="rr-pill rr-pill-trouble">Chunk</span>');
+  if (h.blade)          out.push('<span class="rr-pill rr-pill-trouble">Blade</span>');
   if (h.doubleChip)     out.push('<span class="rr-pill rr-pill-trouble">Dbl chip</span>');
   if (h.fwyBunker)      out.push('<span class="rr-pill rr-pill-trouble">Fwy bnk</span>');
   if (h.sand)           out.push('<span class="rr-pill rr-pill-trouble">Grn bnk</span>');
@@ -3600,7 +3833,7 @@ function buildHoleSentence(h) {
       approachClauses.push('<span style="color:var(--red)">approach yardage not logged</span>');
     }
   }
-  if (h.approachResult || h.onGreen) {
+  if (h.approachResult || h.onGreen != null) {
     // CINDER MEADOW (v8.3.36) — direction via helper handles legacy 9-zone
     // codes (long-l/pin/short-r/etc) by collapsing to L/C/R.
     // AURUM COMPASS (v8.3.38) — comma separator between green status and
@@ -3608,9 +3841,16 @@ function buildHoleSentence(h) {
     // wraps both for visual cohesion.
     // CEDAR HEARTH (v8.3.40) — onGreen is boolean again. Simple ternary; null
     // values from any v8.3.39 captures coerce to 'off the green' (correct).
+    // CARDINAL TINT (v8.3.59) — direction phrase suppressed for new captures
+    // (approachResult is no longer written). Legacy rounds with L/C/R data
+    // still render the direction phrase. NEW: missQuality phrase ("fat side"
+    // / "short-sided") replaces direction when applicable.
     const greenPrefix = h.onGreen ? 'on the green' : 'off the green';
     const apprDir = approachResultDirection(h.approachResult);
-    const zonePart = apprDir ? (', ' + ZONE_PHRASE[apprDir]) : '';
+    let qualPart = '';
+    if (h.missQuality === 'fatSide') qualPart = ', <b>fat side</b>';
+    else if (h.missQuality === 'shortSide') qualPart = ', <b>short-sided</b>';
+    else if (apprDir) qualPart = ', ' + ZONE_PHRASE[apprDir]; // legacy display
     let verb;
     if (h.par <= 3) {
       // COPPER SIGIL (v8.3.44) — par 3 tee shot also gets the club parenthetical.
@@ -3618,9 +3858,26 @@ function buildHoleSentence(h) {
     }
     else if (hasRealYardageClause) verb = 'which landed';
     else verb = 'landed';
-    approachClauses.push(verb + ' <b>' + greenPrefix + zonePart + '</b>');
+    approachClauses.push(verb + ' <b>' + greenPrefix + '</b>' + qualPart);
   }
   if (approachClauses.length) parts.push(approachClauses.join(', '));
+  // CARDINAL TINT (v8.3.59) — scoring shot phrase. Only fires when off-green
+  // AND scoring shot data is captured. Reads "scored from X yds with a wedge"
+  // or "scored from X yds with an iron" — gives short-game context without
+  // needing a separate display block. Chunk/blade get inline mention.
+  if (h.onGreen === false && (typeof h.scoringShotYards === 'number' || h.scoringShotClub)) {
+    const clubMap = { iron: 'an iron', wedge: 'a wedge', other: 'a club' };
+    const clubText = clubMap[h.scoringShotClub] || 'a scoring shot';
+    let scoringPhrase;
+    if (typeof h.scoringShotYards === 'number') {
+      scoringPhrase = 'scored from <b>' + h.scoringShotYards + ' yds</b> with ' + clubText;
+    } else {
+      scoringPhrase = 'scored with ' + clubText;
+    }
+    if (h.chunk) scoringPhrase += ' (<b>chunked</b>)';
+    else if (h.blade) scoringPhrase += ' (<b>bladed</b>)';
+    parts.push(scoringPhrase);
+  }
   // IRON THICKET (v8.3.39) — recovery/layup clause inferred from score
   // arithmetic. Inserted between the approach clause and the putts clause
   // so the prose flows tee → approach → recovery → putts. Skipped silently
@@ -4267,8 +4524,13 @@ function renderDetailV2(round) {
   // CEDAR HEARTH (v8.3.40) — back to truthy-falsy (null from any v8.3.39
   // captures coerces to falsy = off-green, which is correct under default-
   // to-miss semantics).
+  // CARDINAL TINT (v8.3.59) — extended predicate to exclude chunk/blade
+  // for new captures (doubleChip is no longer written; chunk+blade replace
+  // it as the scoring-zone failure signal). All three flags exclude the
+  // hole from up-and-down eligibility — they all mean the scoring shot
+  // didn't get up cleanly in 2 strokes.
   const upDownEligible = holes.filter(h => !h.onGreen);
-  const upDowns = upDownEligible.filter(h => h.putts === 1 && !h.doubleChip).length;
+  const upDowns = upDownEligible.filter(h => h.putts === 1 && !h.doubleChip && !h.chunk && !h.blade).length;
 
   // STORM BEACON (v8.3.25) — strict GIR predicate. Approach must have found
   // the green AND total strokes to green (including penalties, since penalty
@@ -4429,47 +4691,92 @@ function renderDetailV2(round) {
     </div>`;
 
   // ── Approach Direction heat-maps (Missed | Hit) ──────────────
-  // CINDER MEADOW (v8.3.36) — collapsed from 9-zone 3×3 grids to 3-direction
-  // 1×3 rows (L / C / R). Legacy 9-zone data on pre-v8.3.36 holes collapses
-  // to direction via approachResultDirection() at filter time, so the heat-
-  // map is consistent across legacy and new rounds (depth dimension dropped).
-  // AURUM COMPASS (v8.3.38) — section reframed as aim-relative. Labels updated
-  // to "Left" / "On Aim" / "Right" to make the frame explicit on the C cell.
-  const dirOrder = ['L', 'C', 'R'];
-  const dirLabel = { L: 'Left', C: 'On Target', R: 'Right' };
-  const missed = holes.filter(h => h.onGreen === false && h.approachResult != null);
-  const hit = holes.filter(h => h.onGreen === true && h.approachResult != null);
-  const dirBucket = (pct, isMissed) => {
-    if (pct === 0) return 'empty';
-    const prefix = isMissed ? 'm-' : 'h-';
-    if (pct <= 7) return prefix + '1';
-    if (pct <= 14) return prefix + '2';
-    if (pct <= 22) return prefix + '3';
-    return prefix + '4';
-  };
-  const renderDirCells = (holesSet, isMissed) => {
-    const total = holesSet.length;
-    return dirOrder.map(d => {
-      const c = holesSet.filter(h => approachResultDirection(h.approachResult) === d).length;
-      const pct = total ? Math.round((c / total) * 100) : 0;
-      const cls = dirBucket(pct, isMissed);
-      const param = (isMissed ? 'm-' : 'h-') + d;
-      const tapAttrs = c > 0 ? ` data-stat-key="approachZone" data-stat-param="${param}" onclick="statSelect('approachZone','${param}')"` : '';
-      return `<div class="det-zone-cell ${cls}"${tapAttrs}>${dirLabel[d]}<br>${pct}%</div>`;
-    }).join('');
-  };
-  document.getElementById('det-zones-section').innerHTML = `
-    <span class="section-lbl">Miss vs Target</span>
-    <div class="det-grids">
-      <div class="det-grid-card">
-        <div class="det-grid-hdr"><span class="det-grid-name">Missed</span><span class="det-grid-n">n=${missed.length}</span></div>
-        <div class="det-zone-grid">${renderDirCells(missed, true)}</div>
-      </div>
-      <div class="det-grid-card">
-        <div class="det-grid-hdr"><span class="det-grid-name">Hit</span><span class="det-grid-n">n=${hit.length}</span></div>
-        <div class="det-zone-grid">${renderDirCells(hit, false)}</div>
-      </div>
+  // CARDINAL TINT (v8.3.59) — Miss vs Target heat-map removed entirely
+  // per Matt's decision. For BOTH new captures (no approachResult written)
+  // AND legacy rounds with old L/C/R data, the heat-map is hidden. The
+  // det-zones-section slot is repurposed to render the new Scoring-Shot
+  // Stats block: up-and-down rate, avg scoring shot yardage, avg shots
+  // from ≤50yd, avg proximity from ≤50yd, scoring shot club distribution,
+  // fat-side / short-side rates. 18-hc benchmark line shown in SLATE PRISM
+  // style on the benchmark-eligible rows (target values from MyGolfSpy).
+  //
+  // Data sources:
+  //   missedGreen      = h.onGreen === false (across all played holes)
+  //   shotsFromUnder50 = scoring shots with scoringShotYards <= 50 — counts
+  //                      this shot + putts as "shots to finish from ≤50yd"
+  //   proximityUnder50 = firstPuttDist for the same set (= proximity in feet)
+  //   upAndDownRate    = % of missed-green holes that finished within par+1
+  //                      (or par; either way "no extra strokes from miss")
+  //   clubDist         = distribution of scoringShotClub for missed-green holes
+  //   missQualityRate  = % fat-side / % short-side of those who tapped a flag
+  const missedGreenHoles = holes.filter(h => h.onGreen === false);
+  const scoringShotHoles = missedGreenHoles.filter(h => typeof h.scoringShotYards === 'number');
+  const under50 = scoringShotHoles.filter(h => h.scoringShotYards <= 50);
+  const under50WithPutts = under50.filter(h => typeof h.putts === 'number');
+  const avgShotsFromUnder50 = under50WithPutts.length
+    ? (under50WithPutts.reduce((a,h) => a + 1 + h.putts, 0) / under50WithPutts.length)
+    : null;
+  const under50WithProx = under50.filter(h => typeof h.firstPuttDist === 'number');
+  const avgProxUnder50 = under50WithProx.length
+    ? (under50WithProx.reduce((a,h) => a + h.firstPuttDist, 0) / under50WithProx.length)
+    : null;
+  // Up-and-down: missed green + got down in 2 (one chip + one putt) = score - putts is the chip count
+  // Simpler proxy: score - par <= 0 (made par despite missing green). Strict definition for an 18 hc.
+  const ctUpDownEligible = missedGreenHoles.filter(h => typeof h.putts === 'number');
+  const ctUpDownMade = ctUpDownEligible.filter(h => (h.score - h.par) <= 0).length;
+  const upDownPct = ctUpDownEligible.length ? Math.round((ctUpDownMade / ctUpDownEligible.length) * 100) : null;
+  // Scoring shot club distribution
+  const clubCounts = { iron: 0, wedge: 0, other: 0 };
+  scoringShotHoles.forEach(h => { if (clubCounts[h.scoringShotClub] != null) clubCounts[h.scoringShotClub]++; });
+  const clubTotal = clubCounts.iron + clubCounts.wedge + clubCounts.other;
+  // Miss quality rates (only counts holes where Matt actively flagged fat/short)
+  const fatSideCount = missedGreenHoles.filter(h => h.missQuality === 'fatSide').length;
+  const shortSideCount = missedGreenHoles.filter(h => h.missQuality === 'shortSide').length;
+  // Benchmarks (MyGolfSpy 18-hc): U&D ~32%, shots-from-≤50yd ~2.83, proximity ~19 ft.
+  const fmt1 = v => v == null ? '\u2014' : (Math.round(v * 10) / 10).toFixed(1);
+  const fmtPct = v => v == null ? '\u2014' : v + '%';
+  const benchLine = (lbl, mine, bench, fmt) => {
+    if (mine == null) return '';
+    const above = (typeof mine === 'number' && typeof bench === 'number')
+      ? (lbl === 'Up & down' ? mine >= bench : mine <= bench) : null;
+    const arrow = above === true ? '\u2191' : above === false ? '\u2193' : '';
+    const arrowColor = above === true ? 'var(--green)' : above === false ? 'var(--red)' : 'var(--chalk3)';
+    return `<div class="det-cmp-row">
+      <span class="det-cmp-lbl">${lbl}</span>
+      <span class="det-cmp-today">${fmt(mine)}</span>
+      <span class="det-cmp-arrow" style="color:${arrowColor}">${arrow}</span>
+      <span class="det-cmp-base">vs ${fmt(bench)} <span style="opacity:.7">18 hc</span></span>
     </div>`;
+  };
+  const clubBar = (lbl, n) => {
+    const pct = clubTotal ? Math.round((n / clubTotal) * 100) : 0;
+    return `<div class="det-cmp-row" style="grid-template-columns:80px 1fr auto">
+      <span class="det-cmp-lbl">${lbl}</span>
+      <div style="background:var(--ink3);height:8px;border-radius:4px;overflow:hidden"><div style="background:var(--orange);height:100%;width:${pct}%"></div></div>
+      <span class="det-cmp-base">${n} \u00b7 ${pct}%</span>
+    </div>`;
+  };
+  const scoringStatsHtml = scoringShotHoles.length === 0
+    ? `<div class="det-cmp-empty">No scoring-shot data yet \u2014 play a round capturing the chip onto the green.</div>`
+    : `
+      ${benchLine('Up & down', upDownPct, 32, fmtPct)}
+      ${benchLine('Shots from \u226450yd', avgShotsFromUnder50, 2.83, fmt1)}
+      ${benchLine('Proximity from \u226450yd', avgProxUnder50, 19, v => fmt1(v) + ' ft')}
+      ${clubTotal > 0 ? `
+        <div style="margin-top:8px;font-size:11px;color:var(--chalk3);letter-spacing:1.2px;text-transform:uppercase;font-weight:600;opacity:.7">Club mix</div>
+        ${clubBar('Iron', clubCounts.iron)}
+        ${clubBar('Wedge', clubCounts.wedge)}
+        ${clubBar('Other', clubCounts.other)}
+      ` : ''}
+      ${(fatSideCount > 0 || shortSideCount > 0) ? `
+        <div style="margin-top:8px;font-size:11px;color:var(--chalk3);letter-spacing:1.2px;text-transform:uppercase;font-weight:600;opacity:.7">Miss quality (when flagged)</div>
+        <div class="det-cmp-row"><span class="det-cmp-lbl">Fat side</span><span class="det-cmp-today">${fatSideCount}</span><span></span><span></span></div>
+        <div class="det-cmp-row"><span class="det-cmp-lbl">Short-sided</span><span class="det-cmp-today">${shortSideCount}</span><span></span><span></span></div>
+      ` : ''}
+    `;
+  document.getElementById('det-zones-section').innerHTML = `
+    <span class="section-lbl">Scoring Shot</span>
+    ${scoringStatsHtml}`;
 
   // ── Score by Par Type tiles ─────────────────────────────────
   // VELVET LATTICE — par-type tiles tap to reveal which holes contributed.
@@ -5740,9 +6047,26 @@ function ghValidate() {
 }
 
 function mergeRounds(local, remote) {
+  // SLATE BEACON (v8.3.56) — last-write-wins on id collision using updatedAt
+  // timestamp. Previously this rule was "local wins on same ID", which silently
+  // dropped remote edits to existing rounds (notes, score edits, hole edits,
+  // anything mutable). The new rule:
+  //   1. Build map from remote rounds (each carries its updatedAt or 0)
+  //   2. For each local round, if no remote collision → keep local
+  //   3. On collision, compare updatedAt; higher wins
+  //   4. Tie (both have updatedAt 0, i.e. legacy unmigrated) → local wins,
+  //      preserving the pre-SLATE-BEACON semantic for untouched legacy rounds
+  // Note: callers must pass {skipTimestampBump:true} to saveRounds for the
+  // merge output so timestamps from each side propagate intact.
   const map = {};
   (remote||[]).forEach(r => { map[r.id]=r; });
-  (local||[]).forEach(r => { map[r.id]=r; }); // local wins on same ID
+  (local||[]).forEach(r => {
+    const existing = map[r.id];
+    if (!existing) { map[r.id] = r; return; }
+    const localTs = r.updatedAt || 0;
+    const remoteTs = existing.updatedAt || 0;
+    map[r.id] = localTs >= remoteTs ? r : existing;
+  });
   return Object.values(map).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
 }
 
@@ -5933,7 +6257,7 @@ async function ghPullRounds() {
       ghSetStatus('Pull cancelled.', 'var(--chalk3)');
       return;
     }
-    saveRounds(merged);
+    saveRounds(merged, {skipTimestampBump: true});
     // GLACIER REDESIGN \u2014 a non-upgraded device may push pre-v8 rounds. The merge
     // above is shape-agnostic; the validator drops anything missing schemaVersion === 2
     // here so old-shape rounds never reach the round detail / Byron paths. Surfaced
