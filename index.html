@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.60 · May 12, 2026 -->
+<!-- PJ Caddie v8.3.61 · May 12, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -707,7 +707,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.60 · May 12, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.61 · May 12, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1202,10 +1202,9 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
       <!-- VERMILION ATELIER — Reference moved to top (most-used destinations) -->
       <div class="card" style="margin-bottom:10px">
         <div class="section-lbl">Reference</div>
-        <div class="settings-row" style="cursor:pointer" onclick="showView('bag-settings')">
-          <div><div class="sr-label">🏌️ My Bags</div><div class="sr-sub">Club sets &amp; descriptions</div></div>
-          <div class="sr-val">→</div>
-        </div>
+        <!-- OBSIDIAN VEIL (v8.3.61) — My Bags entry-point retired. Bag storage,
+             snapshotActiveBag, and the legacy teeClubCategory resolver remain
+             in place for pre-v8.3.34 round display. -->
         <div class="settings-row" style="cursor:pointer" onclick="showView('course-hub')">
           <div><div class="sr-label">⛳ Course Hub</div><div class="sr-sub">Hole-by-hole notes for every course</div></div>
           <div class="sr-val">→</div>
@@ -1323,7 +1322,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.60 · Spec v2.1</span>
+        <span>v8.3.61 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -6155,6 +6154,12 @@ const DEFAULT_BAGS = [
   ]}
 ];
 
+// OBSIDIAN VEIL (v8.3.61) — bag system UI entry-point retired in Settings.
+// The storage, getBags/saveBags, snapshotActiveBag, ghPushBags/ghPullBags,
+// bag-settings screen handlers, and the teeClubCategory legacy resolver
+// remain in place. Purpose: pre-v8.3.34 rounds stored teeClub as bag-club
+// IDs (e.g. 'ba-7i'); the resolver still needs bagSnapshot to render those.
+// "Identify best 14 clubs for next season" goal formally retired.
 function getBags() {
   try {
     const s = JSON.parse(localStorage.getItem('pjc_bags')||'null');
