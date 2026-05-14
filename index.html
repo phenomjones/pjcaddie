@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.61 · May 12, 2026 -->
+<!-- PJ Caddie v8.3.62 · May 12, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -707,7 +707,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.61 · May 12, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.62 · May 12, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1322,7 +1322,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.61 · Spec v2.1</span>
+        <span>v8.3.62 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -3016,18 +3016,23 @@ function glacierRenderHole() {
   }
 
   // Approach section
+  // MORTAR YARDS (v8.3.62) — par 3 tee shots now capture yardage too. Lie quality
+  // differs (teed-up vs fairway/rough), but that's an analysis-time concern, not
+  // a capture concern. The `isTeeShot: true` flag on par 3 tee shots is the
+  // analytics-side filter for separating par 3 tee shots from fairway approaches
+  // in aggregations. Capture the data; filter at analysis. Pre-MORTAR par 3 rounds
+  // will have approachYards: null on par 3 holes — no migration needed; prose
+  // renders "yardage unrecorded" for those holes.
   const yardsBlock = document.getElementById('gc-approach-yards-block');
-  if (yardsBlock) yardsBlock.style.display = isPar3 ? 'none' : '';
+  if (yardsBlock) yardsBlock.style.display = '';
   // VELLUM ASTER (v8.3.33) — populate numeric input from the field. Numeric
   // values display verbatim; legacy band strings can't render in a number
   // input, so they show empty (the underlying band string in localStorage
   // is preserved unless the user actively edits and overwrites).
-  if (!isPar3) {
-    const yardsInput = document.getElementById('gc-approach-yards-input');
-    if (yardsInput) {
-      const v = hole.approachYards;
-      yardsInput.value = (typeof v === 'number') ? String(v) : '';
-    }
+  const yardsInput = document.getElementById('gc-approach-yards-input');
+  if (yardsInput) {
+    const v = hole.approachYards;
+    yardsInput.value = (typeof v === 'number') ? String(v) : '';
   }
   // CARDINAL TINT (v8.3.59) — approach result + miss quality + scoring shot
   // conditional rendering. On Green button highlights when hole.onGreen === true;
