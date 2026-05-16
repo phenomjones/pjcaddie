@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v8.3.63 · May 12, 2026 -->
+<!-- PJ Caddie v8.3.64 · May 15, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -666,10 +666,22 @@ html.sun-mode .det-streak-pill{background:var(--paper3);border-color:rgba(212,17
 .det-prbreak-pill{display:inline-block;padding:3px 9px;background:rgba(212,175,55,0.18);border:1px solid var(--gold);border-radius:14px;font-size:11px;color:var(--gold);margin-right:6px;margin-bottom:6px;font-weight:700;letter-spacing:0.3px}
 
 /* MARSH LANTERN (v8.3.55) — section grouping. Wraps related sections of the post-round summary into 6 named cards so the screen reads as chunks instead of a wall of stats. */
-.det-group{background:var(--ink2);border-radius:12px;border-top:1px solid rgba(255,255,255,0.05);padding:14px 12px 10px;margin-bottom:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03),0 1px 3px rgba(0,0,0,0.16)}
-.det-group-label{display:block;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);opacity:0.9;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(212,175,55,0.18)}
-html.sun-mode .det-group{background:var(--paper2);border-top-color:rgba(0,0,0,0.06);box-shadow:inset 0 1px 0 rgba(255,255,255,0.55),0 1px 3px rgba(0,0,0,0.06)}
-html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
+/* MARBLE CHOIR (v8.3.64) — section envelope color differentiation. Each .det-group on Round Detail gets a 4px inset-shadow left stripe driven by --accent and a brighter title color driven by --title, picked per group modifier class. Stripe carries identity, title carries luminance. Sun-mode flips --title to a darker stop while --accent holds. */
+.det-group{--accent:var(--gold);--title:var(--gold);--rule:rgba(212,175,55,0.18);background:var(--ink2);border-radius:12px;border-top:1px solid rgba(255,255,255,0.05);padding:14px 12px 10px 16px;margin-bottom:16px;box-shadow:inset 4px 0 0 var(--accent),inset 0 1px 0 rgba(255,255,255,0.03),0 1px 3px rgba(0,0,0,0.16)}
+.det-group-label{display:block;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:var(--title);font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
+.det-group--glance{--title:#e8c870;--rule:rgba(200,168,75,0.25)}
+.det-group--tee{--accent:#5ec85e;--title:#82e082;--rule:rgba(94,200,94,0.28)}
+.det-group--approach{--accent:#5a8cc8;--title:#85b7eb;--rule:rgba(90,140,200,0.30)}
+.det-group--scoring{--accent:#e8994a;--title:#f0b070;--rule:rgba(232,153,74,0.30)}
+.det-group--putting{--accent:#b389d8;--title:#d0aae8;--rule:rgba(179,137,216,0.30)}
+.det-group--trends{--accent:#c94040;--title:#F08585;--rule:rgba(201,64,64,0.30)}
+html.sun-mode .det-group{background:var(--paper2);border-top-color:rgba(0,0,0,0.06);box-shadow:inset 4px 0 0 var(--accent),inset 0 1px 0 rgba(255,255,255,0.55),0 1px 3px rgba(0,0,0,0.06)}
+html.sun-mode .det-group--glance{--title:#8a7028;--rule:rgba(200,168,75,0.40)}
+html.sun-mode .det-group--tee{--title:#2e6f2e;--rule:rgba(94,200,94,0.40)}
+html.sun-mode .det-group--approach{--title:#3a5e90;--rule:rgba(90,140,200,0.40)}
+html.sun-mode .det-group--scoring{--title:#a8631c;--rule:rgba(232,153,74,0.40)}
+html.sun-mode .det-group--putting{--title:#6e4090;--rule:rgba(179,137,216,0.40)}
+html.sun-mode .det-group--trends{--title:#882020;--rule:rgba(201,64,64,0.40)}
 
 /* HEARTH GRANITE (v8.3.58) — desktop font-size bump for the post-round summary classes added across JUNIPER QUARRY BATCH. Mobile sizing (10-14px) reads fine on a 393px phone screen but cramps at 1440px desktop */
 @media (min-width: 768px) {
@@ -707,7 +719,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v8.3.63 · May 12, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v8.3.64 · May 15, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1075,7 +1087,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
            subsection headers. Hole-by-Hole and below remain outside the
            groups, matching the prior flat structure. -->
       <!-- Group 1: At a Glance -->
-      <div class="det-group">
+      <div class="det-group det-group--glance">
         <span class="det-group-label">At a Glance</span>
         <div id="det-completeness-section"></div>
         <div class="det-stat-panel" id="det-panel-completeness"></div>
@@ -1083,20 +1095,20 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <div id="det-scrubbed-section"></div>
       </div>
       <!-- Group 2: Tee Game -->
-      <div class="det-group">
+      <div class="det-group det-group--tee">
         <span class="det-group-label">Tee Game</span>
         <div id="det-tee-section"></div>
         <div class="det-stat-panel" id="det-panel-tee"></div>
         <div id="det-teedispersion-section"></div>
       </div>
       <!-- Group 3: Approach -->
-      <div class="det-group">
+      <div class="det-group det-group--approach">
         <span class="det-group-label">Approach</span>
         <div id="det-zones-section"></div>
         <div class="det-stat-panel" id="det-panel-zones"></div>
       </div>
       <!-- Group 4: Scoring -->
-      <div class="det-group">
+      <div class="det-group det-group--scoring">
         <span class="det-group-label">Scoring</span>
         <div id="det-par-section"></div>
         <div class="det-stat-panel" id="det-panel-par"></div>
@@ -1112,12 +1124,12 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <div class="det-stat-panel" id="det-panel-holeout"></div>
       </div>
       <!-- Group 5: Putting -->
-      <div class="det-group">
+      <div class="det-group det-group--putting">
         <span class="det-group-label">Putting</span>
         <div id="det-putt-section"></div>
       </div>
       <!-- Group 6: Score-killers & Trends -->
-      <div class="det-group">
+      <div class="det-group det-group--trends">
         <span class="det-group-label">Score-killers &amp; Trends</span>
         <div id="det-blowups-section"></div>
         <div class="det-stat-panel" id="det-panel-blowups"></div>
@@ -1322,7 +1334,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v8.3.63 · Spec v2.1</span>
+        <span>v8.3.64 · Spec v2.1</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
