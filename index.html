@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v9.3.0 · May 21, 2026 -->
+<!-- PJ Caddie v10.0.0 · Jun 3, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -875,7 +875,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v9.3.0 · May 21, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v10.0.0 · Jun 3, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1102,9 +1102,9 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
               <svg class="tc-tee-cat-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="7" y1="4" x2="7" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M 7 4 L 17 8 L 7 12 Z" fill="currentColor"/></svg>
               Fairway
             </button>
-            <button class="tc-tee-cat" data-cat="trouble" onclick="glacierSetTeeCat('trouble')">
+            <button class="tc-tee-cat" data-cat="trouble" onclick="glacierSetTeeCat('trouble')" title="Out Of Position — any tee shot that prevents you from hitting a stock approach (deep rough, fairway bunker, behind tree, awkward slope, etc.)">
               <svg class="tc-tee-cat-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M 12 3 L 5 13 L 9 13 L 6 18 L 18 18 L 15 13 L 19 13 Z" fill="currentColor"/><rect x="11" y="18" width="2" height="3" fill="currentColor"/></svg>
-              Trouble
+              OOP
             </button>
             <button class="tc-tee-cat" data-cat="ob" onclick="glacierSetTeeCat('ob')">
               <svg class="tc-tee-cat-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -1116,89 +1116,42 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
             <button class="tc-tee-side disabled" data-side="R" id="gc-tee-side-r" onclick="glacierSetTeeSide('R')">Right →</button>
           </div>
 
-          <!-- CINDER WILLOW (v9.1.0) — re-tee capture. Collapsed by default;
-               the toggle reveals a parallel club + result picker bound to
-               hole.reTee.*. Auto-expands when reTee data already exists. The
-               primary tee shot above stays the input to rate stats; reTee only
-               feeds the sparkline secondary dot, prose, and score-killers. -->
-          <button class="tc-retee-toggle" id="gc-retee-toggle" onclick="glacierToggleReTee()" aria-expanded="false">
-            <span class="tc-retee-chev">▾</span><span id="gc-retee-toggle-lbl">＋ Re-tee</span>
-          </button>
-          <div class="tc-retee-block collapsed" id="gc-retee-block">
-            <div class="tc-retee-hint">Logs a second tee shot (OB / lost / unplayable). Primary stays your stock-drive stat.</div>
-            <div class="tc-field-lbl">Re-tee Club</div>
-            <div class="tc-club-row" id="gc-retee-club-buttons">
-              <button class="tc-club-btn tc-club-driver" data-cat="driver" onclick="glacierSetReTeeClub('driver')">
-                <span class="tc-club-letter">D</span><span class="tc-club-name">Driver</span>
-              </button>
-              <button class="tc-club-btn tc-club-wood" data-cat="fwy" onclick="glacierSetReTeeClub('fwy')">
-                <span class="tc-club-letter">W</span><span class="tc-club-name">Wood</span>
-              </button>
-              <button class="tc-club-btn tc-club-hybrid" data-cat="hyb" onclick="glacierSetReTeeClub('hyb')">
-                <span class="tc-club-letter">H</span><span class="tc-club-name">Hybrid</span>
-              </button>
-              <button class="tc-club-btn tc-club-iron" data-cat="iron" onclick="glacierSetReTeeClub('iron')">
-                <span class="tc-club-letter">I</span><span class="tc-club-name">Iron</span>
-              </button>
-            </div>
-            <div class="tc-field-lbl">Re-tee Result</div>
-            <div class="tc-tee-cat-row" id="gc-retee-cat-row">
-              <button class="tc-tee-cat" data-cat="rough" onclick="glacierSetReTeeCat('rough')">
-                <svg class="tc-tee-cat-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="5" y1="20" x2="5" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="9" y1="20" x2="9" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="13" y1="20" x2="13" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="17" y1="20" x2="17" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="21" y1="20" x2="21" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                Rough
-              </button>
-              <button class="tc-tee-cat" data-cat="fairway" onclick="glacierSetReTeeCat('fairway')">
-                <svg class="tc-tee-cat-icon" viewBox="0 0 24 24" aria-hidden="true"><line x1="7" y1="4" x2="7" y2="20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M 7 4 L 17 8 L 7 12 Z" fill="currentColor"/></svg>
-                Fairway
-              </button>
-              <button class="tc-tee-cat" data-cat="trouble" onclick="glacierSetReTeeCat('trouble')">
-                <svg class="tc-tee-cat-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M 12 3 L 5 13 L 9 13 L 6 18 L 18 18 L 15 13 L 19 13 Z" fill="currentColor"/><rect x="11" y="18" width="2" height="3" fill="currentColor"/></svg>
-                Trouble
-              </button>
-              <button class="tc-tee-cat" data-cat="ob" onclick="glacierSetReTeeCat('ob')">
-                <svg class="tc-tee-cat-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                OB
-              </button>
-            </div>
-            <div class="tc-tee-side-row" id="gc-retee-side-row">
-              <button class="tc-tee-side disabled" data-side="L" id="gc-retee-side-l" onclick="glacierSetReTeeSide('L')">← Left</button>
-              <button class="tc-tee-side disabled" data-side="R" id="gc-retee-side-r" onclick="glacierSetReTeeSide('R')">Right →</button>
-            </div>
-          </div>
+          <!-- LINEN CHARTER (v10.0.0) — reTee UI removed. OB / lost-ball events
+               are captured by penalty count + tee dispersion (OB) only. -->
         </div>
       </div>
 
-      <!-- Scoring Shot section (orange accent).
-           Yardage tile: opens calc modal, writes hole.approachYards.
-           Shots Under 75Y stepper: edge-button stepper, writes hole.shotsFromShort.
-           Trouble pills: Short Side → missQuality, Duff over 75 → nonScoringDuff. -->
+      <!-- Scoring Shot section (orange accent). LINEN CHARTER (v10.0.0).
+           shotsFromShort: 3-button picker (1 / 2 / 3+) for shots from inside
+             100y attempting to reach the green. Threshold raised from 75y to
+             match player's full-PW boundary.
+           Short Side pill: missQuality === 'shortSide'.
+           Yardage tile removed (was capture friction; PJ rule needs count only).
+           Duff over 75 pill removed (nonScoringDuff field dropped — execution-
+             quality rule didn't fit DECADE's decision-quality framing). -->
       <div class="tc-section tc-section-scoring">
         <div class="tc-section-hdr"><span class="tc-section-hdr-dot">●</span>Scoring Shot</div>
 
-        <div class="tc-scoring-grid">
-          <button class="tc-tile" id="gc-yds-tile" onclick="glacierOpenCalc('yds')" aria-label="Tap to enter yardage">
-            <span class="tc-tile-lbl">Yardage</span>
-            <span class="tc-tile-val" id="gc-yds-display">—</span>
-            <span class="tc-tile-unit" id="gc-yds-unit">Tap to enter</span>
-          </button>
-          <div class="tc-sfs-tile">
-            <div class="tc-sfs-lbl">Shots Under 75Y</div>
-            <div class="tc-sfs-body">
-              <button class="tc-sfs-btn" id="gc-sfs-dec" onclick="glacierAdjustShotsFromShort(-1)" aria-label="Decrease shots under 75">−</button>
-              <div class="tc-sfs-val" id="gc-sfs-val">—</div>
-              <button class="tc-sfs-btn" id="gc-sfs-inc" onclick="glacierAdjustShotsFromShort(1)" aria-label="Increase shots under 75">+</button>
-            </div>
+        <div class="tc-sfs-tile" style="min-height:auto;padding:10px 8px 12px">
+          <div class="tc-sfs-lbl" style="padding:0 4px 8px">Shots from inside 100y</div>
+          <div class="tc-putts-row" style="grid-template-columns:1fr 1fr 1fr" id="gc-sfs-picker">
+            <button class="tc-putt-pill" data-sfs="1" onclick="glacierSetShotsFromShort(1)">1</button>
+            <button class="tc-putt-pill" data-sfs="2" onclick="glacierSetShotsFromShort(2)">2</button>
+            <button class="tc-putt-pill" data-sfs="3" onclick="glacierSetShotsFromShort(3)">3+</button>
           </div>
         </div>
 
-        <div class="tc-trbl-row">
+        <div class="tc-trbl-row" style="grid-template-columns:1fr">
           <button class="tc-trbl-pill" id="gc-shortside-pill" onclick="glacierToggleShortSide()" aria-label="Short-sided yourself">Short Side</button>
-          <button class="tc-trbl-pill" id="gc-nsduff-pill" onclick="glacierToggleNonScoringDuff()" aria-label="Duff from outside 75 yards">Duff over 75</button>
         </div>
       </div>
 
-      <!-- Putts section (green accent).
-           Putts pills + First Putt FT tile (opens calc modal). -->
+      <!-- Putts section (green accent). LINEN CHARTER (v10.0.0).
+           Putts pills (count) + First Putt under/over 25ft picker.
+           Numeric First Putt FT calc tile replaced by a 2-button under/over 25
+           picker (firstPuttUnder25 boolean). Maps to PGA Tour's official
+           "3-Putt Avoidance ≤25' / >25'" headline statistic; doubles as a
+           coarse approach-proximity proxy crossed with GIR. -->
       <div class="tc-section tc-section-putts">
         <div class="tc-section-hdr"><span class="tc-section-hdr-dot">●</span>Putts</div>
 
@@ -1212,10 +1165,13 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
               <button class="tc-putt-pill" data-putts="4" onclick="glacierSetPutts(4)">4+</button>
             </div>
           </div>
-          <button class="tc-fpd-tile" id="gc-fpd-tile" onclick="glacierOpenCalc('fpd')" aria-label="Tap to enter first putt distance">
-            <span class="tc-fpd-val" id="gc-fpd-display">—</span>
-            <span class="tc-fpd-unit">First Putt FT</span>
-          </button>
+          <div class="tc-putts-col">
+            <span class="tc-putts-lbl">First Putt</span>
+            <div class="tc-putts-row" id="gc-fpd-picker">
+              <button class="tc-putt-pill" data-fpd="under" onclick="glacierSetFirstPuttUnder25(true)">≤25 ft</button>
+              <button class="tc-putt-pill" data-fpd="over" onclick="glacierSetFirstPuttUnder25(false)">&gt;25 ft</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1560,7 +1516,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v9.3.0 · Spec v2.1</span>
+        <span>v10.0.0 · Spec v2.2</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1842,12 +1798,10 @@ function createHole({ number, par, score }) {
     penalty: 0,
     teeClub: null,
     teeResult: null,
-    // CINDER WILLOW (v9.1.0) — optional re-tee capture. null when no re-tee;
-    // { teeClub, teeResult } when the user re-teed (OB / lost ball / unplayable /
-    // choice). The primary tee shot stays in teeClub/teeResult above and remains
-    // the sole input to rate stats (in-play %, dispersion). reTee feeds only the
-    // sparkline (secondary dot), per-hole prose, and score-killer attribution.
-    reTee: null,
+    // LINEN CHARTER (v10.0.0) — reTee field removed from the per-hole capture.
+    // OB / lost-ball events are now captured by penalty count + tee dispersion
+    // (OBL/OBR) only. The original re-tee club/result detail was redundant with
+    // those two fields and was contributing to capture friction.
     approachYards: null,
     approachResult: null,
     onGreen: false,  // CEDAR HEARTH (v8.3.40) — reverted from null. Default-to-miss matches the boolean idiom of sand/fwyBunker/doubleChip; absence-of-tap = miss.
@@ -1862,20 +1816,30 @@ function createHole({ number, par, score }) {
     scoringShotYards: null,   // null | integer (yards) (legacy — not written by v9 capture; read by legacy display)
     chunk: false,             // legacy — not written by v9 capture
     blade: false,             // legacy — not written by v9 capture
-    // TIMBER CASCADE (v9.0.0) — L3.6 Phase 2 schema additions.
-    //   shotsFromShort: count of shots played from inside 75y to reach the green.
-    //     null = no scoring shot needed (default; GIR path).  Captured by the
-    //     Shots Under 75Y stepper in the Scoring Shot section.
-    //   nonScoringDuff: true if a non-tee shot from outside 75y was a clear mis-hit.
-    //     Captured by the "Duff over 75" pill in the Scoring Shot section.
-    //   onGreen is now derived at persist time (see deriveOnGreen): on-green when
-    //     shotsFromShort is null/0 AND (score - putts) <= (par - 2). The field
-    //     itself remains on the hole object so downstream display/stats keep working
-    //     unchanged. No UI toggle for onGreen on the v9 capture screen.
-    shotsFromShort: null,     // null | integer 0..6 (NEW)
-    nonScoringDuff: null,     // null | true (NEW; null = not flagged)
+    // LINEN CHARTER (v10.0.0) — capture schema rewrite. v9 fields preserved
+    // structurally; encoding semantics updated.
+    //   shotsFromShort: now encodes 1 / 2 / 3 (where 3 means "3+"). Captured
+    //     by a 3-button picker, not a stepper. Threshold raised from 75y to
+    //     100y (better matches the player's full-PW boundary). The exact
+    //     count beyond 3 doesn't change PJ rule outcomes, so 3+ is the
+    //     terminal bucket. null = no scoring-zone shot (GIR path).
+    //   firstPuttUnder25: boolean replacement for firstPuttDist (numeric ft).
+    //     true = first putt was ≤25 feet; false = >25 feet; null = unknown
+    //     or holed out from off green. Maps to the PGA Tour's official
+    //     "3-Putt Avoidance ≤25'" / ">25'" threshold; doubles as a coarse
+    //     approach-proximity proxy on GIR holes.
+    //   firstPuttDist (numeric) is kept transitionally so the load-time
+    //     migration helper can derive firstPuttUnder25 from legacy v8 rounds;
+    //     it is NO LONGER WRITTEN by v10 capture.
+    //   nonScoringDuff removed entirely — execution-only rule (PJ6 R6) was
+    //     the weakest rule in PJ6 and didn't fit DECADE's decision-quality
+    //     framing.
+    //   onGreen is still derived at persist time (see deriveOnGreen): on-green
+    //     when shotsFromShort is null/0 AND (score - putts) <= (par - 2).
+    shotsFromShort: null,     // null | 1 | 2 | 3 (3 = "3+")
+    firstPuttUnder25: null,   // null | true | false (replaces firstPuttDist)
     putts: null,
-    firstPuttDist: null,
+    firstPuttDist: null,      // legacy v8 numeric ft; not written by v10; preserved transitionally for migration helper
     doubleChip: false,
     sand: false,
     fwyBunker: false,
@@ -2625,6 +2589,45 @@ function migrateFirstPuttDistV1() {
   }
 }
 
+// LINEN CHARTER (v10.0.0) — derive firstPuttUnder25 (boolean) from legacy
+// firstPuttDist (numeric ft). PJ5 R2's predicate now reads firstPuttUnder25;
+// this migration ensures legacy v8 rounds continue to feed R2 correctly.
+// Idempotent: a hole that already has a boolean firstPuttUnder25 is left alone.
+// Runs after migrateFirstPuttDistV1 so band-strings have been normalized to
+// integers first.
+function migrateFirstPuttUnder25V1() {
+  const normalize = h => {
+    if (h.firstPuttUnder25 === true || h.firstPuttUnder25 === false) return false;
+    if (typeof h.firstPuttDist !== 'number') return false;
+    h.firstPuttUnder25 = h.firstPuttDist <= 25;
+    return true;
+  };
+  // Rounds list
+  try {
+    const rounds = JSON.parse(localStorage.getItem('pjc_rounds') || '[]');
+    let mutated = false;
+    if (Array.isArray(rounds)) {
+      rounds.forEach(r => {
+        if (r && Array.isArray(r.holes)) r.holes.forEach(h => { if (normalize(h)) mutated = true; });
+      });
+    }
+    if (mutated) localStorage.setItem('pjc_rounds', JSON.stringify(rounds));
+  } catch (err) {
+    console.error('migrateFirstPuttUnder25V1 (rounds) failed:', err);
+  }
+  // WIP (in-progress round)
+  try {
+    const wip = JSON.parse(localStorage.getItem('pjc_wip') || 'null');
+    if (wip && Array.isArray(wip.holes)) {
+      let mutated = false;
+      wip.holes.forEach(h => { if (normalize(h)) mutated = true; });
+      if (mutated) localStorage.setItem('pjc_wip', JSON.stringify(wip));
+    }
+  } catch (err) {
+    console.error('migrateFirstPuttUnder25V1 (wip) failed:', err);
+  }
+}
+
 // ── MISS PROFILE MIGRATION (IVORY PELICAN) ───────────────────
 // Legacy pjc_player had a single primaryMiss field ('L'|'C'|'R'|undefined).
 // v7.13.0 expands to two-axis (lat + long) with inferred/manual mode per axis.
@@ -3150,7 +3153,7 @@ function startRoundSetup() {
 //     reloads (intentional — fresh round = fresh view).
 //   calc: transient calculator modal state. null = closed; otherwise
 //     {target: 'yds'|'fpd', buf: string}. Persists only while modal is open.
-const GC = { holeIdx: 0, scoreExpand: false, teeCat: null, totalHidden: false, calc: null, reTeeCat: null, reTeeExpand: false };
+const GC = { holeIdx: 0, scoreExpand: false, teeCat: null, totalHidden: false, calc: null };
 
 function initGlacierCapture() {
   // COBALT WINDOW (v8.2.0) — target-aware init. In edit mode reads the
@@ -3385,99 +3388,39 @@ function glacierRenderHole() {
       b.classList.toggle('on', sideEnabled && b.dataset.side === dispSide);
     });
 
-    // CINDER WILLOW (v9.1.0) — re-tee sub-block render.
-    // Auto-expand when re-tee data exists OR the user has toggled it open.
-    const rt = hole.reTee;
-    const hasReTee = !!(rt && (rt.teeClub != null || rt.teeResult != null));
-    const reTeeOpen = hasReTee || GC.reTeeExpand;
-    const reToggle = document.getElementById('gc-retee-toggle');
-    const reToggleLbl = document.getElementById('gc-retee-toggle-lbl');
-    const reBlock = document.getElementById('gc-retee-block');
-    if (reToggle) {
-      reToggle.classList.toggle('open', reTeeOpen);
-      reToggle.setAttribute('aria-expanded', reTeeOpen ? 'true' : 'false');
-    }
-    if (reToggleLbl) reToggleLbl.textContent = hasReTee ? 'Re-tee logged' : '\uFF0B Re-tee';
-    if (reBlock) reBlock.classList.toggle('collapsed', !reTeeOpen);
-    if (reTeeOpen) {
-      // Re-tee club highlight.
-      const rtClubCat = teeClubCategory(rt ? rt.teeClub : null, wip.bagSnapshot);
-      document.querySelectorAll('#view-glacier-capture #gc-retee-club-buttons [data-cat]').forEach(b => {
-        b.classList.toggle('on', b.dataset.cat === rtClubCat);
-      });
-      // Re-tee result cat + side, same derivation as the primary picker.
-      let rCat = null, rSide = null;
-      const rtr = rt ? rt.teeResult : null;
-      if (rtr === 'fairway') { rCat = 'fairway'; }
-      else if (rtr === 'L' || rtr === 'R') { rCat = 'rough'; rSide = rtr; }
-      else if (rtr === 'LL') { rCat = 'trouble'; rSide = 'L'; }
-      else if (rtr === 'RR') { rCat = 'trouble'; rSide = 'R'; }
-      else if (rtr === 'OBL') { rCat = 'ob'; rSide = 'L'; }
-      else if (rtr === 'OBR') { rCat = 'ob'; rSide = 'R'; }
-      else if (GC.reTeeCat) { rCat = GC.reTeeCat; }
-      document.querySelectorAll('#view-glacier-capture #gc-retee-cat-row [data-cat]').forEach(b => {
-        b.classList.toggle('on', b.dataset.cat === rCat);
-      });
-      const rSideEnabled = rCat != null && rCat !== 'fairway';
-      document.querySelectorAll('#view-glacier-capture #gc-retee-side-row [data-side]').forEach(b => {
-        b.classList.toggle('disabled', !rSideEnabled);
-        b.classList.toggle('on', rSideEnabled && b.dataset.side === rSide);
-      });
-    }
+    // LINEN CHARTER (v10.0.0) — re-tee sub-block render removed with the field.
   }
 
-  // Scoring Shot — Yardage tile (shows hole.approachYards).
-  const ydsDisplay = document.getElementById('gc-yds-display');
-  const ydsUnit = document.getElementById('gc-yds-unit');
-  if (ydsDisplay) {
-    const v = hole.approachYards;
-    if (typeof v === 'number') {
-      ydsDisplay.textContent = String(v);
-      ydsDisplay.classList.add('has-value');
-      if (ydsUnit) ydsUnit.textContent = 'Yards';
-    } else {
-      ydsDisplay.textContent = '\u2014';
-      ydsDisplay.classList.remove('has-value');
-      if (ydsUnit) ydsUnit.textContent = 'Tap to enter';
-    }
-  }
+  // LINEN CHARTER (v10.0.0) — Yardage tile removed from Scoring Shot section.
+  // approachYards is no longer captured in v10. Render block elided.
 
-  // Shots Under 75Y stepper — shows hole.shotsFromShort.
-  const sfsValEl = document.getElementById('gc-sfs-val');
-  if (sfsValEl) {
-    const v = hole.shotsFromShort;
-    if (typeof v === 'number' && v > 0) {
-      sfsValEl.textContent = String(v);
-      sfsValEl.classList.add('has-value');
-    } else {
-      sfsValEl.textContent = '\u2014';
-      sfsValEl.classList.remove('has-value');
-    }
-  }
+  // LINEN CHARTER (v10.0.0) — Shots-from-Short 3-button picker render.
+  // hole.shotsFromShort encodes 1 / 2 / 3 (3 = "3+"). Highlight the matching
+  // pill or none if null.
+  document.querySelectorAll('#view-glacier-capture #gc-sfs-picker [data-sfs]').forEach(b => {
+    const n = parseInt(b.dataset.sfs, 10);
+    b.classList.toggle('on', hole.shotsFromShort === n);
+  });
 
-  // Trouble pills — Short Side (missQuality === 'shortSide') + Duff over 75 (nonScoringDuff).
+  // LINEN CHARTER (v10.0.0) — Trouble pills reduced to Short Side only.
+  // nonScoringDuff pill removed with the field.
   const shortPill = document.getElementById('gc-shortside-pill');
   if (shortPill) shortPill.classList.toggle('on', hole.missQuality === 'shortSide');
-  const nsduffPill = document.getElementById('gc-nsduff-pill');
-  if (nsduffPill) nsduffPill.classList.toggle('on', hole.nonScoringDuff === true);
 
   // Putts pills
   document.querySelectorAll('#view-glacier-capture [data-putts]').forEach(c => {
     c.classList.toggle('on', String(hole.putts) === c.dataset.putts);
   });
 
-  // First Putt FT tile — shows hole.firstPuttDist (0 = tap-in / inside 1 foot).
-  const fpdDisplay = document.getElementById('gc-fpd-display');
-  if (fpdDisplay) {
-    const v = hole.firstPuttDist;
-    if (typeof v === 'number') {
-      fpdDisplay.textContent = String(v);
-      fpdDisplay.classList.add('has-value');
-    } else {
-      fpdDisplay.textContent = '\u2014';
-      fpdDisplay.classList.remove('has-value');
-    }
-  }
+  // LINEN CHARTER (v10.0.0) — First Putt under/over 25 picker render.
+  // hole.firstPuttUnder25 is true | false | null. Highlight matching pill.
+  document.querySelectorAll('#view-glacier-capture #gc-fpd-picker [data-fpd]').forEach(b => {
+    const isUnder = b.dataset.fpd === 'under';
+    b.classList.toggle('on',
+      (isUnder  && hole.firstPuttUnder25 === true) ||
+      (!isUnder && hole.firstPuttUnder25 === false)
+    );
+  });
 
   // WIND CHIME (v8.3.28) — populate per-hole notes textarea from saved value.
   const notesInput = document.getElementById('gc-notes-input');
@@ -3639,146 +3582,24 @@ function glacierSetTeeSide(side) {
 }
 
 // ============================================================================
-// CINDER WILLOW (v9.1.0) — re-tee handlers.
-// Parallel to the primary tee handlers (glacierSetTeeCat / glacierSetTeeSide)
-// but write to hole.reTee.{teeClub,teeResult}. The reTee object is lazily
-// created on first interaction and nulled when both fields are cleared, so
-// downstream consumers (sparkline, prose, score-killers) treat an empty
-// re-tee as "no re-tee happened".
+// LINEN CHARTER (v10.0.0) — reTee handlers removed.
+// The CINDER WILLOW (v9.1.0) re-tee capture is gone. OB / lost-ball events
+// are captured by penalty count + tee dispersion (OB). The old reTee handlers
+// (gcEnsureReTee, gcCleanupReTee, glacierToggleReTee, glacierSetReTeeClub,
+// glacierSetReTeeCat, glacierSetReTeeSide) are all removed. GC.reTeeCat and
+// GC.reTeeExpand state slots removed from the GC singleton.
 // ============================================================================
 
-// Ensures hole.reTee is an object; returns it. Call before writing a sub-field.
-function gcEnsureReTee(hole) {
-  if (!hole.reTee || typeof hole.reTee !== 'object') {
-    hole.reTee = { teeClub: null, teeResult: null };
-  }
-  return hole.reTee;
-}
-
-// Nulls hole.reTee when both club and result are empty (keeps "no re-tee"
-// canonical so completeness/sparkline/prose all agree).
-function gcCleanupReTee(hole) {
-  if (hole.reTee && hole.reTee.teeClub == null && hole.reTee.teeResult == null) {
-    hole.reTee = null;
-  }
-}
-
-// glacierToggleReTee — expand/collapse the re-tee sub-block. Pure UI state.
-// Collapsing does NOT clear captured re-tee data (non-destructive); re-expanding
-// shows it again.
-function glacierToggleReTee() {
-  GC.reTeeExpand = !GC.reTeeExpand;
-  glacierRenderHole();
-}
-
-// glacierSetReTeeClub — D/W/H/I picker for the re-tee. Re-tap clears.
-function glacierSetReTeeClub(cat) {
+// LINEN CHARTER (v10.0.0) — shotsFromShort picker, was stepper.
+// glacierSetShotsFromShort — 3-button picker for the shotsFromShort field.
+// Encoding: 1 / 2 / 3 (where 3 means "3+"). The exact count beyond 3 doesn't
+// change PJ rule outcomes (predicate is shotsFromShort + putts > 3), so 3 is
+// the terminal bucket. Re-tap clears (sets back to null = "no scoring shot").
+function glacierSetShotsFromShort(n) {
   const wip = glacierGetWIP();
   if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
   const hole = wip.holes[GC.holeIdx];
-  const rt = gcEnsureReTee(hole);
-  rt.teeClub = (rt.teeClub === cat) ? null : cat;
-  gcCleanupReTee(hole);
-  glacierPersistAndRender(wip);
-}
-
-// glacierSetReTeeCat — top row of the re-tee 2-tier result picker.
-// Mirrors glacierSetTeeCat but targets hole.reTee.teeResult + GC.reTeeCat.
-function glacierSetReTeeCat(cat) {
-  const wip = glacierGetWIP();
-  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
-  const hole = wip.holes[GC.holeIdx];
-  const rt = gcEnsureReTee(hole);
-  let currentCat = GC.reTeeCat;
-  if (!currentCat && rt.teeResult) {
-    const tr = rt.teeResult;
-    if (tr === 'fairway') currentCat = 'fairway';
-    else if (tr === 'L' || tr === 'R') currentCat = 'rough';
-    else if (tr === 'LL' || tr === 'RR') currentCat = 'trouble';
-    else if (tr === 'OBL' || tr === 'OBR') currentCat = 'ob';
-  }
-  if (currentCat === cat) {
-    GC.reTeeCat = null;
-    rt.teeResult = null;
-    gcCleanupReTee(hole);
-    glacierPersistAndRender(wip);
-    return;
-  }
-  if (cat === 'fairway') {
-    GC.reTeeCat = null;
-    rt.teeResult = 'fairway';
-  } else {
-    GC.reTeeCat = cat;
-    rt.teeResult = null;
-  }
-  gcCleanupReTee(hole);
-  glacierPersistAndRender(wip);
-}
-
-// glacierSetReTeeSide — bottom row of the re-tee 2-tier result picker.
-// Mirrors glacierSetTeeSide; composes (cat + side) into the legacy code and
-// writes hole.reTee.teeResult.
-function glacierSetReTeeSide(side) {
-  const wip = glacierGetWIP();
-  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
-  const hole = wip.holes[GC.holeIdx];
-  const rt = gcEnsureReTee(hole);
-  let cat = GC.reTeeCat;
-  if (!cat && rt.teeResult) {
-    const tr = rt.teeResult;
-    if (tr === 'L' || tr === 'R') cat = 'rough';
-    else if (tr === 'LL' || tr === 'RR') cat = 'trouble';
-    else if (tr === 'OBL' || tr === 'OBR') cat = 'ob';
-    else if (tr === 'fairway') { gcCleanupReTee(hole); return; }
-  }
-  if (!cat || cat === 'fairway') { gcCleanupReTee(hole); return; }
-  let code = null;
-  if (cat === 'rough')        code = side;
-  else if (cat === 'trouble') code = (side === 'L') ? 'LL' : 'RR';
-  else if (cat === 'ob')      code = (side === 'L') ? 'OBL' : 'OBR';
-  if (!code) { gcCleanupReTee(hole); return; }
-  if (rt.teeResult === code) {
-    rt.teeResult = null;
-  } else {
-    rt.teeResult = code;
-    GC.reTeeCat = cat;
-  }
-  gcCleanupReTee(hole);
-  glacierPersistAndRender(wip);
-}
-
-// glacierAdjustShotsFromShort — stepper for the new shotsFromShort field.
-// State machine:
-//   null + 1 → 1
-//   null - 1 → no-op (already at floor)
-//   N    + 1 → N+1 (max 6)
-//   1    - 1 → null
-//   N    - 1 → N-1
-// 0 is intentionally not in the value space — the user picks "no scoring shot"
-// by leaving the field null (or by stepping down from 1). 0 vs null carries
-// the same downstream meaning per deriveOnGreen.
-function glacierAdjustShotsFromShort(delta) {
-  const wip = glacierGetWIP();
-  if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
-  const hole = wip.holes[GC.holeIdx];
-  const cur = hole.shotsFromShort;
-  if (delta > 0) {
-    if (cur == null) {
-      hole.shotsFromShort = 1;
-    } else if (cur < 6) {
-      hole.shotsFromShort = cur + 1;
-    } else {
-      return; // at max
-    }
-  } else {
-    if (cur == null) {
-      return; // at floor
-    } else if (cur <= 1) {
-      hole.shotsFromShort = null;
-    } else {
-      hole.shotsFromShort = cur - 1;
-    }
-  }
+  hole.shotsFromShort = (hole.shotsFromShort === n) ? null : n;
   glacierPersistAndRender(wip);
 }
 
@@ -3796,16 +3617,19 @@ function glacierToggleShortSide() {
   glacierPersistAndRender(wip);
 }
 
-// glacierToggleNonScoringDuff — Duff over 75 pill in the Scoring Shot section.
-// Sets hole.nonScoringDuff between true and null (matches schema default).
-// Used to flag a clear mis-hit on a non-tee shot from outside 75y — distinct
-// from a chip duff (which would be captured by chunk/blade on legacy or by
-// shotsFromShort context on v9).
-function glacierToggleNonScoringDuff() {
+// LINEN CHARTER (v10.0.0) — glacierToggleNonScoringDuff removed with the
+// nonScoringDuff field. Execution-only rule (PJ6 R6) was the weakest rule in
+// PJ6 and didn't fit DECADE's decision-quality framing.
+
+// LINEN CHARTER (v10.0.0) — firstPuttUnder25 picker, replaces numeric entry.
+// glacierSetFirstPuttUnder25 — 2-button picker (≤25 / >25). Re-tap on the
+// current value clears (sets back to null). Maps directly to PJ5 R2's gate
+// and to the PGA Tour's published 3-Putt Avoidance >25' headline statistic.
+function glacierSetFirstPuttUnder25(under) {
   const wip = glacierGetWIP();
   if (!wip || !wip.holes || !wip.holes[GC.holeIdx]) return;
   const hole = wip.holes[GC.holeIdx];
-  hole.nonScoringDuff = (hole.nonScoringDuff === true) ? null : true;
+  hole.firstPuttUnder25 = (hole.firstPuttUnder25 === under) ? null : under;
   glacierPersistAndRender(wip);
 }
 
@@ -4073,8 +3897,7 @@ function glacierGotoHole(delta) {
   GC.holeIdx = next;
   GC.scoreExpand = false; // GLACIER REFINE — collapse row 2 on hole change.
   GC.teeCat = null;       // TIMBER CASCADE — clear transient tee category on nav.
-  GC.reTeeCat = null;     // CINDER WILLOW — clear transient re-tee category on nav.
-  GC.reTeeExpand = false; // CINDER WILLOW — collapse re-tee sub-block on nav.
+  // LINEN CHARTER (v10.0.0) — reTeeCat / reTeeExpand resets removed with the reTee field.
   // Persist last-viewed-hole index in WIP so resumeWIP returns to this hole.
   wip._gcLastIdx = GC.holeIdx;
   saveWIP(wip);
@@ -4617,13 +4440,25 @@ function getPj6Failures(h) {
   if (h.teeResult === 'OBL' || h.teeResult === 'OBR') {
     out.push("Your tee shot went out of bounds.");
   }
-  // Rule 2 — 3-putt from inside 25 ft.
-  if (h.putts != null && h.putts >= 3 && typeof h.firstPuttDist === 'number' && h.firstPuttDist <= 25) {
-    out.push("You 3-putted from inside 25 ft (" + h.firstPuttDist + " ft).");
+  // Rule 2 — 3-putt from inside 25 ft. LINEN CHARTER (v10.0.0): predicate now
+  // reads firstPuttUnder25 boolean. Legacy v8 rounds get firstPuttUnder25
+  // derived from firstPuttDist at boot by migrateFirstPuttUnder25V1, so the
+  // predicate works uniformly across captured generations. The "(X ft)"
+  // parenthetical only appears when legacy numeric firstPuttDist is also
+  // present (v8 rounds); v10 rounds drop the numeric detail by design.
+  if (h.putts != null && h.putts >= 3 && h.firstPuttUnder25 === true) {
+    if (typeof h.firstPuttDist === 'number') {
+      out.push("You 3-putted from inside 25 ft (" + h.firstPuttDist + " ft).");
+    } else {
+      out.push("You 3-putted from inside 25 ft.");
+    }
   }
-  // Rule 3 — not down in 3 from inside 75y (shotsFromShort gate).
+  // Rule 3 — not down in 3 from inside 100y. LINEN CHARTER (v10.0.0): threshold
+  // raised from 75y to 100y to match Matt's full-PW boundary; predicate is
+  // unchanged (the shotsFromShort capture is now bucketed 1/2/3+ and any 3+
+  // value with any putts always violates).
   if (typeof h.shotsFromShort === 'number' && h.shotsFromShort >= 1 && h.putts != null && (h.shotsFromShort + h.putts) > 3) {
-    out.push("You did not get down in 3 from inside 75y.");
+    out.push("You did not get down in 3 from inside 100y.");
   }
   // Rule 4 — short-sided approach.
   if (h.missQuality === 'shortSide') {
@@ -5312,8 +5147,11 @@ function renderDetailV2(round) {
   //   4. No short-siding    : missQuality === 'shortSide'           - intrinsic
   //   5. No deep-rough tee  : teeResult in {LL,RR} on par 4/5        (OB is rule 1)
   //   6. No duff outside    : nonScoringDuff === true               - intrinsic
+  // LINEN CHARTER (v10.0.0) — R2 predicate switched to firstPuttUnder25
+  // boolean. Legacy v8 rounds get the boolean derived from firstPuttDist by
+  // migrateFirstPuttUnder25V1 at boot, so this predicate works uniformly.
   const pj6R1Holes = holes.filter(h => (h.penalty || 0) > 0 || h.teeResult === 'OBL' || h.teeResult === 'OBR');
-  const pj6R2Holes = holes.filter(h => h.putts != null && h.putts >= 3 && typeof h.firstPuttDist === 'number' && h.firstPuttDist <= 25);
+  const pj6R2Holes = holes.filter(h => h.putts != null && h.putts >= 3 && h.firstPuttUnder25 === true);
   const pj6R3Holes = holes.filter(h => typeof h.shotsFromShort === 'number' && h.shotsFromShort >= 1 && h.putts != null && (h.shotsFromShort + h.putts) > 3);
   const pj6R4Holes = holes.filter(h => h.missQuality === 'shortSide');
   const pj6R5Holes = holes.filter(h => h.par >= 4 && (h.teeResult === 'LL' || h.teeResult === 'RR'));
@@ -5470,11 +5308,14 @@ function renderDetailV2(round) {
     // the model; legacy rounds that happen to carry approachResult are unaffected
     // (we simply no longer treat its absence as missing data).
     if (h.putts == null) out.push('putts');
-    if (h.firstPuttDist == null) out.push('first putt distance');
+    // LINEN CHARTER (v10.0.0) — completeness checks first putt under/over 25
+    // boolean. Legacy v8 rounds get this derived from firstPuttDist at boot.
+    if (h.firstPuttUnder25 == null) out.push('first putt');
     if (h.par >= 4) {
       if (!h.teeClub) out.push('tee club');
       if (h.teeResult == null) out.push('tee result');
-      if (h.approachYards == null) out.push('approach yardage');
+      // LINEN CHARTER (v10.0.0) — approachYards removed from v10 capture; no
+      // longer flagged as missing. Legacy rounds that have it are unaffected.
     }
     return out;
   };
@@ -6476,6 +6317,10 @@ async function ghPullRounds() {
     // from a non-upgraded device. Normalize to integer feet so all downstream readers
     // see a consistent shape. Idempotent.
     migrateFirstPuttDistV1();
+    // LINEN CHARTER (v10.0.0) — derive firstPuttUnder25 boolean from legacy
+    // numeric firstPuttDist for any pulled rounds. Runs AFTER the band→integer
+    // normalization above so the input shape is consistent. Idempotent.
+    migrateFirstPuttUnder25V1();
     const meta = getSyncMeta();
     meta.lastPull = Date.now();
     // TIMESTAMP PARITY — record per-section pull + observed remote ts for Rounds
@@ -8297,6 +8142,9 @@ function saveCourseEdit() {
   // band strings normalized every boot, integers untouched. Backup snapshot
   // saved to pjc_rounds_pre_opal_cascade on first run.
   migrateFirstPuttDistV1();
+  // LINEN CHARTER (v10.0.0) — boolean firstPuttUnder25 derived from legacy
+  // numeric firstPuttDist. Runs after OPAL CASCADE normalization. Idempotent.
+  migrateFirstPuttUnder25V1();
   // AMBER BOOTSTRAP — fire player-profile migration eagerly on every boot.
   // getPlayerProfile() migrates-and-persists legacy records in place; on already
   // migrated records this is a cheap no-op read. Guarantees schemaVersion:2 lands
