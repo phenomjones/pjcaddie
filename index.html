@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v10.0.0 · Jun 3, 2026 -->
+<!-- PJ Caddie v10.2.0 · Jun 3, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -180,17 +180,17 @@ body{display:flex;flex-direction:column}
 .stat-lbl{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--chalk3);margin-top:5px}
 .stat-n{font-size:9px;color:var(--chalk3);opacity:.65;margin-top:3px}
 /* AMBER LIGHTHOUSE BATCH (v8.3.14-15) — Double Bogey Avoidance Grade section. Composite + PJ5 in header row, breakdown rows below. Card style matches det-card pattern */
-.dbag-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px 14px 12px;margin-bottom:14px}
-.dbag-hdr{display:flex;align-items:center;justify-content:space-around;padding-bottom:12px;border-bottom:1px solid var(--border2);margin-bottom:11px}
-.dbag-stat{text-align:center;padding:2px 8px;border-radius:6px}
-.dbag-stat-val{font-family:'DM Serif Display',serif;font-size:38px;color:var(--gold);line-height:1}
-.dbag-stat-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--chalk3);margin-top:5px}
-.dbag-pj5 .dbag-stat-val{color:var(--chalk)}
-.dbag-breakdown{display:flex;flex-direction:column;gap:6px}
-.dbag-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:baseline;font-size:12px;padding:3px 6px;border-radius:5px}
-.dbag-row-lbl{color:var(--chalk2)}
-.dbag-row-val{color:var(--chalk);font-family:'DM Serif Display',serif;font-size:14px;text-align:right;min-width:48px}
-.dbag-row-aux{color:var(--chalk3);font-size:10px;min-width:90px;text-align:right}
+.pj-card{background:var(--ink2);border:1px solid var(--border);border-radius:var(--rs);padding:14px 14px 12px;margin-bottom:14px}
+.pj-hdr{display:flex;align-items:center;justify-content:space-around;padding-bottom:12px;border-bottom:1px solid var(--border2);margin-bottom:11px}
+.pj-stat{text-align:center;padding:2px 8px;border-radius:6px}
+.pj-stat-val{font-family:'DM Serif Display',serif;font-size:38px;color:var(--gold);line-height:1}
+.pj-stat-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--chalk3);margin-top:5px}
+.pj-pj5 .pj-stat-val{color:var(--chalk)}
+.pj-breakdown{display:flex;flex-direction:column;gap:6px}
+.pj-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:baseline;font-size:12px;padding:3px 6px;border-radius:5px}
+.pj-row-lbl{color:var(--chalk2)}
+.pj-row-val{color:var(--chalk);font-family:'DM Serif Display',serif;font-size:14px;text-align:right;min-width:48px}
+.pj-row-aux{color:var(--chalk3);font-size:10px;min-width:90px;text-align:right}
 /* MARBLE SENTENCE (v8.3.8) — per-hole row gets a flowing prose summary instead of dot-separated tag chips. Base text is muted (chalk3, 11px) so the BOLD key-term spans (chalk, 13px */
 .rr-sentence{font-size:11px;color:var(--chalk3);line-height:1.55;margin-top:4px}
 .rr-sentence b{color:var(--chalk);font-weight:700;font-size:13px}
@@ -313,9 +313,9 @@ body{display:flex;flex-direction:column}
 .det-spark-rows{position:relative}
 .det-spark-lines{position:absolute;left:0;right:0;top:0;overflow:visible;pointer-events:none}
 /* VELVET LATTICE (v8.3.2) — universal tappable-stat panel pattern. Any element with [data-stat-key] is a tap target; tapping renders the matching panel beneath its section showing the holes that contribute */
-.stat-tile[data-stat-key],.det-tee-col,.det-zone-cell[data-stat-key],.det-stack-row,.dbag-row[data-stat-key],.dbag-stat[data-stat-key]{cursor:pointer}
+.stat-tile[data-stat-key],.det-tee-col,.det-zone-cell[data-stat-key],.det-stack-row,.pj-row[data-stat-key],.pj-stat[data-stat-key]{cursor:pointer}
 .det-tee-bar{pointer-events:none}
-.stat-tile.selected,.det-tee-col.selected,.det-zone-cell.selected,.dbag-row.selected,.dbag-stat.selected{box-shadow:inset 0 0 0 2px var(--gold)}
+.stat-tile.selected,.det-tee-col.selected,.det-zone-cell.selected,.pj-row.selected,.pj-stat.selected{box-shadow:inset 0 0 0 2px var(--gold)}
 .det-stack-row.selected .det-stack-track{box-shadow:inset 0 0 0 2px var(--gold)}
 .det-stat-panel{display:none;background:rgba(200,168,75,.04);border:1px solid rgba(200,168,75,.2);border-radius:var(--rs);padding:11px 13px;margin:-4px 0 16px}
 .det-stat-panel.on{display:block}
@@ -875,7 +875,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v10.0.0 · Jun 3, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v10.2.0 · Jun 3, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1121,19 +1121,28 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         </div>
       </div>
 
-      <!-- Scoring Shot section (orange accent). LINEN CHARTER (v10.0.0).
+      <!-- Scoring and Approach section (orange accent). SABLE COMPASS (v10.1.0).
            shotsFromShort: 3-button picker (1 / 2 / 3+) for shots from inside
-             100y attempting to reach the green. Threshold raised from 75y to
-             match player's full-PW boundary.
+             75y attempting to reach the green. Threshold reverted 100y->75y
+             (recovery-zone framing — R3 is damage-control; GIR carries scoring).
+           Approach yardage tile restored (MARLIN LEDGER) — par 4/5 only, first
+             shot after the tee shot; feeds future GIR-by-distance stats.
            Short Side pill: missQuality === 'shortSide'.
-           Yardage tile removed (was capture friction; PJ rule needs count only).
            Duff over 75 pill removed (nonScoringDuff field dropped — execution-
              quality rule didn't fit DECADE's decision-quality framing). -->
       <div class="tc-section tc-section-scoring">
-        <div class="tc-section-hdr"><span class="tc-section-hdr-dot">●</span>Scoring Shot</div>
+        <div class="tc-section-hdr"><span class="tc-section-hdr-dot">●</span>Scoring and Approach</div>
+
+        <!-- MARLIN LEDGER (v10.1.0) — approach-yardage tile restored. Par 4/5 only
+             (hidden on par 3 in render). First shot after the tee shot; opens the
+             existing keypad via glacierOpenCalc('yds') -> glacierSetApproachYards. -->
+        <div class="tc-sfs-tile" style="min-height:auto;padding:10px 8px 12px;cursor:pointer" id="gc-yards-tile" onclick="glacierOpenCalc('yds')">
+          <div class="tc-sfs-lbl" style="padding:0 4px 8px">Approach yardage</div>
+          <div class="tc-sfs-val" id="gc-yards-val">&mdash;</div>
+        </div>
 
         <div class="tc-sfs-tile" style="min-height:auto;padding:10px 8px 12px">
-          <div class="tc-sfs-lbl" style="padding:0 4px 8px">Shots from inside 100y</div>
+          <div class="tc-sfs-lbl" style="padding:0 4px 8px">Shots from inside 75y</div>
           <div class="tc-putts-row" style="grid-template-columns:1fr 1fr 1fr" id="gc-sfs-picker">
             <button class="tc-putt-pill" data-sfs="1" onclick="glacierSetShotsFromShort(1)">1</button>
             <button class="tc-putt-pill" data-sfs="2" onclick="glacierSetShotsFromShort(2)">2</button>
@@ -1168,8 +1177,8 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
           <div class="tc-putts-col">
             <span class="tc-putts-lbl">First Putt</span>
             <div class="tc-putts-row" id="gc-fpd-picker">
-              <button class="tc-putt-pill" data-fpd="under" onclick="glacierSetFirstPuttUnder25(true)">≤25 ft</button>
-              <button class="tc-putt-pill" data-fpd="over" onclick="glacierSetFirstPuttUnder25(false)">&gt;25 ft</button>
+              <button class="tc-putt-pill" data-fpd="under" onclick="glacierSetFirstPuttUnder25(true)">25 &amp; Under</button>
+              <button class="tc-putt-pill" data-fpd="over" onclick="glacierSetFirstPuttUnder25(false)">Over 25</button>
             </div>
           </div>
         </div>
@@ -1296,8 +1305,8 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <span class="det-group-label">Scoring</span>
         <div id="det-par-section"></div>
         <div class="det-stat-panel" id="det-panel-par"></div>
-        <div id="det-dbag-section"></div>
-        <div class="det-stat-panel" id="det-panel-dbag"></div>
+        <div id="det-pj-section"></div>
+        <div class="det-stat-panel" id="det-panel-pj"></div>
         <div id="det-rate-section"></div>
         <div class="det-stat-panel" id="det-panel-rate"></div>
         <div id="det-shortrange-section"></div>
@@ -1516,7 +1525,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v10.0.0 · Spec v2.2</span>
+        <span>v10.2.0 · Spec v2.3</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -1819,8 +1828,9 @@ function createHole({ number, par, score }) {
     // LINEN CHARTER (v10.0.0) — capture schema rewrite. v9 fields preserved
     // structurally; encoding semantics updated.
     //   shotsFromShort: now encodes 1 / 2 / 3 (where 3 means "3+"). Captured
-    //     by a 3-button picker, not a stepper. Threshold raised from 75y to
-    //     100y (better matches the player's full-PW boundary). The exact
+    //     by a 3-button picker, not a stepper. Threshold is 75y
+    //     (recovery-zone framing; SABLE COMPASS v10.1.0 reverted the v10.0.0
+    //     100y raise). The exact
     //     count beyond 3 doesn't change PJ rule outcomes, so 3+ is the
     //     terminal bucket. null = no scoring-zone shot (GIR path).
     //   firstPuttUnder25: boolean replacement for firstPuttDist (numeric ft).
@@ -1831,8 +1841,8 @@ function createHole({ number, par, score }) {
     //   firstPuttDist (numeric) is kept transitionally so the load-time
     //     migration helper can derive firstPuttUnder25 from legacy v8 rounds;
     //     it is NO LONGER WRITTEN by v10 capture.
-    //   nonScoringDuff removed entirely — execution-only rule (PJ6 R6) was
-    //     the weakest rule in PJ6 and didn't fit DECADE's decision-quality
+    //   nonScoringDuff removed entirely — execution-only rule (former Rule 6) was
+    //     the weakest rule in PJ5 and didn't fit DECADE's decision-quality
     //     framing.
     //   onGreen is still derived at persist time (see deriveOnGreen): on-green
     //     when shotsFromShort is null/0 AND (score - putts) <= (par - 2).
@@ -3391,8 +3401,21 @@ function glacierRenderHole() {
     // LINEN CHARTER (v10.0.0) — re-tee sub-block render removed with the field.
   }
 
-  // LINEN CHARTER (v10.0.0) — Yardage tile removed from Scoring Shot section.
-  // approachYards is no longer captured in v10. Render block elided.
+  // MARLIN LEDGER (v10.1.0) — approach-yardage tile restored. Par 4/5 only;
+  // hidden on par 3 (the tee shot is the approach). Value shows the captured
+  // integer yards or an em-dash placeholder.
+  const yardsTile = document.getElementById('gc-yards-tile');
+  if (yardsTile) yardsTile.style.display = isPar3 ? 'none' : '';
+  const yardsVal = document.getElementById('gc-yards-val');
+  if (yardsVal) {
+    if (typeof hole.approachYards === 'number') {
+      yardsVal.textContent = hole.approachYards;
+      yardsVal.classList.add('has-value');
+    } else {
+      yardsVal.textContent = '\u2014';
+      yardsVal.classList.remove('has-value');
+    }
+  }
 
   // LINEN CHARTER (v10.0.0) — Shots-from-Short 3-button picker render.
   // hole.shotsFromShort encodes 1 / 2 / 3 (3 = "3+"). Highlight the matching
@@ -3618,8 +3641,8 @@ function glacierToggleShortSide() {
 }
 
 // LINEN CHARTER (v10.0.0) — glacierToggleNonScoringDuff removed with the
-// nonScoringDuff field. Execution-only rule (PJ6 R6) was the weakest rule in
-// PJ6 and didn't fit DECADE's decision-quality framing.
+// nonScoringDuff field. Execution-only rule (former Rule 6) was the weakest rule in
+// PJ5 and didn't fit DECADE's decision-quality framing.
 
 // LINEN CHARTER (v10.0.0) — firstPuttUnder25 picker, replaces numeric entry.
 // glacierSetFirstPuttUnder25 — 2-button picker (≤25 / >25). Re-tap on the
@@ -4297,7 +4320,7 @@ const PUTT_DIST_PHRASE = {
 };
 // SABLE LEDGER (v9.3.0) — _OOP_TEE_ZONES / _OB_TEE_ZONES / _LOW_BANDS removed.
 // Their only consumers were getDbagFailures / getPj5Failures and the DBAG tee
-// component, all retired this batch. PJ6 predicates inline their zone literals.
+// component, all retired this batch. PJ5 predicates inline their zone literals.
 
 // OPAL CASCADE (v8.3.37) — firstPuttDist legacy band → integer feet midpoints
 // (rounded up). Used by the one-time migration AND defensively by the helpers
@@ -4427,11 +4450,11 @@ function teeClubCategory(value, bagSnapshot) {
   const club = clubs.find(c => c.id === value);
   return club ? abbrToCategory(club.abbr) : null;
 }
-// SABLE LEDGER (v9.3.0) — getPj6Failures replaces getDbagFailures + getPj5Failures.
-// Returns the plain-English reason(s) a hole violated any PJ6 rule, in rule order.
-// Predicates mirror the pj6RNHoles filters in renderDetailV2 exactly (primary tee
+// SABLE LEDGER (v9.3.0) — getPj5Failures replaces getDbagFailures + getPj5Failures.
+// Returns the plain-English reason(s) a hole violated any PJ5 rule, in rule order.
+// Predicates mirror the pj5RNHoles filters in renderDetailV2 exactly (primary tee
 // only; reTee ignored). A hole can return multiple reasons.
-function getPj6Failures(h) {
+function getPj5Failures(h) {
   const out = [];
   // Rule 1 — penalty / OB (split so a hole that did both reports both).
   if (h.penalty && h.penalty > 0) {
@@ -4453,12 +4476,12 @@ function getPj6Failures(h) {
       out.push("You 3-putted from inside 25 ft.");
     }
   }
-  // Rule 3 — not down in 3 from inside 100y. LINEN CHARTER (v10.0.0): threshold
-  // raised from 75y to 100y to match Matt's full-PW boundary; predicate is
-  // unchanged (the shotsFromShort capture is now bucketed 1/2/3+ and any 3+
-  // value with any putts always violates).
+  // Rule 3 — not down in 3 from inside 75y. SABLE COMPASS (v10.1.0): threshold
+  // reverted 100y->75y (R3 reframed as short-range damage-control, not scoring;
+  // GIR carries the scoring signal). Predicate unchanged — shotsFromShort is
+  // bucketed 1/2/3+ and any value with putts summing past 3 violates.
   if (typeof h.shotsFromShort === 'number' && h.shotsFromShort >= 1 && h.putts != null && (h.shotsFromShort + h.putts) > 3) {
-    out.push("You did not get down in 3 from inside 100y.");
+    out.push("You did not get down in 3 from inside 75y.");
   }
   // Rule 4 — short-sided approach.
   if (h.missQuality === 'shortSide') {
@@ -4467,10 +4490,6 @@ function getPj6Failures(h) {
   // Rule 5 — deep rough off the tee (par 4/5).
   if (h.par >= 4 && (h.teeResult === 'LL' || h.teeResult === 'RR')) {
     out.push("Your tee shot found the deep rough off the tee.");
-  }
-  // Rule 6 — duff from outside the scoring zone.
-  if (h.nonScoringDuff === true) {
-    out.push("You duffed a shot from outside 75y.");
   }
   return out;
 }
@@ -4576,9 +4595,8 @@ function statApplySelection() {
 // stats produce {holes}. Hole numbers are returned as integers in display order.
 function resolveStatPanel(key, param, played) {
   const numsOf = arr => arr.map(h => h.number);
-  // EMBER WILLOW (v8.3.27) — <50 added to approach yardage enum; lowBands
-  // extended for any panel that filters on "≤124y short-range" eligibility.
-  const lowBands = ['<50','50-74','75-99','100-124'];
+  // PEWTER GROVE (v10.1.1) — lowBands removed; its only consumer was the
+  // 'srBogeyOrBetter' case, deleted with the neutralized ≤124y tile.
   switch (key) {
     case 'gir': {
       // STORM BEACON (v8.3.25) — strict GIR predicate, matching girCount.
@@ -4653,35 +4671,23 @@ function resolveStatPanel(key, param, played) {
                hits: numsOf(elig.filter(isGirpy)),
                misses: numsOf(elig.filter(h => !isGirpy(h))) };
     }
-    // SABLE LEDGER (v9.3.0) — PJ6 (Tiger 6) tappability. The composite tap
-    // (pj6Score) lists every violating hole; each rule tap (pj6R1..pj6R6) lists
-    // that rule's offending holes. Lists are stashed on _dbagPanelData by the
-    // PJ6 render block; det-panel-dbag anchor retained.
-    case 'pj6Score': {
-      const data = window._dbagPanelData && window._dbagPanelData[DET.roundId];
-      return { panelId:'det-panel-dbag', type:'list',
-               holes: data ? data.pj6AllViolationHoles : [] };
+    // SABLE LEDGER (v9.3.0) — PJ5 (Tiger 5) tappability. The composite tap
+    // (pj5Score) lists every violating hole; each rule tap (pj5R1..pj5R5) lists
+    // that rule's offending holes. Lists are stashed on _pjPanelData by the
+    // PJ5 render block; det-panel-pj anchor retained.
+    case 'pj5Score': {
+      const data = window._pjPanelData && window._pjPanelData[DET.roundId];
+      return { panelId:'det-panel-pj', type:'list',
+               holes: data ? data.pj5AllViolationHoles : [] };
     }
-    case 'pj6R1': case 'pj6R2': case 'pj6R3':
-    case 'pj6R4': case 'pj6R5': case 'pj6R6': {
-      const data = window._dbagPanelData && window._dbagPanelData[DET.roundId];
-      return { panelId:'det-panel-dbag', type:'list',
+    case 'pj5R1': case 'pj5R2': case 'pj5R3':
+    case 'pj5R4': case 'pj5R5': {
+      const data = window._pjPanelData && window._pjPanelData[DET.roundId];
+      return { panelId:'det-panel-pj', type:'list',
                holes: data ? (data[statKey + 'Holes'] || []) : [] };
     }
-    case 'srBogeyOrBetter': {
-      const elig = played.filter(h => {
-        if (h.par < 4) return false;
-        // VELLUM ASTER (v8.3.33) — band match via approachYardsBin.
-        if (!lowBands.includes(approachYardsBin(h.approachYards))) return false;
-        if (h.putts == null) return false;
-        const shotsBeforeApproach = h.score - 1 - h.putts - (h.doubleChip ? 1 : 0);
-        return shotsBeforeApproach === (h.par - 2);
-      });
-      return { panelId:'det-panel-shortrange', type:'binary',
-               hitLabel:'BOGEY OR BETTER', missLabel:'WORSE',
-               hits: numsOf(elig.filter(h => h.score - h.par <= 1)),
-               misses: numsOf(elig.filter(h => h.score - h.par > 1)) };
-    }
+    // PEWTER GROVE (v10.1.1) — 'srBogeyOrBetter' case removed; its tile was
+    // neutralized in MARLIN LEDGER and nothing taps it through anymore.
     // SABLE LEDGER (v9.3.0) — 'girBand' and 'holeoutBand' cases removed with the
     // GIR-by-Yardage / Down-in-3-by-Yardage bars they served.
   }
@@ -4689,7 +4695,7 @@ function resolveStatPanel(key, param, played) {
 }
 // TIDAL FERN (v8.3.24) — hole-number spans are clickable. A single expansion
 // area renders below the groups, showing prose for the currently expanded
-// hole (DET.expandedHole). For PJ6 composite / per-rule taps, the expansion
+// hole (DET.expandedHole). For PJ5 composite / per-rule taps, the expansion
 // also includes plain-English failure sentences. Toggle off by re-tapping the
 // same number; auto-cleared when stat selection changes.
 function renderStatPanelHtml(r, allHoles, statKey) {
@@ -4719,7 +4725,7 @@ function renderStatPanelHtml(r, allHoles, statKey) {
       const prose = buildHoleSentence(h);
       let failuresHtml = '';
       let failures = null;
-      if (statKey === 'pj6Score' || /^pj6R[1-6]$/.test(statKey)) failures = getPj6Failures(h);
+      if (statKey === 'pj5Score' || /^pj5R[1-5]$/.test(statKey)) failures = getPj5Failures(h);
       if (failures && failures.length) {
         failuresHtml = '<div class="dsp-fail">' + failures.map(s => '<div>' + s + '</div>').join('') + '</div>';
       }
@@ -4981,7 +4987,7 @@ function renderDetailV2(round) {
   const avgScoringShots = v9ScoringHoles.length
     ? (v9ScoringHoles.reduce((a,h) => a + h.shotsFromShort, 0) / v9ScoringHoles.length)
     : null;
-  // Down in 3 from ≤75y (mirrors PJ6 Rule 3 success: shotsFromShort + putts ≤ 3).
+  // Down in 3 from ≤75y (mirrors PJ5 Rule 3 success: shotsFromShort + putts ≤ 3).
   const dn3Elig = v9ScoringHoles.filter(h => typeof h.putts === 'number');
   const dn3Made = dn3Elig.filter(h => (h.shotsFromShort + h.putts) <= 3).length;
   const dn3Pct = dn3Elig.length ? Math.round((dn3Made / dn3Elig.length) * 100) : null;
@@ -5061,7 +5067,7 @@ function renderDetailV2(round) {
       ` : ''}
     `;
   document.getElementById('det-zones-section').innerHTML = `
-    <span class="section-lbl">Scoring Shot</span>
+    <span class="section-lbl">Scoring and Approach</span>
     ${scoringStatsHtml}`;
 
   // ── Score by Par Type tiles ─────────────────────────────────
@@ -5101,41 +5107,31 @@ function renderDetailV2(round) {
   const girpyElig = holes.filter(h => h.putts != null);
   const girpyHitsCount = girpyElig.filter(h => (h.score - h.putts) <= (h.par - 1)).length;
   const girpyPct = girpyElig.length ? Math.round((girpyHitsCount / girpyElig.length) * 100) : 0;
-  // SABLE LEDGER (v9.3.0) — Item #2 (Down in 3 from ≤124y) removed. The tile it
-  // fed is cut; PJ6 Rule 3 (down in 3 from ≤75y, shotsFromShort-based) and the
-  // Scoring-Shot panel's "Down in 3 from ≤75y" row now carry that signal.
-  // lowBands is retained — Item #3 below still uses it.
-  const lowBands = ['<50','50-74','75-99','100-124'];
-  // Item #3 — Bogey or Better at ≤124y after 1 stroke par 4 / 2 strokes par 5.
-  const item3Eligible = holes.filter(h => {
-    if (h.par < 4) return false;
-    if (!lowBands.includes(approachYardsBin(h.approachYards))) return false;
-    if (h.putts == null) return false;
-    const shotsBeforeApproach = h.score - 1 - h.putts - (h.doubleChip ? 1 : 0);
-    return shotsBeforeApproach === (h.par - 2);
-  });
-  const item3Met = item3Eligible.filter(h => h.score - h.par <= 1).length;
+  // PEWTER GROVE (v10.1.1) — Item #3 (Bogey or Better at <=124y) compute and
+  // its local lowBands removed; the tile it fed was neutralized in MARLIN
+  // LEDGER and no longer renders. (Item #2 was removed in SABLE LEDGER.)
   const tapBog = nPlayed ? ` data-stat-key="bogeyOrBetter" onclick="statSelect('bogeyOrBetter')"` : '';
   const tapInP = par45Played.length ? ` data-stat-key="teeInPlay" onclick="statSelect('teeInPlay')"` : '';
   const tapGpy = girpyElig.length ? ` data-stat-key="girpy" onclick="statSelect('girpy')"` : '';
-  const tapBs  = item3Eligible.length ? ` data-stat-key="srBogeyOrBetter" onclick="statSelect('srBogeyOrBetter')"` : '';
   document.getElementById('det-rate-section').innerHTML = `
     <div class="stat-strip" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">
       <div class="stat-tile"${tapBog}><div class="stat-val">${nPlayed ? bogeyPct + '%' : '\u2014'}</div><div class="stat-lbl">Bogey or Better</div><div class="stat-n">n=${nPlayed}</div></div>
       <div class="stat-tile"${tapInP}><div class="stat-val">${par45Played.length ? inPlayPct + '%' : '\u2014'}</div><div class="stat-lbl">Tee In-Play</div><div class="stat-n">n=${par45Played.length}</div></div>
       <div class="stat-tile"${tapGpy}><div class="stat-val">${girpyElig.length ? girpyPct + '%' : '\u2014'}</div><div class="stat-lbl">Girpy</div><div class="stat-n">n=${girpyElig.length}</div></div>
     </div>`;
-  document.getElementById('det-shortrange-section').innerHTML = `
-    <span class="section-lbl">Short-Range Conversion</span>
-    <div class="stat-strip-2">
-      <div class="stat-tile"${tapBs}><div class="stat-val">${item3Eligible.length ? item3Met + '/' + item3Eligible.length : '0/0'}</div><div class="stat-lbl">Bogey or Better at ≤124y</div><div class="stat-n">n=${item3Eligible.length}</div></div>
-    </div>`;
+  // MARLIN LEDGER (v10.1.0) — Short-Range Conversion tile ("Bogey or Better at
+  // <=124y", Item #3 + its srBogeyOrBetter drill-down) neutralized. Reviving
+  // approachYards capture would otherwise repopulate this tile, which is banded
+  // at <=124y (inconsistent with the 75y R3) and leans on the stranded
+  // doubleChip field. approachYards still persists for future SLATE FOUNDRY
+  // GIR-by-distance stats; this legacy tile stays hidden until that rebuild.
+  document.getElementById('det-shortrange-section').innerHTML = '';
 
-  // ── PJ6 (Tiger 6) — SABLE LEDGER (v9.3.0) ──────────────────────
+  // ── PJ5 (Tiger 5) — SABLE LEDGER (v9.3.0) ──────────────────────
   // Raw course-management violation count. No forgiveness, lower is better,
-  // PRIMARY tee shot only (reTee deliberately ignored — PJ6 measures stock
+  // PRIMARY tee shot only (reTee deliberately ignored — PJ5 measures stock
   // skill, not recovery). Replaces DBAG Score and PJ5. Six rules, each a
-  // per-hole boolean; pj6Total sums the violating-hole counts (one hole can
+  // per-hole boolean; pj5Total sums the violating-hole counts (one hole can
   // violate multiple rules and is counted once per rule it breaks).
   //
   //   1. No penalty / OB    : penalty>0 OR teeResult in {OBL,OBR}   - all played
@@ -5146,69 +5142,67 @@ function renderDetailV2(round) {
   //                             arithmetic when no scoring shot was logged)
   //   4. No short-siding    : missQuality === 'shortSide'           - intrinsic
   //   5. No deep-rough tee  : teeResult in {LL,RR} on par 4/5        (OB is rule 1)
-  //   6. No duff outside    : nonScoringDuff === true               - intrinsic
+  // ONYX QUILL (v10.2.0) — Rule 6 (No duff outside / nonScoringDuff) removed;
+  //   PJ6 -> PJ5. It was execution-only and the weakest fit for DECADE.
   // LINEN CHARTER (v10.0.0) — R2 predicate switched to firstPuttUnder25
   // boolean. Legacy v8 rounds get the boolean derived from firstPuttDist by
   // migrateFirstPuttUnder25V1 at boot, so this predicate works uniformly.
-  const pj6R1Holes = holes.filter(h => (h.penalty || 0) > 0 || h.teeResult === 'OBL' || h.teeResult === 'OBR');
-  const pj6R2Holes = holes.filter(h => h.putts != null && h.putts >= 3 && h.firstPuttUnder25 === true);
-  const pj6R3Holes = holes.filter(h => typeof h.shotsFromShort === 'number' && h.shotsFromShort >= 1 && h.putts != null && (h.shotsFromShort + h.putts) > 3);
-  const pj6R4Holes = holes.filter(h => h.missQuality === 'shortSide');
-  const pj6R5Holes = holes.filter(h => h.par >= 4 && (h.teeResult === 'LL' || h.teeResult === 'RR'));
-  const pj6R6Holes = holes.filter(h => h.nonScoringDuff === true);
-  const pj6Total = pj6R1Holes.length + pj6R2Holes.length + pj6R3Holes.length
-                 + pj6R4Holes.length + pj6R5Holes.length + pj6R6Holes.length;
+  const pj5R1Holes = holes.filter(h => (h.penalty || 0) > 0 || h.teeResult === 'OBL' || h.teeResult === 'OBR');
+  const pj5R2Holes = holes.filter(h => h.putts != null && h.putts >= 3 && h.firstPuttUnder25 === true);
+  const pj5R3Holes = holes.filter(h => typeof h.shotsFromShort === 'number' && h.shotsFromShort >= 1 && h.putts != null && (h.shotsFromShort + h.putts) > 3);
+  const pj5R4Holes = holes.filter(h => h.missQuality === 'shortSide');
+  const pj5R5Holes = holes.filter(h => h.par >= 4 && (h.teeResult === 'LL' || h.teeResult === 'RR'));
+  const pj5Total = pj5R1Holes.length + pj5R2Holes.length + pj5R3Holes.length
+                 + pj5R4Holes.length + pj5R5Holes.length;
 
-  // === Stash hole lists for tappable PJ6 panels (SABLE LEDGER v9.3.0) ===
+  // === Stash hole lists for tappable PJ5 panels (SABLE LEDGER v9.3.0) ===
   // Stored on a module-scope object keyed by round id so multiple Round Detail
-  // visits don't cross-contaminate. Each PJ6 rule exposes its offending holes;
-  // the composite is the union (for the PJ6-count tap). statSelect keys map
-  // 'pj6RN' -> data['pj6RNHoles'].
-  if (!window._dbagPanelData) window._dbagPanelData = {};
-  window._dbagPanelData[round.id] = {
-    pj6R1Holes: pj6R1Holes.map(h => h.number),
-    pj6R2Holes: pj6R2Holes.map(h => h.number),
-    pj6R3Holes: pj6R3Holes.map(h => h.number),
-    pj6R4Holes: pj6R4Holes.map(h => h.number),
-    pj6R5Holes: pj6R5Holes.map(h => h.number),
-    pj6R6Holes: pj6R6Holes.map(h => h.number),
-    pj6AllViolationHoles: (() => {
+  // visits don't cross-contaminate. Each PJ5 rule exposes its offending holes;
+  // the composite is the union (for the PJ5-count tap). statSelect keys map
+  // 'pj5RN' -> data['pj5RNHoles'].
+  if (!window._pjPanelData) window._pjPanelData = {};
+  window._pjPanelData[round.id] = {
+    pj5R1Holes: pj5R1Holes.map(h => h.number),
+    pj5R2Holes: pj5R2Holes.map(h => h.number),
+    pj5R3Holes: pj5R3Holes.map(h => h.number),
+    pj5R4Holes: pj5R4Holes.map(h => h.number),
+    pj5R5Holes: pj5R5Holes.map(h => h.number),
+    pj5AllViolationHoles: (() => {
       const set = new Set();
-      [pj6R1Holes, pj6R2Holes, pj6R3Holes, pj6R4Holes, pj6R5Holes, pj6R6Holes]
+      [pj5R1Holes, pj5R2Holes, pj5R3Holes, pj5R4Holes, pj5R5Holes]
         .forEach(arr => arr.forEach(h => set.add(h.number)));
       return Array.from(set).sort((a,b) => a - b);
     })(),
   };
 
-  // === Render — PJ6 (Tiger 6) panel ===
-  // SABLE LEDGER (v9.3.0) — DBAG Score + PJ5 card replaced by a single PJ6
-  // count plus six rule rows. Each row taps through to its offending holes
-  // (det-panel-dbag anchor reused). Lower is better; a clean rule shows a green
+  // === Render — PJ5 (Tiger 5) panel ===
+  // SABLE LEDGER (v9.3.0) — DBAG Score + PJ5 card replaced by a single PJ5
+  // count plus five rule rows. Each row taps through to its offending holes
+  // (det-panel-pj anchor reused). Lower is better; a clean rule shows a green
   // check, a violated rule shows a red ✕ and the hole count.
-  const pj6Rules = [
-    { key:'pj6R1', lbl:'No penalty / OB',       n:pj6R1Holes.length },
-    { key:'pj6R2', lbl:'No 3-putt from \u226425 ft', n:pj6R2Holes.length },
-    { key:'pj6R3', lbl:'Down in 3 from \u226475y',    n:pj6R3Holes.length },
-    { key:'pj6R4', lbl:'No short-siding',         n:pj6R4Holes.length },
-    { key:'pj6R5', lbl:'No deep rough off tee',   n:pj6R5Holes.length },
-    { key:'pj6R6', lbl:'No duff outside 75y',     n:pj6R6Holes.length },
+  const pj5Rules = [
+    { key:'pj5R1', lbl:'No penalty / OB',       n:pj5R1Holes.length },
+    { key:'pj5R2', lbl:'No 3-putt from 25 ft &amp; under', n:pj5R2Holes.length },
+    { key:'pj5R3', lbl:'Down in 3 from \u226475y',    n:pj5R3Holes.length },
+    { key:'pj5R4', lbl:'No short-siding',         n:pj5R4Holes.length },
+    { key:'pj5R5', lbl:'No deep rough off tee',   n:pj5R5Holes.length },
   ];
-  const pj6Rows = pj6Rules.map(r => {
+  const pj5Rows = pj5Rules.map(r => {
     const tap = r.n ? ` data-stat-key="${r.key}" onclick="statSelect('${r.key}')"` : '';
     const valColor = r.n ? 'var(--red)' : 'var(--green)';
     const valTxt = r.n ? ('\u2715 ' + r.n) : '\u2713';
     const aux = r.n ? (r.n === 1 ? '1 hole' : r.n + ' holes') : 'clean';
-    return `<div class="dbag-row"${tap}><span class="dbag-row-lbl">${r.lbl}</span><span class="dbag-row-val" style="color:${valColor}">${valTxt}</span><span class="dbag-row-aux">${aux}</span></div>`;
+    return `<div class="pj-row"${tap}><span class="pj-row-lbl">${r.lbl}</span><span class="pj-row-val" style="color:${valColor}">${valTxt}</span><span class="pj-row-aux">${aux}</span></div>`;
   }).join('');
-  const tapPj6 = pj6Total ? ` data-stat-key="pj6Score" onclick="statSelect('pj6Score')"` : '';
-  document.getElementById('det-dbag-section').innerHTML = `
-    <span class="section-lbl">Tiger 6 \u00b7 PJ6 Score</span>
-    <div class="dbag-card">
-      <div class="dbag-hdr" style="justify-content:center">
-        <div class="dbag-stat dbag-pj5"${tapPj6}><div class="dbag-stat-val">${pj6Total}</div><div class="dbag-stat-lbl">PJ6 Score \u00b7 lower is better</div></div>
+  const tapPj5 = pj5Total ? ` data-stat-key="pj5Score" onclick="statSelect('pj5Score')"` : '';
+  document.getElementById('det-pj-section').innerHTML = `
+    <span class="section-lbl">Tiger 5 \u00b7 PJ5 Score</span>
+    <div class="pj-card">
+      <div class="pj-hdr" style="justify-content:center">
+        <div class="pj-stat pj-pj5"${tapPj5}><div class="pj-stat-val">${pj5Total}</div><div class="pj-stat-lbl">PJ5 Score \u00b7 lower is better</div></div>
       </div>
-      <div class="dbag-breakdown">
-        ${pj6Rows}
+      <div class="pj-breakdown">
+        ${pj5Rows}
       </div>
     </div>`;
 
@@ -5216,7 +5210,7 @@ function renderDetailV2(round) {
   // Both banded charts and the bandRows helper retired per Matt's call; the
   // det-gir-section / det-holeout-section markup slots were removed with them.
   // GIR distribution signal is covered by the GIR+1 rate tile; short-game
-  // conversion is now expressed through PJ6 Rule 3 (down in 3 from ≤75y).
+  // conversion is now expressed through PJ5 Rule 3 (down in 3 from ≤75y).
 
   // ── Putting (SLATE PRISM v8.3.42) ───────────────────────────
   // Replaces the COBALT MARROW count list. Debucketed: uses exact feet from
