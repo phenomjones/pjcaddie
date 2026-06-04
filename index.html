@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v10.2.0 · Jun 3, 2026 -->
+<!-- PJ Caddie v10.3.0 · Jun 3, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -98,11 +98,13 @@ body{display:flex;flex-direction:column}
 .va-sync-cluster{display:grid;grid-template-columns:72px auto auto 1fr;align-items:center;gap:10px}
 .va-sync-name{font-size:14px;color:var(--chalk);font-weight:500}
 .va-sync-name.stale{color:var(--orange)}
+.va-sync-name.dirty{color:var(--gold)}
 .va-sync-cluster .btn-sm{padding:6px 12px;font-size:12px;width:auto;display:inline-block}
 /* VERMILION REPRISE.2 — global .btn+.btn rule adds 9px margin-top, which in a grid context shifts cell content and drifts row alignment. Zero it */
 .va-sync-cluster .btn+.btn{margin-top:0}
 .va-sync-ts{font-size:10px;color:var(--chalk3);letter-spacing:.2px;text-align:right;line-height:1.4;min-width:0;padding-left:8px}
 .va-sync-ts.stale{color:var(--orange)}
+.va-sync-ts.dirty{color:var(--gold)}
 /* VERMILION ATELIER — collapsible setup rows for API keys */
 .va-coll-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border2);cursor:pointer}
 .va-coll-row:last-child{border-bottom:none}
@@ -269,6 +271,7 @@ body{display:flex;flex-direction:column}
 .sp-bench-better{color:var(--green)}
 .sp-bench-worse{color:var(--red)}
 .sp-bench-at{color:var(--chalk3)}
+.sp-bench-split{font-size:11px;color:var(--chalk3);margin-top:2px;line-height:1.4}
 .sp-empty{color:var(--chalk3);font-style:italic;font-size:12px}
 .sp-row-flash{animation:sp-flash 1.8s ease-out}
 @keyframes sp-flash{0%{box-shadow:0 0 0 2px var(--gold) inset}70%{box-shadow:0 0 0 2px var(--gold) inset}100%{box-shadow:0 0 0 0 transparent inset}}
@@ -875,7 +878,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v10.2.0 · Jun 3, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v10.3.0 · Jun 3, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1525,7 +1528,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v10.2.0 · Spec v2.3</span>
+        <span>v10.3.0 · Spec v2.3</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -4148,29 +4151,10 @@ function holeTroublePillsHtml(h) {
 //   10–24 ft: ~9%  (Arccos Mid bucket — combines 10-14 and 15-24)
 //   25–39 ft: ~22% (Arccos Long bucket)
 //   40+ ft: ~38%   (10-hcp 36-40 ft cited from Stagner/Arccos data)
-function tenHcpThreePuttRate(feet) {
-  if (feet == null || !Number.isFinite(feet) || feet < 0 || feet > 99) return null;
-  if (feet <= 4) return 0.005;
-  if (feet <= 9) return 0.02;
-  if (feet <= 24) return 0.09;
-  if (feet <= 39) return 0.22;
-  return 0.38;
-}
-// Sum the per-distance 10-hcp 3-putt rate across the round's actual first
-// putts. Holes with null firstPuttDist are silently excluded (no expected
-// contribution). Returns a number rounded to 1 decimal, or null if no
-// distances were captured at all.
-function expectedThreePuttsToday(holes) {
-  if (!Array.isArray(holes) || !holes.length) return null;
-  let sum = 0;
-  let n = 0;
-  holes.forEach(h => {
-    const r = tenHcpThreePuttRate(h && typeof h.firstPuttDist === 'number' ? h.firstPuttDist : null);
-    if (r != null) { sum += r; n++; }
-  });
-  if (n === 0) return null;
-  return Math.round(sum * 10) / 10;
-}
+// ONYX QUILL Phase B (v10.3.0) — tenHcpThreePuttRate + expectedThreePuttsToday
+// removed. The per-foot 3-putt curve lost its input when firstPuttDist was
+// deleted (LINEN CHARTER v10.0.0). Putting panel now uses a count-vs-pace
+// benchmark + an under/over-25ft split (see renderDetailV2 putting section).
 
 function buildHoleSentence(h) {
   const parts = [];
@@ -5216,8 +5200,8 @@ function renderDetailV2(round) {
   // Replaces the COBALT MARROW count list. Debucketed: uses exact feet from
   // OPAL CASCADE numeric storage, no display-side categorization. 1-putt and
   // 3-putt rows are highlighted (green / red); 2-putt and 4+ are neutral.
-  // The 3-putt row carries a benchmark line: "10-hcp would 3-putt: X.X times"
-  // computed by summing tenHcpThreePuttRate(feet) per first putt this round.
+  // The 3-putt row carries a count-vs-single-digit-pace benchmark plus an
+  // under/over-25ft split (ONYX QUILL Phase B, v10.3.0).
   const fpShort = holes.filter(h => firstPuttDistCategory(h.firstPuttDist) === 'short');
   const onePuttHoles = [];
   const twoPuttHoles = [];
@@ -5228,7 +5212,7 @@ function renderDetailV2(round) {
   holes.forEach((h, idx) => {
     if (h.putts === 1) onePuttHoles.push({ idx, num: h.number, feet: h.firstPuttDist });
     else if (h.putts === 2) twoPuttHoles.push({ idx, num: h.number, feet: h.firstPuttDist });
-    else if (h.putts === 3) threePuttHoles.push({ idx, num: h.number, feet: h.firstPuttDist });
+    else if (h.putts === 3) threePuttHoles.push({ idx, num: h.number, feet: h.firstPuttDist, under25: h.firstPuttUnder25 });
     else if (h.putts != null && h.putts >= 4) fourPlusPuttHoles.push({ idx, num: h.number, feet: h.firstPuttDist });
     if (typeof h.firstPuttDist === 'number') {
       firstPuttDistSum += h.firstPuttDist;
@@ -5236,27 +5220,38 @@ function renderDetailV2(round) {
     }
   });
   const avgFirstPutt = firstPuttDistN ? Math.round(firstPuttDistSum / firstPuttDistN) : null;
-  const expected3 = expectedThreePuttsToday(holes);
+  const hasDist = avgFirstPutt != null;          // legacy rounds carry numeric ft
+  const puttedHoles = holes.filter(h => h.putts != null).length;
   const renderHList = (arr) => arr.length
     ? `<div class="sp-h-list">${arr.map(o => {
         const feetTxt = (typeof o.feet === 'number')
           ? (o.feet === 0 ? '<1 ft' : (o.feet === 1 ? '1 ft' : (o.feet + ' ft')))
-          : '— ft';
-        return `<button class="sp-h-link" onclick="scrollToHoleRow(${o.idx})">H${o.num} \xb7 ${feetTxt}</button>`;
+          : null;
+        return `<button class="sp-h-link" onclick="scrollToHoleRow(${o.idx})">H${o.num}${feetTxt ? ' \xb7 ' + feetTxt : ''}</button>`;
       }).join('')}</div>`
     : '';
   const fmtCount = (n) => `<span class="sp-count">${n}</span> hole${n === 1 ? '' : 's'}`;
-  // 3-putt benchmark line.
+  // ONYX QUILL Phase B — count-vs-pace benchmark (single-digit players 3-putt
+  // ~0.072 per putted hole; normalized to holes played so 9- and 18-hole rounds
+  // compare fairly) plus an under/over-25ft split. Single-round counts are noisy
+  // (Dr. Priya), so the band is wide and the pace is a reference, not a verdict.
   let benchHtml = '';
-  if (expected3 != null) {
+  if (puttedHoles > 0) {
     const actual = threePuttHoles.length;
+    const benchTarget = Math.round(0.072 * puttedHoles * 10) / 10;
     let cmp, cmpCls;
-    // Tolerance band: within 0.5 of expected = at-benchmark (single-round
-    // noise is wide; don't overstate "better/worse" on tiny deltas).
-    if (Math.abs(actual - expected3) <= 0.5) { cmp = 'at benchmark'; cmpCls = 'sp-bench-at'; }
-    else if (actual < expected3) { cmp = 'better than benchmark'; cmpCls = 'sp-bench-better'; }
-    else { cmp = 'worse than benchmark'; cmpCls = 'sp-bench-worse'; }
-    benchHtml = `<div class="sp-bench ${cmpCls}">10-hcp would 3-putt: ${expected3.toFixed(1)} times \u2014 ${cmp}</div>`;
+    if (Math.abs(actual - benchTarget) <= 0.5) { cmp = 'at single-digit pace'; cmpCls = 'sp-bench-at'; }
+    else if (actual < benchTarget) { cmp = 'better than single-digit pace'; cmpCls = 'sp-bench-better'; }
+    else { cmp = 'worse than single-digit pace'; cmpCls = 'sp-bench-worse'; }
+    benchHtml = `<div class="sp-bench ${cmpCls}">Single-digit pace: ${benchTarget.toFixed(1)} \u2014 ${cmp}</div>`;
+    if (actual > 0) {
+      const u25 = threePuttHoles.filter(o => o.under25 === true).length;
+      const o25 = threePuttHoles.filter(o => o.under25 === false).length;
+      const unk = actual - u25 - o25;
+      const parts = [`${u25} from \u226425 ft (Rule 2)`, `${o25} from over 25 ft`];
+      if (unk > 0) parts.push(`${unk} unrecorded`);
+      benchHtml += `<div class="sp-bench-split">${parts.join(' \u00b7 ')}</div>`;
+    }
   }
   const lines = [];
   lines.push(`<div class="sp-line sp-line-1putt">
@@ -5275,14 +5270,19 @@ function renderDetailV2(round) {
     <div class="sp-key">4+ putts</div>
     <div class="sp-val">${fourPlusPuttHoles.length ? fmtCount(fourPlusPuttHoles.length) : '<span class="sp-empty">none</span>'}${renderHList(fourPlusPuttHoles)}</div>
   </div>`);
-  lines.push(`<div class="sp-line">
-    <div class="sp-key">Avg first putt</div>
-    <div class="sp-val">${avgFirstPutt != null ? (avgFirstPutt + ' ft') : '<span class="sp-empty">no data</span>'}</div>
-  </div>`);
-  lines.push(`<div class="sp-line">
-    <div class="sp-key">Inside 10 ft</div>
-    <div class="sp-val">${fpShort.length ? fmtCount(fpShort.length) : '<span class="sp-empty">none</span>'}</div>
-  </div>`);
+  // ONYX QUILL Phase B — distance-only rows render only for legacy rounds that
+  // carry numeric first-putt feet. v10 captures firstPuttUnder25 (boolean), so
+  // these would always read "no data" — hide them rather than show dead rows.
+  if (hasDist) {
+    lines.push(`<div class="sp-line">
+      <div class="sp-key">Avg first putt</div>
+      <div class="sp-val">${avgFirstPutt + ' ft'}</div>
+    </div>`);
+    lines.push(`<div class="sp-line">
+      <div class="sp-key">Inside 10 ft</div>
+      <div class="sp-val">${fpShort.length ? fmtCount(fpShort.length) : '<span class="sp-empty">none</span>'}</div>
+    </div>`);
+  }
   document.getElementById('det-putt-section').innerHTML = `
     <span class="section-lbl">Putting</span>
     <div class="det-card">${lines.join('')}</div>`;
@@ -5905,11 +5905,22 @@ function renderSettings() {
     const s = (syncMeta.sections && syncMeta.sections[k]) || {};
     const lastTouch = Math.max(s.localPush||0, s.localPull||0);
     const remoteTs = s.remoteTs||0;
-    const stale = vaIsStale(lastTouch, remoteTs);
+    // COBALT BEACON — per-section edit-stamp vs last push/pull. editTs newer than
+    // the last sync = local edits not yet pushed (data-loss risk under manual push).
+    const TS_KEY = { rounds:'roundsTs', courses:'notesTs', myGame:'playerTs', bags:'bagsTs' };
+    const editTs = syncMeta[TS_KEY[k]] || 0;
+    const dirty = editTs > lastTouch;
+    // Dirty (push-needed) takes display priority over stale (pull-needed); a
+    // section can be both (true divergence) but the unpushed warning is the one
+    // tied to data loss, so it leads.
+    const stale = !dirty && vaIsStale(lastTouch, remoteTs);
     // VERMILION REPRISE — natural-language timestamps. No legend required.
     // "Synced X ago" = this device's last successful push/pull.
     // "GitHub X ago" = when GitHub's copy was last written.
-    if (!lastTouch && !remoteTs) {
+    if (dirty) {
+      el.textContent = '\u2191 Unpushed · edited ' + formatSyncTimestamp(editTs)
+        + (remoteTs ? ' · GitHub ' + formatSyncTimestamp(remoteTs) : '');
+    } else if (!lastTouch && !remoteTs) {
       el.textContent = 'Never synced';
     } else if (!lastTouch && remoteTs) {
       el.textContent = 'Not on this device · GitHub ' + formatSyncTimestamp(remoteTs);
@@ -5920,7 +5931,8 @@ function renderSettings() {
         + ' · GitHub ' + formatSyncTimestamp(remoteTs);
     }
     el.classList.toggle('stale', stale);
-    if (nameEl) nameEl.classList.toggle('stale', stale);
+    el.classList.toggle('dirty', dirty);
+    if (nameEl) { nameEl.classList.toggle('stale', stale); nameEl.classList.toggle('dirty', dirty); }
   });
   // VERMILION ATELIER — collapsible setup row statuses
   const antStatus = document.getElementById('va-coll-ant-status');
@@ -6438,7 +6450,7 @@ function getBags() {
   } catch {}
   return DEFAULT_BAGS.map(b=>({...b,clubs:b.clubs.map(c=>({...c}))}));
 }
-function saveBags(bags) { localStorage.setItem('pjc_bags',JSON.stringify(bags)); }
+function saveBags(bags) { localStorage.setItem('pjc_bags',JSON.stringify(bags)); const meta=getSyncMeta(); meta.bagsTs=Date.now(); saveSyncMeta(meta); }
 
 // ── BAG SETTINGS ─────────────────────────────────────────────
 const BGS = { expandedId: null, showAddClub: {}, showAddBag: false, editingClubIdx: {} };
@@ -6738,6 +6750,8 @@ function deleteRound() {
   const deletedId = DET.roundId;
   const rounds = getRounds().filter(r => r.id !== deletedId);
   saveRounds(rounds);
+  // COBALT BEACON — deleting a round is a local edit; mark section unpushed.
+  const meta = getSyncMeta(); meta.roundsTs = Date.now(); saveSyncMeta(meta);
   DET.roundId = null;
   showView('history');
   toast('Round deleted');
