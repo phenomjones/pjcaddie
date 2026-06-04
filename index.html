@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v10.3.0 · Jun 3, 2026 -->
+<!-- PJ Caddie v10.4.0 · Jun 3, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -316,9 +316,9 @@ body{display:flex;flex-direction:column}
 .det-spark-rows{position:relative}
 .det-spark-lines{position:absolute;left:0;right:0;top:0;overflow:visible;pointer-events:none}
 /* VELVET LATTICE (v8.3.2) — universal tappable-stat panel pattern. Any element with [data-stat-key] is a tap target; tapping renders the matching panel beneath its section showing the holes that contribute */
-.stat-tile[data-stat-key],.det-tee-col,.det-zone-cell[data-stat-key],.det-stack-row,.pj-row[data-stat-key],.pj-stat[data-stat-key]{cursor:pointer}
+.stat-tile[data-stat-key],.det-tee-col,.det-tee-lbl[data-stat-key],.det-zone-cell[data-stat-key],.det-stack-row,.det-cmp-row[data-stat-key],.pj-row[data-stat-key],.pj-stat[data-stat-key]{cursor:pointer}
 .det-tee-bar{pointer-events:none}
-.stat-tile.selected,.det-tee-col.selected,.det-zone-cell.selected,.pj-row.selected,.pj-stat.selected{box-shadow:inset 0 0 0 2px var(--gold)}
+.stat-tile.selected,.det-tee-col.selected,.det-tee-lbl.selected,.det-zone-cell.selected,.det-cmp-row.selected,.pj-row.selected,.pj-stat.selected{box-shadow:inset 0 0 0 2px var(--gold)}
 .det-stack-row.selected .det-stack-track{box-shadow:inset 0 0 0 2px var(--gold)}
 .det-stat-panel{display:none;background:rgba(200,168,75,.04);border:1px solid rgba(200,168,75,.2);border-radius:var(--rs);padding:11px 13px;margin:-4px 0 16px}
 .det-stat-panel.on{display:block}
@@ -878,7 +878,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v10.3.0 · Jun 3, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v10.4.0 · Jun 3, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1528,7 +1528,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v10.3.0 · Spec v2.3</span>
+        <span>v10.4.0 · Spec v2.3</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -4604,15 +4604,9 @@ function resolveStatPanel(key, param, played) {
     case 'penalties':
       return { panelId:'det-panel-stats', type:'list',
                holes: numsOf(played.filter(h => (h.penalty || 0) > 0)) };
-    case 'doubleChips':
-      return { panelId:'det-panel-stats', type:'list',
-               holes: numsOf(played.filter(h => h.doubleChip)) };
-    case 'fwyBunker':
-      return { panelId:'det-panel-stats', type:'list',
-               holes: numsOf(played.filter(h => h.fwyBunker)) };
-    case 'duffedApproach':
-      return { panelId:'det-panel-stats', type:'list',
-               holes: numsOf(played.filter(h => h.duffedApproach)) };
+    // GILDED MESH (v10.4.0) — doubleChips / fwyBunker / duffedApproach cases
+    // removed with their det-stats2 tiles. Per-hole pills + prose still read the
+    // underlying h.* fields directly; only these tap-panels are gone.
     case 'teeZone':
       return { panelId:'det-panel-tee', type:'list',
                holes: numsOf(played.filter(h => h.par >= 4 && h.teeResult === param)) };
@@ -4668,8 +4662,22 @@ function resolveStatPanel(key, param, played) {
     case 'pj5R4': case 'pj5R5': {
       const data = window._pjPanelData && window._pjPanelData[DET.roundId];
       return { panelId:'det-panel-pj', type:'list',
-               holes: data ? (data[statKey + 'Holes'] || []) : [] };
+               holes: data ? (data[key + 'Holes'] || []) : [] };
     }
+    // GILDED MESH (v10.4.0) — Scoring & Approach rows tap into det-panel-zones.
+    case 'apUpDown': {
+      const elig = played.filter(h => h.onGreen === false && h.score - h.par <= 1);
+      return { panelId:'det-panel-zones', type:'binary',
+               hitLabel:'UP & DOWN', missLabel:'MISSED',
+               hits: numsOf(elig.filter(h => h.putts === 1 && !h.doubleChip)),
+               misses: numsOf(elig.filter(h => !(h.putts === 1 && !h.doubleChip))) };
+    }
+    case 'apScoring':
+      return { panelId:'det-panel-zones', type:'list',
+               holes: numsOf(played.filter(h => typeof h.shotsFromShort === 'number' && h.shotsFromShort >= 1)) };
+    case 'apShortSide':
+      return { panelId:'det-panel-zones', type:'list',
+               holes: numsOf(played.filter(h => h.missQuality === 'shortSide')) };
     // PEWTER GROVE (v10.1.1) — 'srBogeyOrBetter' case removed; its tile was
     // neutralized in MARLIN LEDGER and nothing taps it through anymore.
     // SABLE LEDGER (v9.3.0) — 'girBand' and 'holeoutBand' cases removed with the
@@ -4786,12 +4794,23 @@ function renderDetailV2(round) {
   const threePutts = holes.filter(h => h.putts === 3).length;
   const fourPlusPutts = holes.filter(h => h.putts === 4).length;
   const longPutts = threePutts + fourPlusPutts;
-  const doubleChips = holes.filter(h => h.doubleChip).length;
-  // BUNKER QUARTET (v8.3.8) — two new trouble counters surfaced as tappable
-  // tiles in det-stats2 alongside Penalties + Double Chips. Tap reveals the
-  // contributing holes via the existing VELVET LATTICE panel pattern.
-  const fwyBunkers = holes.filter(h => h.fwyBunker).length;
-  const duffedApproaches = holes.filter(h => h.duffedApproach).length;
+  // GILDED MESH (v10.4.0) — legacy trouble-flag tiles removed from det-stats2;
+  // per-hole h.* fields + pills untouched. PJ5 rule filters hoisted here (from
+  // the PJ5 render block below) so the PJ5 Score tile reads pj5Total without
+  // recomputing. Single source of truth.
+  const pj5R1Holes = holes.filter(h => (h.penalty || 0) > 0 || h.teeResult === 'OBL' || h.teeResult === 'OBR');
+  const pj5R2Holes = holes.filter(h => h.putts != null && h.putts >= 3 && h.firstPuttUnder25 === true);
+  const pj5R3Holes = holes.filter(h => typeof h.shotsFromShort === 'number' && h.shotsFromShort >= 1 && h.putts != null && (h.shotsFromShort + h.putts) > 3);
+  const pj5R4Holes = holes.filter(h => h.missQuality === 'shortSide');
+  const pj5R5Holes = holes.filter(h => h.par >= 4 && (h.teeResult === 'LL' || h.teeResult === 'RR'));
+  const pj5Total = pj5R1Holes.length + pj5R2Holes.length + pj5R3Holes.length
+                 + pj5R4Holes.length + pj5R5Holes.length;
+  const _par45 = holes.filter(h => h.par >= 4);
+  const _teeInPlayN = _par45.filter(h => h.teeResult === 'fairway' || h.teeResult === 'L' || h.teeResult === 'R').length;
+  const teeInPlayPctTop = _par45.length ? Math.round(_teeInPlayN / _par45.length * 100) : null;
+  const _scoringHoles = holes.filter(h => typeof h.shotsFromShort === 'number' && h.shotsFromShort >= 1);
+  const _dn3Success = _scoringHoles.filter(h => h.putts != null && (h.shotsFromShort + h.putts) <= 3).length;
+  const dn3PctTop = _scoringHoles.length ? Math.round(_dn3Success / _scoringHoles.length * 100) : null;
 
   // ── Stat strips ─────────────────────────────────────────────
   // VELVET LATTICE (v8.3.2) — every stat with a clean hole decomposition is a
@@ -4812,9 +4831,9 @@ function renderDetailV2(round) {
 
   document.getElementById('det-stats2').innerHTML = [
     {val: totalPenalties || '0', lbl: 'Penalties', k: totalPenalties ? 'penalties' : null},
-    {val: doubleChips || '0', lbl: 'Double Chips', k: doubleChips ? 'doubleChips' : null},
-    {val: fwyBunkers || '0', lbl: 'Fwy Bunker', k: fwyBunkers ? 'fwyBunker' : null},
-    {val: duffedApproaches || '0', lbl: 'Duffed', k: duffedApproaches ? 'duffedApproach' : null},
+    {val: _par45.length ? (teeInPlayPctTop + '%') : '\u2014', lbl: 'Tee In-Play', k: null},
+    {val: pj5Total, lbl: 'PJ5 Score', k: null},
+    {val: _scoringHoles.length ? (dn3PctTop + '%') : '\u2014', lbl: 'Down in 3', k: null},
   ].map(statTileHtml).join('');
 
   // ── JUNIPER QUARRY BATCH (v8.3.46-52) — post-round summary block ──
@@ -4858,7 +4877,7 @@ function renderDetailV2(round) {
     const heightStyle = c === 0 ? 'height:2px' : `height:${heightPct}%`;
     return `<div class="det-tee-col" data-zone="${z}" data-stat-key="teeZone" data-stat-param="${z}" onclick="statSelect('teeZone','${z}')"><div class="det-tee-count">${c}</div><div class="det-tee-bar ${cls}" style="${heightStyle}"></div></div>`;
   }).join('');
-  const teeLabelsHtml = teeLabels.map(l => `<div class="det-tee-lbl">${l}</div>`).join('');
+  const teeLabelsHtml = teeLabels.map((l, i) => `<div class="det-tee-lbl" data-stat-key="teeZone" data-stat-param="${teeZones[i]}" onclick="statSelect('teeZone','${teeZones[i]}')">${l}</div>`).join('');
 
   // CRIMSON COMPASS + SHOTGUN ASCEND (v8.3.5) — vertical timeline ordered by
   // play order, first played hole on the bottom and last on top. Shotgun rounds
@@ -4996,18 +5015,17 @@ function renderDetailV2(round) {
   scoringShotHoles.forEach(h => { if (clubCounts[h.scoringShotClub] != null) clubCounts[h.scoringShotClub]++; });
   const clubTotal = clubCounts.iron + clubCounts.wedge + clubCounts.other;
   // Miss quality rates — universal (missQuality). Only flagged holes count.
-  const fatSideCount = missedGreenHoles.filter(h => h.missQuality === 'fatSide').length;
   const shortSideCount = missedGreenHoles.filter(h => h.missQuality === 'shortSide').length;
   // Benchmarks (MyGolfSpy 18-hc): U&D ~32%, shots-from-≤50yd ~2.83, proximity ~19 ft.
   const fmt1 = v => v == null ? '\u2014' : (Math.round(v * 10) / 10).toFixed(1);
   const fmtPct = v => v == null ? '\u2014' : v + '%';
-  const benchLine = (lbl, mine, bench, fmt) => {
+  const benchLine = (lbl, mine, bench, fmt, tapKey) => {
     if (mine == null) return '';
     const above = (typeof mine === 'number' && typeof bench === 'number')
       ? (lbl === 'Up & down' ? mine >= bench : mine <= bench) : null;
     const arrow = above === true ? '\u2191' : above === false ? '\u2193' : '';
     const arrowColor = above === true ? 'var(--green)' : above === false ? 'var(--red)' : 'var(--chalk3)';
-    return `<div class="det-cmp-row">
+    return `<div class="det-cmp-row"${tapKey ? ` data-stat-key="${tapKey}" onclick="statSelect('${tapKey}')"` : ''}>
       <span class="det-cmp-lbl">${lbl}</span>
       <span class="det-cmp-today">${fmt(mine)}</span>
       <span class="det-cmp-arrow" style="color:${arrowColor}">${arrow}</span>
@@ -5015,7 +5033,7 @@ function renderDetailV2(round) {
     </div>`;
   };
   // Plain stat row (no benchmark) — used for v9 metrics without a clean 18-hc target.
-  const plainRow = (lbl, val) => `<div class="det-cmp-row"><span class="det-cmp-lbl">${lbl}</span><span class="det-cmp-today">${val}</span><span></span><span></span></div>`;
+  const plainRow = (lbl, val, tapKey) => `<div class="det-cmp-row"${tapKey ? ` data-stat-key="${tapKey}" onclick="statSelect('${tapKey}')"` : ''}><span class="det-cmp-lbl">${lbl}</span><span class="det-cmp-today">${val}</span><span></span><span></span></div>`;
   const clubBar = (lbl, n) => {
     const pct = clubTotal ? Math.round((n / clubTotal) * 100) : 0;
     return `<div class="det-cmp-row" style="grid-template-columns:80px 1fr auto">
@@ -5030,9 +5048,9 @@ function renderDetailV2(round) {
   const scoringStatsHtml = !hasAny
     ? `<div class="det-cmp-empty">No scoring-shot data yet \u2014 play a round and log shots from inside 75y.</div>`
     : `
-      ${benchLine('Up & down', upDownPct, 32, fmtPct)}
-      ${hasV9 ? plainRow('Avg shots from \u226475y', fmt1(avgScoringShots)) : ''}
-      ${hasV9 && dn3Pct != null ? plainRow('Down in 3 from \u226475y', fmtPct(dn3Pct)) : ''}
+      ${benchLine('Up & down', upDownPct, 32, fmtPct, 'apUpDown')}
+      ${hasV9 ? plainRow('Avg shots from \u226475y', fmt1(avgScoringShots), 'apScoring') : ''}
+      ${hasV9 && dn3Pct != null ? plainRow('Down in 3 from \u226475y', fmtPct(dn3Pct), 'apScoring') : ''}
       ${nonScoringDuffCount > 0 ? plainRow('Duffs outside 75y', String(nonScoringDuffCount)) : ''}
       ${hasLegacy ? `
         ${benchLine('Shots from \u226450yd', avgShotsFromUnder50, 2.83, fmt1)}
@@ -5044,10 +5062,9 @@ function renderDetailV2(round) {
         ${clubBar('Wedge', clubCounts.wedge)}
         ${clubBar('Other', clubCounts.other)}
       ` : ''}
-      ${(fatSideCount > 0 || shortSideCount > 0) ? `
+      ${shortSideCount > 0 ? `
         <div style="margin-top:8px;font-size:11px;color:var(--chalk3);letter-spacing:1.2px;text-transform:uppercase;font-weight:600;opacity:.7">Miss quality (when flagged)</div>
-        <div class="det-cmp-row"><span class="det-cmp-lbl">Fat side</span><span class="det-cmp-today">${fatSideCount}</span><span></span><span></span></div>
-        <div class="det-cmp-row"><span class="det-cmp-lbl">Short-sided</span><span class="det-cmp-today">${shortSideCount}</span><span></span><span></span></div>
+        <div class="det-cmp-row" data-stat-key="apShortSide" onclick="statSelect('apShortSide')"><span class="det-cmp-lbl">Short-sided</span><span class="det-cmp-today">${shortSideCount}</span><span></span><span></span></div>
       ` : ''}
     `;
   document.getElementById('det-zones-section').innerHTML = `
@@ -5131,13 +5148,8 @@ function renderDetailV2(round) {
   // LINEN CHARTER (v10.0.0) — R2 predicate switched to firstPuttUnder25
   // boolean. Legacy v8 rounds get the boolean derived from firstPuttDist by
   // migrateFirstPuttUnder25V1 at boot, so this predicate works uniformly.
-  const pj5R1Holes = holes.filter(h => (h.penalty || 0) > 0 || h.teeResult === 'OBL' || h.teeResult === 'OBR');
-  const pj5R2Holes = holes.filter(h => h.putts != null && h.putts >= 3 && h.firstPuttUnder25 === true);
-  const pj5R3Holes = holes.filter(h => typeof h.shotsFromShort === 'number' && h.shotsFromShort >= 1 && h.putts != null && (h.shotsFromShort + h.putts) > 3);
-  const pj5R4Holes = holes.filter(h => h.missQuality === 'shortSide');
-  const pj5R5Holes = holes.filter(h => h.par >= 4 && (h.teeResult === 'LL' || h.teeResult === 'RR'));
-  const pj5Total = pj5R1Holes.length + pj5R2Holes.length + pj5R3Holes.length
-                 + pj5R4Holes.length + pj5R5Holes.length;
+  // GILDED MESH (v10.4.0) — pj5R*Holes + pj5Total hoisted above det-stats2
+  // (single source for the PJ5 Score tile); values are in scope here.
 
   // === Stash hole lists for tappable PJ5 panels (SABLE LEDGER v9.3.0) ===
   // Stored on a module-scope object keyed by round id so multiple Round Detail
