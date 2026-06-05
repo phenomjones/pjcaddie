@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- PJ Caddie v10.4.1 · Jun 3, 2026 -->
+<!-- PJ Caddie v10.4.2 · Jun 4, 2026 -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -318,7 +318,8 @@ body{display:flex;flex-direction:column}
 /* VELVET LATTICE (v8.3.2) — universal tappable-stat panel pattern. Any element with [data-stat-key] is a tap target; tapping renders the matching panel beneath its section showing the holes that contribute */
 .stat-tile[data-stat-key],.det-tee-col,.det-tee-lbl[data-stat-key],.det-zone-cell[data-stat-key],.det-stack-row,.det-cmp-row[data-stat-key],.pj-row[data-stat-key],.pj-stat[data-stat-key]{cursor:pointer}
 .det-tee-bar{pointer-events:none}
-.stat-tile.selected,.det-tee-col.selected,.det-tee-lbl.selected,.det-zone-cell.selected,.det-cmp-row.selected,.pj-row.selected,.pj-stat.selected{box-shadow:inset 0 0 0 2px var(--gold)}
+.stat-tile.selected,.det-tee-col.selected,.det-tee-lbl.selected,.det-zone-cell.selected,.det-cmp-row.selected,.pj-row.selected,.pj-stat.selected,.det-tdisp-tile.selected{box-shadow:inset 0 0 0 2px var(--gold)}
+.det-tdisp-tile[data-stat-key]{cursor:pointer}
 .det-stack-row.selected .det-stack-track{box-shadow:inset 0 0 0 2px var(--gold)}
 .det-stat-panel{display:none;background:rgba(200,168,75,.04);border:1px solid rgba(200,168,75,.2);border-radius:var(--rs);padding:11px 13px;margin:-4px 0 16px}
 .det-stat-panel.on{display:block}
@@ -878,7 +879,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <div class="home-logo">⛳ PJ <span>Caddie</span></div>
         <button class="sun-btn" onclick="toggleSunMode()" id="sun-btn">🌙</button>
       </div>
-      <div class="version-stamp" style="padding:0 0 22px">v10.4.1 · Jun 3, 2026</div>
+      <div class="version-stamp" style="padding:0 0 22px">v10.4.2 · Jun 4, 2026</div>
       <button class="btn btn-gold" onclick="showView('round-setup')">＋ Start Round</button>
       <div id="home-wip-banner" style="margin-top:16px;display:none"></div>
       <div style="margin-top:28px">
@@ -1296,6 +1297,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
         <div id="det-tee-section"></div>
         <div class="det-stat-panel" id="det-panel-tee"></div>
         <div id="det-teedispersion-section"></div>
+        <div class="det-stat-panel" id="det-panel-teedisp"></div>
       </div>
       <!-- Group 3: Approach -->
       <div class="det-group">
@@ -1528,7 +1530,7 @@ html.sun-mode .det-group-label{border-bottom-color:rgba(212,175,55,0.30)}
       </div>
       <!-- VERMILION ATELIER — flat About row, no card wrapper -->
       <div class="va-about-flat">
-        <span>v10.4.1 · Spec v2.3</span>
+        <span>v10.4.2 · Spec v2.3</span>
         <button class="va-about-sun" onclick="toggleSunMode()">☀️ Sun mode</button>
       </div>
     </div>
@@ -4272,7 +4274,15 @@ function buildHoleSentence(h) {
   // guessing whether extras are layup / duff / recovery / scramble.
   const isOopTee = h.teeResult === 'LL' || h.teeResult === 'RR';
   if (isOopTee) {
-    const extrasPhrase = inferExtraSwingsPhrase(inferExtraSwings(h));
+    // THICKET MEND (v10.4.2) — the recovery-swings residual from inferExtraSwings
+    // already counts any shotsFromShort shot(s), which are narrated separately
+    // above ("needed N shots from inside 75y..."). Subtract them so the same
+    // shots aren't described twice. inferExtraSwingsPhrase guards <1 -> null, so
+    // a null residual or a non-positive remainder simply suppresses the clause.
+    const raw = inferExtraSwings(h);
+    const short = (typeof h.shotsFromShort === 'number') ? h.shotsFromShort : 0;
+    const recoveryExtras = (raw == null) ? null : (raw - short);
+    const extrasPhrase = inferExtraSwingsPhrase(recoveryExtras);
     if (extrasPhrase) parts.push(extrasPhrase);
   }
   if (h.putts != null) {
@@ -4599,16 +4609,16 @@ function resolveStatPanel(key, param, played) {
                misses: numsOf(elig.filter(h => !(h.putts === 1 && !h.doubleChip))) };
     }
     case 'longPutts':
-      return { panelId:'det-panel-stats', type:'list',
+      return { panelId:'det-panel-stats', type:'list', listLabel:'THREE-PUTT HOLES',
                holes: numsOf(played.filter(h => h.putts === 3 || h.putts === 4)) };
     case 'penalties':
-      return { panelId:'det-panel-stats', type:'list',
+      return { panelId:'det-panel-stats', type:'list', listLabel:'PENALTY HOLES',
                holes: numsOf(played.filter(h => (h.penalty || 0) > 0)) };
     // GILDED MESH (v10.4.0) — doubleChips / fwyBunker / duffedApproach cases
     // removed with their det-stats2 tiles. Per-hole pills + prose still read the
     // underlying h.* fields directly; only these tap-panels are gone.
     case 'teeZone':
-      return { panelId:'det-panel-tee', type:'list',
+      return { panelId:'det-panel-tee', type:'list', listLabel:'TEE SHOTS',
                holes: numsOf(played.filter(h => h.par >= 4 && h.teeResult === param)) };
     case 'approachZone': {
       // CINDER MEADOW (v8.3.36) — param format is now 'h-L'/'h-C'/'h-R'/'m-L'/
@@ -4618,10 +4628,11 @@ function resolveStatPanel(key, param, played) {
       const isHit = param.startsWith('h-');
       const dir = param.substring(2);
       return { panelId:'det-panel-zones', type:'list',
+               listLabel:(isHit ? 'GREEN HIT' : 'GREEN MISSED') + ' — ' + (dir === 'L' ? 'LEFT' : dir === 'R' ? 'RIGHT' : 'CENTER'),
                holes: numsOf(played.filter(h => approachResultDirection(h.approachResult) === dir && h.onGreen === isHit)) };
     }
     case 'parType':
-      return { panelId:'det-panel-par', type:'list',
+      return { panelId:'det-panel-par', type:'list', listLabel:'PAR ' + param + ' HOLES',
                holes: numsOf(played.filter(h => h.par === Number(param))) };
     case 'bogeyOrBetter':
       return { panelId:'det-panel-rate', type:'binary',
@@ -4655,13 +4666,13 @@ function resolveStatPanel(key, param, played) {
     // PJ5 render block; det-panel-pj anchor retained.
     case 'pj5Score': {
       const data = window._pjPanelData && window._pjPanelData[DET.roundId];
-      return { panelId:'det-panel-pj', type:'list',
+      return { panelId:'det-panel-pj', type:'list', listLabel:'PJ5 VIOLATIONS',
                holes: data ? data.pj5AllViolationHoles : [] };
     }
     case 'pj5R1': case 'pj5R2': case 'pj5R3':
     case 'pj5R4': case 'pj5R5': {
       const data = window._pjPanelData && window._pjPanelData[DET.roundId];
-      return { panelId:'det-panel-pj', type:'list',
+      return { panelId:'det-panel-pj', type:'list', listLabel:'HOLES THAT BROKE THIS RULE',
                holes: data ? (data[key + 'Holes'] || []) : [] };
     }
     // GILDED MESH (v10.4.0) — Scoring & Approach rows tap into det-panel-zones.
@@ -4673,11 +4684,54 @@ function resolveStatPanel(key, param, played) {
                misses: numsOf(elig.filter(h => !(h.putts === 1 && !h.doubleChip))) };
     }
     case 'apScoring':
-      return { panelId:'det-panel-zones', type:'list',
+      return { panelId:'det-panel-zones', type:'list', listLabel:'SCORING-SHOT HOLES (\u226475y)',
                holes: numsOf(played.filter(h => typeof h.shotsFromShort === 'number' && h.shotsFromShort >= 1)) };
     case 'apShortSide':
-      return { panelId:'det-panel-zones', type:'list',
+      return { panelId:'det-panel-zones', type:'list', listLabel:'SHORT-SIDED HOLES',
                holes: numsOf(played.filter(h => h.missQuality === 'shortSide')) };
+    // ── COPPER LINK (v10.4.2) — the three new det-stats2 top tiles tap into the
+    // top anchor (det-panel-stats). Distinct keys from the lower teeInPlay/pj5Score
+    // tiles so each routes to its own anchor and selects independently.
+    case 'teeInPlayTop': {
+      const elig = played.filter(h => h.par >= 4);
+      const inPlayFn = h => h.teeResult === 'fairway' || h.teeResult === 'L' || h.teeResult === 'R';
+      return { panelId:'det-panel-stats', type:'binary',
+               hitLabel:'IN PLAY', missLabel:'OUT OF POSITION / OB',
+               hits: numsOf(elig.filter(inPlayFn)),
+               misses: numsOf(elig.filter(h => !inPlayFn(h))) };
+    }
+    case 'pj5ScoreTop': {
+      const data = window._pjPanelData && window._pjPanelData[DET.roundId];
+      return { panelId:'det-panel-stats', type:'list', listLabel:'PJ5 VIOLATIONS',
+               holes: data ? data.pj5AllViolationHoles : [] };
+    }
+    case 'dn3Top': {
+      // Down in 3 from <=75y: eligible = scoring-shot holes (shotsFromShort>=1),
+      // matching the tile denominator. made = putts present AND shotsFromShort+putts<=3
+      // (mirrors PJ5 Rule 3 success). A scoring hole with no putts recorded falls
+      // into NOT DOWN IN 3 so hits+misses always equals the tile denominator.
+      const elig = played.filter(h => typeof h.shotsFromShort === 'number' && h.shotsFromShort >= 1);
+      const madeFn = h => h.putts != null && (h.shotsFromShort + h.putts) <= 3;
+      return { panelId:'det-panel-stats', type:'binary',
+               hitLabel:'DOWN IN 3', missLabel:'NOT DOWN IN 3',
+               hits: numsOf(elig.filter(madeFn)),
+               misses: numsOf(elig.filter(h => !madeFn(h))) };
+    }
+    // ── TEE LINK (v10.4.2) — Tee Dispersion 4-category tiles tap into a dedicated
+    // anchor (det-panel-teedisp) below the dispersion section. Eligibility mirrors
+    // renderTeeDispersionSection's `teed` filter (par !== 3 && teeResult != null).
+    case 'teeCat': {
+      const teed = played.filter(h => h.par !== 3 && h.teeResult != null);
+      const catFn = {
+        fw:    h => h.teeResult === 'fairway',
+        rough: h => h.teeResult === 'L' || h.teeResult === 'R',
+        oop:   h => h.teeResult === 'LL' || h.teeResult === 'RR',
+        ob:    h => h.teeResult === 'OBL' || h.teeResult === 'OBR',
+      }[param];
+      const catLbl = { fw:'FAIRWAY', rough:'ROUGH', oop:'OUT OF POSITION', ob:'OUT OF BOUNDS' }[param] || 'TEE SHOTS';
+      return { panelId:'det-panel-teedisp', type:'list', listLabel:catLbl + ' OFF THE TEE',
+               holes: catFn ? numsOf(teed.filter(catFn)) : [] };
+    }
     // PEWTER GROVE (v10.1.1) — 'srBogeyOrBetter' case removed; its tile was
     // neutralized in MARLIN LEDGER and nothing taps it through anymore.
     // SABLE LEDGER (v9.3.0) — 'girBand' and 'holeoutBand' cases removed with the
@@ -4703,7 +4757,7 @@ function renderStatPanelHtml(r, allHoles, statKey) {
   let allShown = [];
   if (r.type === 'list') {
     if (!r.holes.length) return '<div class="dsp-empty">No matching holes.</div>';
-    html = `<div class="dsp-group"><div class="dsp-hdr">HOLES (${r.holes.length})</div>${numsHtml(r.holes)}</div>`;
+    html = `<div class="dsp-group"><div class="dsp-hdr">${r.listLabel || 'HOLES'} (${r.holes.length})</div>${numsHtml(r.holes)}</div>`;
     allShown = r.holes;
   } else {
     html = `<div class="dsp-group"><div class="dsp-hdr">${r.hitLabel} (${r.hits.length})</div>${numsHtml(r.hits)}</div>`
@@ -4831,9 +4885,9 @@ function renderDetailV2(round) {
 
   document.getElementById('det-stats2').innerHTML = [
     {val: totalPenalties || '0', lbl: 'Penalties', k: totalPenalties ? 'penalties' : null},
-    {val: _par45.length ? (teeInPlayPctTop + '%') : '\u2014', lbl: 'Tee In-Play', k: null},
-    {val: pj5Total, lbl: 'PJ5 Score', k: null},
-    {val: _scoringHoles.length ? (dn3PctTop + '%') : '\u2014', lbl: 'Down in 3', k: null},
+    {val: _par45.length ? (teeInPlayPctTop + '%') : '\u2014', lbl: 'Tee In-Play', k: _par45.length ? 'teeInPlayTop' : null},
+    {val: pj5Total, lbl: 'PJ5 Score', k: pj5Total ? 'pj5ScoreTop' : null},
+    {val: _scoringHoles.length ? (dn3PctTop + '%') : '\u2014', lbl: 'Down in 3', k: _scoringHoles.length ? 'dn3Top' : null},
   ].map(statTileHtml).join('');
 
   // ── JUNIPER QUARRY BATCH (v8.3.46-52) — post-round summary block ──
@@ -5562,12 +5616,15 @@ function renderTeeDispersionSection(holes) {
   const obR  = teed.filter(h => h.teeResult === 'OBR').length;
   const rough = rL + rR, oop = oopL + oopR, ob = obL + obR;
   const pct = c => Math.round((c/n)*100);
+  // TEE LINK (v10.4.2) — each category tile taps into det-panel-teedisp via the
+  // teeCat resolve case. Gated to non-empty so a 0-count category isn't tappable.
+  const tap = (cat, c) => c ? ` data-stat-key="teeCat" data-stat-param="${cat}" onclick="statSelect('teeCat','${cat}')"` : '';
   el.innerHTML = `<span class="section-lbl">Tee Dispersion</span>
     <div class="det-tdisp" style="grid-template-columns:repeat(4,1fr)">
-      <div class="det-tdisp-tile fw"><div class="det-tdisp-val">${pct(fw)}%</div><div class="det-tdisp-lbl">Fairway</div><div class="det-tdisp-n">${fw}/${n}</div></div>
-      <div class="det-tdisp-tile rough"><div class="det-tdisp-val">${pct(rough)}%</div><div class="det-tdisp-lbl">Rough</div><div class="det-tdisp-n">${rough}/${n}${rough?` (${rL}L / ${rR}R)`:''}</div></div>
-      <div class="det-tdisp-tile oop"><div class="det-tdisp-val">${pct(oop)}%</div><div class="det-tdisp-lbl">Out of Pos</div><div class="det-tdisp-n">${oop}/${n}${oop?` (${oopL}L / ${oopR}R)`:''}</div></div>
-      <div class="det-tdisp-tile ob"><div class="det-tdisp-val">${pct(ob)}%</div><div class="det-tdisp-lbl">OB</div><div class="det-tdisp-n">${ob}/${n}${ob?` (${obL}L / ${obR}R)`:''}</div></div>
+      <div class="det-tdisp-tile fw"${tap('fw',fw)}><div class="det-tdisp-val">${pct(fw)}%</div><div class="det-tdisp-lbl">Fairway</div><div class="det-tdisp-n">${fw}/${n}</div></div>
+      <div class="det-tdisp-tile rough"${tap('rough',rough)}><div class="det-tdisp-val">${pct(rough)}%</div><div class="det-tdisp-lbl">Rough</div><div class="det-tdisp-n">${rough}/${n}${rough?` (${rL}L / ${rR}R)`:''}</div></div>
+      <div class="det-tdisp-tile oop"${tap('oop',oop)}><div class="det-tdisp-val">${pct(oop)}%</div><div class="det-tdisp-lbl">Out of Pos</div><div class="det-tdisp-n">${oop}/${n}${oop?` (${oopL}L / ${oopR}R)`:''}</div></div>
+      <div class="det-tdisp-tile ob"${tap('ob',ob)}><div class="det-tdisp-val">${pct(ob)}%</div><div class="det-tdisp-lbl">OB</div><div class="det-tdisp-n">${ob}/${n}${ob?` (${obL}L / ${obR}R)`:''}</div></div>
     </div>`;
 }
 
